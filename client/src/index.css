@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-poker-dark text-white font-sans;
+  }
+}
+
+@layer components {
+  .poker-table {
+    @apply bg-poker-green rounded-full border-8 border-poker-gold shadow-2xl;
+    background: radial-gradient(circle, #0f5132 0%, #0a3d26 100%);
+  }
+
+  .poker-card {
+    @apply bg-white text-black rounded-lg shadow-lg border-2 border-gray-300;
+    @apply w-12 h-16 flex items-center justify-center text-lg font-bold;
+    @apply transition-all duration-200 hover:scale-105;
+  }
+
+  .poker-card.small {
+    @apply w-8 h-11 text-sm;
+  }
+
+  .poker-card.community {
+    @apply w-14 h-20 text-lg;
+  }
+
+  .poker-card.large {
+    @apply w-16 h-24 text-xl;
+  }
+
+  .poker-card.red {
+    @apply text-red-600;
+  }
+
+  .poker-card.black {
+    @apply text-black;
+  }
+
+  .poker-card.back {
+    @apply bg-blue-800 text-white border-blue-600;
+    background-image: linear-gradient(45deg, #1e40af 25%, transparent 25%),
+      linear-gradient(-45deg, #1e40af 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #1e40af 75%),
+      linear-gradient(-45deg, transparent 75%, #1e40af 75%);
+    background-size: 8px 8px;
+  }
+
+  .player-seat {
+    @apply absolute bg-gray-800 rounded-lg p-2 border-2 border-gray-600;
+    @apply transition-all duration-200 hover:border-poker-gold;
+    @apply min-w-[80px] max-w-[120px];
+  }
+
+  .player-seat.compact {
+    @apply p-1 min-w-[60px] max-w-[100px];
+  }
+
+  /* 移动端座位优化 */
+  @media (max-width: 767px) {
+    .player-seat {
+      @apply min-w-[50px] max-w-[80px] text-xs;
+    }
+    
+    .player-seat.compact {
+      @apply p-0.5 min-w-[45px] max-w-[70px];
+    }
+  }
+
+  @media (max-width: 479px) {
+    .player-seat {
+      @apply min-w-[40px] max-w-[65px] text-xs;
+    }
+    
+    .player-seat.compact {
+      @apply p-0.5 min-w-[35px] max-w-[55px];
+    }
+  }
+
+  .player-seat.active {
+    @apply border-poker-gold shadow-lg shadow-poker-gold/50;
+  }
+
+  .player-seat.current-turn {
+    @apply border-poker-blue shadow-lg shadow-poker-blue/50 animate-pulse-slow;
+  }
+
+  .player-seat.current-turn-timer {
+    @apply border-yellow-400 shadow-lg shadow-yellow-400/50;
+    animation: pulse-glow 1.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+    }
+    100% {
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6);
+    }
+  }
+
+  .game-button {
+    @apply px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200;
+    @apply hover:scale-105 active:scale-95;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+  }
+
+  .modal-content {
+    @apply bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4;
+    @apply border border-gray-600 shadow-2xl;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg;
+    @apply text-white placeholder-gray-400 focus:outline-none focus:border-poker-gold;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-300 mb-2;
+  }
+
+  .form-button {
+    @apply w-full px-4 py-2 bg-poker-blue text-white rounded-lg font-semibold;
+    @apply hover:bg-blue-700 transition-colors duration-200;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  }
+
+  .card-flip {
+    transform-style: preserve-3d;
+  }
+
+  .card-flip.flipped {
+    transform: rotateY(180deg);
+  }
+}
