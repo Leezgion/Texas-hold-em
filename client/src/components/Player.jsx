@@ -53,12 +53,14 @@ const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted
         {/* 紧凑的玩家信息卡片 */}
         <div
           className={`bg-gray-800/90 backdrop-blur-sm rounded-lg p-2 border ${
-            isActiveTimer 
+            player.allIn
+              ? 'border-purple-500 shadow-lg shadow-purple-500/40'
+              : isActiveTimer 
               ? 'border-yellow-400 shadow-lg shadow-yellow-400/30 animate-pulse' 
               : isCurrentTurn 
               ? 'border-blue-400 shadow-lg shadow-blue-400/20' 
               : 'border-gray-600'
-          } ${player.folded ? 'opacity-60' : ''}`}
+          } ${player.folded ? 'opacity-60' : ''} ${player.allIn ? 'bg-purple-900/30' : ''}`}
         >
           {/* 玩家昵称 */}
           <div className="flex items-center justify-center mb-1">
@@ -66,26 +68,44 @@ const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted
               {getDisplayName(player.nickname)}
             </span>
             {player.isHost && <span className="text-poker-gold ml-1 text-xs">👑</span>}
+            {player.allIn && <span className="text-purple-400 ml-1 text-xs">🚀</span>}
           </div>
 
           {/* 筹码数量 */}
-          <div className="text-poker-gold font-semibold text-xs mb-1">{player.chips}</div>
+          <div className={`font-semibold text-xs mb-1 ${player.allIn ? 'text-purple-400' : 'text-poker-gold'}`}>
+            {player.chips}
+          </div>
 
           {/* 状态指示 */}
-          {player.folded ? <div className="text-red-400 text-xs font-medium">弃牌</div> : <div className="w-2 h-2 bg-green-400 rounded-full mx-auto"></div>}
+          {player.folded ? (
+            <div className="text-red-400 text-xs font-medium">弃牌</div>
+          ) : player.allIn ? (
+            <div className="text-purple-400 text-xs font-medium animate-pulse">All-in</div>
+          ) : (
+            <div className="w-2 h-2 bg-green-400 rounded-full mx-auto"></div>
+          )}
         </div>
 
         {/* 当前回合指示器 */}
-        {isCurrentTurn && (
+        {isCurrentTurn && !player.allIn && (
           <div className={`absolute -top-1 -left-1 w-3 h-3 ${
             isActiveTimer ? 'bg-yellow-400' : 'bg-blue-400'
           } rounded-full animate-pulse`}></div>
         )}
 
+        {/* All-in特效 */}
+        {player.allIn && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full animate-ping"></div>
+        )}
+
         {/* 位置标记 - 只在游戏开始后显示 */}
         {gameStarted && getPositionLabel && (
           <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-            <div className="bg-gray-700/90 text-white text-xs px-2 py-0.5 rounded-full border border-gray-600">
+            <div className={`text-white text-xs px-2 py-0.5 rounded-full border ${
+              player.allIn 
+                ? 'bg-purple-700/90 border-purple-500' 
+                : 'bg-gray-700/90 border-gray-600'
+            }`}>
               {getPositionLabel(player.seat)}
             </div>
           </div>

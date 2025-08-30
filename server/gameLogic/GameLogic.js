@@ -184,13 +184,20 @@ class GameLogic {
   call(player) {
     const callAmount = this.currentBet - player.currentBet;
     if (callAmount > player.chips) {
-      // All-in
+      // 筹码不足，自动All-in
+      console.log(`玩家 ${player.nickname} 筹码不足，自动All-in`);
+      this.allIn(player);
+    } else if (callAmount === player.chips) {
+      // 刚好All-in
+      console.log(`玩家 ${player.nickname} 跟注All-in`);
       this.allIn(player);
     } else {
+      // 正常跟注
       player.chips -= callAmount;
       player.currentBet = this.currentBet;
       player.totalBet += callAmount;
       this.pot += callAmount;
+      console.log(`玩家 ${player.nickname} 跟注 ${callAmount}`);
       this.moveToNextPlayer();
     }
   }
@@ -201,57 +208,147 @@ class GameLogic {
       throw new Error(`加注金额必须至少为 ${this.minRaise}`);
     }
 
-    const totalAmount = this.currentBet + amount;
+    const totalAmount = this.currentBet + amount - player.currentBet;
     if (totalAmount > player.chips) {
       throw new Error('筹码不足');
     }
 
-    player.chips -= totalAmount;
-    player.currentBet = totalAmount;
-    player.totalBet += totalAmount;
-    this.pot += totalAmount;
-    this.currentBet = totalAmount;
-    this.minRaise = amount;
-    this.lastRaiseIndex = this.currentPlayerIndex;
-    this.roundStartIndex = this.currentPlayerIndex;
+    if (totalAmount === player.chips) {
+      // 加注到All-in
+      console.log(`玩家 ${player.nickname} 加注All-in`);
+      this.allIn(player);
+    } else {
+      // 正常加注
+      player.chips -= totalAmount;
+      const newBet = player.currentBet + totalAmount;
+      player.currentBet = newBet;
+      player.totalBet += totalAmount;
+      this.pot += totalAmount;
+      this.currentBet = newBet;
+      this.minRaise = amount;
+      this.lastRaiseIndex = this.currentPlayerIndex;
+      this.roundStartIndex = this.currentPlayerIndex;
 
-    this.moveToNextPlayer();
+      console.log(`玩家 ${player.nickname} 加注到 ${newBet}`);
+      this.moveToNextPlayer();
+    }
   }
 
   // All-in
   allIn(player) {
     const allinAmount = player.chips;
+    const previousBet = player.currentBet;
+    
     player.chips = 0;
     player.currentBet += allinAmount;
     player.totalBet += allinAmount;
     this.pot += allinAmount;
     player.allIn = true;
 
-    if (allinAmount > this.currentBet) {
-      this.currentBet = allinAmount;
-      this.minRaise = allinAmount - this.currentBet;
+    // 如果All-in金额超过当前下注，更新下注水平
+    if (player.currentBet > this.currentBet) {
+      this.currentBet = player.currentBet;
+      this.minRaise = Math.max(this.minRaise, player.currentBet - previousBet);
       this.lastRaiseIndex = this.currentPlayerIndex;
       this.roundStartIndex = this.currentPlayerIndex;
     }
 
-    this.allinPlayers.push(player);
-    this.moveToNextPlayer();
+    // 将玩家添加到All-in列表
+    if (!this.allinPlayers.find(p => p.id === player.id)) {
+      this.allinPlayers.push(player);
+    }
+
+    console.log(`玩家 ${player.nickname} All-in ${allinAmount}，当前下注: ${this.currentBet}`);
+    
+    // 检查游戏状态
+    this.checkGameStateAfterAllin();
   }
 
+  // 检查游戏状态
+  checkGameStateAfterAllin() {
+    const activePlayers = this.room.players.filter(p => !p.folded && !p.allIn);
+    const allinPlayers = this.room.players.filter(p => !p.folded && p.allIn);
+    
+    console.log(`All-in后检查: 活跃玩家${activePlayers.length}个, All-in玩家${allinPlayers.length}个`);
+    
+    if (activePlayers.length === 0) {
+      // 所有剩余玩家都All-in了，直接发完所有牌
+      console.log('所有玩家都All-in，直接发完剩余公牌');
+      this.dealRemainingCards();
+      this.showdown();
+      return;
+    } else if (activePlayers.length === 1) {
+      // 只剩一个活跃玩家，检查是否需要跟注
+      const lastActivePlayer = activePlayers[0];
+      if (lastActivePlayer.currentBet < this.currentBet) {
+        // 需要决定是否跟注
+        console.log(`最后一个活跃玩家 ${lastActivePlayer.nickname} 需要决定是否跟注`);
+        this.moveToNextPlayer();
+        return;
+      } else {
+        // 不需要跟注，直接发完剩余公牌
+        console.log('最后一个活跃玩家无需跟注，直接发完剩余公牌');
+        this.dealRemainingCards();
+        this.showdown();
+        return;
+      }
+    } else {
+      // 还有多个活跃玩家，继续正常游戏
+      console.log('还有多个活跃玩家，继续正常游戏');
+      this.moveToNextPlayer();
+    }
+  }
+
+  // 发完剩余的公牌
+  dealRemainingCards() {
+    console.log(`当前阶段: ${this.gamePhase}, 公牌数量: ${this.communityCards.length}`);
+    
+    while (this.communityCards.length < 5) {
+      this.communityCards.push(this.deck.drawCard());
+      console.log(`发出公牌，现在共有 ${this.communityCards.length} 张`);
+    }
+    
+    // 设置为河牌阶段
+    this.gamePhase = 'river';
+    
+    // 通知所有玩家状态更新
+    this.roomManager.broadcastRoomState(this.room);
+  }
   // 移动到下一个玩家
   moveToNextPlayer() {
     const activePlayers = this.room.players.filter(p => !p.folded && !p.allIn);
+    
     if (activePlayers.length === 0) {
-      this.nextPhase();
+      // 没有活跃玩家，直接发完剩余公牌并摊牌
+      console.log('没有活跃玩家，直接发完剩余公牌');
+      this.dealRemainingCards();
+      this.showdown();
       return;
+    } else if (activePlayers.length === 1) {
+      // 只有一个活跃玩家
+      const lastPlayer = activePlayers[0];
+      if (lastPlayer.currentBet < this.currentBet) {
+        // 需要决定是否跟注，继续让这个玩家行动
+        this.currentPlayerIndex = this.room.players.findIndex(p => p.id === lastPlayer.id);
+        console.log(`只剩一个活跃玩家 ${lastPlayer.nickname}，需要决定跟注`);
+        this.startPlayerTimer();
+        return;
+      } else {
+        // 无需跟注，直接发完剩余公牌
+        console.log('最后一个活跃玩家无需跟注，直接发完剩余公牌');
+        this.dealRemainingCards();
+        this.showdown();
+        return;
+      }
     }
 
+    // 找到下一个活跃玩家
     do {
       this.currentPlayerIndex = this.getNextActivePlayerIndex(this.currentPlayerIndex);
     } while (this.room.players[this.currentPlayerIndex].folded || 
              this.room.players[this.currentPlayerIndex].allIn);
 
-    // 检查是否完成一轮 - 需要确保所有玩家都有机会行动
+    // 检查是否完成一轮下注
     if (this.currentPlayerIndex === this.roundStartIndex) {
       console.log('回到起始玩家，检查轮次是否完成:', {
         gamePhase: this.gamePhase,
@@ -328,22 +425,44 @@ class GameLogic {
     this.minRaise = this.room.settings.initialChips / 50;
     this.lastRaiseIndex = -1;
     
-    // 在翻牌后阶段，第一个行动的玩家是小盲注左边的第一个活跃玩家
-    if (this.gamePhase !== 'preflop') {
-      this.currentPlayerIndex = this.getNextActivePlayerIndex(this.smallBlindIndex);
-    }
-    
-    this.roundStartIndex = this.currentPlayerIndex;
-    
-    // 重置所有玩家的当前下注
+    // 重置所有非All-in玩家的当前下注
     this.room.players.forEach(player => {
       if (!player.folded && !player.allIn) {
         player.currentBet = 0;
       }
     });
+    
+    // 在翻牌后阶段，第一个行动的玩家是小盲注左边的第一个活跃玩家
+    if (this.gamePhase !== 'preflop') {
+      this.currentPlayerIndex = this.getFirstActivePlayerAfterDealer();
+    }
+    
+    this.roundStartIndex = this.currentPlayerIndex;
+    
+    // 检查是否还有活跃玩家需要行动
+    const activePlayers = this.room.players.filter(p => !p.folded && !p.allIn);
+    if (activePlayers.length <= 1) {
+      console.log('重置下注轮时发现活跃玩家不足，直接发完剩余公牌');
+      this.dealRemainingCards();
+      this.showdown();
+      return;
+    }
 
     // 为当前玩家启动计时器
     this.startPlayerTimer();
+  }
+
+  // 获取庄家后的第一个活跃玩家
+  getFirstActivePlayerAfterDealer() {
+    let index = this.smallBlindIndex;
+    while (this.room.players[index].folded || this.room.players[index].allIn) {
+      index = this.getNextActivePlayerIndex(index);
+      // 防止无限循环
+      if (index === this.smallBlindIndex) {
+        break;
+      }
+    }
+    return index;
   }
 
   // 摊牌
@@ -353,8 +472,15 @@ class GameLogic {
     // 摊牌阶段清除计时器
     this.clearPlayerTimer();
     
-    // 检查是否有All-in玩家
-    if (this.allinPlayers.length > 0) {
+    // 确保所有公牌都已发出
+    while (this.communityCards.length < 5) {
+      this.communityCards.push(this.deck.drawCard());
+    }
+    
+    console.log('开始摊牌阶段');
+    
+    // 检查是否有All-in玩家需要多次发牌
+    if (this.allinPlayers.length > 0 && this.maxAllinRounds > 1) {
       this.handleAllinShowdown();
     } else {
       this.handleNormalShowdown();
@@ -366,26 +492,80 @@ class GameLogic {
     this.currentAllinRound = 0;
     this.allinResults = [];
     
-    // 创建临时牌堆用于多次发牌
-    const tempDeck = new Deck();
-    const remainingCards = this.communityCards.length === 5 ? [] : 
-                          this.communityCards.length === 4 ? [tempDeck.drawCard()] :
-                          [tempDeck.drawCard(), tempDeck.drawCard()];
-
+    console.log(`开始All-in多次发牌，总共${this.maxAllinRounds}次`);
+    
+    // 保存当前的牌堆状态和公牌
+    const originalCommunityCards = [...this.communityCards];
+    
     // 进行多次发牌
     for (let round = 0; round < this.maxAllinRounds; round++) {
-      const roundCards = [...this.communityCards, ...remainingCards];
-      const roundResult = this.evaluateShowdown(roundCards);
-      this.allinResults.push(roundResult);
+      // 重新创建牌堆并发完5张公牌
+      const tempDeck = new Deck();
+      const tempCommunityCards = [];
+      
+      // 发出5张公牌
+      for (let i = 0; i < 5; i++) {
+        tempCommunityCards.push(tempDeck.drawCard());
+      }
+      
+      const roundResult = this.evaluateShowdown(tempCommunityCards);
+      this.allinResults.push({
+        round: round + 1,
+        communityCards: tempCommunityCards,
+        ...roundResult
+      });
+      
+      console.log(`第${round + 1}轮发牌完成`);
     }
 
     // 分配底池
     this.distributeAllinPot();
     
-    // 开始新的一手牌
+    // 发送结果并开始新手牌
+    this.sendAllinResults();
+  }
+
+  // 发送All-in结果
+  sendAllinResults() {
+    // 发送All-in结果给客户端
+    this.io.to(this.room.id).emit('allinResult', {
+      results: this.allinResults.map((result) => ({
+        round: result.round,
+        winners: result.winners.map(w => w.nickname),
+        communityCards: result.communityCards
+      })),
+      finalDistribution: this.calculateFinalDistribution()
+    });
+    
+    // 3秒后开始下一轮
     setTimeout(() => {
       this.startNewHand();
-    }, 5000);
+      this.roomManager.broadcastRoomState(this.room);
+    }, 3000);
+  }
+
+  // 计算最终分配
+  calculateFinalDistribution() {
+    const playerWins = new Map();
+    
+    this.allinResults.forEach(result => {
+      result.winners.forEach(winner => {
+        const currentWins = playerWins.get(winner.id) || 0;
+        playerWins.set(winner.id, currentWins + 1);
+      });
+    });
+
+    const totalRounds = this.allinResults.length;
+    const originalPot = this.pot;
+    
+    return Array.from(playerWins.entries()).map(([playerId, wins]) => {
+      const player = this.room.players.find(p => p.id === playerId);
+      return {
+        nickname: player.nickname,
+        wins: wins,
+        winnings: Math.floor((wins / totalRounds) * originalPot)
+      };
+    });
   }
 
   // 处理普通摊牌
@@ -461,51 +641,43 @@ class GameLogic {
     playerWins.forEach((wins, playerId) => {
       const player = this.room.players.find(p => p.id === playerId);
       if (player) {
-        const winnings = (wins / totalRounds) * originalPot;
-        player.chips += Math.floor(winnings);
+        const winnings = Math.floor((wins / totalRounds) * originalPot);
+        player.chips += winnings;
+        console.log(`玩家 ${player.nickname} 获得 ${winnings} 筹码 (${wins}/${totalRounds} 胜率)`);
       }
     });
 
     this.pot = 0;
-    
-    // 发送All-in结果给客户端
-    this.io.to(this.room.id).emit('allinResult', {
-      results: this.allinResults.map((result, index) => ({
-        round: index + 1,
-        winners: result.winners.map(w => w.nickname),
-        communityCards: result.communityCards
-      })),
-      finalDistribution: Array.from(playerWins.entries()).map(([playerId, wins]) => {
-        const player = this.room.players.find(p => p.id === playerId);
-        return {
-          nickname: player.nickname,
-          wins: wins,
-          winnings: Math.floor((wins / totalRounds) * originalPot)
-        };
-      })
-    });
-    
-    // 3秒后开始下一轮
-    setTimeout(() => {
-      this.startNewHand();
-      this.roomManager.broadcastRoomState(this.room);
-    }, 3000);
   }
 
   // 检查是否完成了一轮下注
   hasCompletedRound() {
     const activePlayers = this.room.players.filter(p => !p.folded && !p.allIn);
+    const allinPlayers = this.room.players.filter(p => !p.folded && p.allIn);
     
     console.log('检查轮次完成状态:', {
       activePlayersCount: activePlayers.length,
+      allinPlayersCount: allinPlayers.length,
       currentBet: this.currentBet,
-      playerBets: activePlayers.map(p => ({ name: p.nickname, bet: p.currentBet }))
+      playerBets: activePlayers.map(p => ({ name: p.nickname, bet: p.currentBet, chips: p.chips }))
     });
     
-    // 如果只有一个或没有活跃玩家，轮次完成
-    if (activePlayers.length <= 1) {
-      console.log('活跃玩家数量 <= 1，轮次完成');
+    // 如果没有活跃玩家，轮次完成
+    if (activePlayers.length === 0) {
+      console.log('没有活跃玩家，轮次完成');
       return true;
+    }
+    
+    // 如果只有一个活跃玩家，检查其是否需要跟注
+    if (activePlayers.length === 1) {
+      const lastPlayer = activePlayers[0];
+      if (lastPlayer.currentBet >= this.currentBet) {
+        console.log('最后一个活跃玩家已匹配下注，轮次完成');
+        return true;
+      } else {
+        console.log('最后一个活跃玩家需要决定跟注，轮次未完成');
+        return false;
+      }
     }
     
     // 所有活跃玩家的下注必须相等
@@ -514,14 +686,11 @@ class GameLogic {
     
     console.log('下注检查:', { targetBet, allBetsEqual });
     
-    // 如果下注不相等，轮次未完成
     if (!allBetsEqual) {
       console.log('下注不相等，轮次未完成');
       return false;
     }
     
-    // 如果回到了起始玩家，说明每个人都有机会行动了
-    // 这里不需要检查lastRaiseIndex，因为即使所有人都过牌也算完成一轮
     console.log('所有检查通过，轮次完成');
     return true;
   }
@@ -590,12 +759,17 @@ class GameLogic {
 
   // 获取游戏状态
   getGameState() {
+    const bigBlind = this.room.settings.initialChips / 50;
+    const smallBlind = this.room.settings.initialChips / 100;
+    
     return {
       phase: this.gamePhase,
       communityCards: this.communityCards,
       pot: this.pot,
       currentBet: this.currentBet,
       minRaise: this.minRaise,
+      bigBlind: bigBlind,
+      smallBlind: smallBlind,
       currentPlayerIndex: this.currentPlayerIndex,
       dealerIndex: this.dealerIndex,
       smallBlindIndex: this.smallBlindIndex,

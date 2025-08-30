@@ -16,7 +16,7 @@ const JoinRoomModal = ({ roomId }) => {
     } catch (error) {
       alert(`加入房间失败：${error.message}`);
     } finally {
-      setIsSubmitting(false);
+      handleClose()
     }
   };
 
