@@ -6,7 +6,6 @@ import { useGame } from '../contexts/GameContext';
 
 const HomePage = () => {
   const { setShowCreateRoom, setShowJoinRoom, connected } = useGame();
-  const [showJoinForm, setShowJoinForm] = useState(false);
   const [joinRoomId, setJoinRoomId] = useState('');
 
   const handleCreateRoom = () => {
@@ -21,82 +20,93 @@ const HomePage = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-poker-dark via-gray-900 to-poker-dark flex items-center justify-center">
-      <div className="text-center">
-        {/* 标题 */}
-        <div className="mb-12">
-          <h1 className="text-6xl font-bold text-poker-gold mb-4 text-shadow">德州扑克</h1>
-          <p className="text-xl text-gray-300">与朋友一起享受经典的德州扑克游戏</p>
-        </div>
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && joinRoomId.trim() && connected) {
+      handleJoinRoom();
+    }
+  };
 
-        {/* 连接状态 */}
-        <div className="mb-8">
-          <div className={`inline-flex items-center px-4 py-2 rounded-full ${connected ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
-            <div className={`w-3 h-3 rounded-full mr-2 ${connected ? 'bg-green-300' : 'bg-red-300'}`}></div>
-            {connected ? '已连接' : '未连接'}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-poker-dark via-gray-900 to-poker-dark flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        {/* 标题区域 */}
+        <div className="text-center mb-12">
+          <div className="mb-6">
+            <div className="text-6xl mb-4">🃏</div>
+            <h1 className="text-4xl font-bold text-poker-gold mb-2">德州扑克</h1>
+            <p className="text-gray-400">在线多人游戏</p>
+          </div>
+          
+          {/* 连接状态 */}
+          <div className="mb-8">
+            <div className={`inline-flex items-center px-4 py-2 rounded-full transition-all duration-300 ${
+              connected 
+                ? 'bg-green-600/20 border border-green-500/50 text-green-400' 
+                : 'bg-red-600/20 border border-red-500/50 text-red-400'
+            }`}>
+              <div className={`w-2 h-2 rounded-full mr-2 animate-pulse ${
+                connected ? 'bg-green-400' : 'bg-red-400'
+              }`}></div>
+              {connected ? '服务器已连接' : '服务器未连接'}
+            </div>
           </div>
         </div>
 
-        {/* 主按钮 */}
-        <div className="space-y-4 mb-12">
+        {/* 主要操作区域 */}
+        <div className="space-y-6">
+          {/* 创建游戏按钮 */}
           <button
             onClick={handleCreateRoom}
             disabled={!connected}
-            className=" primary text-2xl px-12 py-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-poker-gold to-yellow-500 hover:from-yellow-500 hover:to-poker-gold text-black font-bold text-xl px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-poker-gold/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
           >
-            创建新游戏
+            🎮 创建新游戏
           </button>
 
-          <div className="flex items-center space-x-4">
-            <div className="w-32 h-px bg-gray-600"></div>
-            <span className="text-gray-400">或</span>
-            <div className="w-32 h-px bg-gray-600"></div>
+          {/* 分隔线 */}
+          <div className="flex items-center">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+            <span className="px-4 text-gray-500 text-sm">或</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              placeholder="输入房间ID"
-              value={joinRoomId}
-              onChange={(e) => setJoinRoomId(e.target.value.toUpperCase())}
-              className="form-input text-center text-lg"
-              maxLength={6}
-            />
-            <button
-              onClick={handleJoinRoom}
-              disabled={!connected || !joinRoomId.trim()}
-              className=" success text-lg px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              加入游戏
-            </button>
-          </div>
-        </div>
-
-        {/* 功能特性 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <div className="bg-gray-800 p-6 rounded-lg border border-gray-600">
-            <div className="text-poker-gold text-3xl mb-2">🎮</div>
-            <h3 className="text-xl font-semibold mb-2">自定义规则</h3>
-            <p className="text-gray-400">支持自定义游戏时长、人数、Straddle等规则</p>
-          </div>
-
-          <div className="bg-gray-800 p-6 rounded-lg border border-gray-600">
-            <div className="text-poker-gold text-3xl mb-2">👥</div>
-            <h3 className="text-xl font-semibold mb-2">多人游戏</h3>
-            <p className="text-gray-400">支持2-10人同时游戏，实时同步</p>
-          </div>
-
-          <div className="bg-gray-800 p-6 rounded-lg border border-gray-600">
-            <div className="text-poker-gold text-3xl mb-2">💰</div>
-            <h3 className="text-xl font-semibold mb-2">高级功能</h3>
-            <p className="text-gray-400">支持换座、补码、多次All-in发牌等</p>
+          {/* 加入游戏区域 */}
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-white mb-4 text-center">加入游戏</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">房间ID</label>
+                <input
+                  type="text"
+                  placeholder="输入6位房间ID"
+                  value={joinRoomId}
+                  onChange={(e) => setJoinRoomId(e.target.value.toUpperCase())}
+                  onKeyPress={handleKeyPress}
+                  className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white text-center text-lg font-mono tracking-wider placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-poker-gold focus:border-transparent transition-all duration-300"
+                  maxLength={6}
+                />
+                <p className="text-xs text-gray-500 mt-1 text-center">
+                  按回车键快速加入
+                </p>
+              </div>
+              
+              <button
+                onClick={handleJoinRoom}
+                disabled={!connected || !joinRoomId.trim()}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                🚪 加入游戏
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* 游戏说明 */}
-        <div className="mt-12 text-gray-400 text-sm max-w-2xl mx-auto">
-          <p>德州扑克是一种流行的扑克游戏变体。每位玩家获得2张底牌，然后共享5张公共牌。 玩家需要组合出最好的5张牌来获胜。游戏包含翻牌前、翻牌、转牌、河牌和摊牌五个阶段。</p>
+        {/* 底部信息 */}
+        <div className="text-center mt-8">
+          <p className="text-gray-500 text-sm">
+            {connected ? '准备开始游戏！' : '等待连接服务器...'}
+          </p>
         </div>
       </div>
 

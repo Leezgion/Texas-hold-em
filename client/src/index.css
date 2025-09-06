@@ -139,12 +139,20 @@
   }
 
   .modal-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50;
+    @apply overflow-y-auto;
+    padding: 1rem 0;
   }
 
   .modal-content {
-    @apply bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4;
+    @apply bg-gray-800 rounded-lg w-full;
     @apply border border-gray-600 shadow-2xl;
+    @apply my-auto mx-4;
+    max-width: 28rem;
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .form-input {
