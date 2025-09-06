@@ -21,6 +21,8 @@ const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted
 
   const getStatusText = () => {
     if (!gameStarted) return '等待开始';
+    if (player.isSpectator) return '观战中';
+    if (player.waitingForNextRound) return '等待下轮';
     if (player.folded) return '已弃牌';
     if (player.allIn) return 'All-in';
     if (player.currentBet > 0) return `下注: ${player.currentBet}`;
@@ -28,6 +30,8 @@ const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted
   };
 
   const getStatusColor = () => {
+    if (player.isSpectator) return 'text-purple-400';
+    if (player.waitingForNextRound) return 'text-yellow-400';
     if (player.folded) return 'text-red-400';
     if (player.allIn) return 'text-poker-gold';
     if (player.currentBet > 0) return 'text-blue-400';

@@ -63,7 +63,9 @@ const JoinRoomModal = ({ roomId }) => {
             <h4 className="font-semibold text-poker-gold mb-2">游戏说明</h4>
             <ul className="text-sm text-gray-300 space-y-1">
               <li>• 自动使用设备ID作为玩家标识</li>
-              <li>• 游戏开始后无法加入</li>
+              <li>• 有空座位时自动入座参与游戏</li>
+              <li>• 座位已满时进入观战模式</li>
+              <li>• 游戏进行中入座将等待下一轮</li>
               <li>• 支持换座和补码功能</li>
               <li>• 请保持网络连接稳定</li>
             </ul>

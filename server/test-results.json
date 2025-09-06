@@ -1,0 +1,55 @@
+{
+  "total": 56,
+  "passed": 52,
+  "failed": 4,
+  "skipped": 0,
+  "coverage": {},
+  "duration": 27726,
+  "suiteResults": [
+    {
+      "name": "单元测试 - 验证器",
+      "passed": 13,
+      "failed": 1,
+      "skipped": 0,
+      "total": 14,
+      "duration": 5528,
+      "status": "MOCK"
+    },
+    {
+      "name": "集成测试 - Socket事件管理",
+      "passed": 13,
+      "failed": 1,
+      "skipped": 0,
+      "total": 14,
+      "duration": 5163,
+      "status": "MOCK"
+    },
+    {
+      "name": "集成测试 - API响应管理",
+      "passed": 7,
+      "failed": 1,
+      "skipped": 0,
+      "total": 8,
+      "duration": 5188,
+      "status": "MOCK"
+    },
+    {
+      "name": "端到端测试 - 综合集成",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "total": 9,
+      "duration": 6067,
+      "status": "MOCK"
+    },
+    {
+      "name": "现有功能测试",
+      "passed": 10,
+      "failed": 1,
+      "skipped": 0,
+      "total": 11,
+      "duration": 5773,
+      "status": "MOCK"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { LogOut, Plus, Share2, Users } from 'lucide-react';
+import { LogOut, Plus, Share2, Users, ChevronDown } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -9,7 +9,9 @@ import EmptySeat from './EmptySeat';
 import HandResultModal from './HandResultModal';
 import JoinRoomModal from './JoinRoomModal';
 import Leaderboard from './Leaderboard';
+import LeaveSeatModal from './LeaveSeatModal';
 import Player from './Player';
+import PlayerPanel from './PlayerPanel';
 import RebuyModal from './RebuyModal';
 import ShareLinkModal from './ShareLinkModal';
 import { useGame } from '../contexts/GameContext';
@@ -64,6 +66,8 @@ const GameRoom = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [needsJoin, setNeedsJoin] = useState(false);
   const [roomError, setRoomError] = useState(null);
+  const [showLeaveSeat, setShowLeaveSeat] = useState(false);
+  const [showExitRoom, setShowExitRoom] = useState(false);
 
   useEffect(() => {
     const verifyRoom = async () => {
@@ -103,12 +107,20 @@ const GameRoom = () => {
           const roomData = await checkRoom(roomId);
           console.log('验证房间结果:', roomData);
 
-          if (roomData.exists && roomData.canJoin) {
-            setNeedsJoin(true);
-            setShowJoinRoom(true);
-            setIsLoading(false);
-          } else if (roomData.exists && !roomData.canJoin) {
-            setRoomError('房间已满或游戏已开始');
+          if (roomData.exists) {
+            // 支持观战模式：即使游戏已开始或座位已满，也允许加入
+            try {
+              console.log('自动加入房间:', roomId);
+              await joinRoom(roomId);
+              setIsLoading(false);
+            } catch (error) {
+              console.log('自动加入房间失败:', error);
+              setNeedsJoin(true);
+              setShowJoinRoom(true);
+              setIsLoading(false);
+            }
+          } else {
+            setRoomError('房间不存在');
             setIsLoading(false);
           }
         } catch (error) {
@@ -154,6 +166,7 @@ const GameRoom = () => {
   useEffect(() => {
     if (currentPlayerId && players.length > 0) {
       const player = players.find((p) => p.id === currentPlayerId);
+      console.log('设置当前玩家:', { currentPlayerId, playersLength: players.length, player });
       setCurrentPlayer(player);
 
       // 如果找到了玩家且房间ID匹配，停止加载并重置加入状态
@@ -162,6 +175,8 @@ const GameRoom = () => {
         setNeedsJoin(false);
         setRoomError(null);
       }
+    } else {
+      console.log('没有设置当前玩家:', { currentPlayerId, playersLength: players.length });
     }
   }, [currentPlayerId, players, currentRoomId, roomId]);
 
@@ -210,6 +225,59 @@ const GameRoom = () => {
       </div>
     );
   }
+
+  // 处理离座确认
+  const handleLeaveSeat = () => {
+    console.log('离座按钮被点击', { gameStarted, currentPlayer });
+    if (gameStarted && currentPlayer && !currentPlayer.folded && !currentPlayer.isSpectator) {
+      // 游戏中离座，需要确认
+      setShowLeaveSeat(true);
+    } else {
+      // 游戏外离座，直接执行
+      confirmLeaveSeat();
+    }
+  };
+
+  // 确认离座
+  const confirmLeaveSeat = () => {
+    const { socket } = useGame.getState();
+    if (socket && currentPlayer) {
+      if (gameStarted && !currentPlayer.folded) {
+        // 游戏中自动fold
+        socket.emit('playerAction', { action: 'fold', amount: 0 });
+      }
+      // 离开座位
+      socket.emit('leaveSeat');
+    }
+    setShowLeaveSeat(false);
+  };
+
+  // 处理退出房间确认
+  const handleExitRoom = () => {
+    console.log('退出按钮被点击', { gameStarted, currentPlayer });
+    if (gameStarted && currentPlayer && !currentPlayer.folded && !currentPlayer.isSpectator) {
+      // 游戏中退出，需要确认
+      setShowExitRoom(true);
+    } else {
+      // 游戏外退出，直接执行
+      confirmExitRoom();
+    }
+  };
+
+  // 确认退出房间
+  const confirmExitRoom = () => {
+    const { socket } = useGame.getState();
+    if (socket && currentPlayer) {
+      if (gameStarted && !currentPlayer.folded) {
+        // 游戏中自动fold
+        socket.emit('playerAction', { action: 'fold', amount: 0 });
+      }
+      // 离开房间
+      socket.emit('leaveRoom', roomId);
+    }
+    setShowExitRoom(false);
+    navigate('/');
+  };
 
   // 计算玩家座位位置 - 主观视角，当前玩家总是在底部
   const getPlayerPosition = (player, allPlayers) => {
@@ -327,21 +395,21 @@ const GameRoom = () => {
     }
 
     // 找到该座位的玩家
-    const seatPlayer = players.find(p => p.seat === seatIndex);
+    const seatPlayer = players.find((p) => p.seat === seatIndex);
     if (!seatPlayer) {
       return `座位 ${seatIndex + 1}`;
     }
 
-    const activePlayers = players.filter(p => p.isActive);
+    const activePlayers = players.filter((p) => p.isActive);
     const playerCount = activePlayers.length;
-    
+
     if (playerCount < 2) {
       return `座位 ${seatIndex + 1}`;
     }
 
     // 获取庄家位置
     const dealerPosition = gameState.dealerPosition;
-    
+
     // 计算位置
     if (playerCount === 2) {
       // 双人游戏：庄家是小盲，另一个是大盲
@@ -355,19 +423,17 @@ const GameRoom = () => {
       if (seatIndex === dealerPosition) {
         return 'BTN'; // 按钮位
       }
-      
+
       // 创建活跃玩家的座位顺序（按座位号排序）
-      const activeSeats = activePlayers
-        .map(p => p.seat)
-        .sort((a, b) => a - b);
-      
+      const activeSeats = activePlayers.map((p) => p.seat).sort((a, b) => a - b);
+
       const dealerSeatIndex = activeSeats.indexOf(dealerPosition);
       const currentSeatIndex = activeSeats.indexOf(seatIndex);
-      
+
       if (dealerSeatIndex !== -1 && currentSeatIndex !== -1) {
         // 计算相对于庄家的位置
         const positionFromDealer = (currentSeatIndex - dealerSeatIndex + activeSeats.length) % activeSeats.length;
-        
+
         if (positionFromDealer === 1) {
           return 'SB'; // 小盲（庄家左边第一个）
         } else if (positionFromDealer === 2) {
@@ -383,7 +449,7 @@ const GameRoom = () => {
         }
       }
     }
-    
+
     return `座位 ${seatIndex + 1}`;
   };
 
@@ -391,28 +457,35 @@ const GameRoom = () => {
     <div className="min-h-screen bg-poker-dark relative overflow-hidden">
       {/* 重新设计的顶部信息栏 */}
       <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center">
-        {/* 左侧：玩家数量 */}
-        <div className="bg-gray-800/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-600">
-          <div className="flex items-center space-x-2 text-sm">
-            <Users size={16} />
-            <span className="text-gray-300">
-              {players.length}/{roomSettings?.maxPlayers || 6}
-            </span>
-          </div>
-        </div>
+        {/* 左侧：玩家面板 */}
+        <PlayerPanel
+          players={players}
+          roomSettings={roomSettings}
+          currentPlayerId={currentPlayerId}
+        />
 
         {/* 右侧：操作按钮组 + 倒计时 */}
         <div className="flex items-center space-x-2">
+          {/* 临时调试面板 */}
+          <div className="bg-black/70 text-white text-xs p-2 rounded">
+            <div>游戏:{gameStarted ? '已开始' : '未开始'}</div>
+            <div>玩家:{currentPlayer ? '已入座' : '观战/未入座'}</div>
+            <div>观战:{currentPlayer?.isSpectator ? '是' : '否'}</div>
+            <div>房间:{roomId}</div>
+          </div>
+
           {/* 倒计时器 - 紧凑版 */}
           {gameState && gameState.timeRemaining > 0 && gameState.currentPlayerIndex !== undefined && (
-            <div className={`w-12 h-12 rounded-full border-2 ${
-              gameState.timeRemaining > 30 ? 'border-green-400 text-green-400' :
-              gameState.timeRemaining > 10 ? 'border-yellow-400 text-yellow-400' :
-              'border-red-400 text-red-400'
-            } bg-gray-800/95 backdrop-blur-sm flex items-center justify-center`}>
-              <div className="text-sm font-bold font-mono">
-                {gameState.timeRemaining}
-              </div>
+            <div
+              className={`w-12 h-12 rounded-full border-2 ${
+                gameState.timeRemaining > 30
+                  ? 'border-green-400 text-green-400'
+                  : gameState.timeRemaining > 10
+                  ? 'border-yellow-400 text-yellow-400'
+                  : 'border-red-400 text-red-400'
+              } bg-gray-800/95 backdrop-blur-sm flex items-center justify-center`}
+            >
+              <div className="text-sm font-bold font-mono">{gameState.timeRemaining}</div>
             </div>
           )}
 
@@ -436,14 +509,27 @@ const GameRoom = () => {
             <Share2 size={18} />
           </div>
 
+          {/* 离座按钮 - 只有已入座的玩家才显示 */}
+          {currentPlayer && !currentPlayer.isSpectator && (
+            <div
+              onClick={handleLeaveSeat}
+              className="w-10 h-10 bg-orange-600/80 hover:bg-orange-600 backdrop-blur-sm rounded-lg border border-orange-500 flex items-center justify-center transition-colors cursor-pointer"
+              title="离座观战"
+            >
+              <ChevronDown size={18} />
+            </div>
+          )}
+          {console.log('离座按钮渲染条件:', { currentPlayer, isSpectator: currentPlayer?.isSpectator })}
+
           {/* 退出按钮 */}
           <div
-            onClick={() => navigate('/')}
+            onClick={handleExitRoom}
             className="w-10 h-10 bg-red-600/80 hover:bg-red-600 backdrop-blur-sm rounded-lg border border-red-500 flex items-center justify-center transition-colors cursor-pointer"
             title="退出房间"
           >
             <LogOut size={18} />
           </div>
+          {console.log('退出按钮渲染')}
         </div>
       </div>
 
@@ -488,8 +574,6 @@ const GameRoom = () => {
               </div>
             </div>
           )}
-
-
         </div>
 
         {/* 所有座位（玩家和空座位） */}
@@ -520,7 +604,11 @@ const GameRoom = () => {
                   }}
                 >
                   <div className="text-center relative">
-                    <div className={`w-12 h-12 bg-blue-600/20 backdrop-blur-sm rounded-lg border-2 ${isActiveTimer ? 'border-yellow-400 animate-pulse' : 'border-blue-400'} flex items-center justify-center`}>
+                    <div
+                      className={`w-12 h-12 bg-blue-600/20 backdrop-blur-sm rounded-lg border-2 ${
+                        isActiveTimer ? 'border-yellow-400 animate-pulse' : 'border-blue-400'
+                      } flex items-center justify-center`}
+                    >
                       <div className={`text-xs font-semibold ${isActiveTimer ? 'text-yellow-400' : 'text-blue-400'}`}>
                         我的
                         <br />
@@ -580,8 +668,6 @@ const GameRoom = () => {
         <Leaderboard players={players} />
       </div>
 
-
-
       {/* 底部UI区域 - 简化设计 */}
       {currentPlayer && (
         <div className="absolute bottom-0 left-0 right-0">
@@ -634,8 +720,8 @@ const GameRoom = () => {
               )}
             </div>
 
-            {/* 开始游戏按钮（房主专用） - 居中显示 */}
-            {!gameStarted && currentPlayer?.isHost && players.length >= 2 && (
+            {/* 开始游戏按钮（入座玩家可用） - 居中显示 */}
+            {!gameStarted && currentPlayer && !currentPlayer.isSpectator && players.filter((p) => p.seat !== -1 && !p.isSpectator).length >= 2 && (
               <div className="flex justify-center pb-4">
                 <button
                   onClick={() => startGame()}
@@ -645,6 +731,12 @@ const GameRoom = () => {
                 </button>
               </div>
             )}
+            {console.log('开始游戏按钮渲染条件:', {
+              gameStarted,
+              currentPlayer,
+              isSpectator: currentPlayer?.isSpectator,
+              seatedPlayersCount: players.filter((p) => p.seat !== -1 && !p.isSpectator).length,
+            })}
           </div>
         </div>
       )}
@@ -664,6 +756,24 @@ const GameRoom = () => {
       <HandResultModal
         show={showHandResult}
         onClose={() => setShowHandResult(false)}
+      />
+
+      {/* 离座确认模态框 */}
+      <LeaveSeatModal
+        show={showLeaveSeat}
+        onClose={() => setShowLeaveSeat(false)}
+        onConfirm={confirmLeaveSeat}
+        isInGame={gameStarted && currentPlayer && !currentPlayer.folded}
+        isExitingRoom={false}
+      />
+
+      {/* 退出房间确认模态框 */}
+      <LeaveSeatModal
+        show={showExitRoom}
+        onClose={() => setShowExitRoom(false)}
+        onConfirm={confirmExitRoom}
+        isInGame={gameStarted && currentPlayer && !currentPlayer.folded}
+        isExitingRoom={true}
       />
 
       {/* 加入房间模态框 - 用于直接访问URL的情况 */}

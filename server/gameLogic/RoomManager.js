@@ -4,7 +4,21 @@ const GameLogic = require('./GameLogic');
 class RoomManager {
   constructor(io, gameRooms, deviceSocketMap, socketDeviceMap) {
     this.io = io;
-    this.gameRooms = gameRooms;
+    this.gameRooms =    // 检查玩家是否在座位上（不是观战者）
+    const player = room.players.find((p) => p.id === playerId);
+    if (!player) {
+      throw new Error('玩家不存在');
+    }
+    
+    if (player.isSpectator || player.seat === -1) {
+      throw new Error('只有入座玩家可以开始游戏');
+    }
+
+    // 检查入座玩家数量
+    const seatedPlayers = room.players.filter(p => p.seat !== -1 && !p.isSpectator);
+    if (seatedPlayers.length < 2) {
+      throw new Error('至少需要2名入座玩家才能开始游戏');
+    }s;
     this.deviceSocketMap = deviceSocketMap;
     this.socketDeviceMap = socketDeviceMap;
   }
@@ -88,71 +102,108 @@ class RoomManager {
     }
   }
 
-  // 加入房间
-  joinRoom(socket, roomId, deviceId) {
+  // 加入房间 - 支持观战模式和中途入座
+  joinRoom(socket, roomId, deviceId, playerName = null) {
     const room = this.gameRooms.get(roomId);
     if (!room) {
       throw new Error('房间不存在');
     }
 
-    if (room.gameStarted) {
-      throw new Error('游戏已开始，无法加入');
-    }
+    // 移除游戏已开始的限制，支持观战模式
+    // if (room.gameStarted) {
+    //   throw new Error('游戏已开始，无法加入');
+    // }
 
-    if (room.players.length >= room.settings.maxPlayers) {
-      throw new Error('房间已满');
-    }
+    // 移除房间已满的硬性限制，允许观战
+    // if (room.players.length >= room.settings.maxPlayers) {
+    //   throw new Error('房间已满');
+    // }
 
     // 检查设备是否已在房间中
     const existingPlayer = room.players.find((p) => p.id === deviceId);
     if (existingPlayer) {
-      // 设备重连，更新Socket ID
+      // 设备重连，更新Socket ID和名称
       existingPlayer.socketId = socket.id;
+      if (playerName) {
+        existingPlayer.nickname = playerName;
+      }
       socket.join(roomId);
       this.broadcastRoomState(room);
       return;
     }
 
-    // 新玩家默认处于离座状态（观战模式）
+    // 自动分配空闲座位
+    const findAvailableSeat = () => {
+      for (let i = 0; i < room.settings.maxPlayers; i++) {
+        if (!room.players.some(p => p.seat === i)) {
+          return i;
+        }
+      }
+      return -1; // 没有可用座位，将处于观战状态
+    };
+
+    const availableSeat = findAvailableSeat();
+    const isGameInProgress = room.gameStarted && room.gameLogic && room.gameLogic.isGameInProgress();
+    
+    // 新玩家创建
     const player = {
-      id: deviceId, // 使用设备ID
-      socketId: socket.id, // 保存当前Socket ID
-      nickname: deviceId, // 直接使用设备ID作为昵称
-      seat: -1, // -1 表示未入座
-      chips: room.settings.initialChips,
+      id: deviceId,
+      socketId: socket.id,
+      nickname: playerName || deviceId,
+      seat: availableSeat, // 自动分配座位，-1表示观战
+      chips: availableSeat !== -1 ? room.settings.initialChips : 0, // 观战者不给筹码
       isHost: false,
-      isActive: false, // 默认不激活，需要手动入座
+      isActive: availableSeat !== -1 && !isGameInProgress, // 有座位且游戏未进行时激活
+      isSpectator: availableSeat === -1, // 标记为观战者
       hand: [],
       currentBet: 0,
       totalBet: 0,
       folded: false,
       allIn: false,
       showHand: false,
-      waitingForNextRound: false, // 是否等待下一轮游戏
+      waitingForNextRound: availableSeat !== -1 && isGameInProgress, // 有座位但游戏进行中时等待下一轮
     };
 
     room.players.push(player);
     socket.join(roomId);
+
+    // 如果玩家有座位但游戏正在进行，通知他们将在下一轮加入
+    if (availableSeat !== -1 && isGameInProgress) {
+      socket.emit('waitingForNextRound', {
+        message: '您已入座，将在下一轮游戏开始时加入',
+        seat: availableSeat
+      });
+    } else if (availableSeat === -1) {
+      socket.emit('spectatorMode', {
+        message: '座位已满，您正在观战模式。有座位空出时可以入座',
+      });
+    }
 
     // 通知房间内所有玩家
     this.broadcastRoomState(room);
   }
 
   // 开始游戏
-  startGame(roomId, hostId) {
+  startGame(roomId, playerId) {
     const room = this.gameRooms.get(roomId);
     if (!room) {
       throw new Error('房间不存在');
     }
 
-    const host = room.players.find((p) => p.id === hostId);
-    console.log('host', host);
-    if (!host || !host.isHost) {
-      throw new Error('只有房主可以开始游戏');
+    // 检查玩家是否在座位上（不是观战者）
+    const player = room.players.find((p) => p.id === playerId);
+    if (!player) {
+      throw new Error('玩家不存在');
+    }
+    
+    if (player.isSpectator || player.seat === -1) {
+      throw new Error('只有入座玩家可以开始游戏');
     }
 
-    if (room.players.length < 2) {
-      throw new Error('至少需要2名玩家才能开始游戏');
+    // 检查入座玩家数量
+    const seatedPlayers = room.players.filter(p => p.seat !== -1 && !p.isSpectator);
+    if (seatedPlayers.length < 2) {
+      throw new Error('至少需要2名入座玩家才能开始游戏');
     }
 
     if (room.gameStarted) {
@@ -312,14 +363,16 @@ class RoomManager {
       throw new Error('玩家不存在');
     }
 
-    // 如果游戏进行中且玩家正在参与，不允许离座
+    // 如果游戏进行中且玩家正在参与且未弃牌，不允许离座
+    // 但如果玩家已弃牌，可以离座
     if (room.gameStarted && player.isActive && !player.folded) {
       throw new Error('游戏进行中无法离座');
     }
 
-    // 离座
+    // 离座：设置为观战状态
     player.seat = -1;
     player.isActive = false;
+    player.isSpectator = true;
     player.waitingForNextRound = false;
 
     this.broadcastRoomState(room);

@@ -12,11 +12,11 @@ const CommunityCards = () => {
     if (!gameState || !gameState.phase) return;
 
     const currentPhase = gameState.phase;
-    
+
     // 检测阶段变化
     if (currentPhase !== previousPhase) {
       let cardsToAnimate = [];
-      
+
       // 根据新阶段确定要翻转的牌
       switch (currentPhase) {
         case 'flop':
@@ -34,14 +34,14 @@ const CommunityCards = () => {
       if (cardsToAnimate.length > 0) {
         cardsToAnimate.forEach((cardIndex, i) => {
           setTimeout(() => {
-            setAnimatingCards(prev => new Set([...prev, cardIndex]));
-            
+            setAnimatingCards((prev) => new Set([...prev, cardIndex]));
+
             // TODO: 在这里可以添加翻牌音效
             // playCardFlipSound();
-            
+
             // 动画完成后移除动画状态
             setTimeout(() => {
-              setAnimatingCards(prev => {
+              setAnimatingCards((prev) => {
                 const newSet = new Set(prev);
                 newSet.delete(cardIndex);
                 return newSet;
@@ -120,7 +120,7 @@ const CommunityCards = () => {
             const card = communityCards[cardIndex];
             const isVisible = cardIndex < visibleCards.length;
             const isAnimating = animatingCards.has(cardIndex);
-            
+
             return (
               <div
                 key={cardIndex}
@@ -134,11 +134,14 @@ const CommunityCards = () => {
                   <div className="card-face card-back">
                     <div className="poker-card community back"></div>
                   </div>
-                  
+
                   {/* 正面 */}
                   <div className="card-face card-front">
                     {card ? (
-                      <Card card={card} size="community" />
+                      <Card
+                        card={card}
+                        size="community"
+                      />
                     ) : (
                       <div className="poker-card community back"></div>
                     )}

@@ -43,6 +43,7 @@ const useGameStore = create((set, get) => ({
 
   // 导航状态
   navigationTarget: null,
+  intentionalJoin: false, // 标记是否是主动加入房间
 
   // 连接Socket
   connectSocket: () => {
@@ -80,6 +81,53 @@ const useGameStore = create((set, get) => ({
     socket.on('roomCreated', ({ roomId }) => {
       // 房间创建成功，保持使用设备ID
       set({ roomId, isCreatingRoom: false, navigationTarget: `/game/${roomId}` });
+    });
+
+    // 监听房间更新事件
+    socket.on('roomUpdate', (roomData) => {
+      console.log('收到房间更新:', roomData);
+      
+      // 验证roomData数据的完整性
+      if (!roomData || !roomData.id || !Array.isArray(roomData.players)) {
+        console.error('收到无效的房间数据:', roomData);
+        return;
+      }
+
+      const previousRoomId = get().roomId;
+      const currentPlayerId = get().currentPlayerId;
+
+      // 如果已经有房间ID且与接收到的不同，忽略此更新（除非是首次连接）
+      if (previousRoomId && previousRoomId !== roomData.id) {
+        console.log('收到其他房间的更新，忽略:', roomData.id, 'vs', previousRoomId);
+        return;
+      }
+
+      // 更新房间状态
+      set({
+        roomId: roomData.id,
+        players: roomData.players,
+        gameStarted: roomData.gameStarted,
+        roomSettings: roomData.settings,
+      });
+
+      // 如果有游戏状态，也更新游戏状态
+      if (roomData.gameState) {
+        set({ gameState: roomData.gameState });
+      }
+
+      console.log('房间状态已更新, 玩家数量:', roomData.players.length);
+    });
+
+    // 监听玩家加入事件
+    socket.on('playerJoined', (playerData) => {
+      console.log('玩家加入:', playerData);
+      // 这个事件通常会被roomUpdate覆盖，但可以用于实时提示
+    });
+
+    // 监听游戏开始事件
+    socket.on('gameStarted', (gameData) => {
+      console.log('游戏开始:', gameData);
+      set({ gameStarted: true });
     });
 
     socket.on('gameStateUpdate', (gameState) => {
@@ -123,17 +171,19 @@ const useGameStore = create((set, get) => ({
 
         // 如果刚加入房间（之前没有roomId或roomId不同），并且当前不在房间页面，则跳转
         // 但要排除正在创建房间的情况（创建房间有专门的跳转逻辑）
+        // 只有在用户主动加入房间时才跳转（通过joinRoom方法设置的intentionalJoin标志）
         const currentPath = window.location.pathname;
         const isNotInGameRoom = !currentPath.includes(`/game/${gameState.id}`);
         const isNewRoom = !previousRoomId || previousRoomId !== gameState.id;
-        const { isCreatingRoom } = get();
+        const { isCreatingRoom, intentionalJoin } = get();
 
-        // 只有在不是创建房间的情况下才进行跳转（创建房间由roomCreated事件处理）
-        if (currentPlayer && isNewRoom && isNotInGameRoom && !isCreatingRoom) {
+        // 只有在明确尝试加入房间时才进行跳转
+        if (currentPlayer && isNewRoom && isNotInGameRoom && !isCreatingRoom && intentionalJoin) {
           console.log('加入房间成功，跳转到房间页面:', gameState.id);
           set({
             navigationTarget: `/game/${gameState.id}`,
             showJoinRoom: false, // 关闭加入房间模态框
+            intentionalJoin: false, // 重置标志
           });
         }
       }
@@ -145,6 +195,18 @@ const useGameStore = create((set, get) => ({
 
     socket.on('allinResult', (result) => {
       set({ showHandResult: true, handResult: { ...result, isAllin: true } });
+    });
+
+    // 观战模式通知
+    socket.on('spectatorMode', (data) => {
+      console.log('进入观战模式:', data.message);
+      // 可以在这里添加UI提示
+    });
+
+    // 等待下一轮通知
+    socket.on('waitingForNextRound', (data) => {
+      console.log('等待下一轮游戏:', data);
+      // 可以在这里添加UI提示
     });
 
     socket.on('error', (message) => {
@@ -202,6 +264,9 @@ const useGameStore = create((set, get) => ({
         return;
       }
 
+      // 设置主动加入标志
+      set({ intentionalJoin: true });
+
       let timeoutId;
       let resolved = false;
 
@@ -240,15 +305,19 @@ const useGameStore = create((set, get) => ({
       socket.once('error', errorHandler);
 
       // 发送加入房间请求（只传递roomId和deviceId）
-      socket.emit('joinRoom', { roomId, deviceId });
+      socket.emit('joinRoom', { roomId, deviceId, playerName: null });
     });
   },
 
   // 开始游戏
   startGame: () => {
     const { socket, roomId } = get();
+    console.log('开始游戏被调用', { socket: !!socket, roomId });
     if (socket && roomId) {
+      console.log('发送startGame事件到服务器', roomId);
       socket.emit('startGame', roomId);
+    } else {
+      console.log('无法开始游戏：socket或roomId不存在');
     }
   },
 

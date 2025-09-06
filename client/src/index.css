@@ -49,6 +49,37 @@
     background-size: 8px 8px;
   }
 
+  /* 玩家面板样式 */
+  .player-panel-scrollbar::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .player-panel-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-700 rounded-full;
+  }
+
+  .player-panel-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-500 rounded-full hover:bg-gray-400;
+  }
+
+  .player-panel-enter {
+    @apply opacity-0 transform scale-95 translate-y-1;
+  }
+
+  .player-panel-enter-active {
+    @apply opacity-100 transform scale-100 translate-y-0;
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
+  }
+
+  .player-panel-exit {
+    @apply opacity-100 transform scale-100 translate-y-0;
+  }
+
+  .player-panel-exit-active {
+    @apply opacity-0 transform scale-95 translate-y-1;
+    transition: opacity 150ms ease-in, transform 150ms ease-in;
+  }
+
   .player-seat {
     @apply absolute bg-gray-800 rounded-lg p-2 border-2 border-gray-600;
     @apply transition-all duration-200 hover:border-poker-gold;

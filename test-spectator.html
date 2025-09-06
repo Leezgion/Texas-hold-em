@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试观战功能</title>
+    <script src="http://192.168.110.69:3001/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: white; }
+        .log { background: #333; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        input { padding: 10px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>观战功能测试</h1>
+    
+    <div>
+        <input type="text" id="roomId" placeholder="房间ID" value="AHNCY4">
+        <button onclick="joinRoom()">加入房间</button>
+        <button onclick="checkRoom()">检查房间</button>
+    </div>
+    
+    <div id="logs"></div>
+
+    <script>
+        const socket = io('http://192.168.110.69:3001');
+        const logs = document.getElementById('logs');
+        
+        // 生成设备ID
+        const deviceId = 'test_spectator_' + Math.random().toString(36).substr(2, 9);
+        
+        function log(message) {
+            const div = document.createElement('div');
+            div.className = 'log';
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        // Socket事件监听
+        socket.on('connect', () => {
+            log('✅ 连接到服务器成功');
+            // 注册设备
+            socket.emit('registerDevice', { deviceId });
+            log(`📱 注册设备ID: ${deviceId}`);
+        });
+        
+        socket.on('gameStateUpdate', (gameState) => {
+            log(`🎮 游戏状态更新: 房间${gameState.id}, 玩家数量${gameState.players.length}`);
+            log(`   - 游戏开始: ${gameState.gameStarted ? '是' : '否'}`);
+            if (gameState.gameState) {
+                log(`   - 游戏阶段: ${gameState.gameState.phase}`);
+            }
+            gameState.players.forEach(player => {
+                log(`   - 玩家: ${player.nickname} (座位${player.seat}, 筹码${player.chips})`);
+            });
+        });
+        
+        socket.on('spectatorMode', (data) => {
+            log(`👁️ 观战模式: ${data.message}`);
+        });
+        
+        socket.on('waitingForNextRound', (data) => {
+            log(`⏳ 等待下一轮: ${data.message} (座位${data.seat})`);
+        });
+        
+        socket.on('error', (message) => {
+            log(`❌ 错误: ${message}`);
+        });
+        
+        socket.on('disconnect', () => {
+            log('❌ 与服务器断开连接');
+        });
+        
+        function joinRoom() {
+            const roomId = document.getElementById('roomId').value;
+            if (!roomId) {
+                log('❌ 请输入房间ID');
+                return;
+            }
+            
+            log(`🚪 尝试加入房间: ${roomId}`);
+            socket.emit('joinRoom', { roomId, deviceId, playerName: `观众_${deviceId.substr(-4)}` });
+        }
+        
+        function checkRoom() {
+            const roomId = document.getElementById('roomId').value;
+            if (!roomId) {
+                log('❌ 请输入房间ID');
+                return;
+            }
+            
+            log(`🔍 检查房间: ${roomId}`);
+            fetch(`http://192.168.110.69:3001/api/rooms/${roomId}`)
+                .then(response => response.json())
+                .then(data => {
+                    log(`✅ 房间信息: ${JSON.stringify(data, null, 2)}`);
+                })
+                .catch(error => {
+                    log(`❌ 检查房间失败: ${error.message}`);
+                });
+        }
+        
+        log('🔧 测试页面已加载，等待连接...');
+    </script>
+</body>
+</html>

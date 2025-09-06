@@ -27,10 +27,14 @@ const Card = ({ card, size = 'normal', className = '' }) => {
 
   const getSizeClass = () => {
     switch (size) {
-      case 'small': return 'small';
-      case 'community': return 'community';
-      case 'large': return 'large';
-      default: return '';
+      case 'small':
+        return 'small';
+      case 'community':
+        return 'community';
+      case 'large':
+        return 'large';
+      default:
+        return '';
     }
   };
 
@@ -40,19 +44,19 @@ const Card = ({ card, size = 'normal', className = '' }) => {
         return {
           corner: 'text-xs',
           center: 'text-sm',
-          padding: 'top-0.5 left-0.5 bottom-0.5 right-0.5'
+          padding: 'top-0.5 left-0.5 bottom-0.5 right-0.5',
         };
       case 'community':
         return {
           corner: 'text-sm',
           center: 'text-2xl',
-          padding: 'top-1 left-1 bottom-1 right-1'
+          padding: 'top-1 left-1 bottom-1 right-1',
         };
       default:
         return {
           corner: 'text-xs',
           center: 'text-xl',
-          padding: 'top-1 left-1 bottom-1 right-1'
+          padding: 'top-1 left-1 bottom-1 right-1',
         };
     }
   };
@@ -64,24 +68,10 @@ const Card = ({ card, size = 'normal', className = '' }) => {
       {/* 简化设计：只显示中央的点数和花色 */}
       <div className="flex flex-col items-center justify-center h-full">
         {/* 点数 - 大而清晰 */}
-        <div className={`font-bold ${
-          size === 'small' ? 'text-lg' : 
-          size === 'community' ? 'text-4xl' : 
-          size === 'large' ? 'text-3xl' :
-          'text-2xl'
-        }`}>
-          {getRankDisplay()}
-        </div>
-        
+        <div className={`font-bold ${size === 'small' ? 'text-lg' : size === 'community' ? 'text-4xl' : size === 'large' ? 'text-3xl' : 'text-2xl'}`}>{getRankDisplay()}</div>
+
         {/* 花色 - 适中大小，清晰可见 */}
-        <div className={`${
-          size === 'small' ? 'text-base' : 
-          size === 'community' ? 'text-3xl' : 
-          size === 'large' ? 'text-2xl' :
-          'text-xl'
-        } -mt-1`}>
-          {getSuitSymbol()}
-        </div>
+        <div className={`${size === 'small' ? 'text-base' : size === 'community' ? 'text-3xl' : size === 'large' ? 'text-2xl' : 'text-xl'} -mt-1`}>{getSuitSymbol()}</div>
       </div>
     </div>
   );

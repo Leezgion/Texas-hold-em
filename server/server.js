@@ -37,8 +37,8 @@ io.on('connection', (socket) => {
   console.log('用户连接:', socket.id);
 
   // 注册设备ID
-  socket.on('registerDevice', ({ deviceId, socketId }) => {
-    console.log('注册设备:', { deviceId, socketId });
+  socket.on('registerDevice', ({ deviceId }) => {
+    console.log('注册设备:', { deviceId, socketId: socket.id });
 
     // 如果设备之前已连接，清除旧的映射
     if (deviceSocketMap.has(deviceId)) {
@@ -47,8 +47,11 @@ io.on('connection', (socket) => {
     }
 
     // 建立新的映射关系
-    deviceSocketMap.set(deviceId, socketId);
-    socketDeviceMap.set(socketId, deviceId);
+    deviceSocketMap.set(deviceId, socket.id);
+    socketDeviceMap.set(socket.id, deviceId);
+
+    // 发送注册成功事件
+    socket.emit('deviceRegistered', { deviceId, socketId: socket.id });
 
     // 检查设备是否在某个房间中，如果是则恢复状态
     roomManager.handleDeviceReconnect(deviceId, socket);
@@ -66,7 +69,7 @@ io.on('connection', (socket) => {
   });
 
   // 加入房间
-  socket.on('joinRoom', ({ roomId, deviceId }) => {
+  socket.on('joinRoom', ({ roomId, deviceId, playerName }) => {
     try {
       // 如果没有传递deviceId，从映射中获取
       const actualDeviceId = deviceId || socketDeviceMap.get(socket.id);
@@ -74,8 +77,8 @@ io.on('connection', (socket) => {
         throw new Error('设备未注册');
       }
 
-      roomManager.joinRoom(socket, roomId, actualDeviceId);
-      console.log(`设备 ${actualDeviceId} 加入房间 ${roomId}`);
+      roomManager.joinRoom(socket, roomId, actualDeviceId, playerName);
+      console.log(`设备 ${actualDeviceId} (${playerName || '未知玩家'}) 加入房间 ${roomId}`);
     } catch (error) {
       socket.emit('error', error.message);
     }
@@ -226,13 +229,21 @@ app.get('/api/rooms/:roomId', (req, res) => {
     });
   }
 
+  // 支持观战模式：即使游戏已开始，也允许加入观战
+  // 只有座位已满且游戏进行中时，新加入的玩家才处于观战模式
+  const seatedPlayers = room.players.filter(p => p.seat !== -1).length;
+  const hasAvailableSeats = seatedPlayers < room.settings.maxPlayers;
+
   res.json({
     exists: true,
     id: room.id,
     playerCount: room.players.length,
+    seatedPlayers: seatedPlayers,
     maxPlayers: room.settings.maxPlayers,
     gameStarted: room.gameStarted,
-    canJoin: !room.gameStarted && room.players.length < room.settings.maxPlayers,
+    canJoin: true, // 总是允许加入，观战或入座由服务器判断
+    hasAvailableSeats: hasAvailableSeats,
+    canSit: hasAvailableSeats, // 是否有空座位可以入座
   });
 });
 
