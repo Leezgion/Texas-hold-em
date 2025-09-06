@@ -26,7 +26,26 @@ This is a real-time multiplayer Texas Hold'em poker game built with:
 
 ## Development Process
 
-### 1. Planning & Staging
+### 1. Running the Application
+
+**CRITICAL**: Always use proper npm scripts for development:
+
+- **Server**: Use `npm run dev` (utilizes nodemon for auto-restart)
+- **Client**: Use `npm run dev` (utilizes Vite with hot module replacement)
+- **Never use**: `node server.js` or direct file execution during development
+- **Benefits**: Real-time code updates, automatic restart, proper development environment
+
+**Correct Commands**:
+
+```bash
+# Start server (in server/ directory)
+cd server && npm run dev
+
+# Start client (in client/ directory) 
+cd client && npm run dev
+```
+
+### 2. Planning & Staging
 
 Break complex work into 3-5 stages. Document in `IMPLEMENTATION_PLAN.md`:
 

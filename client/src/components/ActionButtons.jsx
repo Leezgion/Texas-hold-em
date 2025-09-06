@@ -168,30 +168,33 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
         )}
       </div>
 
-      {/* 快捷加注按钮组 */}
-      {canRaise && !showRaiseInput && quickRaiseSizes.length > 0 && (
-        <div className="w-full">
-          <div className="text-xs text-gray-400 text-center mb-2 font-medium">快捷加注 (底池: {potSize})</div>
-          <div className="grid grid-cols-2 gap-2">
-            {quickRaiseSizes.map((raise, index) => (
-              <button
-                key={index}
-                onClick={() => handleQuickRaise(raise.amount)}
-                className="quick-raise-btn flex flex-col items-center justify-center h-16 text-white rounded-lg border border-orange-500/30"
-              >
-                <div className="text-xs font-medium opacity-90">{raise.label}</div>
-                <div className="text-sm font-bold">{raise.amount}</div>
-                <div className="text-xs opacity-75">{Math.round(raise.amount / bigBlind)}BB</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* 自定义加注滑块和输入 */}
       {showRaiseInput && canRaise && (
         <div className="w-full bg-gray-800/95 backdrop-blur-sm p-4 rounded-xl border border-gray-600 shadow-lg">
           <div className="text-sm text-gray-300 text-center mb-3 font-medium">自定义加注</div>
+
+          {/* 快捷加注按钮组 */}
+          {quickRaiseSizes.length > 0 && (
+            <div className="mb-4">
+              <div className="text-xs text-gray-400 text-center mb-2 font-medium">快捷加注 (底池: {potSize})</div>
+              <div className="grid grid-cols-2 gap-2">
+                {quickRaiseSizes.map((raise, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleQuickRaise(raise.amount)}
+                    className="quick-raise-btn flex flex-col items-center justify-center h-12 text-white rounded-lg border border-orange-500/30 hover:bg-orange-600/20 transition-all duration-200"
+                  >
+                    <div className="text-xs font-medium opacity-90">{raise.label}</div>
+                    <div className="text-sm font-bold">{raise.amount}</div>
+                    <div className="text-xs opacity-75">{Math.round(raise.amount / bigBlind)}BB</div>
+                  </button>
+                ))}
+              </div>
+              <div className="border-t border-gray-600 my-3"></div>
+            </div>
+          )}
 
           {/* 滑块 */}
           <div className="mb-4">

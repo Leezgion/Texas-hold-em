@@ -49,6 +49,7 @@ const GameRoom = () => {
     roomSettings,
     currentPlayerId,
     connected,
+    socket,
     joinRoom,
     checkRoom,
     setShowJoinRoom,
@@ -166,7 +167,6 @@ const GameRoom = () => {
   useEffect(() => {
     if (currentPlayerId && players.length > 0) {
       const player = players.find((p) => p.id === currentPlayerId);
-      console.log('设置当前玩家:', { currentPlayerId, playersLength: players.length, player });
       setCurrentPlayer(player);
 
       // 如果找到了玩家且房间ID匹配，停止加载并重置加入状态
@@ -175,8 +175,6 @@ const GameRoom = () => {
         setNeedsJoin(false);
         setRoomError(null);
       }
-    } else {
-      console.log('没有设置当前玩家:', { currentPlayerId, playersLength: players.length });
     }
   }, [currentPlayerId, players, currentRoomId, roomId]);
 
@@ -240,21 +238,32 @@ const GameRoom = () => {
 
   // 确认离座
   const confirmLeaveSeat = () => {
-    const { socket } = useGame.getState();
+    console.log('确认离座被调用');
+    console.log('离座状态:', { 
+      hasSocket: !!socket, 
+      hasCurrentPlayer: !!currentPlayer,
+      gameStarted,
+      playerFolded: currentPlayer?.folded,
+      playerId: currentPlayer?.id
+    });
+    
     if (socket && currentPlayer) {
       if (gameStarted && !currentPlayer.folded) {
         // 游戏中自动fold
+        console.log('游戏中离座，先弃牌');
         socket.emit('playerAction', { action: 'fold', amount: 0 });
       }
       // 离开座位
+      console.log('发送离座请求');
       socket.emit('leaveSeat');
+    } else {
+      console.log('无法离座: socket或currentPlayer不存在');
     }
     setShowLeaveSeat(false);
   };
 
   // 处理退出房间确认
   const handleExitRoom = () => {
-    console.log('退出按钮被点击', { gameStarted, currentPlayer });
     if (gameStarted && currentPlayer && !currentPlayer.folded && !currentPlayer.isSpectator) {
       // 游戏中退出，需要确认
       setShowExitRoom(true);
@@ -266,7 +275,6 @@ const GameRoom = () => {
 
   // 确认退出房间
   const confirmExitRoom = () => {
-    const { socket } = useGame.getState();
     if (socket && currentPlayer) {
       if (gameStarted && !currentPlayer.folded) {
         // 游戏中自动fold
@@ -466,14 +474,6 @@ const GameRoom = () => {
 
         {/* 右侧：操作按钮组 + 倒计时 */}
         <div className="flex items-center space-x-2">
-          {/* 临时调试面板 */}
-          <div className="bg-black/70 text-white text-xs p-2 rounded">
-            <div>游戏:{gameStarted ? '已开始' : '未开始'}</div>
-            <div>玩家:{currentPlayer ? '已入座' : '观战/未入座'}</div>
-            <div>观战:{currentPlayer?.isSpectator ? '是' : '否'}</div>
-            <div>房间:{roomId}</div>
-          </div>
-
           {/* 倒计时器 - 紧凑版 */}
           {gameState && gameState.timeRemaining > 0 && gameState.currentPlayerIndex !== undefined && (
             <div
@@ -519,7 +519,6 @@ const GameRoom = () => {
               <ChevronDown size={18} />
             </div>
           )}
-          {console.log('离座按钮渲染条件:', { currentPlayer, isSpectator: currentPlayer?.isSpectator })}
 
           {/* 退出按钮 */}
           <div
@@ -529,7 +528,6 @@ const GameRoom = () => {
           >
             <LogOut size={18} />
           </div>
-          {console.log('退出按钮渲染')}
         </div>
       </div>
 
@@ -731,12 +729,6 @@ const GameRoom = () => {
                 </button>
               </div>
             )}
-            {console.log('开始游戏按钮渲染条件:', {
-              gameStarted,
-              currentPlayer,
-              isSpectator: currentPlayer?.isSpectator,
-              seatedPlayersCount: players.filter((p) => p.seat !== -1 && !p.isSpectator).length,
-            })}
           </div>
         </div>
       )}

@@ -141,11 +141,14 @@ io.on('connection', (socket) => {
   socket.on('leaveSeat', () => {
     try {
       const deviceId = socketDeviceMap.get(socket.id);
+      console.log('收到离座请求:', { socketId: socket.id, deviceId });
       if (!deviceId) {
         throw new Error('设备未注册');
       }
       roomManager.handleLeaveSeat(deviceId);
+      console.log('离座处理完成:', deviceId);
     } catch (error) {
+      console.log('离座处理失败:', error.message);
       socket.emit('error', error.message);
     }
   });
