@@ -469,6 +469,7 @@ const GameRoom = () => {
         <PlayerPanel
           players={players}
           roomSettings={roomSettings}
+          gameStarted={gameStarted}
           currentPlayerId={currentPlayerId}
         />
 

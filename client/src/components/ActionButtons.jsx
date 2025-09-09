@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../contexts/GameContext';
 import PlayerTimer from './PlayerTimer';
+import SliderInput from './SliderInput';
 import { X, Check, TrendingUp, Zap } from 'lucide-react';
 
 const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
@@ -73,8 +74,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
     }
   };
 
-  const handleSliderChange = (e) => {
-    const value = parseInt(e.target.value);
+  const handleSliderChange = (value) => {
     setSliderValue(value);
     setRaiseAmount(value.toString());
   };
@@ -168,8 +168,6 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
         )}
       </div>
 
-
-
       {/* 自定义加注滑块和输入 */}
       {showRaiseInput && canRaise && (
         <div className="w-full bg-gray-800/95 backdrop-blur-sm p-4 rounded-xl border border-gray-600 shadow-lg">
@@ -198,30 +196,21 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
 
           {/* 滑块 */}
           <div className="mb-4">
-            <input
-              type="range"
+            <SliderInput
               min={gameState.minRaise}
               max={player.chips}
-              step={stepSize}
               value={sliderValue}
+              step={stepSize}
               onChange={handleSliderChange}
-              className={`w-full h-2 rounded-lg appearance-none cursor-pointer slider ${sliderValue === player.chips ? 'all-in-slider' : ''}`}
-              style={{
-                background:
-                  sliderValue === player.chips
-                    ? `linear-gradient(to right, #a855f7 0%, #a855f7 100%)`
-                    : `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((sliderValue - gameState.minRaise) / (player.chips - gameState.minRaise)) * 100}%, #374151 ${
-                        ((sliderValue - gameState.minRaise) / (player.chips - gameState.minRaise)) * 100
-                      }%, #374151 100%)`,
-              }}
+              colorScheme={sliderValue === player.chips ? "purple" : "gold"}
+              label={`步进: ${stepSize} (1大盲) | 大盲: ${bigBlind}`}
+              quickButtons={[]}
+              showQuickButtons={false}
+              showMinMaxLabels={true}
+              minLabel={`最小: ${gameState.minRaise}`}
+              maxLabel={`All-in: ${player.chips}`}
+              formatValue={(value) => value === player.chips ? 'All-in' : value}
             />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>最小: {gameState.minRaise}</span>
-              <span className={`font-medium ${sliderValue === player.chips ? 'text-purple-400 animate-pulse' : 'text-purple-400'}`}>All-in: {player.chips}</span>
-            </div>
-            <div className="text-center text-xs text-gray-500 mt-1">
-              步进: {stepSize} (1大盲) | 大盲: {bigBlind}
-            </div>
             {sliderValue === player.chips && <div className="text-center text-purple-400 text-sm font-bold mt-1 animate-pulse">🚀 全押！</div>}
           </div>
 

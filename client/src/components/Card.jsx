@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Card = ({ card, size = 'normal', className = '' }) => {
   if (!card) return null;
 

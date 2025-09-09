@@ -1,5 +1,5 @@
 import Card from './Card';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../contexts/GameContext';
 
 const CommunityCards = () => {

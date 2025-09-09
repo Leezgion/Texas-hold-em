@@ -51,6 +51,8 @@ class RoomManager {
       chips: room.settings.initialChips,
       isHost: true,
       isActive: true,
+      isSpectator: false,
+      disconnected: false,
       hand: [],
       currentBet: 0,
       totalBet: 0,
@@ -140,6 +142,7 @@ class RoomManager {
       isHost: false,
       isActive: availableSeat !== -1 && !isGameInProgress, // 有座位且游戏未进行时激活
       isSpectator: availableSeat === -1, // 标记为观战者
+      disconnected: false,
       hand: [],
       currentBet: 0,
       totalBet: 0,
@@ -445,9 +448,15 @@ class RoomManager {
     const player = room.players.find((p) => p.id === playerId);
     if (!player) return;
 
-    // 标记玩家为非活跃状态
+    // 标记玩家为断线状态
     player.isActive = false;
-    player.folded = true;
+    player.disconnected = true;
+    player.socketId = null; // 清除socket ID
+    
+    // 如果游戏中且玩家未弃牌，自动弃牌
+    if (room.gameStarted && !player.folded && !player.isSpectator) {
+      player.folded = true;
+    }
 
     // 如果游戏已开始，检查是否需要结束当前牌局
     if (room.gameStarted && room.gameLogic) {
@@ -467,9 +476,10 @@ class RoomManager {
       const player = room.players.find((p) => p.id === deviceId);
       if (player) {
         console.log(`设备 ${deviceId} 重连到房间 ${room.id}, 玩家信息:`, player);
-        // 更新Socket ID
+        // 更新Socket ID并恢复连接状态
         player.socketId = socket.id;
         player.isActive = true;
+        player.disconnected = false;
 
         // 加入房间
         socket.join(room.id);
@@ -506,11 +516,14 @@ class RoomManager {
         chips: p.chips,
         isHost: p.isHost,
         isActive: p.isActive,
+        isSpectator: p.isSpectator || p.seat === -1,
+        disconnected: p.disconnected || false,
         currentBet: p.currentBet,
         totalBet: p.totalBet,
         folded: p.folded,
         allIn: p.allIn,
         showHand: p.showHand,
+        waitingForNextRound: p.waitingForNextRound || false,
         // 玩家可以看到自己的手牌，或者在摊牌阶段看到别人亮牌的手牌
         hand: (viewerPlayerId && p.id === viewerPlayerId) || p.showHand ? p.hand : [],
       })),

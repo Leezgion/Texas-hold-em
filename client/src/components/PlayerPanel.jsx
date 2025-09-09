@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp, Crown, Eye, Users, Gamepad2 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 
-const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
+const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, currentPlayerId }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const panelRef = useRef(null);
 
@@ -27,7 +27,10 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
     return (
       <div className="bg-black/50 backdrop-blur-sm rounded-lg p-3 text-white">
         <div className="flex items-center space-x-2">
-          <Users size={16} className="text-purple-400" />
+          <Users
+            size={16}
+            className="text-purple-400"
+          />
           <span className="text-sm font-medium">连接中...</span>
         </div>
       </div>
@@ -37,30 +40,74 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
   // 如果players未定义，使用空数组
   const playersArray = players || [];
 
-  const seatedPlayers = playersArray.filter(player => player.seat !== -1 && !player.isSpectator);
-  const spectators = playersArray.filter(player => player.seat === -1 || player.isSpectator);
-  
+  const seatedPlayers = playersArray.filter((player) => player.seat !== -1 && !player.isSpectator);
+  const spectators = playersArray.filter((player) => player.seat === -1 || player.isSpectator);
+
   const maxPlayers = roomSettings.maxPlayers || 6;
   const totalPlayers = playersArray.length;
 
   // 获取玩家状态文本和图标
   const getPlayerStatus = (player) => {
-    if (player.isSpectator) return { text: '观战中', icon: Eye };
-    if (player.waitingForNextRound) return { text: '等待下轮', icon: null };
-    if (player.folded) return { text: '已弃牌', icon: null };
-    if (player.allIn) return { text: 'All-in', icon: null };
-    if (!player.isActive) return { text: '未激活', icon: null };
-    return { text: '游戏中', icon: Gamepad2 };
+    // 特殊身份状态
+    if (player.nickname.startsWith('房主-')) {
+      return { text: '房主', icon: Crown, priority: 'high' };
+    }
+
+    // 连接状态
+    if (!player.isActive || player.disconnected) {
+      return { text: '离线', icon: null, priority: 'low' };
+    }
+
+    // 观战状态
+    if (player.isSpectator || player.seat === -1) {
+      return { text: '观战中', icon: Eye, priority: 'medium' };
+    }
+
+    // 游戏中的具体状态
+    if (player.waitingForNextRound) {
+      return { text: '等待下轮', icon: null, priority: 'medium' };
+    }
+
+    if (player.allIn) {
+      return { text: 'All-in', icon: null, priority: 'high' };
+    }
+
+    if (player.folded) {
+      return { text: '已弃牌', icon: null, priority: 'low' };
+    }
+
+    // 根据游戏是否开始判断
+    if (gameStarted) {
+      return { text: '游戏中', icon: Gamepad2, priority: 'high' };
+    } else {
+      return { text: '等待中', icon: null, priority: 'medium' };
+    }
   };
 
   // 获取状态颜色
   const getStatusColor = (player) => {
-    if (player.isSpectator) return 'text-purple-400';
-    if (player.waitingForNextRound) return 'text-yellow-400';
-    if (player.folded) return 'text-red-400';
-    if (player.allIn) return 'text-orange-400';
-    if (!player.isActive) return 'text-gray-400';
-    return 'text-green-400';
+    const status = getPlayerStatus(player);
+
+    // 根据状态文本返回对应颜色
+    switch (status.text) {
+      case '房主':
+        return 'text-yellow-400'; // 金色
+      case '游戏中':
+        return 'text-green-400'; // 绿色
+      case 'All-in':
+        return 'text-orange-400'; // 橙色
+      case '观战中':
+        return 'text-purple-400'; // 紫色
+      case '等待中':
+      case '等待下轮':
+        return 'text-blue-400'; // 蓝色
+      case '已弃牌':
+        return 'text-red-400'; // 红色
+      case '离线':
+        return 'text-gray-400'; // 灰色
+      default:
+        return 'text-gray-300'; // 默认
+    }
   };
 
   // 获取玩家显示名称
@@ -75,18 +122,22 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
   };
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div
+      className="relative"
+      ref={panelRef}
+    >
       {/* 主按钮 - 显示人数统计 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={`bg-gray-800/90 backdrop-blur-sm px-3 py-2 rounded-lg border transition-all duration-200 ${
-          isExpanded 
-            ? 'border-blue-500 shadow-lg shadow-blue-500/20' 
-            : 'border-gray-600 hover:border-gray-500'
+          isExpanded ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-gray-600 hover:border-gray-500'
         }`}
       >
         <div className="flex items-center space-x-2 text-sm">
-          <Users size={16} className={isExpanded ? 'text-blue-400' : 'text-gray-400'} />
+          <Users
+            size={16}
+            className={isExpanded ? 'text-blue-400' : 'text-gray-400'}
+          />
           <span className="text-gray-300">
             {totalPlayers}/{maxPlayers}
           </span>
@@ -95,10 +146,17 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
               ({seatedPlayers.length}座 {spectators.length > 0 ? `${spectators.length}观` : ''})
             </span>
           )}
-          {isExpanded ? 
-            <ChevronUp size={14} className="text-blue-400" /> : 
-            <ChevronDown size={14} className="text-gray-400" />
-          }
+          {isExpanded ? (
+            <ChevronUp
+              size={14}
+              className="text-blue-400"
+            />
+          ) : (
+            <ChevronDown
+              size={14}
+              className="text-gray-400"
+            />
+          )}
         </div>
       </button>
 
@@ -109,7 +167,10 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
             {/* 标题 */}
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-white flex items-center space-x-2">
-                <Users size={16} className="text-blue-400" />
+                <Users
+                  size={16}
+                  className="text-blue-400"
+                />
                 <span>房间成员</span>
               </h3>
               <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
@@ -121,54 +182,53 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
             {seatedPlayers.length > 0 && (
               <div className="mb-4">
                 <div className="flex items-center space-x-1 mb-2">
-                  <Gamepad2 size={14} className="text-green-400" />
-                  <span className="text-xs font-medium text-green-400">
-                    入座玩家 ({seatedPlayers.length})
-                  </span>
+                  <Gamepad2
+                    size={14}
+                    className="text-green-400"
+                  />
+                  <span className="text-xs font-medium text-green-400">入座玩家 ({seatedPlayers.length})</span>
                 </div>
                 <div className="space-y-2">
                   {seatedPlayers
                     .sort((a, b) => a.seat - b.seat)
-                    .map(player => {
+                    .map((player) => {
                       const status = getPlayerStatus(player);
                       const StatusIcon = status.icon;
                       return (
-                      <div
-                        key={player.id}
-                        className={`flex items-center justify-between p-2 rounded-md transition-colors ${
-                          player.id === currentPlayerId 
-                            ? 'bg-blue-500/20 border border-blue-500/30' 
-                            : 'bg-gray-700/50 hover:bg-gray-700/70'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-2 min-w-0">
-                          <div className="flex items-center space-x-1 flex-shrink-0">
-                            <span className="text-xs bg-gray-600 px-1.5 py-0.5 rounded text-gray-300">
-                              座{player.seat + 1}
-                            </span>
-                            {player.isHost && <Crown size={12} className="text-yellow-400" />}
-                            {player.id === currentPlayerId && (
-                              <span className="text-xs text-blue-400">(我)</span>
-                            )}
-                          </div>
-                          <span className="text-sm text-white truncate" title={player.nickname}>
-                            {getDisplayName(player)}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2 flex-shrink-0">
-                          <span className="text-xs text-yellow-400 font-mono">
-                            {player.chips.toLocaleString()}
-                          </span>
-                          <div className={`flex items-center space-x-1 ${getStatusColor(player)}`}>
-                            {StatusIcon && <StatusIcon size={12} />}
-                            <span className="text-xs">
-                              {status.text}
+                        <div
+                          key={player.id}
+                          className={`flex items-center justify-between p-2 rounded-md transition-colors ${
+                            player.id === currentPlayerId ? 'bg-blue-500/20 border border-blue-500/30' : 'bg-gray-700/50 hover:bg-gray-700/70'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2 min-w-0">
+                            <div className="flex items-center space-x-1 flex-shrink-0">
+                              <span className="text-xs bg-gray-600 px-1.5 py-0.5 rounded text-gray-300">座{player.seat + 1}</span>
+                              {player.isHost && (
+                                <Crown
+                                  size={12}
+                                  className="text-yellow-400"
+                                />
+                              )}
+                              {player.id === currentPlayerId && <span className="text-xs text-blue-400">(我)</span>}
+                            </div>
+                            <span
+                              className="text-sm text-white truncate"
+                              title={player.nickname}
+                            >
+                              {getDisplayName(player)}
                             </span>
                           </div>
+                          <div className="flex items-center space-x-2 flex-shrink-0">
+                            <span className="text-xs text-yellow-400 font-mono">{player.chips.toLocaleString()}</span>
+                            <div className={`flex items-center space-x-1 ${getStatusColor(player)}`}>
+                              {StatusIcon && <StatusIcon size={12} />}
+                              <span className="text-xs">{status.text}</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -177,42 +237,52 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
             {spectators.length > 0 && (
               <div>
                 <div className="flex items-center space-x-1 mb-2">
-                  <Eye size={14} className="text-purple-400" />
-                  <span className="text-xs font-medium text-purple-400">
-                    观战玩家 ({spectators.length})
-                  </span>
+                  <Eye
+                    size={14}
+                    className="text-purple-400"
+                  />
+                  <span className="text-xs font-medium text-purple-400">观战玩家 ({spectators.length})</span>
                 </div>
                 <div className="space-y-2">
-                  {spectators.map(player => {
+                  {spectators.map((player) => {
                     const status = getPlayerStatus(player);
                     const StatusIcon = status.icon;
                     return (
-                    <div
-                      key={player.id}
-                      className={`flex items-center justify-between p-2 rounded-md transition-colors ${
-                        player.id === currentPlayerId 
-                          ? 'bg-purple-500/20 border border-purple-500/30' 
-                          : 'bg-gray-700/30 hover:bg-gray-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2 min-w-0">
-                        <div className="flex items-center space-x-1 flex-shrink-0">
-                          {player.isHost && <Crown size={12} className="text-yellow-400" />}
-                          {player.id === currentPlayerId && (
-                            <span className="text-xs text-purple-400">(我)</span>
-                          )}
-                          {StatusIcon && <StatusIcon size={12} className="text-purple-400" />}
+                      <div
+                        key={player.id}
+                        className={`flex items-center justify-between p-2 rounded-md transition-colors ${
+                          player.id === currentPlayerId ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-gray-700/30 hover:bg-gray-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <div className="flex items-center space-x-1 flex-shrink-0">
+                            {player.isHost && (
+                              <Crown
+                                size={12}
+                                className="text-yellow-400"
+                              />
+                            )}
+                            {player.id === currentPlayerId && <span className="text-xs text-purple-400">(我)</span>}
+                            {StatusIcon && (
+                              <StatusIcon
+                                size={12}
+                                className="text-purple-400"
+                              />
+                            )}
+                          </div>
+                          <span
+                            className="text-sm text-gray-300 truncate"
+                            title={player.nickname}
+                          >
+                            {getDisplayName(player)}
+                          </span>
                         </div>
-                        <span className="text-sm text-gray-300 truncate" title={player.nickname}>
-                          {getDisplayName(player)}
+                        <span className={`text-xs ${getStatusColor(player)} flex items-center space-x-1`}>
+                          <span>{status.text}</span>
                         </span>
                       </div>
-                      <span className={`text-xs ${getStatusColor(player)} flex items-center space-x-1`}>
-                        <span>{status.text}</span>
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -220,7 +290,10 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
             {/* 无玩家时的提示 */}
             {totalPlayers === 0 && (
               <div className="text-center py-4">
-                <Users size={24} className="text-gray-500 mx-auto mb-2" />
+                <Users
+                  size={24}
+                  className="text-gray-500 mx-auto mb-2"
+                />
                 <p className="text-sm text-gray-400">暂无玩家</p>
               </div>
             )}
@@ -228,9 +301,7 @@ const PlayerPanel = ({ players = [], roomSettings = {}, currentPlayerId }) => {
             {/* 座位状态提示 */}
             {seatedPlayers.length < maxPlayers && (
               <div className="mt-3 pt-3 border-t border-gray-700">
-                <p className="text-xs text-gray-400 text-center">
-                  还有 {maxPlayers - seatedPlayers.length} 个空座位
-                </p>
+                <p className="text-xs text-gray-400 text-center">还有 {maxPlayers - seatedPlayers.length} 个空座位</p>
               </div>
             )}
           </div>

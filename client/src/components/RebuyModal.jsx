@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
+import SliderInput from './SliderInput';
 
 const RebuyModal = ({ show, onClose }) => {
   const { requestRebuy, players, currentPlayerId } = useGame();
   const [amount, setAmount] = useState(1000);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 滑动操作的最小值、最大值和步进
+  const minAmount = 1000;
+  const maxAmount = 9000;
+  const stepSize = 1000;
+
+  const handleSliderChange = (value) => {
+    setAmount(value);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,68 +69,57 @@ const RebuyModal = ({ show, onClose }) => {
           onSubmit={handleSubmit}
           className="space-y-6"
         >
-          {/* 补码金额选择 */}
+          {/* 滑动选择补码金额 */}
           <div>
             <label className="form-label">选择补码金额</label>
-            <div className="grid grid-cols-3 gap-3">
-              {[1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000].map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setAmount(value)}
-                  className={`py-3 px-4 rounded-lg border transition-colors duration-200 ${
-                    amount === value ? 'border-poker-gold bg-poker-gold text-white' : 'border-gray-600 text-gray-300 hover:border-gray-500'
-                  }`}
-                  disabled={isSubmitting}
-                >
-                  {value.toLocaleString()}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 自定义金额输入 */}
-          <div>
-            <label className="form-label">或输入自定义金额</label>
-            <input
-              type="number"
+            
+            <SliderInput
               value={amount}
-              onChange={(e) => {
-                const value = parseInt(e.target.value) || 0;
-                setAmount(value);
-              }}
-              min="1000"
-              max="9000"
-              step="1000"
-              className="form-input text-center text-lg"
-              placeholder="1000-9000"
+              min={minAmount}
+              max={maxAmount}
+              step={stepSize}
+              onChange={handleSliderChange}
               disabled={isSubmitting}
+              colorScheme="gold"
+              formatValue={(val) => val.toLocaleString()}
+              formatLabel={(val) => val >= 1000 ? `${val/1000}K` : val.toLocaleString()}
+              quickButtons={[1000, 3000, 5000, 7000, 9000]}
+              onQuickSelect={handleSliderChange}
+              showValue={true}
+              showLabels={true}
+              showSteps={true}
             />
-            <p className="text-sm text-gray-400 mt-2">金额必须是1000-9000之间的1000整数倍</p>
           </div>
 
-          {/* 当前筹码显示 */}
-          <div className="bg-gray-700 p-4 rounded-lg">
+          {/* 当前筹码对比显示 */}
+          <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
-                <p className="text-sm text-gray-400">当前筹码</p>
+                <p className="text-sm text-gray-400 mb-1">当前筹码</p>
                 <p className="text-xl font-bold text-white">{currentChips.toLocaleString()}</p>
               </div>
               <div className="text-center">
-                <p className="text-sm text-gray-400">补码后筹码</p>
+                <p className="text-sm text-gray-400 mb-1">补码后筹码</p>
                 <p className="text-xl font-bold text-poker-gold">{(currentChips + amount).toLocaleString()}</p>
               </div>
+            </div>
+            <div className="flex items-center justify-center mt-3 text-sm text-gray-400">
+              <span>增加：</span>
+              <span className="ml-1 font-semibold text-green-400">+{amount.toLocaleString()}</span>
             </div>
           </div>
 
           {/* 补码说明 */}
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <h4 className="font-semibold text-poker-gold mb-2">补码说明</h4>
+          <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-500/30">
+            <h4 className="font-semibold text-blue-400 mb-2 flex items-center">
+              <span className="mr-2">ℹ️</span>
+              补码说明
+            </h4>
             <ul className="text-sm text-gray-300 space-y-1">
               <li>• 只能在弃牌状态时补码</li>
-              <li>• 补码金额：1000-9000筹码</li>
-              <li>• 必须是1000的整数倍</li>
-              <li>• 补码立即生效</li>
+              <li>• 补码金额：{minAmount.toLocaleString()}-{maxAmount.toLocaleString()}筹码</li>
+              <li>• 步进单位：{stepSize.toLocaleString()}筹码</li>
+              <li>• 补码立即生效，下一轮开始参与</li>
             </ul>
           </div>
 
@@ -129,17 +128,17 @@ const RebuyModal = ({ show, onClose }) => {
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 py-3 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="flex-1 py-3 px-4 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors font-medium"
               disabled={isSubmitting}
             >
               取消
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 px-4 bg-poker-gold text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50"
-              disabled={isSubmitting || amount < 1000 || amount > 9000 || amount % 1000 !== 0}
+              className="flex-1 py-3 px-4 bg-gradient-to-r from-poker-gold to-yellow-500 hover:from-yellow-500 hover:to-poker-gold text-black font-bold rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
+              disabled={isSubmitting || amount < minAmount || amount > maxAmount}
             >
-              {isSubmitting ? '补码中...' : `补码 ${amount.toLocaleString()}`}
+              {isSubmitting ? '补码中...' : `💰 补码 ${amount.toLocaleString()}`}
             </button>
           </div>
         </form>
