@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
 import SliderInput from './SliderInput';
+import Modal from './Modal';
 
 const CreateRoomModal = () => {
   const { showCreateRoom, setShowCreateRoom, createRoom } = useGame();
@@ -23,35 +24,39 @@ const CreateRoomModal = () => {
     setShowCreateRoom(false);
   };
 
-  if (!showCreateRoom) return null;
+  const footerContent = (
+    <div className="flex space-x-3">
+      <button
+        type="button"
+        onClick={handleClose}
+        className="flex-1 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base"
+      >
+        取消
+      </button>
+      <button
+        type="submit"
+        form="create-room-form"
+        className="flex-1 py-3 bg-poker-gold hover:bg-yellow-500 text-black rounded-lg font-bold transition-colors duration-200 text-sm sm:text-base"
+      >
+        创建房间
+      </button>
+    </div>
+  );
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={handleClose}
+    <Modal
+      show={showCreateRoom}
+      onClose={handleClose}
+      title="创建游戏房间"
+      layout="scrollable"
+      padding=""
+      footer={footerContent}
     >
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
+      <form
+        id="create-room-form"
+        onSubmit={handleSubmit}
+        className="space-y-4 sm:space-y-6"
       >
-        {/* 标题栏 - 固定在顶部 */}
-        <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-700 bg-gray-800 rounded-t-lg flex-shrink-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-poker-gold">创建游戏房间</h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-white text-2xl flex-shrink-0 p-1 hover:bg-gray-700 rounded"
-          >
-            ×
-          </button>
-        </div>
-
-        {/* 可滚动内容区域 */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
-          <form
-            id="create-room-form"
-            onSubmit={handleSubmit}
-            className="space-y-4 sm:space-y-6"
-          >
             {/* 游戏时长 */}
             <div>
               <label className="form-label">游戏时长</label>
@@ -144,29 +149,7 @@ const CreateRoomModal = () => {
               </ul>
             </div>
           </form>
-        </div>
-
-        {/* 底部按钮区域 - 固定在底部 */}
-        <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-t border-gray-700 bg-gray-800 rounded-b-lg">
-          <div className="flex space-x-3">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="flex-1 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              form="create-room-form"
-              className="flex-1 py-3 bg-poker-gold hover:bg-yellow-500 text-black rounded-lg font-bold transition-colors duration-200 text-sm sm:text-base"
-            >
-              创建房间
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

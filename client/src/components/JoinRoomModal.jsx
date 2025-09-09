@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
+import Modal from './Modal';
 
 const JoinRoomModal = ({ roomId }) => {
   const { showJoinRoom, setShowJoinRoom, joinRoom } = useGame();
@@ -25,38 +26,24 @@ const JoinRoomModal = ({ roomId }) => {
     setIsSubmitting(false);
   };
 
-  if (!showJoinRoom) return null;
-
   return (
-    <div
-      className="modal-overlay"
-      onClick={handleClose}
+    <Modal
+      show={showJoinRoom}
+      onClose={handleClose}
+      title="加入游戏房间"
+      closeOnOverlayClick={!isSubmitting}
     >
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6"
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-poker-gold">加入游戏房间</h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-white text-2xl"
-          >
-            ×
-          </button>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
-          {/* 房间ID */}
-          <div>
-            <label className="form-label">房间ID</label>
-            <div className="bg-gray-700 px-4 py-3 rounded-lg border border-gray-600">
-              <span className="text-2xl font-mono text-poker-gold">{roomId}</span>
-            </div>
+        {/* 房间ID */}
+        <div>
+          <label className="form-label">房间ID</label>
+          <div className="bg-gray-700 px-4 py-3 rounded-lg border border-gray-600">
+            <span className="text-2xl font-mono text-poker-gold">{roomId}</span>
           </div>
+        </div>
 
           {/* 游戏说明 */}
           <div className="bg-gray-700 p-4 rounded-lg">
@@ -71,18 +58,15 @@ const JoinRoomModal = ({ roomId }) => {
             </ul>
           </div>
 
-          {/* 提交按钮 */}
-          <button
-            type="submit"
-            className="form-button text-lg py-3"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? '加入中...' : '加入房间'}
-          </button>
-        </form>
-      </div>
-    </div>
+        {/* 提交按钮 */}
+        <button
+          type="submit"
+          className="form-button text-lg py-3"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? '加入中...' : '加入房间'}
+        </button>
+      </form>
+    </Modal>
   );
-};
-
-export default JoinRoomModal;
+};export default JoinRoomModal;

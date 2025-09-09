@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
 import SliderInput from './SliderInput';
+import Modal from './Modal';
 
 const RebuyModal = ({ show, onClose }) => {
   const { requestRebuy, players, currentPlayerId } = useGame();
@@ -46,29 +47,17 @@ const RebuyModal = ({ show, onClose }) => {
   const currentChips = currentPlayer ? currentPlayer.chips : 0;
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={handleClose}
+    <Modal
+      show={show}
+      onClose={handleClose}
+      title="补码"
+      closeOnOverlayClick={!isSubmitting}
+      showCloseButton={!isSubmitting}
     >
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6"
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-poker-gold">补码</h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-white text-2xl"
-            disabled={isSubmitting}
-          >
-            ×
-          </button>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
           {/* 滑动选择补码金额 */}
           <div>
             <label className="form-label">选择补码金额</label>
@@ -142,8 +131,7 @@ const RebuyModal = ({ show, onClose }) => {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

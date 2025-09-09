@@ -1,6 +1,7 @@
 import Card from './Card';
 import React from 'react';
 import { useGame } from '../contexts/GameContext';
+import Modal from './Modal';
 
 const HandResultModal = () => {
   const { showHandResult, setShowHandResult, handResult } = useGame();
@@ -17,26 +18,14 @@ const HandResultModal = () => {
   };
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={handleClose}
+    <Modal
+      show={showHandResult && handResult}
+      onClose={handleClose}
+      title={handResult?.isAllin ? 'All-in 结果' : '手牌结果'}
+      maxWidth="max-w-4xl"
     >
-      <div
-        className="modal-content max-w-4xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-poker-gold">{handResult.isAllin ? 'All-in 结果' : '手牌结果'}</h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-white text-2xl"
-          >
-            ×
-          </button>
-        </div>
-
-        {handResult.isAllin ? (
-          // All-in 多次发牌结果
+      {handResult?.isAllin ? (
+        // All-in 多次发牌结果
           <div className="space-y-6">
             {handResult.results?.map((result, index) => (
               <div
@@ -148,20 +137,17 @@ const HandResultModal = () => {
             {/* 特殊说明 */}
             {handResult.reason && <div className="text-center text-gray-400">{handResult.reason}</div>}
           </div>
-        )}
+      )}
 
-        {/* 关闭按钮 */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={handleClose}
-            className=" primary px-8 py-3"
-          >
-            关闭
-          </button>
-        </div>
+      {/* 关闭按钮 */}
+      <div className="mt-6 text-center">
+        <button
+          onClick={handleClose}
+          className=" primary px-8 py-3"
+        >
+          关闭
+        </button>
       </div>
-    </div>
+    </Modal>
   );
-};
-
-export default HandResultModal;
+};export default HandResultModal;

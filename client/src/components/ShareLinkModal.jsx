@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Modal from './Modal';
 
 const ShareLinkModal = ({ show, onClose, roomId }) => {
   const [copied, setCopied] = useState(false);
@@ -39,34 +40,19 @@ const ShareLinkModal = ({ show, onClose, roomId }) => {
     }
   };
 
-  if (!show) return null;
-
   return (
-    <div
-      className="modal-overlay"
-      onClick={onClose}
+    <Modal
+      show={show}
+      onClose={onClose}
+      title="分享游戏链接"
     >
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-poker-gold">分享游戏链接</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          {/* 房间信息 */}
-          <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-            <div className="text-center">
-              <div className="text-poker-gold font-semibold mb-2">房间ID</div>
-              <div className="text-3xl font-mono text-white">{roomId}</div>
-            </div>
+      <div className="space-y-6">
+        {/* 房间信息 */}
+        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+          <div className="text-center">
+            <div className="text-poker-gold font-semibold mb-2">房间ID</div>
+            <div className="text-3xl font-mono text-white">{roomId}</div>
+          </div>
           </div>
 
           {/* 链接 */}
@@ -121,16 +107,13 @@ const ShareLinkModal = ({ show, onClose, roomId }) => {
           </div>
 
           {/* 关闭按钮 */}
-          <button
-            onClick={onClose}
-            className="form-button"
-          >
-            关闭
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className="form-button"
+        >
+          关闭
+        </button>
       </div>
-    </div>
+    </Modal>
   );
-};
-
-export default ShareLinkModal;
+};export default ShareLinkModal;
