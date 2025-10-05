@@ -40,40 +40,49 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, cur
   // 如果players未定义，使用空数组
   const playersArray = players || [];
 
-  const seatedPlayers = playersArray.filter((player) => player.seat !== -1 && !player.isSpectator);
-  const spectators = playersArray.filter((player) => player.seat === -1 || player.isSpectator);
+  // 分类玩家 - 基于实际座位状态而不是身份
+  const seatedPlayers = playersArray.filter((player) => 
+    player.seat !== -1 && !player.isSpectator
+  );
+  const spectators = playersArray.filter((player) => 
+    player.seat === -1 || player.isSpectator
+  );
 
   const maxPlayers = roomSettings.maxPlayers || 6;
   const totalPlayers = playersArray.length;
 
   // 获取玩家状态文本和图标
   const getPlayerStatus = (player) => {
-    // 特殊身份状态
-    if (player.nickname.startsWith('房主-')) {
-      return { text: '房主', icon: Crown, priority: 'high' };
-    }
-
-    // 连接状态
-    if (!player.isActive || player.disconnected) {
+    // 连接状态 - 只有真正断线才显示离线
+    if (player.disconnected) {
       return { text: '离线', icon: null, priority: 'low' };
     }
 
-    // 观战状态
-    if (player.isSpectator || player.seat === -1) {
-      return { text: '观战中', icon: Eye, priority: 'medium' };
-    }
-
     // 游戏中的具体状态
-    if (player.waitingForNextRound) {
-      return { text: '等待下轮', icon: null, priority: 'medium' };
-    }
-
     if (player.allIn) {
       return { text: 'All-in', icon: null, priority: 'high' };
     }
 
     if (player.folded) {
       return { text: '已弃牌', icon: null, priority: 'low' };
+    }
+
+    if (player.waitingForNextRound) {
+      return { text: '等待下轮', icon: null, priority: 'medium' };
+    }
+
+    // 观战状态 - 包括离座的房主
+    if (player.isSpectator || player.seat === -1) {
+      // 如果是房主但在观战，显示特殊状态
+      if (player.isHost) {
+        return { text: '房主(观战)', icon: Eye, priority: 'high' };
+      }
+      return { text: '观战中', icon: Eye, priority: 'medium' };
+    }
+
+    // 入座的房主状态
+    if (player.isHost && player.seat !== -1) {
+      return { text: '房主', icon: Crown, priority: 'high' };
     }
 
     // 根据游戏是否开始判断
@@ -92,6 +101,8 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, cur
     switch (status.text) {
       case '房主':
         return 'text-yellow-400'; // 金色
+      case '房主(观战)':
+        return 'text-yellow-400'; // 金色，保持房主特色
       case '游戏中':
         return 'text-green-400'; // 绿色
       case 'All-in':
@@ -112,7 +123,9 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, cur
 
   // 获取玩家显示名称
   const getDisplayName = (player) => {
-    if (player.nickname.startsWith('房主-')) {
+    // 如果是房主，显示真实昵称而不是"房主-xxx"格式
+    if (player.isHost && player.nickname.startsWith('房主-')) {
+      // 提取设备ID或显示"房主"
       return '房主';
     }
     if (player.nickname.length > 12) {

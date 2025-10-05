@@ -1,10 +1,9 @@
 const GameLogic = require('./GameLogic');
 
 class RoomManager {
-  constructor(io, gameRooms, deviceSocketMap, socketDeviceMap) {
+  constructor(io, gameRooms, socketDeviceMap) {
     this.io = io;
     this.gameRooms = gameRooms;
-    this.deviceSocketMap = deviceSocketMap;
     this.socketDeviceMap = socketDeviceMap;
   }
 
@@ -326,6 +325,7 @@ class RoomManager {
 
     // 入座
     player.seat = seatIndex;
+    player.isSpectator = false; // 入座时不再是观战者
 
     // 如果游戏未开始，立即激活玩家
     if (!room.gameStarted) {

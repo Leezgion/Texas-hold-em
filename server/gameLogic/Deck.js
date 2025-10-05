@@ -52,6 +52,7 @@ class Deck {
 
   // 重置牌堆
   reset() {
+    this.cards = []; // 清空现有牌
     this.initializeDeck();
     this.shuffle();
   }

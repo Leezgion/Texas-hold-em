@@ -177,13 +177,30 @@ const useGameStore = create((set, get) => ({
         const isNewRoom = !previousRoomId || previousRoomId !== gameState.id;
         const { isCreatingRoom, intentionalJoin } = get();
 
-        // 只有在明确尝试加入房间时才进行跳转
-        if (currentPlayer && isNewRoom && isNotInGameRoom && !isCreatingRoom && intentionalJoin) {
+        // 只有在明确尝试加入房间时才进行跳转（不再依赖currentPlayer，因为可能还没找到）
+        if (isNewRoom && isNotInGameRoom && !isCreatingRoom && intentionalJoin) {
           console.log('加入房间成功，跳转到房间页面:', gameState.id);
+          console.log('跳转条件检查:', {
+            isNewRoom,
+            isNotInGameRoom,
+            isCreatingRoom,
+            intentionalJoin,
+            currentPath,
+            gameStateId: gameState.id
+          });
           set({
             navigationTarget: `/game/${gameState.id}`,
             showJoinRoom: false, // 关闭加入房间模态框
             intentionalJoin: false, // 重置标志
+          });
+        } else {
+          console.log('跳转条件不满足:', {
+            isNewRoom,
+            isNotInGameRoom,
+            isCreatingRoom,
+            intentionalJoin,
+            currentPath,
+            gameStateId: gameState.id
           });
         }
       }

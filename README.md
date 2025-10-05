@@ -46,15 +46,18 @@ npm run dev
 ### 3. 访问游戏
 
 #### 本地访问
-- 服务器：http://localhost:3001
-- 客户端：http://localhost:5173
+
+- 服务器：<http://localhost:3001>
+- 客户端：<http://localhost:5173>
 
 #### 局域网访问（多设备游戏）
+
 - 使用 `start-lan.ps1` 启动脚本自动配置
 - 其他设备访问：http://[您的IP]:5173
-- 例如：http://192.168.1.106:5173
+- 例如：<http://192.168.1.106:5173>
 
 #### 快速启动（推荐）
+
 ```powershell
 # 局域网多设备访问
 ./start-lan.ps1
@@ -67,6 +70,7 @@ cd client && npm run dev  # 热重载模式
 ## 游戏规则
 
 ### 房间设置
+
 - **游戏时长**: 30分钟为单位，可自定义
 - **游戏人数**: 2-10人
 - **Straddle**: 可选择是否允许UTG位置Straddle
@@ -75,6 +79,7 @@ cd client && npm run dev  # 热重载模式
 - **初始筹码**: 1000
 
 ### 游戏流程
+
 1. 创建房间并自定义规则
 2. 分享房间链接邀请朋友
 3. 达到人数要求后开始游戏
@@ -105,4 +110,4 @@ cd client && npm run dev  # 热重载模式
 
 ## 许可证
 
-MIT License 
+MIT License

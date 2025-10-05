@@ -21,16 +21,14 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 // 游戏房间管理
 const gameRooms = new Map();
 
-// 设备ID和Socket ID的映射管理
-const deviceSocketMap = new Map(); // deviceId -> socketId
+// Socket ID到设备ID的映射管理（基于服务器生成的socketId，更安全）
 const socketDeviceMap = new Map(); // socketId -> deviceId
 
 // 导入游戏逻辑
-const GameLogic = require('./gameLogic/GameLogic');
 const RoomManager = require('./gameLogic/RoomManager');
 
 // 初始化房间管理器
-const roomManager = new RoomManager(io, gameRooms, deviceSocketMap, socketDeviceMap);
+const roomManager = new RoomManager(io, gameRooms, socketDeviceMap);
 
 // Socket.IO 连接处理
 io.on('connection', (socket) => {
@@ -40,14 +38,16 @@ io.on('connection', (socket) => {
   socket.on('registerDevice', ({ deviceId }) => {
     console.log('注册设备:', { deviceId, socketId: socket.id });
 
-    // 如果设备之前已连接，清除旧的映射
-    if (deviceSocketMap.has(deviceId)) {
-      const oldSocketId = deviceSocketMap.get(deviceId);
-      socketDeviceMap.delete(oldSocketId);
+    // 如果设备之前已连接，清除旧的socket映射（遍历查找相同deviceId）
+    for (const [oldSocketId, devId] of socketDeviceMap.entries()) {
+      if (devId === deviceId && oldSocketId !== socket.id) {
+        socketDeviceMap.delete(oldSocketId);
+        console.log('清除旧的socket映射:', { oldSocketId, deviceId });
+        break;
+      }
     }
 
     // 建立新的映射关系
-    deviceSocketMap.set(deviceId, socket.id);
     socketDeviceMap.set(socket.id, deviceId);
 
     // 发送注册成功事件
@@ -200,7 +200,7 @@ io.on('connection', (socket) => {
     if (deviceId) {
       console.log('设备断开连接:', deviceId);
       // 暂时保留设备映射，允许重连
-      // deviceSocketMap.delete(deviceId);
+      // 注意：如果需要清理映射，可以设置超时后删除
       // socketDeviceMap.delete(socket.id);
     }
 
@@ -234,7 +234,7 @@ app.get('/api/rooms/:roomId', (req, res) => {
 
   // 支持观战模式：即使游戏已开始，也允许加入观战
   // 只有座位已满且游戏进行中时，新加入的玩家才处于观战模式
-  const seatedPlayers = room.players.filter(p => p.seat !== -1).length;
+  const seatedPlayers = room.players.filter((p) => p.seat !== -1).length;
   const hasAvailableSeats = seatedPlayers < room.settings.maxPlayers;
 
   res.json({
@@ -279,13 +279,12 @@ app.get('/api/debug/rooms/:roomId', (req, res) => {
 
 // 调试端点 - 查看设备映射
 app.get('/api/debug/devices', (req, res) => {
-  const deviceMappings = Array.from(deviceSocketMap.entries()).map(([deviceId, socketId]) => ({
-    deviceId,
+  const deviceMappings = Array.from(socketDeviceMap.entries()).map(([socketId, deviceId]) => ({
     socketId,
+    deviceId,
   }));
 
   res.json({
-    deviceCount: deviceSocketMap.size,
     socketCount: socketDeviceMap.size,
     mappings: deviceMappings,
   });
