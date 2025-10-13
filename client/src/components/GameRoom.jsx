@@ -1,4 +1,4 @@
-import { LogOut, Plus, Share2, Users, ChevronDown } from 'lucide-react';
+import { ChevronDown, LogOut, Plus, Share2, Users } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -6,6 +6,7 @@ import ActionButtons from './ActionButtons';
 import Card from './Card';
 import CommunityCards from './CommunityCards';
 import EmptySeat from './EmptySeat';
+import GameLog from './GameLog';
 import HandResultModal from './HandResultModal';
 import JoinRoomModal from './JoinRoomModal';
 import Leaderboard from './Leaderboard';
@@ -69,6 +70,7 @@ const GameRoom = () => {
   const [roomError, setRoomError] = useState(null);
   const [showLeaveSeat, setShowLeaveSeat] = useState(false);
   const [showExitRoom, setShowExitRoom] = useState(false);
+  const [gameLogs, setGameLogs] = useState([]);
 
   useEffect(() => {
     const verifyRoom = async () => {
@@ -177,6 +179,31 @@ const GameRoom = () => {
       }
     }
   }, [currentPlayerId, players, currentRoomId, roomId]);
+
+  // 监听游戏状态变化，更新日志
+  useEffect(() => {
+    if (!gameState || !gameState.lastAction) return;
+
+    const { lastAction } = gameState;
+    const player = players.find(p => p.id === lastAction.playerId);
+    
+    if (player) {
+      const actionText = {
+        fold: '弃牌',
+        check: '过牌',
+        call: `跟注 ${lastAction.amount || 0}`,
+        raise: `加注到 ${lastAction.amount || 0}`,
+        allin: `All-in ${lastAction.amount || 0}`,
+      };
+
+      setGameLogs(prev => [...prev.slice(-19), {  // 保留最近20条
+        player: player.nickname,
+        action: actionText[lastAction.action] || lastAction.action,
+        amount: lastAction.amount,
+        timestamp: Date.now(),
+      }]);
+    }
+  }, [gameState?.lastAction, players]);
 
   // 如果有房间错误，显示错误信息
   if (roomError) {
@@ -553,8 +580,26 @@ const GameRoom = () => {
           {gameState && (
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-16">
               <div className="bg-black bg-opacity-50 px-4 py-2 rounded-lg border border-poker-gold">
-                <span className="text-poker-gold font-semibold">底池: </span>
-                <span className="text-white">{gameState.pot}</span>
+                {/* 主底池 */}
+                <div className="text-center">
+                  <span className="text-poker-gold font-semibold">底池: </span>
+                  <span className="text-white text-lg">{gameState.pot}</span>
+                </div>
+
+                {/* 边池显示 */}
+                {gameState.sidePots && gameState.sidePots.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-gray-600">
+                    <div className="text-xs text-gray-400 mb-1">边池:</div>
+                    <div className="space-y-1">
+                      {gameState.sidePots.map((pot, index) => (
+                        <div key={index} className="flex justify-between text-xs">
+                          <span className="text-gray-300">边池 {index + 1}:</span>
+                          <span className="text-yellow-400">{pot.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -661,10 +706,15 @@ const GameRoom = () => {
         className={`absolute ${
           windowSize.width < 768
             ? 'hidden' // 移动端隐藏排行榜以避免遮挡游戏区域
-            : 'right-4 top-20 w-72' // 桌面版正常显示
+            : 'right-4 top-20 w-72 space-y-4' // 桌面版正常显示
         }`}
       >
         <Leaderboard players={players} />
+        
+        {/* 游戏日志 */}
+        {gameStarted && gameLogs.length > 0 && (
+          <GameLog logs={gameLogs} />
+        )}
       </div>
 
       {/* 底部UI区域 - 简化设计 */}

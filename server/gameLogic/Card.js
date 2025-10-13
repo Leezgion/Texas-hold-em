@@ -1,16 +1,16 @@
 class Card {
   constructor(suit, rank) {
-    this.suit = suit;   // 花色: 'hearts', 'diamonds', 'clubs', 'spades'
-    this.rank = rank;   // 点数: 2-14 (14 = Ace)
+    this.suit = suit; // 花色: 'hearts', 'diamonds', 'clubs', 'spades'
+    this.rank = rank; // 点数: 2-14 (14 = Ace)
   }
 
   // 获取花色符号
   getSuitSymbol() {
     const symbols = {
-      'hearts': '♥',
-      'diamonds': '♦',
-      'clubs': '♣',
-      'spades': '♠'
+      hearts: '♥',
+      diamonds: '♦',
+      clubs: '♣',
+      spades: '♠',
     };
     return symbols[this.suit] || '';
   }
@@ -32,10 +32,10 @@ class Card {
   // 获取花色名称（中文）
   getSuitName() {
     const names = {
-      'hearts': '红桃',
-      'diamonds': '方块',
-      'clubs': '梅花',
-      'spades': '黑桃'
+      hearts: '红桃',
+      diamonds: '方块',
+      clubs: '梅花',
+      spades: '黑桃',
     };
     return names[this.suit] || '';
   }
@@ -71,9 +71,9 @@ class Card {
       rank: this.rank,
       displayName: this.getDisplayName(),
       chineseName: this.getChineseName(),
-      isRed: this.isRed()
+      isRed: this.isRed(),
     };
   }
 }
 
-module.exports = Card; 
+module.exports = Card;

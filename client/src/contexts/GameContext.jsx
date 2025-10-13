@@ -9,6 +9,8 @@ const useGameStore = create((set, get) => ({
   // 连接状态
   socket: null,
   connected: false,
+  isReconnecting: false,
+  reconnectAttempts: 0,
 
   // 房间状态
   roomId: null,
@@ -52,11 +54,16 @@ const useGameStore = create((set, get) => ({
 
     // 自动检测当前访问的主机地址
     const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:3001' : `http://${window.location.hostname}:3001`;
-    const socket = io(serverUrl);
+    const socket = io(serverUrl, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity,
+    });
 
     socket.on('connect', () => {
       // 使用设备ID作为持久化的玩家ID
-      set({ socket, connected: true, currentPlayerId: deviceId, deviceId });
+      set({ socket, connected: true, currentPlayerId: deviceId, deviceId, isReconnecting: false, reconnectAttempts: 0 });
       console.log('已连接到服务器，Socket ID:', socket.id, '设备ID:', deviceId);
 
       // 向服务器注册设备ID和Socket ID的映射
@@ -76,6 +83,31 @@ const useGameStore = create((set, get) => ({
     socket.on('disconnect', () => {
       set({ connected: false });
       console.log('与服务器断开连接');
+    });
+
+    // 重连监听
+    socket.io.on('reconnect_attempt', (attemptNumber) => {
+      set({ isReconnecting: true, reconnectAttempts: attemptNumber });
+      console.log(`正在尝试重连... (第 ${attemptNumber} 次)`);
+    });
+
+    socket.io.on('reconnect', (attemptNumber) => {
+      set({ isReconnecting: false, reconnectAttempts: 0 });
+      console.log('重连成功！');
+      
+      // 重连后重新加入房间
+      const { roomId, deviceId } = get();
+      if (roomId) {
+        socket.emit('joinRoom', { roomId, deviceId, playerName: null });
+      }
+    });
+
+    socket.io.on('reconnect_failed', () => {
+      set({ isReconnecting: false });
+      console.error('重连失败');
+      window.dispatchEvent(new CustomEvent('game-error', { 
+        detail: '无法连接到服务器，请检查网络连接' 
+      }));
     });
 
     socket.on('roomCreated', ({ roomId }) => {
@@ -232,7 +264,8 @@ const useGameStore = create((set, get) => ({
       if (isCreatingRoom) {
         set({ isCreatingRoom: false });
       }
-      alert(`错误: ${message}`);
+      // 使用自定义事件发送错误，由Toast组件处理
+      window.dispatchEvent(new CustomEvent('game-error', { detail: message }));
     });
 
     return socket;
@@ -432,6 +465,15 @@ const useGameStore = create((set, get) => ({
     const { socket } = get();
     if (socket) {
       socket.emit('muckHand');
+    }
+  },
+
+  // 手动重连
+  manualReconnect: () => {
+    const { socket } = get();
+    if (socket) {
+      socket.disconnect();
+      socket.connect();
     }
   },
 

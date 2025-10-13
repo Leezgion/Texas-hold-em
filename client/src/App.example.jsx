@@ -1,3 +1,8 @@
+/**
+ * 改进后的 App.jsx 示例
+ * 集成 Toast 通知和断线重连 UI
+ */
+
 import { GameProvider, useGame } from './contexts/GameContext';
 import React, { useEffect } from 'react';
 import { Route, BrowserRouter as Router, Routes, useNavigate } from 'react-router-dom';
@@ -24,23 +29,27 @@ function NavigationHandler() {
   return null;
 }
 
-// Toast处理组件
-function ToastHandler() {
+// Toast 事件监听器
+function ToastListener() {
   const toast = useToast();
 
   useEffect(() => {
+    // 监听全局错误事件
     const handleError = (e) => {
       toast.error(e.detail);
     };
 
+    // 监听成功事件
     const handleSuccess = (e) => {
       toast.success(e.detail);
     };
 
+    // 监听警告事件
     const handleWarning = (e) => {
       toast.warning(e.detail);
     };
 
+    // 监听信息事件
     const handleInfo = (e) => {
       toast.info(e.detail);
     };
@@ -58,45 +67,46 @@ function ToastHandler() {
     };
   }, [toast]);
 
-  return <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />;
+  return null;
+}
+
+// 重连覆盖层包装器
+function ReconnectOverlayWrapper() {
+  const { isReconnecting, reconnectAttempts, manualReconnect } = useGame();
+  
+  return (
+    <ReconnectingOverlay
+      isReconnecting={isReconnecting}
+      attemptNumber={reconnectAttempts}
+      onManualReconnect={manualReconnect}
+    />
+  );
 }
 
 function App() {
+  const toast = useToast();
+
   return (
     <GameProvider>
       <Router>
         <NavigationHandler />
-        <ToastHandler />
-        <AppContent />
+        <ToastListener />
+        <ReconnectOverlayWrapper />
+        
+        <div className="min-h-screen bg-poker-dark">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/game/:roomId" element={<GameRoom />} />
+          </Routes>
+        </div>
+
+        {/* Toast 容器 */}
+        <ToastContainer 
+          toasts={toast.toasts} 
+          onClose={toast.removeToast} 
+        />
       </Router>
     </GameProvider>
-  );
-}
-
-// 应用内容组件（可以访问useGame）
-function AppContent() {
-  const { isReconnecting, reconnectAttempts, manualReconnect } = useGame();
-
-  return (
-    <>
-      <div className="min-h-screen bg-poker-dark">
-        <Routes>
-          <Route
-            path="/"
-            element={<HomePage />}
-          />
-          <Route
-            path="/game/:roomId"
-            element={<GameRoom />}
-          />
-        </Routes>
-      </div>
-      <ReconnectingOverlay
-        isReconnecting={isReconnecting}
-        attemptNumber={reconnectAttempts}
-        onManualReconnect={manualReconnect}
-      />
-    </>
   );
 }
 

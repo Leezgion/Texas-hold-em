@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useGame } from '../contexts/GameContext';
+import { Check, TrendingUp, X, Zap } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
 import PlayerTimer from './PlayerTimer';
 import SliderInput from './SliderInput';
-import { X, Check, TrendingUp, Zap } from 'lucide-react';
+import { useGame } from '../contexts/GameContext';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
   const { playerAction } = useGame();
   const [raiseAmount, setRaiseAmount] = useState('');
   const [showRaiseInput, setShowRaiseInput] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 检查是否是当前玩家的回合
   const isCurrentTurn = gameState && gameState.currentPlayerIndex !== undefined && gameState.currentPlayerIndex === players.findIndex((p) => p.id === currentPlayerId);
 
-  // 检查玩家是否可以操作
-  const canAct = isCurrentTurn && !player.folded && !player.allIn;
+  // 检查玩家是否可以操作（添加isSubmitting检查防止重复提交）
+  const canAct = isCurrentTurn && !player.folded && !player.allIn && !isSubmitting;
 
   // 检查是否可以过牌
   const canCheck = canAct && player.currentBet >= gameState.currentBet;
@@ -65,8 +68,28 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
     }
   }, [gameState?.minRaise, sliderValue, bigBlind]);
 
+  // 收到新游戏状态时解锁UI
+  useEffect(() => {
+    if (gameState) {
+      setIsSubmitting(false);
+    }
+  }, [gameState]);
+
+  // 超时保护（防止卡死）
+  useEffect(() => {
+    if (isSubmitting) {
+      const timeout = setTimeout(() => {
+        console.warn('操作超时，自动解锁UI');
+        setIsSubmitting(false);
+      }, 5000); // 5秒超时
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isSubmitting]);
+
   const handleAction = (action, amount = 0) => {
-    if (canAct) {
+    if (canAct && !isSubmitting) {
+      setIsSubmitting(true);  // 立即锁定UI
       playerAction(action, amount);
       setShowRaiseInput(false);
       setRaiseAmount('');
@@ -97,6 +120,19 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
     }
   };
 
+  // 键盘快捷键
+  useKeyboardShortcuts({
+    canAct,
+    canCheck,
+    canRaise,
+    onFold: () => handleAction('fold'),
+    onCheck: () => handleAction('check'),
+    onCall: () => handleAction('call'),
+    onRaise: () => setShowRaiseInput(true),
+    onAllIn: () => handleAction('call', player.chips),
+    onCancel: () => setShowRaiseInput(false),
+  });
+
   if (!canAct) {
     return (
       <div className="flex items-center justify-center h-12 px-4 bg-gray-800/90 backdrop-blur-sm rounded-xl border border-gray-600">
@@ -107,6 +143,13 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
 
   return (
     <div className="flex flex-col items-center space-y-3 max-w-sm mx-auto">
+      {/* 提交状态提示 */}
+      {isSubmitting && (
+        <div className="text-xs text-yellow-400 animate-pulse font-medium">
+          处理中...
+        </div>
+      )}
+
       {/* 玩家计时器 */}
       <PlayerTimer
         timeRemaining={gameState?.timeRemaining || 0}
@@ -119,7 +162,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
         <button
           onClick={() => handleAction('fold')}
           className="w-11 h-11 bg-red-600/90 hover:bg-red-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-red-500/30 transform hover:scale-105 flex items-center justify-center text-sm font-bold"
-          title="弃牌"
+          title="弃牌 (F)"
         >
           弃
         </button>
@@ -129,7 +172,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
           <button
             onClick={() => handleAction('check')}
             className="h-11 px-4 bg-green-600/90 hover:bg-green-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-green-500/30 transform hover:scale-105 text-sm font-bold"
-            title="过牌"
+            title="过牌 (C)"
           >
             过牌
           </button>
@@ -137,7 +180,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
           <button
             onClick={() => handleAction('call')}
             className="h-11 px-4 bg-blue-600/90 hover:bg-blue-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-blue-500/30 transform hover:scale-105 text-sm font-bold"
-            title={`跟注 ${callAmount}`}
+            title={`跟注 ${callAmount} (C)`}
           >
             跟{callAmount}
           </button>
@@ -150,7 +193,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
             className={`w-11 h-11 ${
               showRaiseInput ? 'bg-yellow-500/90' : 'bg-yellow-600/90 hover:bg-yellow-500'
             } text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-yellow-500/30 transform hover:scale-105 flex items-center justify-center text-sm font-bold`}
-            title="加注"
+            title="加注 (R)"
           >
             加
           </button>
@@ -161,7 +204,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
           <button
             onClick={() => handleAction('call', player.chips)}
             className="h-11 px-3 bg-purple-600/90 hover:bg-purple-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-purple-500/30 transform hover:scale-105 text-sm font-bold"
-            title={`All-in (${player.chips})`}
+            title={`All-in ${player.chips} (A)`}
           >
             梭
           </button>

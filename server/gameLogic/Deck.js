@@ -67,9 +67,9 @@ class Deck {
     return {
       remainingCards: this.cards.length,
       totalCards: 52,
-      isEmpty: this.isEmpty()
+      isEmpty: this.isEmpty(),
     };
   }
 }
 
-module.exports = Deck; 
+module.exports = Deck;
