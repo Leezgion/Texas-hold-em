@@ -123,6 +123,12 @@ class GameLogic {
         player.chips > 0;
 
       player.isActive = readyForTable;
+
+      if (player.ledger) {
+        player.ledger.handStartChips = player.chips;
+        player.ledger.handDelta = 0;
+        player.ledger.showdownDelta = 0;
+      }
     });
   }
 

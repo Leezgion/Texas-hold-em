@@ -165,6 +165,7 @@ class RoomManager {
 
     room.roomState = this.deriveRoomState(room);
     room.players.forEach((player) => {
+      this.syncPlayerLedger(player);
       player.tableState = this.derivePlayerTableState(player);
     });
     return room;
@@ -180,6 +181,38 @@ class RoomManager {
     return error;
   }
 
+  createPlayerLedger(initialBuyIn, currentChips = initialBuyIn) {
+    return {
+      initialBuyIn,
+      rebuyTotal: 0,
+      totalBuyIn: initialBuyIn,
+      currentChips,
+      sessionNet: currentChips - initialBuyIn,
+      handStartChips: currentChips,
+      handDelta: 0,
+      showdownDelta: 0,
+    };
+  }
+
+  syncPlayerLedger(player) {
+    const ledger = player.ledger || this.createPlayerLedger(player.chips, player.chips);
+    const totalBuyIn = ledger.initialBuyIn + ledger.rebuyTotal;
+    const handStartChips = ledger.handStartChips ?? player.chips;
+
+    player.ledger = {
+      initialBuyIn: ledger.initialBuyIn,
+      rebuyTotal: ledger.rebuyTotal,
+      totalBuyIn,
+      currentChips: player.chips,
+      sessionNet: player.chips - totalBuyIn,
+      handStartChips,
+      handDelta: player.chips - handStartChips,
+      showdownDelta: ledger.showdownDelta ?? 0,
+    };
+
+    return player.ledger;
+  }
+
   roomRequiresRecovery(room) {
     if (!room?.gameStarted || !room.gameLogic || typeof room.gameLogic.getGameState !== 'function') {
       return false;
@@ -187,6 +220,11 @@ class RoomManager {
 
     const gameState = room.gameLogic.getGameState();
     return gameState.phase === GAME_PHASES.WAITING && !gameState.currentPlayerId;
+  }
+
+  canPlayerRebuy(player) {
+    const tableState = player.tableState || this.derivePlayerTableState(player);
+    return ![TABLE_STATES.ACTIVE_IN_HAND, TABLE_STATES.ALL_IN_THIS_HAND].includes(tableState);
   }
 
   // 生成唯一房间ID
@@ -246,6 +284,7 @@ class RoomManager {
       lastAction: null,
       hasLeftRoom: false,
       needsRebuy: false,
+      ledger: this.createPlayerLedger(room.settings.initialChips),
       tableState: TABLE_STATES.SEATED_READY,
     };
 
@@ -349,6 +388,10 @@ class RoomManager {
       lastAction: null,
       hasLeftRoom: false,
       needsRebuy: false,
+      ledger: this.createPlayerLedger(
+        availableSeat !== -1 ? room.settings.initialChips : 0,
+        availableSeat !== -1 ? room.settings.initialChips : 0
+      ),
       tableState:
         availableSeat === -1
           ? TABLE_STATES.SPECTATING
@@ -604,13 +647,22 @@ class RoomManager {
       throw new Error('补码金额必须是1000-9000之间的1000整数倍');
     }
 
-    // 检查是否在当前牌局中（只能在弃牌时补码）
-    if (room.gameStarted && room.gameLogic && room.gameLogic.isPlayerInCurrentHand(player)) {
-      throw new Error('当前牌局中无法补码，请先弃牌');
+    this.syncRoomState(room);
+
+    if (!this.canPlayerRebuy(player)) {
+      throw new Error('当前状态无法补码');
     }
 
     // 执行补码
+    const wasWaitingForRebuy = player.needsRebuy;
     player.chips += amount;
+    player.ledger.rebuyTotal += amount;
+    this.syncPlayerLedger(player);
+
+    if (wasWaitingForRebuy && player.chips > 0) {
+      this.transitionPlayerState(player, TABLE_STATES.SPECTATING);
+    }
+
     if (player.socketId) {
       const socket = this.io.sockets.sockets.get(player.socketId);
       socket?.emit('rebuySuccess', { amount, chips: player.chips });
@@ -811,6 +863,7 @@ class RoomManager {
         showHand: p.showHand,
         waitingForNextRound: p.waitingForNextRound || false,
         inHand: p.inHand || false,
+        ledger: p.ledger || null,
         tableState: p.tableState,
         lastAction: p.lastAction || null,
         // 玩家可以看到自己的手牌，或者在摊牌阶段看到别人亮牌的手牌
