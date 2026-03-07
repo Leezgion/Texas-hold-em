@@ -195,6 +195,35 @@
 /**
  * 游戏错误代码常量
  */
+const ROOM_STATES = Object.freeze({
+  IDLE: 'idle',
+  IN_HAND: 'in_hand',
+  SETTLING: 'settling',
+  RECOVERY_REQUIRED: 'recovery_required',
+  CLOSED: 'closed',
+});
+
+const TABLE_STATES = Object.freeze({
+  SPECTATING: 'spectating',
+  SEATED_READY: 'seated_ready',
+  SEATED_WAIT_NEXT_HAND: 'seated_wait_next_hand',
+  ACTIVE_IN_HAND: 'active_in_hand',
+  FOLDED_THIS_HAND: 'folded_this_hand',
+  ALL_IN_THIS_HAND: 'all_in_this_hand',
+  DISCONNECTED: 'disconnected',
+  BUSTED_WAIT_REBUY: 'busted_wait_rebuy',
+});
+
+const GAME_PHASES = Object.freeze({
+  WAITING: 'waiting',
+  PREFLOP: 'preflop',
+  FLOP: 'flop',
+  TURN: 'turn',
+  RIVER: 'river',
+  SHOWDOWN: 'showdown',
+  FINISHED: 'finished',
+});
+
 const ERROR_CODES = {
   // 玩家相关错误
   PLAYER_NOT_FOUND: 'PLAYER_NOT_FOUND',
@@ -291,6 +320,9 @@ const GAME_CONFIG = {
 };
 
 module.exports = {
+  ROOM_STATES,
+  TABLE_STATES,
+  GAME_PHASES,
   ERROR_CODES,
   EVENT_TYPES,
   GAME_CONFIG,

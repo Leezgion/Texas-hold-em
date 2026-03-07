@@ -1,10 +1,71 @@
 const GameLogic = require('./GameLogic');
+const { ROOM_STATES, TABLE_STATES } = require('../types/GameTypes');
 
 class RoomManager {
   constructor(io, gameRooms, socketDeviceMap) {
     this.io = io;
     this.gameRooms = gameRooms;
     this.socketDeviceMap = socketDeviceMap;
+  }
+
+  deriveRoomState(room) {
+    if (!room) {
+      return ROOM_STATES.CLOSED;
+    }
+
+    if (room.roomState === ROOM_STATES.RECOVERY_REQUIRED) {
+      return ROOM_STATES.RECOVERY_REQUIRED;
+    }
+
+    if (!room.gameStarted) {
+      return ROOM_STATES.IDLE;
+    }
+
+    if (room.gameLogic && typeof room.gameLogic.isGameInProgress === 'function') {
+      return room.gameLogic.isGameInProgress() ? ROOM_STATES.IN_HAND : ROOM_STATES.IDLE;
+    }
+
+    return ROOM_STATES.IN_HAND;
+  }
+
+  derivePlayerTableState(player) {
+    if (player.disconnected) {
+      return TABLE_STATES.DISCONNECTED;
+    }
+
+    if (player.seat === -1 || player.isSpectator) {
+      return TABLE_STATES.SPECTATING;
+    }
+
+    if (player.chips <= 0) {
+      return TABLE_STATES.BUSTED_WAIT_REBUY;
+    }
+
+    if (player.waitingForNextRound) {
+      return TABLE_STATES.SEATED_WAIT_NEXT_HAND;
+    }
+
+    if (player.inHand && player.allIn) {
+      return TABLE_STATES.ALL_IN_THIS_HAND;
+    }
+
+    if (player.inHand && player.folded) {
+      return TABLE_STATES.FOLDED_THIS_HAND;
+    }
+
+    if (player.inHand) {
+      return TABLE_STATES.ACTIVE_IN_HAND;
+    }
+
+    return TABLE_STATES.SEATED_READY;
+  }
+
+  syncRoomState(room) {
+    room.roomState = this.deriveRoomState(room);
+    room.players.forEach((player) => {
+      player.tableState = this.derivePlayerTableState(player);
+    });
+    return room;
   }
 
   // 生成唯一房间ID
@@ -30,6 +91,7 @@ class RoomManager {
       },
       players: [],
       gameStarted: false,
+      roomState: ROOM_STATES.IDLE,
       gameLogic: null,
       startTime: null,
       createdAt: Date.now(),
@@ -62,6 +124,7 @@ class RoomManager {
       inHand: false,
       lastAction: null,
       hasLeftRoom: false,
+      tableState: TABLE_STATES.SEATED_READY,
     };
 
     room.players.push(player);
@@ -119,6 +182,7 @@ class RoomManager {
         existingPlayer.nickname = playerName;
       }
       socket.join(roomId);
+      this.syncRoomState(room);
       socket.emit('joinedRoom', {
         roomId,
         seat: existingPlayer.seat,
@@ -162,6 +226,12 @@ class RoomManager {
       inHand: false,
       lastAction: null,
       hasLeftRoom: false,
+      tableState:
+        availableSeat === -1
+          ? TABLE_STATES.SPECTATING
+          : isGameInProgress
+          ? TABLE_STATES.SEATED_WAIT_NEXT_HAND
+          : TABLE_STATES.SEATED_READY,
     };
 
     room.players.push(player);
@@ -594,8 +664,10 @@ class RoomManager {
 
   // 获取房间状态（用于发送给客户端）
   getRoomState(room, viewerPlayerId = null) {
+    this.syncRoomState(room);
     return {
       id: room.id,
+      roomState: room.roomState,
       settings: room.settings,
       players: room.players.map((p) => ({
         id: p.id,
@@ -613,6 +685,7 @@ class RoomManager {
         showHand: p.showHand,
         waitingForNextRound: p.waitingForNextRound || false,
         inHand: p.inHand || false,
+        tableState: p.tableState,
         lastAction: p.lastAction || null,
         // 玩家可以看到自己的手牌，或者在摊牌阶段看到别人亮牌的手牌
         hand: (viewerPlayerId && p.id === viewerPlayerId) || p.showHand ? p.hand : [],
@@ -625,6 +698,7 @@ class RoomManager {
 
   // 广播房间状态给所有玩家（每个玩家收到个性化的状态）
   broadcastRoomState(room) {
+    this.syncRoomState(room);
     room.players.forEach((player) => {
       if (player.socketId) {
         const socket = this.io.sockets.sockets.get(player.socketId);

@@ -1,6 +1,7 @@
 const Deck = require('./Deck');
 const HandEvaluator = require('./HandEvaluator');
 const PotManager = require('./managers/PotManager');
+const { GAME_PHASES } = require('../types/GameTypes');
 
 class GameLogic {
   constructor(room, io, roomManager) {
@@ -20,7 +21,7 @@ class GameLogic {
     this.bigBlindIndex = -1;
     this.roundStartIndex = -1;
     this.lastRaiseIndex = -1;
-    this.gamePhase = 'waiting';
+    this.gamePhase = GAME_PHASES.WAITING;
     this.lastAction = null;
     this.actionHistory = [];
     this.handNumber = 0;
@@ -54,7 +55,7 @@ class GameLogic {
     const eligibleIndices = this.getEligiblePlayerIndices();
 
     if (eligibleIndices.length < 2) {
-      this.gamePhase = 'waiting';
+      this.gamePhase = GAME_PHASES.WAITING;
       this.refreshPotState();
       return false;
     }
@@ -85,7 +86,7 @@ class GameLogic {
       }
     }
 
-    this.gamePhase = 'preflop';
+    this.gamePhase = GAME_PHASES.PREFLOP;
     this.setupActionQueue(actionStartIndex);
 
     if (this.currentPlayerIndex === -1) {
@@ -423,7 +424,7 @@ class GameLogic {
       return;
     }
 
-    if (this.gamePhase === 'river') {
+    if (this.gamePhase === GAME_PHASES.RIVER) {
       this.showdown();
       return;
     }
@@ -433,13 +434,13 @@ class GameLogic {
 
   advanceToNextPhase() {
     switch (this.gamePhase) {
-      case 'preflop':
+      case GAME_PHASES.PREFLOP:
         this.dealFlop();
         break;
-      case 'flop':
+      case GAME_PHASES.FLOP:
         this.dealTurn();
         break;
-      case 'turn':
+      case GAME_PHASES.TURN:
         this.dealRiver();
         break;
       default:
@@ -458,19 +459,19 @@ class GameLogic {
   dealFlop() {
     this.burnCard();
     this.communityCards.push(this.deck.drawCard(), this.deck.drawCard(), this.deck.drawCard());
-    this.gamePhase = 'flop';
+    this.gamePhase = GAME_PHASES.FLOP;
   }
 
   dealTurn() {
     this.burnCard();
     this.communityCards.push(this.deck.drawCard());
-    this.gamePhase = 'turn';
+    this.gamePhase = GAME_PHASES.TURN;
   }
 
   dealRiver() {
     this.burnCard();
     this.communityCards.push(this.deck.drawCard());
-    this.gamePhase = 'river';
+    this.gamePhase = GAME_PHASES.RIVER;
   }
 
   prepareBettingRoundAfterStreet() {
@@ -498,7 +499,7 @@ class GameLogic {
 
   showdown() {
     this.clearPlayerTimer();
-    this.gamePhase = 'showdown';
+    this.gamePhase = GAME_PHASES.SHOWDOWN;
     this.currentPlayerIndex = -1;
     this.playersToAct = new Set();
     this.currentBet = 0;
@@ -698,7 +699,7 @@ class GameLogic {
     this.currentBet = 0;
     this.currentPlayerIndex = -1;
     this.playersToAct = new Set();
-    this.gamePhase = 'showdown';
+    this.gamePhase = GAME_PHASES.SHOWDOWN;
 
     this.io.to(this.room.id).emit('handResult', {
       winners: [winner.nickname],
