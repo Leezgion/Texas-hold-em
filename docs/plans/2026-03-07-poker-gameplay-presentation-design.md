@@ -407,3 +407,30 @@
 - 记录可信
 - 结算不打断
 - 出错时可解释、可恢复、可清理
+
+## 14. 实现后确认
+
+已落地的默认行为：
+
+- 默认 reveal policy：
+  - `showdown_only`
+- 默认结算窗口：
+  - `settleMs = 3000`
+- 结算期客户端入口：
+  - `SettlementOverlay`
+  - `HandHistoryDrawer`
+
+本轮接受的临时实现细节：
+
+- reveal 入口先提供：
+  - `不亮牌`
+  - `亮左牌`
+  - `亮右牌`
+  - `全亮`
+- `HandResultModal` 先保留为 dead-end shell，避免大面积 import 清理影响当前 tranche
+
+本轮明确未完成：
+
+- 还没有完成最终版桌面视觉语言
+- 牌局记录 drawer 仍是第一版信息壳，不是最终视觉设计
+- 真实浏览器矩阵在 worktree 版前端投影回归处被阻塞，需要先修复 seat / room projection 再继续扩大验证

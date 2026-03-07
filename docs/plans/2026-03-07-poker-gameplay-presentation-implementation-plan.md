@@ -721,3 +721,40 @@ Include:
 git add 真实浏览器联机回归踩坑记录.md docs/plans/2026-03-07-poker-gameplay-presentation-design.md docs/plans/2026-03-07-poker-gameplay-presentation-implementation-plan.md
 git commit -m "docs: record presentation refactor regression results"
 ```
+
+## Execution Notes
+
+Current implementation status on `feat/presentation-state-refactor`:
+
+- Task 1 completed
+- Task 2 completed
+- Task 3 completed
+- Task 4 completed
+- Task 5 completed
+- Task 6 completed
+- Task 7 completed
+- Task 8 completed
+
+Automated verification completed:
+
+- `server`
+  - `npm test -- --runInBand`
+  - passed (`91/91`)
+- `client`
+  - `node --test src/view-models/gameViewModel.test.js`
+  - `node --test src/view-models/handHistoryViewModel.test.js`
+  - `npm run build`
+  - passed
+
+Real-browser verification status:
+
+- Started against worktree server on `http://127.0.0.1:3101`
+- Blocked by a new projection regression before the full matrix could continue:
+  - room page showed `2/2 (0座 2观)` while simultaneously rendering player seat placeholders
+  - host no longer saw `开始游戏`
+  - worktree debug endpoint did not resolve the page room ID during this run
+
+Result:
+
+- The implementation tranche is code-complete through Task 8
+- The remaining work is to repair the new room/seat projection regression and then rerun the real-browser matrix before calling the refactor done
