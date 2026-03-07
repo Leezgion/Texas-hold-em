@@ -1046,6 +1046,15 @@ class GameLogic {
 
   refreshPotState() {
     this.pot = this.room.players.reduce((sum, player) => sum + player.totalBet, 0);
+    const hasCommittedAllIn = this.room.players.some(
+      (player) => player.allIn && player.totalBet > 0,
+    );
+
+    if (!hasCommittedAllIn) {
+      this.sidePots = [];
+      return;
+    }
+
     const potManager = new PotManager({ pot: this.pot, sidePots: [] }, { players: this.room.players });
     const pots = potManager.calculatePots(this.room.players);
     this.sidePots = pots.slice(1).map((pot) => ({
