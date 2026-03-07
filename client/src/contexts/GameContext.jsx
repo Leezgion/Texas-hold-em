@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import deviceIdManager from '../utils/deviceId';
 import io from 'socket.io-client';
 import { derivePlayerStateView } from '../view-models/gameViewModel';
+import { resolveServerOrigin } from '../utils/serverOrigin';
 
 // 创建Zustand store
 const useGameStore = create((set, get) => ({
@@ -56,7 +57,7 @@ const useGameStore = create((set, get) => ({
     const deviceId = deviceIdManager.getDeviceId();
 
     // 自动检测当前访问的主机地址
-    const serverUrl = window.location.hostname === 'localhost' ? 'http://localhost:3001' : `http://${window.location.hostname}:3001`;
+    const serverUrl = resolveServerOrigin(window.location);
     const socket = io(serverUrl, {
       reconnection: true,
       reconnectionDelay: 1000,
@@ -308,7 +309,8 @@ const useGameStore = create((set, get) => ({
   // 验证房间是否存在
   checkRoom: async (roomId) => {
     try {
-      const response = await fetch(`/api/rooms/${roomId}`);
+      const serverUrl = resolveServerOrigin(window.location);
+      const response = await fetch(`${serverUrl}/api/rooms/${roomId}`);
       if (response.ok) {
         const roomData = await response.json();
         return roomData;
