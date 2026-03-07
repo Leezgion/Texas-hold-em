@@ -1,24 +1,18 @@
 import { Plus } from 'lucide-react';
 import React from 'react';
 import { useGame } from '../contexts/GameContext';
+import { deriveSeatSelectionNotice } from '../view-models/gameViewModel';
 
-const EmptySeat = ({ seatIndex, position, getPositionLabel }) => {
-  const { takeSeat, gameStarted } = useGame();
+const EmptySeat = ({ seatIndex, position, getPositionLabel, roomState }) => {
+  const { takeSeat } = useGame();
 
   const handleTakeSeat = () => {
-    if (gameStarted) {
-      window.dispatchEvent(
-        new CustomEvent('game-info', {
-          detail: '当前手牌进行中，入座后会在下一手自动加入',
-        })
-      );
-    } else {
-      window.dispatchEvent(
-        new CustomEvent('game-success', {
-          detail: `已选择座位 ${seatIndex + 1}`,
-        })
-      );
-    }
+    const notice = deriveSeatSelectionNotice(roomState, seatIndex);
+    window.dispatchEvent(
+      new CustomEvent(notice.channel, {
+        detail: notice.detail,
+      })
+    );
 
     takeSeat(seatIndex);
   };

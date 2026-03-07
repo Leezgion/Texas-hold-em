@@ -1,12 +1,18 @@
 import React from 'react';
 import Modal from './Modal';
+import { deriveLeaveSeatDialog } from '../view-models/gameViewModel';
 
-const LeaveSeatModal = ({ show, onClose, onConfirm, isInGame = false, isExitingRoom = false }) => {
+const LeaveSeatModal = ({
+  show,
+  onClose,
+  onConfirm,
+  player = null,
+  roomState = 'idle',
+  isExitingRoom = false,
+}) => {
   const title = isExitingRoom ? '退出房间确认' : '离座确认';
-  const message = isExitingRoom ? '您正在游戏中，退出房间将自动弃牌。确认要退出房间吗？' : '您正在游戏中，离座将自动弃牌。确认要离开座位吗？';
-
   const confirmText = isExitingRoom ? '退出房间' : '离开座位';
-  const neutralMessage = isExitingRoom ? '确认要退出房间吗？' : '确认要离开座位进入观战模式吗？';
+  const dialog = deriveLeaveSeatDialog(player, roomState, isExitingRoom);
 
   return (
     <Modal
@@ -17,12 +23,12 @@ const LeaveSeatModal = ({ show, onClose, onConfirm, isInGame = false, isExitingR
     >
 
         <div className="mb-6">
-          <p className="text-white text-lg">{isInGame ? message : neutralMessage}</p>
-          {isInGame && (
+          <p className="text-white text-lg">{dialog.message}</p>
+          {dialog.isDangerous && (
             <div className="mt-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
               <div className="flex items-center space-x-2 text-red-400">
                 <span className="text-xl">⚠️</span>
-                <span className="font-medium">注意：此操作将导致您自动弃牌</span>
+                <span className="font-medium">{dialog.warning}</span>
               </div>
             </div>
           )}
@@ -41,7 +47,7 @@ const LeaveSeatModal = ({ show, onClose, onConfirm, isInGame = false, isExitingR
             onConfirm();
           }}
           className={`flex-1 px-4 py-3 font-medium rounded-lg transition-colors ${
-            isInGame ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-poker-gold hover:bg-yellow-500 text-black'
+            dialog.isDangerous ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-poker-gold hover:bg-yellow-500 text-black'
           }`}
         >
           {confirmText}

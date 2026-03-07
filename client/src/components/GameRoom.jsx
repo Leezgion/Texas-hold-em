@@ -737,6 +737,7 @@ const GameRoom = () => {
                 seatIndex={seatIndex}
                 position={position}
                 getPositionLabel={getPositionLabel}
+                roomState={roomState || 'idle'}
               />
             );
           }
@@ -853,7 +854,8 @@ const GameRoom = () => {
         show={showLeaveSeat}
         onClose={() => setShowLeaveSeat(false)}
         onConfirm={confirmLeaveSeat}
-        isInGame={gameStarted && currentPlayer && !currentPlayer.folded}
+        player={currentPlayer}
+        roomState={roomState || 'idle'}
         isExitingRoom={false}
       />
 
@@ -862,7 +864,8 @@ const GameRoom = () => {
         show={showExitRoom}
         onClose={() => setShowExitRoom(false)}
         onConfirm={confirmExitRoom}
-        isInGame={gameStarted && currentPlayer && !currentPlayer.folded}
+        player={currentPlayer}
+        roomState={roomState || 'idle'}
         isExitingRoom={true}
       />
 
