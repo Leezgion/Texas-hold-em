@@ -132,7 +132,9 @@ export function deriveSeatSelectionNotice(roomState = 'idle', seatIndex = 0) {
 }
 
 export function deriveLeaveSeatDialog(player = {}, roomState = 'idle', isExitingRoom = false) {
-  if (isPlayerCommittedToCurrentHand(player, roomState)) {
+  const normalizedPlayer = player || {};
+
+  if (isPlayerCommittedToCurrentHand(normalizedPlayer, roomState)) {
     return {
       isDangerous: true,
       message: isExitingRoom
@@ -142,7 +144,7 @@ export function deriveLeaveSeatDialog(player = {}, roomState = 'idle', isExiting
     };
   }
 
-  if (player.tableState === 'seated_wait_next_hand') {
+  if (normalizedPlayer.tableState === 'seated_wait_next_hand') {
     return {
       isDangerous: false,
       message: isExitingRoom

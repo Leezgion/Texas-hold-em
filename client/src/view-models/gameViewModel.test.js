@@ -99,6 +99,14 @@ test('derives leave-seat dialogs from current hand participation instead of game
   );
 });
 
+test('handles missing currentPlayer when deriving leave-seat dialogs', () => {
+  assert.deepEqual(deriveLeaveSeatDialog(null, 'idle', true), {
+    isDangerous: false,
+    message: '确认要退出房间吗？',
+    warning: null,
+  });
+});
+
 test('formats signed chip values for the table UI', () => {
   assert.equal(formatSignedChips(0), '0');
   assert.equal(formatSignedChips(3200), '+3,200');
