@@ -76,8 +76,13 @@ function buildReveals(players = []) {
   return players.map((player) => ({
     playerId: player.id,
     nickname: player.nickname,
-    reveal: player.showHand ? 'show_all' : 'hide',
-    cards: player.showHand ? (player.hand || []).map(cloneCard) : [],
+    reveal: player.revealMode || (player.showHand ? 'show_all' : 'hide'),
+    cards:
+      player.showHand && player.revealMode === 'show_one'
+        ? (player.hand || []).filter((_, index) => (player.revealedCardIndices || []).includes(index)).map(cloneCard)
+        : player.showHand
+        ? (player.hand || []).map(cloneCard)
+        : [],
   }));
 }
 

@@ -224,6 +224,17 @@ const GAME_PHASES = Object.freeze({
   FINISHED: 'finished',
 });
 
+const REVEAL_POLICIES = Object.freeze({
+  SHOWDOWN_ONLY: 'showdown_only',
+  FREE_REVEAL_AFTER_HAND: 'free_reveal_after_hand',
+});
+
+const REVEAL_MODES = Object.freeze({
+  HIDE: 'hide',
+  SHOW_ONE: 'show_one',
+  SHOW_ALL: 'show_all',
+});
+
 const ERROR_CODES = {
   // 玩家相关错误
   PLAYER_NOT_FOUND: 'PLAYER_NOT_FOUND',
@@ -325,6 +336,8 @@ module.exports = {
   ROOM_STATES,
   TABLE_STATES,
   GAME_PHASES,
+  REVEAL_POLICIES,
+  REVEAL_MODES,
   ERROR_CODES,
   EVENT_TYPES,
   GAME_CONFIG,

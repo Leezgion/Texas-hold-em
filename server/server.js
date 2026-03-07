@@ -188,6 +188,18 @@ io.on('connection', (socket) => {
   });
 
   // 亮牌/盖牌
+  socket.on('revealHand', ({ mode, cardIndex = null }) => {
+    try {
+      const deviceId = socketDeviceMap.get(socket.id);
+      if (!deviceId) {
+        throw new Error('设备未注册');
+      }
+      roomManager.revealHand(deviceId, mode, cardIndex);
+    } catch (error) {
+      socket.emit('error', error.message);
+    }
+  });
+
   socket.on('showHand', () => {
     try {
       const deviceId = socketDeviceMap.get(socket.id);

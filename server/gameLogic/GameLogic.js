@@ -2,7 +2,7 @@ const Deck = require('./Deck');
 const HandEvaluator = require('./HandEvaluator');
 const HandRecordBuilder = require('./HandRecordBuilder');
 const PotManager = require('./managers/PotManager');
-const { GAME_PHASES } = require('../types/GameTypes');
+const { GAME_PHASES, REVEAL_MODES, REVEAL_POLICIES, ROOM_STATES } = require('../types/GameTypes');
 
 class GameLogic {
   constructor(room, io, roomManager) {
@@ -30,6 +30,11 @@ class GameLogic {
     this.handStartedAt = 0;
     this.playersToAct = new Set();
     this.allinResults = [];
+    this.pendingSettlementSnapshot = null;
+    this.settlementWindowEndsAt = null;
+    this.eligibleRevealPlayerIds = new Set();
+    this.participantRevealPlayerIds = new Set();
+    this.revealLocked = false;
 
     this.playerTimer = null;
     this.timeRemaining = 0;
@@ -40,6 +45,7 @@ class GameLogic {
   startNewHand() {
     this.clearPlayerTimer();
     this.clearNextHandTimeout();
+    this.clearSettlementState();
 
     this.handNumber += 1;
     this.handStartedAt = Date.now();
@@ -60,6 +66,7 @@ class GameLogic {
 
     if (eligibleIndices.length < 2) {
       this.gamePhase = GAME_PHASES.WAITING;
+      this.room.roomState = ROOM_STATES.IDLE;
       this.refreshPotState();
       return false;
     }
@@ -71,6 +78,8 @@ class GameLogic {
       player.folded = false;
       player.allIn = false;
       player.showHand = false;
+      player.revealMode = REVEAL_MODES.HIDE;
+      player.revealedCardIndices = [];
       player.currentBet = 0;
       player.totalBet = 0;
       player.hand = [];
@@ -91,6 +100,7 @@ class GameLogic {
     }
 
     this.gamePhase = GAME_PHASES.PREFLOP;
+    this.room.roomState = ROOM_STATES.IN_HAND;
     this.setupActionQueue(actionStartIndex);
 
     if (this.currentPlayerIndex === -1) {
@@ -116,6 +126,8 @@ class GameLogic {
       player.folded = false;
       player.allIn = false;
       player.showHand = false;
+      player.revealMode = REVEAL_MODES.HIDE;
+      player.revealedCardIndices = [];
       player.inHand = false;
       player.lastAction = null;
 
@@ -540,6 +552,9 @@ class GameLogic {
       pots,
       totalPot,
     });
+    this.beginSettlement({
+      eligibleRevealPlayerIds: result.hands.map((entry) => entry.player.id),
+    });
     this.scheduleNextHand();
   }
 
@@ -579,6 +594,10 @@ class GameLogic {
           nickname: winner.nickname,
         })),
       })),
+    });
+    this.beginSettlement({
+      eligibleRevealPlayerIds: boards[0]?.result?.hands.map((entry) => entry.player.id) || [],
+      reason: 'multiple_runouts',
     });
 
     this.io.to(this.room.id).emit('allinResult', {
@@ -728,24 +747,141 @@ class GameLogic {
     });
   }
 
+  getLastHandParticipantIds() {
+    return this.room.players.filter((player) => player.inHand).map((player) => player.id);
+  }
+
+  beginSettlement({ eligibleRevealPlayerIds = [], reason = null } = {}) {
+    this.clearPlayerTimer();
+    this.room.roomState = ROOM_STATES.SETTLING;
+    this.revealLocked = false;
+    this.room.revealLocked = false;
+    this.participantRevealPlayerIds = new Set(this.getLastHandParticipantIds());
+    this.eligibleRevealPlayerIds = new Set(eligibleRevealPlayerIds);
+    this.room.eligibleRevealPlayerIds = [...this.eligibleRevealPlayerIds];
+    this.settlementWindowEndsAt = Date.now() + (this.room.settings.settleMs ?? 3000);
+    this.room.settlementWindowEndsAt = this.settlementWindowEndsAt;
+    this.room.settlementReason = reason;
+
+    this.room.players.forEach((player) => {
+      player.showHand = false;
+      player.revealMode = REVEAL_MODES.HIDE;
+      player.revealedCardIndices = [];
+    });
+
+    this.refreshCapturedHandRecord();
+  }
+
+  canPlayerReveal(playerId) {
+    if (this.room.roomState !== ROOM_STATES.SETTLING || this.revealLocked) {
+      return false;
+    }
+
+    if (this.room.settings.revealPolicy === REVEAL_POLICIES.FREE_REVEAL_AFTER_HAND) {
+      return this.participantRevealPlayerIds.has(playerId);
+    }
+
+    return this.eligibleRevealPlayerIds.has(playerId);
+  }
+
+  handleRevealSelection(playerId, mode, cardIndex = null) {
+    const player = this.room.players.find((entry) => entry.id === playerId);
+    if (!player || !this.canPlayerReveal(playerId)) {
+      throw new Error('玩家当前无法亮牌');
+    }
+
+    switch (mode) {
+      case REVEAL_MODES.HIDE:
+        player.showHand = false;
+        player.revealMode = REVEAL_MODES.HIDE;
+        player.revealedCardIndices = [];
+        break;
+      case REVEAL_MODES.SHOW_ONE:
+        if (![0, 1].includes(cardIndex) || !player.hand?.[cardIndex]) {
+          throw new Error('请选择要展示的手牌');
+        }
+        player.showHand = true;
+        player.revealMode = REVEAL_MODES.SHOW_ONE;
+        player.revealedCardIndices = [cardIndex];
+        break;
+      case REVEAL_MODES.SHOW_ALL:
+        player.showHand = true;
+        player.revealMode = REVEAL_MODES.SHOW_ALL;
+        player.revealedCardIndices = [0, 1].filter((index) => Boolean(player.hand?.[index]));
+        break;
+      default:
+        throw new Error('无效的亮牌动作');
+    }
+
+    this.refreshCapturedHandRecord();
+  }
+
+  lockSettlementReveals() {
+    this.revealLocked = true;
+    this.room.revealLocked = true;
+    this.refreshCapturedHandRecord();
+  }
+
+  clearSettlementState() {
+    this.pendingSettlementSnapshot = null;
+    this.settlementWindowEndsAt = null;
+    this.eligibleRevealPlayerIds = new Set();
+    this.participantRevealPlayerIds = new Set();
+    this.revealLocked = false;
+    this.room.settlementWindowEndsAt = null;
+    this.room.eligibleRevealPlayerIds = [];
+    this.room.revealLocked = false;
+    this.room.settlementReason = null;
+  }
+
   captureHandRecord({ communityCards, pots = [], winners = [], totalPot = 0, reason = null, boardResults = [] }) {
+    this.pendingSettlementSnapshot = {
+      communityCards: [...communityCards],
+      pots: pots.map((pot) => ({
+        ...pot,
+        eligiblePlayers: [...(pot.eligiblePlayers || [])],
+      })),
+      winners: winners.map((winner) => ({ ...winner })),
+      totalPot,
+      reason,
+      boardResults: boardResults.map((board) => ({
+        ...board,
+        communityCards: [...(board.communityCards || [])],
+        winners: (board.winners || []).map((winner) => ({ ...winner })),
+      })),
+    };
+
+    return this.refreshCapturedHandRecord();
+  }
+
+  refreshCapturedHandRecord() {
+    if (!this.pendingSettlementSnapshot) {
+      return null;
+    }
+
     this.syncPlayerLedgersForSettlement();
 
     const handRecord = HandRecordBuilder.buildHandRecord({
       handNumber: this.handNumber,
       startedAt: this.handStartedAt,
       endedAt: Date.now(),
-      totalPot,
-      reason,
+      totalPot: this.pendingSettlementSnapshot.totalPot,
+      reason: this.pendingSettlementSnapshot.reason,
       players: this.room.players,
       actions: this.actionHistory,
-      communityCards,
-      pots,
-      winners,
-      boardResults,
+      communityCards: this.pendingSettlementSnapshot.communityCards,
+      pots: this.pendingSettlementSnapshot.pots,
+      winners: this.pendingSettlementSnapshot.winners,
+      boardResults: this.pendingSettlementSnapshot.boardResults,
     });
 
-    this.handHistory.push(handRecord);
+    const existingIndex = this.handHistory.findIndex((record) => record.handNumber === this.handNumber);
+    if (existingIndex === -1) {
+      this.handHistory.push(handRecord);
+    } else {
+      this.handHistory.splice(existingIndex, 1, handRecord);
+    }
+
     return handRecord;
   }
 
@@ -807,6 +943,10 @@ class GameLogic {
       pots: [],
       winners,
       totalPot,
+      reason: '其他玩家全部弃牌',
+    });
+    this.beginSettlement({
+      eligibleRevealPlayerIds: [winner.id],
       reason: '其他玩家全部弃牌',
     });
 
@@ -1072,9 +1212,11 @@ class GameLogic {
   scheduleNextHand() {
     this.clearNextHandTimeout();
     this.nextHandTimeout = setTimeout(() => {
+      this.lockSettlementReveals();
+      this.clearSettlementState();
       this.startNewHand();
       this.roomManager.broadcastRoomState(this.room);
-    }, 3000);
+    }, this.room.settings.settleMs ?? 3000);
   }
 
   clearNextHandTimeout() {
@@ -1104,6 +1246,10 @@ class GameLogic {
       lastRaiseIndex: this.lastRaiseIndex,
       handNumber: this.handNumber,
       handHistory: this.handHistory,
+      settlementWindowEndsAt: this.settlementWindowEndsAt,
+      revealPolicy: this.room.settings.revealPolicy || REVEAL_POLICIES.SHOWDOWN_ONLY,
+      eligibleRevealPlayerIds: [...this.eligibleRevealPlayerIds],
+      revealLocked: this.revealLocked,
       allinPlayers: this.room.players.filter((player) => player.inHand && player.allIn).map((player) => player.nickname),
       allinResults: this.allinResults,
       lastAction: this.lastAction,

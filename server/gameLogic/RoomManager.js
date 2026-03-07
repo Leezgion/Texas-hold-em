@@ -1,5 +1,5 @@
 const GameLogic = require('./GameLogic');
-const { ERROR_CODES, GAME_PHASES, ROOM_STATES, TABLE_STATES } = require('../types/GameTypes');
+const { ERROR_CODES, GAME_PHASES, REVEAL_MODES, REVEAL_POLICIES, ROOM_STATES, TABLE_STATES } = require('../types/GameTypes');
 
 class RoomManager {
   constructor(io, gameRooms, socketDeviceMap) {
@@ -15,6 +15,10 @@ class RoomManager {
 
     if (room.roomState === ROOM_STATES.RECOVERY_REQUIRED) {
       return ROOM_STATES.RECOVERY_REQUIRED;
+    }
+
+    if (room.roomState === ROOM_STATES.SETTLING) {
+      return ROOM_STATES.SETTLING;
     }
 
     if (!room.gameStarted) {
@@ -246,6 +250,8 @@ class RoomManager {
         maxPlayers: settings.maxPlayers || 6,
         allowStraddle: settings.allowStraddle || false,
         allinDealCount: settings.allinDealCount || 1,
+        settleMs: settings.settleMs ?? 3000,
+        revealPolicy: settings.revealPolicy || REVEAL_POLICIES.SHOWDOWN_ONLY,
         initialChips: 1000,
       },
       players: [],
@@ -279,6 +285,8 @@ class RoomManager {
       folded: false,
       allIn: false,
       showHand: false,
+      revealMode: REVEAL_MODES.HIDE,
+      revealedCardIndices: [],
       waitingForNextRound: false,
       inHand: false,
       lastAction: null,
@@ -312,6 +320,17 @@ class RoomManager {
 
     if (settings.allinDealCount < 1 || settings.allinDealCount > 4) {
       throw new Error('All-in发牌次数必须在1-4次之间');
+    }
+
+    if (settings.settleMs !== undefined && (!Number.isInteger(settings.settleMs) || settings.settleMs < 0 || settings.settleMs > 15000)) {
+      throw new Error('结算停留时间必须是0-15000毫秒之间的整数');
+    }
+
+    if (
+      settings.revealPolicy !== undefined &&
+      !Object.values(REVEAL_POLICIES).includes(settings.revealPolicy)
+    ) {
+      throw new Error('无效的亮牌策略');
     }
   }
 
@@ -383,6 +402,8 @@ class RoomManager {
       folded: false,
       allIn: false,
       showHand: false,
+      revealMode: REVEAL_MODES.HIDE,
+      revealedCardIndices: [],
       waitingForNextRound: availableSeat !== -1 && isGameInProgress, // 有座位但游戏进行中时等待下一轮
       inHand: false,
       lastAction: null,
@@ -672,22 +693,15 @@ class RoomManager {
 
   // 处理亮牌
   handleShowHand(playerId) {
-    const room = this.findRoomByPlayerId(playerId);
-    if (!room) {
-      throw new Error('房间不存在');
-    }
-
-    const player = room.players.find((p) => p.id === playerId);
-    if (!player) {
-      throw new Error('玩家不存在');
-    }
-
-    player.showHand = true;
-    this.broadcastRoomState(room);
+    this.revealHand(playerId, REVEAL_MODES.SHOW_ALL);
   }
 
   // 处理盖牌
   handleMuckHand(playerId) {
+    this.revealHand(playerId, REVEAL_MODES.HIDE);
+  }
+
+  revealHand(playerId, mode, cardIndex = null) {
     const room = this.findRoomByPlayerId(playerId);
     if (!room) {
       throw new Error('房间不存在');
@@ -698,8 +712,28 @@ class RoomManager {
       throw new Error('玩家不存在');
     }
 
-    player.showHand = false;
+    if (!room.gameLogic || typeof room.gameLogic.handleRevealSelection !== 'function') {
+      throw new Error('当前牌局不支持亮牌');
+    }
+
+    room.gameLogic.handleRevealSelection(playerId, mode, cardIndex);
     this.broadcastRoomState(room);
+  }
+
+  getVisibleHandForViewer(player, viewerPlayerId = null) {
+    if (viewerPlayerId && player.id === viewerPlayerId) {
+      return player.hand;
+    }
+
+    if (!player.showHand) {
+      return [];
+    }
+
+    if (player.revealMode === REVEAL_MODES.SHOW_ONE && Array.isArray(player.revealedCardIndices)) {
+      return player.hand.filter((_, index) => player.revealedCardIndices.includes(index));
+    }
+
+    return player.hand;
   }
 
   // 处理玩家断开连接
@@ -861,13 +895,15 @@ class RoomManager {
         folded: p.folded,
         allIn: p.allIn,
         showHand: p.showHand,
+        revealMode: p.revealMode || REVEAL_MODES.HIDE,
+        revealedCardIndices: p.revealedCardIndices || [],
         waitingForNextRound: p.waitingForNextRound || false,
         inHand: p.inHand || false,
         ledger: p.ledger || null,
         tableState: p.tableState,
         lastAction: p.lastAction || null,
         // 玩家可以看到自己的手牌，或者在摊牌阶段看到别人亮牌的手牌
-        hand: (viewerPlayerId && p.id === viewerPlayerId) || p.showHand ? p.hand : [],
+        hand: this.getVisibleHandForViewer(p, viewerPlayerId),
       })),
       gameStarted: room.gameStarted,
       gameState: room.gameLogic ? room.gameLogic.getGameState() : null,
