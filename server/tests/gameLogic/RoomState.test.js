@@ -1,5 +1,5 @@
 const RoomManager = require('../../gameLogic/RoomManager');
-const { ROOM_STATES, TABLE_STATES } = require('../../types/GameTypes');
+const { GAME_PHASES, ROOM_STATES, TABLE_STATES } = require('../../types/GameTypes');
 
 function createSocket(id) {
   return {
@@ -86,5 +86,54 @@ describe('RoomManager state vocabularies', () => {
     const projectedLatePlayer = roomState.players.find((player) => player.id === 'device-late');
     expect(roomState.roomState).toBe(ROOM_STATES.IN_HAND);
     expect(projectedLatePlayer.tableState).toBe(TABLE_STATES.SEATED_WAIT_NEXT_HAND);
+  });
+
+  it('rejects startGame from a non-host player', () => {
+    jest.useFakeTimers();
+    try {
+      const { io, socketDeviceMap, roomManager } = createManager();
+      const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+      const guestSocket = registerDevice(io, socketDeviceMap, 'socket-guest', 'device-guest');
+
+      roomManager.startGameTimer = jest.fn();
+
+      const roomId = roomManager.createRoom(hostSocket, {
+        duration: 60,
+        maxPlayers: 6,
+        allinDealCount: 1,
+      });
+
+      roomManager.joinRoom(guestSocket, roomId, 'device-guest', 'Guest');
+
+      expect(() => roomManager.startGame(roomId, 'device-guest')).toThrow('只有房主可以开始游戏');
+    } finally {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    }
+  });
+
+  it('marks dirty rooms as recovery_required instead of silently no-oping', () => {
+    const { io, gameRooms, socketDeviceMap, roomManager } = createManager();
+    const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+
+    const roomId = roomManager.createRoom(hostSocket, {
+      duration: 60,
+      maxPlayers: 6,
+      allinDealCount: 1,
+    });
+
+    const room = gameRooms.get(roomId);
+    room.gameStarted = true;
+    room.gameLogic = {
+      isGameInProgress: () => false,
+      getGameState: () => ({
+        phase: GAME_PHASES.WAITING,
+        currentPlayerId: null,
+      }),
+    };
+
+    expect(() => roomManager.startGame(roomId, 'device-host')).toThrow('房间状态异常，需要恢复');
+    expect(room.roomState).toBe(ROOM_STATES.RECOVERY_REQUIRED);
+    expect(roomManager.getRoomState(room, 'device-host').roomState).toBe(ROOM_STATES.RECOVERY_REQUIRED);
   });
 });

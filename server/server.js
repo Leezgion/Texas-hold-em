@@ -3,6 +3,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const path = require('path');
+const { ERROR_CODES, ROOM_STATES } = require('./types/GameTypes');
 
 const app = express();
 const server = http.createServer(app);
@@ -94,6 +95,13 @@ io.on('connection', (socket) => {
       roomManager.startGame(roomId, deviceId);
       console.log(`房间 ${roomId} 开始游戏`);
     } catch (error) {
+      if (error.code === ERROR_CODES.ROOM_RECOVERY_REQUIRED) {
+        socket.emit('roomRecoveryRequired', {
+          roomId,
+          roomState: ROOM_STATES.RECOVERY_REQUIRED,
+          message: error.message,
+        });
+      }
       socket.emit('error', error.message);
     }
   });

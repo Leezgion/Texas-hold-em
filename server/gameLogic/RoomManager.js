@@ -1,5 +1,5 @@
 const GameLogic = require('./GameLogic');
-const { ROOM_STATES, TABLE_STATES } = require('../types/GameTypes');
+const { ERROR_CODES, GAME_PHASES, ROOM_STATES, TABLE_STATES } = require('../types/GameTypes');
 
 class RoomManager {
   constructor(io, gameRooms, socketDeviceMap) {
@@ -66,6 +66,21 @@ class RoomManager {
       player.tableState = this.derivePlayerTableState(player);
     });
     return room;
+  }
+
+  createError(message, code) {
+    const error = new Error(message);
+    error.code = code;
+    return error;
+  }
+
+  roomRequiresRecovery(room) {
+    if (!room?.gameStarted || !room.gameLogic || typeof room.gameLogic.getGameState !== 'function') {
+      return false;
+    }
+
+    const gameState = room.gameLogic.getGameState();
+    return gameState.phase === GAME_PHASES.WAITING && !gameState.currentPlayerId;
   }
 
   // 生成唯一房间ID
@@ -269,6 +284,15 @@ class RoomManager {
     const player = room.players.find((p) => p.id === playerId);
     if (!player) {
       throw new Error('玩家不存在');
+    }
+
+    if (!player.isHost) {
+      throw this.createError('只有房主可以开始游戏', ERROR_CODES.HOST_ONLY_ACTION);
+    }
+
+    if (this.roomRequiresRecovery(room)) {
+      room.roomState = ROOM_STATES.RECOVERY_REQUIRED;
+      throw this.createError('房间状态异常，需要恢复', ERROR_CODES.ROOM_RECOVERY_REQUIRED);
     }
 
     if (player.isSpectator || player.seat === -1) {
