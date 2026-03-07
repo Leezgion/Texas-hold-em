@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
+import { derivePlayerStateView } from '../view-models/gameViewModel';
 import SliderInput from './SliderInput';
 import Modal from './Modal';
 
 const RebuyModal = ({ show, onClose }) => {
-  const { requestRebuy, players, currentPlayerId } = useGame();
+  const { requestRebuy, players, currentPlayerId, roomState } = useGame();
   const [amount, setAmount] = useState(1000);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,6 +46,8 @@ const RebuyModal = ({ show, onClose }) => {
   // 获取当前玩家信息
   const currentPlayer = players.find((p) => p.id === currentPlayerId);
   const currentChips = currentPlayer ? currentPlayer.chips : 0;
+  const currentPlayerView = currentPlayer ? derivePlayerStateView(currentPlayer, roomState || 'idle') : null;
+  const canRequestRebuy = currentPlayerView?.canRequestRebuy ?? false;
 
   return (
     <Modal
@@ -68,7 +71,6 @@ const RebuyModal = ({ show, onClose }) => {
               max={maxAmount}
               step={stepSize}
               onChange={handleSliderChange}
-              disabled={isSubmitting}
               colorScheme="gold"
               formatValue={(val) => val.toLocaleString()}
               formatLabel={(val) => val >= 1000 ? `${val/1000}K` : val.toLocaleString()}
@@ -77,6 +79,7 @@ const RebuyModal = ({ show, onClose }) => {
               showValue={true}
               showLabels={true}
               showSteps={true}
+              disabled={isSubmitting || !canRequestRebuy}
             />
           </div>
 
@@ -96,6 +99,11 @@ const RebuyModal = ({ show, onClose }) => {
               <span>增加：</span>
               <span className="ml-1 font-semibold text-green-400">+{amount.toLocaleString()}</span>
             </div>
+            {currentPlayerView && (
+              <div className="mt-3 text-center text-xs text-gray-400">
+                当前状态：<span className="text-blue-300">{currentPlayerView.statusLabel}</span>
+              </div>
+            )}
           </div>
 
           {/* 补码说明 */}
@@ -105,10 +113,11 @@ const RebuyModal = ({ show, onClose }) => {
               补码说明
             </h4>
             <ul className="text-sm text-gray-300 space-y-1">
-              <li>• 只能在弃牌状态时补码</li>
+              <li>• 当前是否可补码由服务器的桌面状态决定</li>
               <li>• 补码金额：{minAmount.toLocaleString()}-{maxAmount.toLocaleString()}筹码</li>
               <li>• 步进单位：{stepSize.toLocaleString()}筹码</li>
-              <li>• 补码立即生效，下一轮开始参与</li>
+              <li>• 补码会立即记入筹码与总带入统计</li>
+              <li>• 本手是否参与，取决于当前桌面状态：{currentPlayerView?.statusLabel || '未入座'}</li>
             </ul>
           </div>
 
@@ -125,9 +134,9 @@ const RebuyModal = ({ show, onClose }) => {
             <button
               type="submit"
               className="flex-1 py-3 px-4 bg-gradient-to-r from-poker-gold to-yellow-500 hover:from-yellow-500 hover:to-poker-gold text-black font-bold rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
-              disabled={isSubmitting || amount < minAmount || amount > maxAmount}
+              disabled={isSubmitting || !canRequestRebuy || amount < minAmount || amount > maxAmount}
             >
-              {isSubmitting ? '补码中...' : `💰 补码 ${amount.toLocaleString()}`}
+              {isSubmitting ? '补码中...' : canRequestRebuy ? `💰 补码 ${amount.toLocaleString()}` : '当前状态不可补码'}
             </button>
           </div>
         </form>

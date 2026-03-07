@@ -1,7 +1,8 @@
 import { ChevronDown, ChevronUp, Crown, Eye, Users, Gamepad2 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
+import { derivePlayerStateView, deriveRoomOccupancy } from '../view-models/gameViewModel';
 
-const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, currentPlayerId }) => {
+const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roomState = 'idle', currentPlayerId }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const panelRef = useRef(null);
 
@@ -40,57 +41,25 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, cur
   // 如果players未定义，使用空数组
   const playersArray = players || [];
 
-  // 分类玩家 - 基于实际座位状态而不是身份
-  const seatedPlayers = playersArray.filter((player) => 
-    player.seat !== -1 && !player.isSpectator
-  );
-  const spectators = playersArray.filter((player) => 
-    player.seat === -1 || player.isSpectator
-  );
+  const { seatedPlayers, spectators } = deriveRoomOccupancy(playersArray, roomState);
 
   const maxPlayers = roomSettings.maxPlayers || 6;
   const totalPlayers = playersArray.length;
 
   // 获取玩家状态文本和图标
   const getPlayerStatus = (player) => {
-    // 连接状态 - 只有真正断线才显示离线
-    if (player.disconnected) {
-      return { text: '离线', icon: null, priority: 'low' };
+    const stateView = derivePlayerStateView(player, roomState);
+    if (player.isHost && stateView.isSpectator) {
+      return { text: '房主(观战)', icon: Eye, priority: 'high' };
     }
-
-    // 游戏中的具体状态
-    if (player.allIn) {
-      return { text: 'All-in', icon: null, priority: 'high' };
-    }
-
-    if (player.folded) {
-      return { text: '已弃牌', icon: null, priority: 'low' };
-    }
-
-    if (player.waitingForNextRound) {
-      return { text: '等待下轮', icon: null, priority: 'medium' };
-    }
-
-    // 观战状态 - 包括离座的房主
-    if (player.isSpectator || player.seat === -1) {
-      // 如果是房主但在观战，显示特殊状态
-      if (player.isHost) {
-        return { text: '房主(观战)', icon: Eye, priority: 'high' };
-      }
-      return { text: '观战中', icon: Eye, priority: 'medium' };
-    }
-
-    // 入座的房主状态
-    if (player.isHost && player.seat !== -1) {
+    if (player.isHost && stateView.isSeated && !gameStarted) {
       return { text: '房主', icon: Crown, priority: 'high' };
     }
-
-    // 根据游戏是否开始判断
-    if (gameStarted) {
-      return { text: '游戏中', icon: Gamepad2, priority: 'high' };
-    } else {
-      return { text: '等待中', icon: null, priority: 'medium' };
-    }
+    return {
+      text: stateView.statusLabel,
+      icon: stateView.isSpectator ? Eye : gameStarted ? Gamepad2 : null,
+      priority: stateView.needsRebuy ? 'high' : stateView.isSeated ? 'medium' : 'low',
+    };
   };
 
   // 获取状态颜色
@@ -110,8 +79,14 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, cur
       case '观战中':
         return 'text-purple-400'; // 紫色
       case '等待中':
+      case '等待开始':
+      case '下一手加入':
       case '等待下轮':
+      case '已入座':
         return 'text-blue-400'; // 蓝色
+      case '等待补码':
+      case '本手已弃牌':
+        return 'text-red-400';
       case '已弃牌':
         return 'text-red-400'; // 红色
       case '离线':
@@ -233,7 +208,12 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, cur
                             </span>
                           </div>
                           <div className="flex items-center space-x-2 flex-shrink-0">
-                            <span className="text-xs text-yellow-400 font-mono">{player.chips.toLocaleString()}</span>
+                            <div className="text-right">
+                              <div className="text-xs text-yellow-400 font-mono">{player.chips.toLocaleString()}</div>
+                              <div className={`text-[11px] ${player.ledger?.sessionNet >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {derivePlayerStateView(player, roomState).netLabel}
+                              </div>
+                            </div>
                             <div className={`flex items-center space-x-1 ${getStatusColor(player)}`}>
                               {StatusIcon && <StatusIcon size={12} />}
                               <span className="text-xs">{status.text}</span>

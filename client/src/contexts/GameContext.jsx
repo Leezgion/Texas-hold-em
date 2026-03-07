@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect } from 'react';
 import { create } from 'zustand';
 import deviceIdManager from '../utils/deviceId';
 import io from 'socket.io-client';
+import { derivePlayerStateView } from '../view-models/gameViewModel';
 
 // 创建Zustand store
 const useGameStore = create((set, get) => ({
@@ -15,12 +16,14 @@ const useGameStore = create((set, get) => ({
   // 房间状态
   roomId: null,
   roomSettings: null,
+  roomState: null,
   players: [],
   gameStarted: false,
 
   // 游戏状态
   gameState: null,
   currentPlayer: null,
+  currentPlayerView: null,
   communityCards: [],
   pot: 0,
 
@@ -137,6 +140,7 @@ const useGameStore = create((set, get) => ({
       // 更新房间状态
       set({
         roomId: roomData.id,
+        roomState: roomData.roomState,
         players: roomData.players,
         gameStarted: roomData.gameStarted,
         roomSettings: roomData.settings,
@@ -185,6 +189,7 @@ const useGameStore = create((set, get) => ({
 
       set({
         roomId: gameState.id, // 设置roomId
+        roomState: gameState.roomState,
         players: gameState.players,
         gameStarted: gameState.gameStarted,
         gameState: gameState.gameState,
@@ -201,8 +206,10 @@ const useGameStore = create((set, get) => ({
 
       if (currentPlayer) {
         const amountToCall = Math.max(0, (gameState.gameState?.currentBet || 0) - currentPlayer.currentBet);
+        const currentPlayerView = derivePlayerStateView(currentPlayer, gameState.roomState);
         set({
           currentPlayer,
+          currentPlayerView,
           playerHand: currentPlayer.hand,
           playerChips: currentPlayer.chips,
           playerBet: currentPlayer.currentBet,
@@ -242,6 +249,8 @@ const useGameStore = create((set, get) => ({
             gameStateId: gameState.id
           });
         }
+      } else {
+        set({ currentPlayer: null, currentPlayerView: null });
       }
     });
 
@@ -473,7 +482,7 @@ const useGameStore = create((set, get) => ({
   showHand: () => {
     const { socket } = get();
     if (socket) {
-      socket.emit('showHand');
+      socket.emit('revealHand', { mode: 'show_all' });
     }
   },
 
@@ -481,7 +490,7 @@ const useGameStore = create((set, get) => ({
   muckHand: () => {
     const { socket } = get();
     if (socket) {
-      socket.emit('muckHand');
+      socket.emit('revealHand', { mode: 'hide' });
     }
   },
 
@@ -509,10 +518,12 @@ const useGameStore = create((set, get) => ({
     set({
       roomId: null,
       roomSettings: null,
+      roomState: null,
       players: [],
       gameStarted: false,
       gameState: null,
       currentPlayer: null,
+      currentPlayerView: null,
       communityCards: [],
       pot: 0,
       isCreatingRoom: false,

@@ -16,6 +16,7 @@ import PlayerPanel from './PlayerPanel';
 import RebuyModal from './RebuyModal';
 import ShareLinkModal from './ShareLinkModal';
 import { useGame } from '../contexts/GameContext';
+import { deriveCanStartGame, derivePlayerStateView } from '../view-models/gameViewModel';
 
 // 自定义hook来检测屏幕尺寸
 const useWindowSize = () => {
@@ -48,6 +49,7 @@ const GameRoom = () => {
     gameStarted,
     gameState,
     roomSettings,
+    roomState,
     currentPlayerId,
     connected,
     socket,
@@ -60,6 +62,7 @@ const GameRoom = () => {
     resetGame,
     isCreatingRoom,
     navigationTarget,
+    currentPlayerView,
   } = useGame();
 
   const [showShareLink, setShowShareLink] = useState(false);
@@ -180,6 +183,11 @@ const GameRoom = () => {
     }
   }, [currentPlayerId, players, currentRoomId, roomId]);
 
+  const currentPlayerStateView = currentPlayer
+    ? derivePlayerStateView(currentPlayer, roomState || 'idle')
+    : currentPlayerView;
+  const canStartGame = deriveCanStartGame(currentPlayer, players, roomState || 'idle');
+
   useEffect(() => {
     setGameLogs([]);
     lastLoggedActionKeyRef.current = null;
@@ -272,7 +280,7 @@ const GameRoom = () => {
   // 处理离座确认
   const handleLeaveSeat = () => {
     console.log('离座按钮被点击', { gameStarted, currentPlayer });
-    if (gameStarted && currentPlayer && !currentPlayer.folded && !currentPlayer.isSpectator) {
+    if (gameStarted && currentPlayer && currentPlayerStateView?.tableState === 'active_in_hand') {
       // 游戏中离座，需要确认
       setShowLeaveSeat(true);
     } else {
@@ -293,7 +301,7 @@ const GameRoom = () => {
     });
 
     if (socket && currentPlayer) {
-      if (gameStarted && !currentPlayer.folded) {
+      if (gameStarted && currentPlayerStateView?.tableState === 'active_in_hand') {
         // 游戏中自动fold
         console.log('游戏中离座，先弃牌');
         socket.emit('playerAction', { action: 'fold', amount: 0 });
@@ -309,7 +317,7 @@ const GameRoom = () => {
 
   // 处理退出房间确认
   const handleExitRoom = () => {
-    if (gameStarted && currentPlayer && !currentPlayer.folded && !currentPlayer.isSpectator) {
+    if (gameStarted && currentPlayer && currentPlayerStateView?.tableState === 'active_in_hand') {
       // 游戏中退出，需要确认
       setShowExitRoom(true);
     } else {
@@ -321,7 +329,7 @@ const GameRoom = () => {
   // 确认退出房间
   const confirmExitRoom = () => {
     if (socket && currentPlayer) {
-      if (gameStarted && !currentPlayer.folded) {
+      if (gameStarted && currentPlayerStateView?.tableState === 'active_in_hand') {
         // 游戏中自动fold
         socket.emit('playerAction', { action: 'fold', amount: 0 });
       }
@@ -516,6 +524,7 @@ const GameRoom = () => {
           players={players}
           roomSettings={roomSettings}
           gameStarted={gameStarted}
+          roomState={roomState}
           currentPlayerId={currentPlayerId}
         />
 
@@ -537,7 +546,7 @@ const GameRoom = () => {
           )}
 
           {/* 补码按钮 */}
-          {currentPlayer && (currentPlayer.folded || !gameStarted) && (
+          {currentPlayer && currentPlayerStateView?.canRequestRebuy && (
             <div
               onClick={() => setShowRebuy(true)}
               className="w-10 h-10 bg-green-600/80 hover:bg-green-600 backdrop-blur-sm rounded-lg border border-green-500 flex items-center justify-center transition-colors cursor-pointer"
@@ -557,7 +566,7 @@ const GameRoom = () => {
           </div>
 
           {/* 离座按钮 - 只有已入座的玩家才显示 */}
-          {currentPlayer && !currentPlayer.isSpectator && (
+          {currentPlayer && currentPlayerStateView?.canLeaveSeat && (
             <div
               onClick={handleLeaveSeat}
               className="w-10 h-10 bg-orange-600/80 hover:bg-orange-600 backdrop-blur-sm rounded-lg border border-orange-500 flex items-center justify-center transition-colors cursor-pointer"
@@ -778,19 +787,27 @@ const GameRoom = () => {
                 {currentPlayer.isHost && <span className="text-poker-gold">👑</span>}
               </div>
               <div className="text-poker-gold font-semibold">{currentPlayer.chips}</div>
-              {gameStarted && (
+              {gameStarted && currentPlayerStateView && (
                 <div
                   className={`text-xs ${
-                    currentPlayer.folded ? 'text-red-400' : currentPlayer.allIn ? 'text-poker-gold' : currentPlayer.currentBet > 0 ? 'text-blue-400' : 'text-gray-400'
+                    currentPlayerStateView.tableState === 'folded_this_hand'
+                      ? 'text-red-400'
+                      : currentPlayerStateView.tableState === 'all_in_this_hand'
+                      ? 'text-poker-gold'
+                      : currentPlayer.currentBet > 0
+                      ? 'text-blue-400'
+                      : 'text-gray-400'
                   }`}
                 >
-                  {currentPlayer.folded ? '已弃牌' : currentPlayer.allIn ? 'All-in' : currentPlayer.currentBet > 0 ? `下注: ${currentPlayer.currentBet}` : '等待中'}
+                  {currentPlayer.currentBet > 0 && currentPlayerStateView.tableState === 'active_in_hand'
+                    ? `下注: ${currentPlayer.currentBet}`
+                    : currentPlayerStateView.statusLabel}
                 </div>
               )}
             </div>
 
             {/* 开始游戏按钮（入座玩家可用） - 居中显示 */}
-            {!gameStarted && currentPlayer && !currentPlayer.isSpectator && players.filter((p) => p.seat !== -1 && !p.isSpectator).length >= 2 && (
+            {!gameStarted && currentPlayer && canStartGame && (
               <div className="flex justify-center pb-4">
                 <button
                   onClick={() => startGame()}
