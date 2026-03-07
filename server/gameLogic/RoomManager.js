@@ -33,12 +33,12 @@ class RoomManager {
       return TABLE_STATES.DISCONNECTED;
     }
 
-    if (player.seat === -1 || player.isSpectator) {
-      return TABLE_STATES.SPECTATING;
+    if (player.needsRebuy) {
+      return TABLE_STATES.BUSTED_WAIT_REBUY;
     }
 
-    if (player.chips <= 0) {
-      return TABLE_STATES.BUSTED_WAIT_REBUY;
+    if (player.seat === -1 || player.isSpectator) {
+      return TABLE_STATES.SPECTATING;
     }
 
     if (player.waitingForNextRound) {
@@ -57,15 +57,121 @@ class RoomManager {
       return TABLE_STATES.ACTIVE_IN_HAND;
     }
 
+    if (player.chips <= 0) {
+      return TABLE_STATES.BUSTED_WAIT_REBUY;
+    }
+
     return TABLE_STATES.SEATED_READY;
   }
 
-  syncRoomState(room) {
+  transitionPlayerState(player, nextState, overrides = {}) {
+    const baseState = {
+      seat: player.seat,
+      isActive: false,
+      isSpectator: player.isSpectator,
+      waitingForNextRound: false,
+      inHand: false,
+      folded: false,
+      allIn: false,
+      disconnected: false,
+      needsRebuy: false,
+    };
+
+    switch (nextState) {
+      case TABLE_STATES.SPECTATING:
+        Object.assign(baseState, {
+          seat: -1,
+          isSpectator: true,
+        });
+        break;
+      case TABLE_STATES.SEATED_READY:
+        Object.assign(baseState, {
+          isActive: true,
+          isSpectator: false,
+        });
+        break;
+      case TABLE_STATES.SEATED_WAIT_NEXT_HAND:
+        Object.assign(baseState, {
+          isSpectator: false,
+          waitingForNextRound: true,
+        });
+        break;
+      case TABLE_STATES.ACTIVE_IN_HAND:
+        Object.assign(baseState, {
+          isActive: true,
+          isSpectator: false,
+          inHand: true,
+        });
+        break;
+      case TABLE_STATES.FOLDED_THIS_HAND:
+        Object.assign(baseState, {
+          isSpectator: false,
+          inHand: true,
+          folded: true,
+        });
+        break;
+      case TABLE_STATES.ALL_IN_THIS_HAND:
+        Object.assign(baseState, {
+          isSpectator: false,
+          inHand: true,
+          allIn: true,
+        });
+        break;
+      case TABLE_STATES.DISCONNECTED:
+        Object.assign(baseState, {
+          seat: player.seat,
+          isSpectator: player.seat === -1 || player.isSpectator,
+          waitingForNextRound: player.waitingForNextRound,
+          inHand: player.inHand,
+          folded: player.folded,
+          allIn: player.allIn,
+          disconnected: true,
+          needsRebuy: player.needsRebuy || false,
+        });
+        break;
+      case TABLE_STATES.BUSTED_WAIT_REBUY:
+        Object.assign(baseState, {
+          seat: -1,
+          isSpectator: true,
+          needsRebuy: true,
+        });
+        break;
+      default:
+        break;
+    }
+
+    Object.assign(player, baseState, overrides, { tableState: nextState });
+    return player;
+  }
+
+  normalizePlayerStates(roomOrId) {
+    const room = typeof roomOrId === 'string' ? this.gameRooms.get(roomOrId) : roomOrId;
+    if (!room) {
+      return null;
+    }
+
+    room.players.forEach((player) => {
+      const shouldBumpToRebuy =
+        !player.hasLeftRoom &&
+        player.seat !== -1 &&
+        player.chips <= 0 &&
+        !player.inHand &&
+        !player.allIn;
+
+      if (shouldBumpToRebuy) {
+        this.transitionPlayerState(player, TABLE_STATES.BUSTED_WAIT_REBUY);
+      }
+    });
+
     room.roomState = this.deriveRoomState(room);
     room.players.forEach((player) => {
       player.tableState = this.derivePlayerTableState(player);
     });
     return room;
+  }
+
+  syncRoomState(room) {
+    return this.normalizePlayerStates(room);
   }
 
   createError(message, code) {
@@ -139,6 +245,7 @@ class RoomManager {
       inHand: false,
       lastAction: null,
       hasLeftRoom: false,
+      needsRebuy: false,
       tableState: TABLE_STATES.SEATED_READY,
     };
 
@@ -241,6 +348,7 @@ class RoomManager {
       inHand: false,
       lastAction: null,
       hasLeftRoom: false,
+      needsRebuy: false,
       tableState:
         availableSeat === -1
           ? TABLE_STATES.SPECTATING
@@ -430,23 +538,23 @@ class RoomManager {
       throw new Error('无效的座位号');
     }
 
-    // 如果玩家已经在座位上，先离座
-    if (player.seat !== -1) {
-      player.isActive = false;
-      player.seat = -1;
+    if (player.chips <= 0 || player.needsRebuy) {
+      this.transitionPlayerState(player, TABLE_STATES.BUSTED_WAIT_REBUY);
+      this.broadcastRoomState(room);
+      return;
     }
 
-    // 入座
-    player.seat = seatIndex;
-    player.isSpectator = false; // 入座时不再是观战者
+    // 如果玩家已经在座位上，先离座到统一的观战状态
+    if (player.seat !== -1) {
+      this.transitionPlayerState(player, TABLE_STATES.SPECTATING);
+    }
 
     // 如果游戏未开始，立即激活玩家
     if (!room.gameStarted) {
-      player.isActive = true;
+      this.transitionPlayerState(player, TABLE_STATES.SEATED_READY, { seat: seatIndex });
     } else {
       // 游戏进行中，标记为等待下轮
-      player.isActive = false;
-      player.waitingForNextRound = true;
+      this.transitionPlayerState(player, TABLE_STATES.SEATED_WAIT_NEXT_HAND, { seat: seatIndex });
     }
 
     this.broadcastRoomState(room);
@@ -470,17 +578,11 @@ class RoomManager {
     }
 
     // 离座：设置为观战状态
-    player.seat = -1;
-    player.isActive = false;
-    player.isSpectator = true;
-    player.waitingForNextRound = false;
+    this.transitionPlayerState(player, TABLE_STATES.SPECTATING);
     player.hand = [];
     player.currentBet = 0;
     player.totalBet = 0;
-    player.folded = false;
-    player.allIn = false;
     player.lastAction = null;
-    player.inHand = false;
 
     this.broadcastRoomState(room);
   }
