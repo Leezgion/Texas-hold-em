@@ -1,5 +1,6 @@
 const Deck = require('./Deck');
 const HandEvaluator = require('./HandEvaluator');
+const HandRecordBuilder = require('./HandRecordBuilder');
 const PotManager = require('./managers/PotManager');
 const { GAME_PHASES } = require('../types/GameTypes');
 
@@ -24,7 +25,9 @@ class GameLogic {
     this.gamePhase = GAME_PHASES.WAITING;
     this.lastAction = null;
     this.actionHistory = [];
+    this.handHistory = [];
     this.handNumber = 0;
+    this.handStartedAt = 0;
     this.playersToAct = new Set();
     this.allinResults = [];
 
@@ -39,6 +42,7 @@ class GameLogic {
     this.clearNextHandTimeout();
 
     this.handNumber += 1;
+    this.handStartedAt = Date.now();
     this.lastAction = null;
     this.actionHistory = [];
     this.allinResults = [];
@@ -561,6 +565,21 @@ class GameLogic {
       winners: board.result.winners.map((winner) => winner.nickname),
       communityCards: board.communityCards,
     }));
+    this.captureHandRecord({
+      communityCards: boards[0]?.communityCards || [...this.communityCards],
+      pots,
+      winners: this.buildFinalDistribution(winnings),
+      totalPot,
+      reason: 'multiple_runouts',
+      boardResults: boards.map((board) => ({
+        round: board.round,
+        communityCards: board.communityCards,
+        winners: board.result.winners.map((winner) => ({
+          playerId: winner.id,
+          nickname: winner.nickname,
+        })),
+      })),
+    });
 
     this.io.to(this.room.id).emit('allinResult', {
       results: this.allinResults,
@@ -656,14 +675,90 @@ class GameLogic {
   buildFinalDistribution(winnings) {
     return this.room.players
       .map((player) => ({
+        playerId: player.id,
         nickname: player.nickname,
         winnings: winnings.get(player.id) || 0,
       }))
       .filter((player) => player.winnings > 0);
   }
 
+  ensurePlayerLedger(player) {
+    if (player.ledger) {
+      return player.ledger;
+    }
+
+    const initialBuyIn = this.room.settings.initialChips || player.chips;
+    player.ledger = {
+      initialBuyIn,
+      rebuyTotal: 0,
+      totalBuyIn: initialBuyIn,
+      currentChips: player.chips,
+      sessionNet: player.chips - initialBuyIn,
+      handStartChips: player.chips,
+      handDelta: 0,
+      showdownDelta: 0,
+    };
+
+    return player.ledger;
+  }
+
+  syncPlayerLedgersForSettlement() {
+    this.room.players.forEach((player) => {
+      if (this.roomManager?.syncPlayerLedger) {
+        this.roomManager.syncPlayerLedger(player);
+      } else {
+        const ledger = this.ensurePlayerLedger(player);
+        const totalBuyIn = ledger.initialBuyIn + ledger.rebuyTotal;
+        const handStartChips = ledger.handStartChips ?? player.chips;
+
+        player.ledger = {
+          ...ledger,
+          totalBuyIn,
+          currentChips: player.chips,
+          sessionNet: player.chips - totalBuyIn,
+          handStartChips,
+          handDelta: player.chips - handStartChips,
+          showdownDelta: player.chips - handStartChips,
+        };
+      }
+
+      if (player.ledger) {
+        player.ledger.showdownDelta = player.ledger.handDelta;
+      }
+    });
+  }
+
+  captureHandRecord({ communityCards, pots = [], winners = [], totalPot = 0, reason = null, boardResults = [] }) {
+    this.syncPlayerLedgersForSettlement();
+
+    const handRecord = HandRecordBuilder.buildHandRecord({
+      handNumber: this.handNumber,
+      startedAt: this.handStartedAt,
+      endedAt: Date.now(),
+      totalPot,
+      reason,
+      players: this.room.players,
+      actions: this.actionHistory,
+      communityCards,
+      pots,
+      winners,
+      boardResults,
+    });
+
+    this.handHistory.push(handRecord);
+    return handRecord;
+  }
+
   emitHandResult({ boardResult, winnings, pots, totalPot, reason = null }) {
     const winners = this.buildFinalDistribution(winnings);
+    this.captureHandRecord({
+      communityCards: boardResult.communityCards,
+      pots,
+      winners,
+      totalPot,
+      reason,
+    });
+
     this.io.to(this.room.id).emit('handResult', {
       winners: winners.map((winner) => winner.nickname),
       winnings: winners,
@@ -706,10 +801,18 @@ class GameLogic {
     this.currentPlayerIndex = -1;
     this.playersToAct = new Set();
     this.gamePhase = GAME_PHASES.SHOWDOWN;
+    const winners = [{ playerId: winner.id, nickname: winner.nickname, winnings: totalPot }];
+    this.captureHandRecord({
+      communityCards: [...this.communityCards],
+      pots: [],
+      winners,
+      totalPot,
+      reason: '其他玩家全部弃牌',
+    });
 
     this.io.to(this.room.id).emit('handResult', {
       winners: [winner.nickname],
-      winnings: [{ nickname: winner.nickname, winnings: totalPot }],
+      winnings: winners,
       hands: [],
       communityCards: [...this.communityCards],
       pots: [],
@@ -790,6 +893,7 @@ class GameLogic {
       nickname: player.nickname,
       action,
       amount,
+      street: meta.street || this.gamePhase,
       totalBet: player.currentBet,
       timestamp: Date.now(),
       ...meta,
@@ -999,6 +1103,7 @@ class GameLogic {
       roundStartIndex: this.roundStartIndex,
       lastRaiseIndex: this.lastRaiseIndex,
       handNumber: this.handNumber,
+      handHistory: this.handHistory,
       allinPlayers: this.room.players.filter((player) => player.inHand && player.allIn).map((player) => player.nickname),
       allinResults: this.allinResults,
       lastAction: this.lastAction,
