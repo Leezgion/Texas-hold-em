@@ -467,20 +467,20 @@ describe('HandEvaluator - 牌型比较', () => {
 
     it('应该正确识别完全平局：同样的一对和踢脚', () => {
       const hand1HoleCards = [
-        new Card('hearts', 10),
-        new Card('diamonds', 9)
+        new Card('hearts', 9),
+        new Card('diamonds', 8)
       ];
       const hand1CommunityCards = [
         new Card('clubs', 14),
         new Card('spades', 14),
         new Card('hearts', 13),
         new Card('diamonds', 12),
-        new Card('clubs', 11)
+        new Card('clubs', 11),
       ];
 
       const hand2HoleCards = [
-        new Card('spades', 8),
-        new Card('hearts', 7)
+        new Card('spades', 7),
+        new Card('hearts', 6),
       ];
       const hand2CommunityCards = hand1CommunityCards;
 

@@ -10,38 +10,36 @@ class Logger {
       INFO: 1,
       WARN: 2,
       ERROR: 3,
-      NONE: 4
+      NONE: 4,
     };
-    
+
     // 根据环境设置日志级别
-    this.currentLevel = process.env.NODE_ENV === 'production' 
-      ? this.levels.WARN 
-      : this.levels.DEBUG;
-    
+    this.currentLevel = process.env.NODE_ENV === 'production' ? this.levels.WARN : this.levels.DEBUG;
+
     // 日志输出配置
     this.config = {
       timestamp: true,
       colorize: !process.env.NODE_ENV || process.env.NODE_ENV !== 'production',
       maxMessageLength: 1000,
-      enableFileLogging: process.env.ENABLE_FILE_LOGGING === 'true'
+      enableFileLogging: process.env.ENABLE_FILE_LOGGING === 'true',
     };
-    
+
     // 颜色代码
     this.colors = {
       DEBUG: '\x1b[36m', // Cyan
-      INFO: '\x1b[32m',  // Green
-      WARN: '\x1b[33m',  // Yellow
+      INFO: '\x1b[32m', // Green
+      WARN: '\x1b[33m', // Yellow
       ERROR: '\x1b[31m', // Red
-      RESET: '\x1b[0m'   // Reset
+      RESET: '\x1b[0m', // Reset
     };
-    
+
     // 性能统计
     this.stats = {
       debugCount: 0,
       infoCount: 0,
       warnCount: 0,
       errorCount: 0,
-      startTime: Date.now()
+      startTime: Date.now(),
     };
   }
 
@@ -54,13 +52,13 @@ class Logger {
    */
   formatMessage(level, message, context = {}) {
     let formatted = '';
-    
+
     // 添加时间戳
     if (this.config.timestamp) {
       const timestamp = new Date().toISOString();
       formatted += `[${timestamp}] `;
     }
-    
+
     // 添加级别标识
     const levelStr = `[${level}]`;
     if (this.config.colorize) {
@@ -68,19 +66,19 @@ class Logger {
     } else {
       formatted += `${levelStr} `;
     }
-    
+
     // 限制消息长度（防止过长日志影响性能）
     if (message.length > this.config.maxMessageLength) {
       message = message.substring(0, this.config.maxMessageLength) + '...';
     }
-    
+
     formatted += message;
-    
+
     // 添加上下文信息
     if (Object.keys(context).length > 0) {
       formatted += ` | Context: ${JSON.stringify(context)}`;
     }
-    
+
     return formatted;
   }
 
@@ -107,7 +105,7 @@ class Logger {
     } else {
       console.log(formatted);
     }
-    
+
     // 文件输出（如果启用）
     if (this.config.enableFileLogging) {
       this.writeToFile(level, formatted);
@@ -123,10 +121,10 @@ class Logger {
     // 简化版本，生产环境可以使用专业日志库如winston
     const fs = require('fs').promises;
     const path = require('path');
-    
+
     const logDir = path.join(__dirname, '../../logs');
     const logFile = path.join(logDir, `${level.toLowerCase()}.log`);
-    
+
     // 异步写入，避免阻塞
     setImmediate(async () => {
       try {
@@ -145,7 +143,7 @@ class Logger {
    */
   debug(message, context = {}) {
     if (!this.shouldLog(this.levels.DEBUG)) return;
-    
+
     this.stats.debugCount++;
     const formatted = this.formatMessage('DEBUG', message, context);
     this.output('DEBUG', formatted);
@@ -158,7 +156,7 @@ class Logger {
    */
   info(message, context = {}) {
     if (!this.shouldLog(this.levels.INFO)) return;
-    
+
     this.stats.infoCount++;
     const formatted = this.formatMessage('INFO', message, context);
     this.output('INFO', formatted);
@@ -171,7 +169,7 @@ class Logger {
    */
   warn(message, context = {}) {
     if (!this.shouldLog(this.levels.WARN)) return;
-    
+
     this.stats.warnCount++;
     const formatted = this.formatMessage('WARN', message, context);
     this.output('WARN', formatted);
@@ -184,7 +182,7 @@ class Logger {
    */
   error(message, context = {}) {
     if (!this.shouldLog(this.levels.ERROR)) return;
-    
+
     this.stats.errorCount++;
     const formatted = this.formatMessage('ERROR', message, context);
     this.output('ERROR', formatted);
@@ -203,9 +201,9 @@ class Logger {
       roomId,
       playerId,
       timestamp: Date.now(),
-      ...details
+      ...details,
     };
-    
+
     this.info(`Game Event: ${event}`, context);
   }
 
@@ -218,7 +216,7 @@ class Logger {
   performance(operation, duration, details = {}) {
     const level = duration > 1000 ? 'WARN' : 'INFO';
     const message = `Performance: ${operation} took ${duration}ms`;
-    
+
     if (level === 'WARN') {
       this.warn(message, { duration, operation, ...details });
     } else {
@@ -247,8 +245,7 @@ class Logger {
       ...this.stats,
       runtime: runtime,
       runtimeFormatted: this.formatDuration(runtime),
-      totalLogs: this.stats.debugCount + this.stats.infoCount + 
-                this.stats.warnCount + this.stats.errorCount
+      totalLogs: this.stats.debugCount + this.stats.infoCount + this.stats.warnCount + this.stats.errorCount,
     };
   }
 
@@ -285,7 +282,7 @@ class Logger {
       infoCount: 0,
       warnCount: 0,
       errorCount: 0,
-      startTime: Date.now()
+      startTime: Date.now(),
     };
     this.info('Log statistics reset');
   }
@@ -297,17 +294,17 @@ const logger = new Logger();
 // 性能监控装饰器
 function logPerformance(target, propertyName, descriptor) {
   const method = descriptor.value;
-  
+
   descriptor.value = function (...args) {
     const start = Date.now();
     const result = method.apply(this, args);
     const duration = Date.now() - start;
-    
+
     logger.performance(`${target.constructor.name}.${propertyName}`, duration);
-    
+
     return result;
   };
-  
+
   return descriptor;
 }
 

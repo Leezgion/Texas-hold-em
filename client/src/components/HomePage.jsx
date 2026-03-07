@@ -16,7 +16,7 @@ const HomePage = () => {
     if (joinRoomId.trim()) {
       setShowJoinRoom(true);
     } else {
-      alert('请输入房间ID');
+      window.dispatchEvent(new CustomEvent('game-error', { detail: '请输入房间ID' }));
     }
   };
 

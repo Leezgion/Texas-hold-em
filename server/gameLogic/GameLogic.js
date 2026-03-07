@@ -1,453 +1,437 @@
-const Card = require('./Card');
 const Deck = require('./Deck');
 const HandEvaluator = require('./HandEvaluator');
+const PotManager = require('./managers/PotManager');
 
 class GameLogic {
   constructor(room, io, roomManager) {
     this.room = room;
     this.io = io;
     this.roomManager = roomManager;
+
     this.deck = new Deck();
     this.communityCards = [];
     this.pot = 0;
     this.sidePots = [];
     this.currentBet = 0;
     this.minRaise = 0;
-    this.currentPlayerIndex = 0;
-    this.dealerIndex = 0;
-    this.smallBlindIndex = 0;
-    this.bigBlindIndex = 0;
-    this.gamePhase = 'preflop'; // preflop, flop, turn, river, showdown
+    this.currentPlayerIndex = -1;
+    this.dealerIndex = -1;
+    this.smallBlindIndex = -1;
+    this.bigBlindIndex = -1;
+    this.roundStartIndex = -1;
     this.lastRaiseIndex = -1;
-    this.roundStartIndex = 0;
-    this.allinPlayers = [];
+    this.gamePhase = 'waiting';
+    this.lastAction = null;
+    this.actionHistory = [];
+    this.handNumber = 0;
+    this.playersToAct = new Set();
     this.allinResults = [];
-    this.currentAllinRound = 0;
-    this.maxAllinRounds = room.settings.allinDealCount;
 
-    // 倒计时相关属性
     this.playerTimer = null;
     this.timeRemaining = 0;
-    this.actionTimeLimit = 60; // 60秒行动时间
+    this.actionTimeLimit = 60;
+    this.nextHandTimeout = null;
   }
 
-  // 开始新的一手牌
   startNewHand() {
-    this.resetHand();
-    this.dealCards();
-    this.postBlinds();
-    this.gamePhase = 'preflop';
-    this.currentPlayerIndex = this.getNextActivePlayerIndex(this.bigBlindIndex);
-    this.minRaise = this.room.settings.initialChips / 50; // 最小加注为大盲注
+    this.clearPlayerTimer();
+    this.clearNextHandTimeout();
 
-    // 处理Straddle（如果启用）
-    if (this.room.settings.allowStraddle) {
-      this.handleStraddle();
+    this.handNumber += 1;
+    this.lastAction = null;
+    this.actionHistory = [];
+    this.allinResults = [];
+    this.communityCards = [];
+    this.currentBet = 0;
+    this.minRaise = this.getBigBlind();
+    this.currentPlayerIndex = -1;
+    this.roundStartIndex = -1;
+    this.lastRaiseIndex = -1;
+    this.playersToAct = new Set();
+    this.deck = new Deck();
+
+    this.preparePlayersForNewHand();
+    const eligibleIndices = this.getEligiblePlayerIndices();
+
+    if (eligibleIndices.length < 2) {
+      this.gamePhase = 'waiting';
+      this.refreshPotState();
+      return false;
     }
 
-    // 为第一个行动的玩家启动计时器
-    this.startPlayerTimer();
-  }
-
-  // 重置手牌状态
-  resetHand() {
-    this.deck = new Deck();
-    this.communityCards = [];
-    this.pot = 0;
-    this.sidePots = [];
-    this.currentBet = 0;
-    this.minRaise = 0;
-    this.lastRaiseIndex = -1;
-    this.roundStartIndex = 0;
-    this.allinPlayers = [];
-    this.allinResults = [];
-    this.currentAllinRound = 0;
-
-    // 处理等待下轮的玩家，让他们加入游戏
-    this.room.players.forEach((player) => {
-      if (player.waitingForNextRound && player.seat !== -1) {
-        console.log(`玩家 ${player.nickname} 从等待状态加入游戏`);
-        player.isActive = true;
-        player.waitingForNextRound = false;
-      }
+    eligibleIndices.forEach((playerIndex) => {
+      const player = this.room.players[playerIndex];
+      player.inHand = true;
+      player.isActive = true;
+      player.folded = false;
+      player.allIn = false;
+      player.showHand = false;
+      player.currentBet = 0;
+      player.totalBet = 0;
+      player.hand = [];
+      player.lastAction = null;
     });
 
-    // 重置所有玩家状态
+    this.dealerIndex = this.resolveNextDealerIndex(eligibleIndices);
+    this.assignBlindIndices(eligibleIndices);
+    this.dealHoleCards(eligibleIndices);
+    this.postBlinds();
+
+    let actionStartIndex = this.getNextIndexFromList(this.bigBlindIndex, eligibleIndices);
+    if (this.room.settings.allowStraddle && eligibleIndices.length > 2) {
+      const straddleIndex = this.tryAutoStraddle(actionStartIndex);
+      if (straddleIndex !== -1) {
+        actionStartIndex = this.getNextIndexFromList(straddleIndex, eligibleIndices);
+      }
+    }
+
+    this.gamePhase = 'preflop';
+    this.setupActionQueue(actionStartIndex);
+
+    if (this.currentPlayerIndex === -1) {
+      this.handleCompletedRound();
+    } else {
+      this.startPlayerTimer();
+    }
+
+    return true;
+  }
+
+  preparePlayersForNewHand() {
+    this.room.players = this.room.players.filter((player) => !player.hasLeftRoom);
+
     this.room.players.forEach((player) => {
+      if (player.waitingForNextRound && this.canPlayerJoinHand(player)) {
+        player.waitingForNextRound = false;
+      }
+
       player.hand = [];
       player.currentBet = 0;
       player.totalBet = 0;
       player.folded = false;
       player.allIn = false;
       player.showHand = false;
+      player.inHand = false;
+      player.lastAction = null;
+
+      const readyForTable =
+        player.seat !== -1 &&
+        !player.isSpectator &&
+        !player.waitingForNextRound &&
+        !player.disconnected &&
+        player.chips > 0;
+
+      player.isActive = readyForTable;
     });
   }
 
-  // 发牌
-  dealCards() {
-    this.room.players.forEach((player) => {
-      if (player.isActive) {
-        player.hand = [this.deck.drawCard(), this.deck.drawCard()];
-      }
-    });
+  canPlayerJoinHand(player) {
+    return player.seat !== -1 && !player.isSpectator && !player.disconnected && player.chips > 0;
   }
 
-  // 下盲注
-  postBlinds() {
-    const smallBlind = this.room.settings.initialChips / 100;
-    const bigBlind = this.room.settings.initialChips / 50;
-
-    // 小盲注
-    this.room.players[this.smallBlindIndex].chips -= smallBlind;
-    this.room.players[this.smallBlindIndex].currentBet = smallBlind;
-    this.room.players[this.smallBlindIndex].totalBet = smallBlind;
-    this.pot += smallBlind;
-
-    // 大盲注
-    this.room.players[this.bigBlindIndex].chips -= bigBlind;
-    this.room.players[this.bigBlindIndex].currentBet = bigBlind;
-    this.room.players[this.bigBlindIndex].totalBet = bigBlind;
-    this.pot += bigBlind;
-
-    this.currentBet = bigBlind;
+  getEligiblePlayerIndices() {
+    return this.room.players
+      .map((player, index) => ({ player, index }))
+      .filter(({ player }) => this.canPlayerJoinHand(player) && !player.waitingForNextRound)
+      .sort((a, b) => a.player.seat - b.player.seat)
+      .map(({ index }) => index);
   }
 
-  // 处理Straddle
-  handleStraddle() {
-    const utgIndex = this.getNextActivePlayerIndex(this.bigBlindIndex);
-    const utgPlayer = this.room.players[utgIndex];
+  resolveNextDealerIndex(eligibleIndices) {
+    if (!eligibleIndices.length) {
+      return -1;
+    }
 
-    if (utgPlayer && utgPlayer.chips >= this.currentBet * 2) {
-      utgPlayer.chips -= this.currentBet;
-      utgPlayer.currentBet = this.currentBet * 2;
-      utgPlayer.totalBet = this.currentBet * 2;
-      this.pot += this.currentBet;
-      this.currentBet = this.currentBet * 2;
-      this.minRaise = this.currentBet;
+    if (this.dealerIndex === -1) {
+      return eligibleIndices[0];
+    }
+
+    return this.getNextIndexFromList(this.dealerIndex, eligibleIndices);
+  }
+
+  assignBlindIndices(eligibleIndices) {
+    if (eligibleIndices.length === 2) {
+      this.smallBlindIndex = this.dealerIndex;
+      this.bigBlindIndex = this.getNextIndexFromList(this.smallBlindIndex, eligibleIndices);
+      return;
+    }
+
+    this.smallBlindIndex = this.getNextIndexFromList(this.dealerIndex, eligibleIndices);
+    this.bigBlindIndex = this.getNextIndexFromList(this.smallBlindIndex, eligibleIndices);
+  }
+
+  dealHoleCards(eligibleIndices) {
+    const firstCardIndex = this.getNextIndexFromList(this.dealerIndex, eligibleIndices);
+    const order = this.rotateOrderedIndices(eligibleIndices, firstCardIndex);
+
+    for (let round = 0; round < 2; round++) {
+      order.forEach((playerIndex) => {
+        this.room.players[playerIndex].hand.push(this.deck.drawCard());
+      });
     }
   }
 
-  // 处理玩家动作
-  handlePlayerAction(playerId, action, amount) {
-    const player = this.room.players.find((p) => p.id === playerId);
-    if (!player) {
+  postBlinds() {
+    const smallBlind = this.getSmallBlind();
+    const bigBlind = this.getBigBlind();
+
+    this.commitChips(this.smallBlindIndex, smallBlind);
+    this.commitChips(this.bigBlindIndex, bigBlind);
+
+    this.currentBet = Math.max(
+      this.room.players[this.smallBlindIndex]?.currentBet || 0,
+      this.room.players[this.bigBlindIndex]?.currentBet || 0
+    );
+    this.minRaise = bigBlind;
+    this.lastRaiseIndex = this.bigBlindIndex;
+    this.refreshPotState();
+  }
+
+  tryAutoStraddle(utgIndex) {
+    const player = this.room.players[utgIndex];
+    if (!player || player.chips < this.currentBet) {
+      return -1;
+    }
+
+    const previousBet = this.currentBet;
+    this.commitChips(utgIndex, previousBet);
+    this.currentBet = player.currentBet;
+    this.minRaise = Math.max(this.getBigBlind(), this.currentBet - previousBet);
+    this.lastRaiseIndex = utgIndex;
+
+    this.recordAction(utgIndex, 'raise', this.currentBet - previousBet, {
+      auto: true,
+      label: 'straddle',
+      totalBet: player.currentBet,
+    });
+    this.refreshPotState();
+    return utgIndex;
+  }
+
+  setupActionQueue(startIndex) {
+    const actionableIndices = this.getActionablePlayerIndices();
+    this.playersToAct = new Set(actionableIndices);
+    this.currentPlayerIndex = this.getPendingPlayerFrom(startIndex);
+    this.roundStartIndex = this.currentPlayerIndex;
+  }
+
+  handlePlayerAction(playerId, action, amount = 0) {
+    const playerIndex = this.room.players.findIndex((player) => player.id === playerId);
+    if (playerIndex === -1) {
       throw new Error('玩家不存在');
     }
 
-    if (player.folded || player.allIn) {
-      throw new Error('玩家已弃牌或All-in');
+    const player = this.room.players[playerIndex];
+    if (!player.inHand || player.folded || player.allIn) {
+      throw new Error('玩家当前无法行动');
     }
 
-    if (this.getCurrentPlayer().id !== playerId) {
+    if (this.currentPlayerIndex !== playerIndex) {
       throw new Error('不是你的回合');
     }
 
-    // 玩家行动时清除计时器
     this.clearPlayerTimer();
 
+    let actionResult;
     switch (action) {
       case 'fold':
-        this.fold(player);
+        actionResult = this.applyFold(playerIndex);
         break;
       case 'check':
-        this.check(player);
+        actionResult = this.applyCheck(playerIndex);
         break;
       case 'call':
-        this.call(player);
+        actionResult = this.applyCall(playerIndex);
         break;
       case 'raise':
-        this.raise(player, amount);
+        actionResult = this.applyRaise(playerIndex, amount);
+        break;
+      case 'allin':
+        actionResult = this.applyAllIn(playerIndex);
         break;
       default:
         throw new Error('无效的动作');
     }
 
-    // 检查是否需要进入下一阶段
-    this.checkNextPhase();
+    this.refreshPotState();
+    this.updatePendingPlayersAfterAction(playerIndex, actionResult.reopensAction);
+    this.advanceGameFlow(playerIndex);
   }
 
-  // 弃牌
-  fold(player) {
+  applyFold(playerIndex, meta = {}) {
+    const player = this.room.players[playerIndex];
     player.folded = true;
-    console.log(`玩家 ${player.nickname} 弃牌`);
-    this.checkRoundCompletion();
+    player.isActive = false;
+    this.recordAction(playerIndex, 'fold', 0, meta);
+    return { reopensAction: false };
   }
 
-  // 过牌
-  check(player) {
-    if (player.currentBet < this.currentBet) {
-      throw new Error('无法过牌，需要跟注或加注');
+  applyCheck(playerIndex, meta = {}) {
+    const player = this.room.players[playerIndex];
+    const toCall = this.getAmountToCall(player);
+    if (toCall > 0) {
+      throw new Error('当前不能过牌');
     }
-    console.log(`玩家 ${player.nickname} 过牌`);
-    this.checkRoundCompletion();
+
+    this.recordAction(playerIndex, 'check', 0, meta);
+    return { reopensAction: false };
   }
 
-  // 跟注
-  call(player) {
-    const callAmount = this.currentBet - player.currentBet;
-
-    if (callAmount <= 0) {
-      // 已经匹配下注，直接移动到下一个玩家
-      console.log(`玩家 ${player.nickname} 已匹配下注，无需跟注`);
-      this.moveToNextPlayer();
-      return;
+  applyCall(playerIndex, meta = {}) {
+    const player = this.room.players[playerIndex];
+    const toCall = this.getAmountToCall(player);
+    if (toCall <= 0) {
+      return this.applyCheck(playerIndex, meta);
     }
 
-    if (callAmount > player.chips) {
-      // 筹码不足，自动All-in
-      console.log(`玩家 ${player.nickname} 筹码不足，自动All-in`);
-      this.allIn(player);
-    } else if (callAmount === player.chips) {
-      // 刚好All-in
-      console.log(`玩家 ${player.nickname} 跟注All-in`);
-      this.allIn(player);
-    } else {
-      // 正常跟注
-      player.chips -= callAmount;
-      player.currentBet = this.currentBet;
-      player.totalBet += callAmount;
-      this.pot += callAmount;
-      console.log(`玩家 ${player.nickname} 跟注 ${callAmount}`);
+    const committed = this.commitChips(playerIndex, Math.min(player.chips, toCall));
+    const actionName = player.allIn ? 'allin' : 'call';
+    this.recordAction(playerIndex, actionName, committed, {
+      ...meta,
+      totalBet: player.currentBet,
+      callAmount: committed,
+    });
 
-      // 检查是否完成轮次
-      this.checkRoundCompletion();
-    }
+    return { reopensAction: false };
   }
 
-  // 加注
-  raise(player, amount) {
-    if (amount < this.minRaise) {
-      throw new Error(`加注金额必须至少为 ${this.minRaise}`);
+  applyRaise(playerIndex, raiseAmount, meta = {}) {
+    const player = this.room.players[playerIndex];
+    if (!Number.isInteger(raiseAmount) || raiseAmount <= 0) {
+      throw new Error('加注金额必须是正整数');
     }
 
-    const totalAmount = this.currentBet + amount - player.currentBet;
-    if (totalAmount > player.chips) {
+    const toCall = this.getAmountToCall(player);
+    const totalCommit = toCall + raiseAmount;
+    if (totalCommit > player.chips) {
       throw new Error('筹码不足');
     }
 
-    if (totalAmount === player.chips) {
-      // 加注到All-in
-      console.log(`玩家 ${player.nickname} 加注All-in`);
-      this.allIn(player);
-    } else {
-      // 正常加注
-      player.chips -= totalAmount;
-      const newBet = player.currentBet + totalAmount;
-      player.currentBet = newBet;
-      player.totalBet += totalAmount;
-      this.pot += totalAmount;
+    if (raiseAmount < this.minRaise) {
+      throw new Error(`加注金额必须至少为 ${this.minRaise}`);
+    }
+
+    const previousBet = this.currentBet;
+    const committed = this.commitChips(playerIndex, totalCommit);
+    const newBet = player.currentBet;
+    const raiseDelta = newBet - previousBet;
+
+    this.currentBet = newBet;
+    this.minRaise = raiseDelta;
+    this.lastRaiseIndex = playerIndex;
+
+    this.recordAction(playerIndex, player.allIn ? 'allin' : 'raise', raiseDelta, {
+      ...meta,
+      totalBet: player.currentBet,
+      committed,
+    });
+
+    return { reopensAction: true };
+  }
+
+  applyAllIn(playerIndex, meta = {}) {
+    const player = this.room.players[playerIndex];
+    if (player.chips <= 0) {
+      throw new Error('玩家没有可用筹码');
+    }
+
+    const previousBet = this.currentBet;
+    const previousPlayerBet = player.currentBet;
+    const committed = this.commitChips(playerIndex, player.chips);
+    const newBet = player.currentBet;
+    const raiseDelta = newBet - previousBet;
+    const fullRaise = newBet > previousBet && raiseDelta >= this.minRaise;
+
+    if (newBet > previousBet) {
       this.currentBet = newBet;
-      this.minRaise = amount;
-      this.lastRaiseIndex = this.currentPlayerIndex;
-      this.roundStartIndex = this.currentPlayerIndex;
-
-      console.log(`玩家 ${player.nickname} 加注到 ${newBet}`);
-      this.checkRoundCompletion();
-    }
-  }
-
-  // All-in
-  allIn(player) {
-    const allinAmount = player.chips;
-    const previousBet = player.currentBet;
-
-    player.chips = 0;
-    player.currentBet += allinAmount;
-    player.totalBet += allinAmount;
-    this.pot += allinAmount;
-    player.allIn = true;
-
-    // 如果All-in金额超过当前下注，更新下注水平
-    if (player.currentBet > this.currentBet) {
-      this.currentBet = player.currentBet;
-      this.minRaise = Math.max(this.minRaise, player.currentBet - previousBet);
-      this.lastRaiseIndex = this.currentPlayerIndex;
-      this.roundStartIndex = this.currentPlayerIndex;
-    }
-
-    // 将玩家添加到All-in列表
-    if (!this.allinPlayers.find((p) => p.id === player.id)) {
-      this.allinPlayers.push(player);
-    }
-
-    console.log(`玩家 ${player.nickname} All-in ${allinAmount}，当前下注: ${this.currentBet}`);
-
-    // 检查游戏状态
-    this.checkGameStateAfterAllin();
-  }
-
-  // 检查轮次完成
-  checkRoundCompletion() {
-    console.log('\n=== 检查轮次完成状态 ===');
-    console.log('当前游戏阶段:', this.gamePhase);
-    console.log('当前轮到玩家索引:', this.currentPlayerIndex);
-
-    const activePlayers = this.room.players.filter((p) => !p.folded && !p.allIn);
-    const allinPlayers = this.room.players.filter((p) => !p.folded && p.allIn);
-
-    console.log(`玩家状态分析:`);
-    console.log(
-      `- 活跃玩家: ${activePlayers.length}个`,
-      activePlayers.map((p) => ({
-        name: p.nickname,
-        bet: p.currentBet,
-        chips: p.chips,
-      }))
-    );
-    console.log(
-      `- All-in玩家: ${allinPlayers.length}个`,
-      allinPlayers.map((p) => ({
-        name: p.nickname,
-        bet: p.currentBet,
-        chips: p.chips,
-      }))
-    );
-
-    // 如果没有活跃玩家了，说明所有人都All-in或弃牌
-    if (activePlayers.length === 0) {
-      if (allinPlayers.length >= 2) {
-        console.log('所有剩余玩家都All-in，进入发牌阶段');
-        this.handleAllInSituation();
-      } else {
-        console.log('只剩一个玩家，游戏结束');
-        this.showdown();
+      if (fullRaise) {
+        this.minRaise = raiseDelta;
+        this.lastRaiseIndex = playerIndex;
       }
-      console.log('=== 轮次检查完成 (无活跃玩家) ===\n');
+    }
+
+    this.recordAction(playerIndex, 'allin', committed, {
+      ...meta,
+      totalBet: player.currentBet,
+      previousPlayerBet,
+      reopensAction: fullRaise,
+    });
+
+    return { reopensAction: fullRaise };
+  }
+
+  commitChips(playerIndex, amount) {
+    const player = this.room.players[playerIndex];
+    const committed = Math.min(player.chips, amount);
+
+    player.chips -= committed;
+    player.currentBet += committed;
+    player.totalBet += committed;
+    if (player.chips === 0) {
+      player.allIn = true;
+      player.isActive = false;
+    }
+
+    return committed;
+  }
+
+  getAmountToCall(player) {
+    return Math.max(0, this.currentBet - player.currentBet);
+  }
+
+  updatePendingPlayersAfterAction(playerIndex, reopensAction) {
+    this.playersToAct.delete(playerIndex);
+
+    if (reopensAction) {
+      const actionablePlayers = this.getActionablePlayerIndices().filter((index) => index !== playerIndex);
+      this.playersToAct = new Set(actionablePlayers);
       return;
     }
 
-    // 如果只有一个活跃玩家
-    if (activePlayers.length === 1) {
-      const lastPlayer = activePlayers[0];
-      console.log(`只有一个活跃玩家: ${lastPlayer.nickname}, 当前下注: ${lastPlayer.currentBet}, 目标下注: ${this.currentBet}`);
-
-      if (lastPlayer.currentBet < this.currentBet) {
-        // 最后一个玩家需要决定跟注
-        this.currentPlayerIndex = this.room.players.findIndex((p) => p.id === lastPlayer.id);
-        console.log(`最后一个活跃玩家 ${lastPlayer.nickname} 需要决定跟注`);
-        this.startPlayerTimer();
-        console.log('=== 轮次检查完成 (等待玩家跟注) ===\n');
-        return;
-      } else {
-        // 最后一个玩家已匹配下注，进入下一阶段
-        console.log('最后一个活跃玩家已匹配下注，检查是否进入下一阶段');
-        if (allinPlayers.length > 0) {
-          this.handleAllInSituation();
-        } else {
-          this.nextPhase();
-        }
-        console.log('=== 轮次检查完成 (单玩家匹配下注) ===\n');
-        return;
+    [...this.playersToAct].forEach((index) => {
+      if (!this.isPlayerActionable(this.room.players[index])) {
+        this.playersToAct.delete(index);
       }
-    }
-
-    // 多个活跃玩家，检查是否所有人都匹配了下注
-    const hasCompletedRound = this.hasCompletedRound();
-    console.log('多玩家轮次检查结果:', hasCompletedRound);
-
-    if (hasCompletedRound) {
-      console.log('下注轮完成，进入下一阶段');
-      this.nextPhase();
-    } else {
-      console.log('继续下注轮');
-      this.moveToNextPlayer();
-    }
-    console.log('=== 轮次检查完成 ===\n');
+    });
   }
 
-  // 处理All-in情况
-  handleAllInSituation() {
-    console.log('\n=== 处理All-in情况 ===');
-    console.log('当前游戏阶段:', this.gamePhase);
-
-    const activePlayers = this.room.players.filter((p) => !p.folded && !p.allIn);
-    const allinPlayers = this.room.players.filter((p) => !p.folded && p.allIn);
-
-    console.log(`活跃玩家: ${activePlayers.length}个`);
-    console.log(`All-in玩家: ${allinPlayers.length}个`);
-
-    // 如果有多个玩家（All-in + 活跃），并且只剩All-in玩家，发完剩余公牌
-    if (activePlayers.length === 0 && allinPlayers.length >= 2) {
-      console.log('所有剩余玩家都All-in，发完剩余公牌并进入摊牌');
-      this.dealRemainingCards();
-      this.showdown();
-    } else if (activePlayers.length === 0 && allinPlayers.length === 1) {
-      console.log('只剩一个All-in玩家，直接摊牌');
-      this.showdown();
-    } else {
-      console.log('还有活跃玩家，继续正常游戏流程');
-    }
-    console.log('=== All-in处理完成 ===\n');
-  }
-
-  // 检查游戏状态
-  checkGameStateAfterAllin() {
-    // 直接使用统一的轮次完成检查
-    this.checkRoundCompletion();
-  }
-
-  // 发完剩余的公牌
-  dealRemainingCards() {
-    console.log(`当前阶段: ${this.gamePhase}, 公牌数量: ${this.communityCards.length}`);
-
-    while (this.communityCards.length < 5) {
-      this.communityCards.push(this.deck.drawCard());
-      console.log(`发出公牌，现在共有 ${this.communityCards.length} 张`);
-    }
-
-    // 设置为河牌阶段
-    this.gamePhase = 'river';
-
-    // 通知所有玩家状态更新
-    this.roomManager.broadcastRoomState(this.room);
-  }
-  // 移动到下一个玩家
-  moveToNextPlayer() {
-    const activePlayers = this.room.players.filter((p) => !p.folded && !p.allIn);
-
-    // 如果没有活跃玩家，使用统一的检查逻辑
-    if (activePlayers.length === 0) {
-      this.checkRoundCompletion();
+  advanceGameFlow(actorIndex) {
+    if (this.getContestingPlayerIndices().length === 1) {
+      this.awardPotToLastPlayer();
       return;
     }
 
-    // 找到下一个活跃玩家
-    let nextPlayerFound = false;
-    let attempts = 0;
-    const maxAttempts = this.room.players.length;
-
-    do {
-      this.currentPlayerIndex = this.getNextActivePlayerIndex(this.currentPlayerIndex);
-      attempts++;
-
-      if (!this.room.players[this.currentPlayerIndex].folded && !this.room.players[this.currentPlayerIndex].allIn) {
-        nextPlayerFound = true;
-      }
-
-      // 防止无限循环
-      if (attempts >= maxAttempts) {
-        console.log('无法找到下一个活跃玩家，检查轮次完成');
-        this.checkRoundCompletion();
-        return;
-      }
-    } while (!nextPlayerFound);
-
-    // 检查是否完成一轮下注
-    if (this.currentPlayerIndex === this.roundStartIndex) {
-      console.log('回到起始玩家，检查轮次是否完成');
-      if (this.hasCompletedRound()) {
-        console.log('轮次完成，进入下一阶段');
-        this.nextPhase();
-        return;
-      }
+    if (this.playersToAct.size === 0) {
+      this.handleCompletedRound();
+      return;
     }
 
-    // 为新的当前玩家启动计时器
+    this.currentPlayerIndex = this.getNextIndexFromList(actorIndex, this.getPendingPlayerIndices());
+    if (this.currentPlayerIndex === -1) {
+      this.handleCompletedRound();
+      return;
+    }
+
     this.startPlayerTimer();
   }
 
-  // 进入下一阶段
-  nextPhase() {
+  handleCompletedRound() {
+    this.clearPlayerTimer();
+
+    if (this.getContestingPlayerIndices().length === 1) {
+      this.awardPotToLastPlayer();
+      return;
+    }
+
+    if (this.gamePhase === 'river') {
+      this.showdown();
+      return;
+    }
+
+    this.advanceToNextPhase();
+  }
+
+  advanceToNextPhase() {
     switch (this.gamePhase) {
       case 'preflop':
         this.dealFlop();
@@ -458,449 +442,514 @@ class GameLogic {
       case 'turn':
         this.dealRiver();
         break;
-      case 'river':
+      default:
         this.showdown();
-        break;
+        return;
+    }
+
+    this.prepareBettingRoundAfterStreet();
+    if (this.currentPlayerIndex === -1) {
+      this.handleCompletedRound();
+    } else {
+      this.startPlayerTimer();
     }
   }
 
-  // 发翻牌
   dealFlop() {
-    this.communityCards = [this.deck.drawCard(), this.deck.drawCard(), this.deck.drawCard()];
+    this.burnCard();
+    this.communityCards.push(this.deck.drawCard(), this.deck.drawCard(), this.deck.drawCard());
     this.gamePhase = 'flop';
-    this.resetBettingRound();
-    // 通知所有玩家状态更新
-    this.roomManager.broadcastRoomState(this.room);
   }
 
-  // 发转牌
   dealTurn() {
+    this.burnCard();
     this.communityCards.push(this.deck.drawCard());
     this.gamePhase = 'turn';
-    this.resetBettingRound();
-    // 通知所有玩家状态更新
-    this.roomManager.broadcastRoomState(this.room);
   }
 
-  // 发河牌
   dealRiver() {
+    this.burnCard();
     this.communityCards.push(this.deck.drawCard());
     this.gamePhase = 'river';
-    this.resetBettingRound();
-    // 通知所有玩家状态更新
-    this.roomManager.broadcastRoomState(this.room);
   }
 
-  // 重置下注轮
-  resetBettingRound() {
+  prepareBettingRoundAfterStreet() {
     this.currentBet = 0;
-    this.minRaise = this.room.settings.initialChips / 50;
+    this.minRaise = this.getBigBlind();
+    this.roundStartIndex = -1;
     this.lastRaiseIndex = -1;
 
-    // 重置所有非All-in玩家的当前下注
     this.room.players.forEach((player) => {
-      if (!player.folded && !player.allIn) {
-        player.currentBet = 0;
-      }
+      player.currentBet = 0;
     });
 
-    // 在翻牌后阶段，第一个行动的玩家是小盲注左边的第一个活跃玩家
-    if (this.gamePhase !== 'preflop') {
-      this.currentPlayerIndex = this.getFirstActivePlayerAfterDealer();
-    }
-
-    this.roundStartIndex = this.currentPlayerIndex;
-
-    // 检查是否还有活跃玩家需要行动
-    const activePlayers = this.room.players.filter((p) => !p.folded && !p.allIn);
-    if (activePlayers.length <= 1) {
-      console.log('重置下注轮时发现活跃玩家不足，直接发完剩余公牌');
-      this.dealRemainingCards();
-      this.showdown();
+    const actionableIndices = this.getActionablePlayerIndices();
+    if (actionableIndices.length <= 1) {
+      this.playersToAct = new Set();
+      this.currentPlayerIndex = -1;
       return;
     }
 
-    // 为当前玩家启动计时器
-    this.startPlayerTimer();
+    this.playersToAct = new Set(actionableIndices);
+    const startIndex = this.getNextIndexFromList(this.dealerIndex, actionableIndices);
+    this.currentPlayerIndex = this.getPendingPlayerFrom(startIndex);
+    this.roundStartIndex = this.currentPlayerIndex;
   }
 
-  // 获取庄家后的第一个活跃玩家
-  getFirstActivePlayerAfterDealer() {
-    let index = this.smallBlindIndex;
-    while (this.room.players[index].folded || this.room.players[index].allIn) {
-      index = this.getNextActivePlayerIndex(index);
-      // 防止无限循环
-      if (index === this.smallBlindIndex) {
-        break;
-      }
-    }
-    return index;
-  }
-
-  // 摊牌
   showdown() {
-    this.gamePhase = 'showdown';
-
-    // 摊牌阶段清除计时器
     this.clearPlayerTimer();
+    this.gamePhase = 'showdown';
+    this.currentPlayerIndex = -1;
+    this.playersToAct = new Set();
+    this.currentBet = 0;
 
-    // 确保所有公牌都已发出
-    while (this.communityCards.length < 5) {
-      this.communityCards.push(this.deck.drawCard());
+    const contenders = this.getContestingPlayerIndices();
+    if (contenders.length <= 1) {
+      this.awardPotToLastPlayer();
+      return;
     }
 
-    console.log('开始摊牌阶段');
+    const pendingRunouts =
+      this.getContestingPlayerIndices().every((index) => this.room.players[index].allIn) &&
+      this.communityCards.length < 5 &&
+      (this.room.settings.allinDealCount || 1) > 1;
 
-    // 检查是否有All-in玩家需要多次发牌
-    if (this.allinPlayers.length > 0 && this.maxAllinRounds > 1) {
-      this.handleAllinShowdown();
-    } else {
-      this.handleNormalShowdown();
-    }
-  }
-
-  // 处理All-in摊牌（多次发牌）
-  handleAllinShowdown() {
-    this.currentAllinRound = 0;
-    this.allinResults = [];
-
-    console.log(`开始All-in多次发牌，总共${this.maxAllinRounds}次`);
-
-    // 保存当前的牌堆状态和公牌
-    const originalCommunityCards = [...this.communityCards];
-
-    // 进行多次发牌
-    for (let round = 0; round < this.maxAllinRounds; round++) {
-      // 重新创建牌堆并发完5张公牌
-      const tempDeck = new Deck();
-      const tempCommunityCards = [];
-
-      // 发出5张公牌
-      for (let i = 0; i < 5; i++) {
-        tempCommunityCards.push(tempDeck.drawCard());
-      }
-
-      const roundResult = this.evaluateShowdown(tempCommunityCards);
-      this.allinResults.push({
-        round: round + 1,
-        communityCards: tempCommunityCards,
-        ...roundResult,
-      });
-
-      console.log(`第${round + 1}轮发牌完成`);
+    if (pendingRunouts) {
+      this.handleMultiRunoutShowdown();
+      return;
     }
 
-    // 分配底池
-    this.distributeAllinPot();
-
-    // 发送结果并开始新手牌
-    this.sendAllinResults();
-  }
-
-  // 发送All-in结果
-  sendAllinResults() {
-    // 发送All-in结果给客户端
-    this.io.to(this.room.id).emit('allinResult', {
-      results: this.allinResults.map((result) => ({
-        round: result.round,
-        winners: result.winners.map((w) => w.nickname),
-        communityCards: result.communityCards,
-      })),
-      finalDistribution: this.calculateFinalDistribution(),
-    });
-
-    // 3秒后开始下一轮
-    setTimeout(() => {
-      this.startNewHand();
-      this.roomManager.broadcastRoomState(this.room);
-    }, 3000);
-  }
-
-  // 计算最终分配
-  calculateFinalDistribution() {
-    const playerWins = new Map();
-
-    this.allinResults.forEach((result) => {
-      result.winners.forEach((winner) => {
-        const currentWins = playerWins.get(winner.id) || 0;
-        playerWins.set(winner.id, currentWins + 1);
-      });
-    });
-
-    const totalRounds = this.allinResults.length;
-    const originalPot = this.pot;
-
-    return Array.from(playerWins.entries()).map(([playerId, wins]) => {
-      const player = this.room.players.find((p) => p.id === playerId);
-      return {
-        nickname: player.nickname,
-        wins: wins,
-        winnings: Math.floor((wins / totalRounds) * originalPot),
-      };
-    });
-  }
-
-  // 处理普通摊牌
-  handleNormalShowdown() {
+    this.completeBoardToRiver(this.deck, this.communityCards);
     const result = this.evaluateShowdown(this.communityCards);
-    this.distributePot(result);
+    const { pots, winnings, totalPot } = this.distributePotsAcrossBoards([{ result, communityCards: [...this.communityCards] }]);
 
-    // 开始新的一手牌
-    setTimeout(() => {
-      this.startNewHand();
-    }, 3000);
+    this.emitHandResult({
+      boardResult: result,
+      winnings,
+      pots,
+      totalPot,
+    });
+    this.scheduleNextHand();
   }
 
-  // 评估摊牌结果
-  evaluateShowdown(communityCards) {
-    const activePlayers = this.room.players.filter((p) => !p.folded);
-    const playerHands = activePlayers.map((player) => ({
-      player: player,
-      hand: HandEvaluator.evaluateHand(player.hand, communityCards),
+  handleMultiRunoutShowdown() {
+    const runCount = Math.max(1, this.room.settings.allinDealCount || 1);
+    const deckStub = this.createDeckStub(this.deck.cards);
+    const boards = [];
+
+    for (let round = 0; round < runCount; round++) {
+      const communityCards = [...this.communityCards];
+      this.completeBoardToRiver(deckStub, communityCards);
+      boards.push({
+        round: round + 1,
+        communityCards,
+        result: this.evaluateShowdown(communityCards),
+      });
+    }
+
+    const { pots, winnings, totalPot } = this.distributePotsAcrossBoards(boards);
+    this.communityCards = [...boards[0].communityCards];
+    this.allinResults = boards.map((board) => ({
+      round: board.round,
+      winners: board.result.winners.map((winner) => winner.nickname),
+      communityCards: board.communityCards,
     }));
 
-    // 按牌力排序
-    playerHands.sort((a, b) => b.hand.rank - a.hand.rank);
-
-    return {
-      winners: [playerHands[0].player],
-      hands: playerHands,
-      communityCards: communityCards,
-    };
-  }
-
-  // 分配底池
-  distributePot(result) {
-    const winner = result.winners[0];
-    winner.chips += this.pot;
-    this.pot = 0;
-
-    // 发送结果给客户端
-    this.io.to(this.room.id).emit('handResult', {
-      winners: result.winners.map((w) => w.nickname),
-      hands: result.hands.map((h) => ({
-        player: h.player.nickname,
-        hand: h.hand,
-        cards: h.player.showHand ? h.player.hand : [],
+    this.io.to(this.room.id).emit('allinResult', {
+      results: this.allinResults,
+      finalDistribution: this.buildFinalDistribution(winnings),
+      totalPot,
+      pots: pots.map((pot) => ({
+        id: pot.id,
+        amount: pot.amount,
+        eligiblePlayers: pot.eligiblePlayers,
       })),
-      communityCards: result.communityCards,
-      pot: this.pot,
     });
 
-    // 3秒后开始下一轮
-    setTimeout(() => {
-      this.startNewHand();
-      this.roomManager.broadcastRoomState(this.room);
-    }, 3000);
+    this.scheduleNextHand();
   }
 
-  // 分配All-in底池
-  distributeAllinPot() {
-    // 根据多次发牌结果计算平均赢取金额
-    const playerWins = new Map();
+  distributePotsAcrossBoards(boards) {
+    const potManager = new PotManager({ pot: this.pot, sidePots: this.sidePots }, { players: this.room.players });
+    const pots = potManager.calculatePots(this.room.players);
+    const totalPot = pots.reduce((sum, pot) => sum + pot.amount, 0);
+    const winnings = new Map(this.room.players.map((player) => [player.id, 0]));
 
-    this.allinResults.forEach((result) => {
-      result.winners.forEach((winner) => {
-        const currentWins = playerWins.get(winner.id) || 0;
-        playerWins.set(winner.id, currentWins + 1);
+    pots.forEach((pot) => {
+      const boardShares = this.splitAmountEvenly(pot.amount, boards.length);
+      boardShares.forEach((share, boardIndex) => {
+        if (share <= 0) {
+          return;
+        }
+
+        const board = boards[boardIndex];
+        const eligibleHands = board.result.hands.filter((hand) => pot.eligiblePlayers.includes(hand.player.id));
+        const winningHands = this.findWinningHands(eligibleHands);
+        this.distributeAmountToWinners(share, winningHands, winnings);
       });
     });
 
-    // 按获胜次数分配底池
-    const totalRounds = this.allinResults.length;
-    const originalPot = this.pot;
-
-    playerWins.forEach((wins, playerId) => {
-      const player = this.room.players.find((p) => p.id === playerId);
+    winnings.forEach((amount, playerId) => {
+      const player = this.room.players.find((entry) => entry.id === playerId);
       if (player) {
-        const winnings = Math.floor((wins / totalRounds) * originalPot);
-        player.chips += winnings;
-        console.log(`玩家 ${player.nickname} 获得 ${winnings} 筹码 (${wins}/${totalRounds} 胜率)`);
+        player.chips += amount;
       }
     });
 
     this.pot = 0;
+    this.sidePots = [];
+    this.currentBet = 0;
+    return { pots, winnings, totalPot };
   }
 
-  // 检查是否完成了一轮下注
-  hasCompletedRound() {
-    const activePlayers = this.room.players.filter((p) => !p.folded && !p.allIn);
-    const allinPlayers = this.room.players.filter((p) => !p.folded && p.allIn);
-    const foldedPlayers = this.room.players.filter((p) => p.folded);
-
-    console.log('详细的轮次完成检查:', {
-      gamePhase: this.gamePhase,
-      currentBet: this.currentBet,
-      activePlayers: activePlayers.map((p) => ({
-        name: p.nickname,
-        bet: p.currentBet,
-        chips: p.chips,
-      })),
-      allinPlayers: allinPlayers.map((p) => ({
-        name: p.nickname,
-        bet: p.currentBet,
-        chips: p.chips,
-      })),
-      foldedPlayers: foldedPlayers.length,
-      totalPlayers: this.room.players.length,
-    });
-
-    // 如果没有活跃玩家，轮次完成
-    if (activePlayers.length === 0) {
-      console.log('没有活跃玩家，轮次完成');
-      return true;
+  findWinningHands(hands) {
+    if (!hands.length) {
+      return [];
     }
 
-    // 如果只有一个活跃玩家，检查其是否需要跟注
-    if (activePlayers.length === 1) {
-      const lastPlayer = activePlayers[0];
-      if (lastPlayer.currentBet >= this.currentBet) {
-        console.log('最后一个活跃玩家已匹配下注，轮次完成');
-        return true;
-      } else {
-        console.log('最后一个活跃玩家需要决定跟注，轮次未完成');
-        return false;
+    const sorted = [...hands].sort((a, b) => HandEvaluator.compareHands(b.hand, a.hand));
+    const best = sorted[0];
+    return sorted.filter((entry) => HandEvaluator.compareHands(entry.hand, best.hand) === 0);
+  }
+
+  distributeAmountToWinners(amount, winners, winnings) {
+    if (!winners.length) {
+      return;
+    }
+
+    const share = Math.floor(amount / winners.length);
+    const remainder = amount % winners.length;
+
+    winners.forEach((winner) => {
+      winnings.set(winner.player.id, (winnings.get(winner.player.id) || 0) + share);
+    });
+
+    if (remainder > 0) {
+      const oddChipWinner = this.findClosestWinnerToSmallBlind(winners);
+      if (oddChipWinner) {
+        winnings.set(oddChipWinner.player.id, (winnings.get(oddChipWinner.player.id) || 0) + remainder);
       }
     }
+  }
 
-    // 所有活跃玩家的下注必须相等
-    const targetBet = this.currentBet;
-    const allBetsEqual = activePlayers.every((player) => player.currentBet === targetBet);
+  findClosestWinnerToSmallBlind(winners) {
+    if (winners.length <= 1) {
+      return winners[0] || null;
+    }
 
-    console.log('多玩家下注检查:', {
-      targetBet,
-      allBetsEqual,
-      playerBets: activePlayers.map((p) => ({ name: p.nickname, bet: p.currentBet })),
+    const startSeat = this.room.players[this.smallBlindIndex]?.seat ?? 0;
+    return winners
+      .map((winner) => ({
+        winner,
+        distance: this.calculateSeatDistance(startSeat, winner.player.seat),
+      }))
+      .sort((a, b) => a.distance - b.distance)[0].winner;
+  }
+
+  buildFinalDistribution(winnings) {
+    return this.room.players
+      .map((player) => ({
+        nickname: player.nickname,
+        winnings: winnings.get(player.id) || 0,
+      }))
+      .filter((player) => player.winnings > 0);
+  }
+
+  emitHandResult({ boardResult, winnings, pots, totalPot, reason = null }) {
+    const winners = this.buildFinalDistribution(winnings);
+    this.io.to(this.room.id).emit('handResult', {
+      winners: winners.map((winner) => winner.nickname),
+      winnings: winners,
+      hands: boardResult.hands.map((entry) => ({
+        player: entry.player.nickname,
+        hand: entry.hand,
+        cards: entry.player.showHand || winners.some((winner) => winner.nickname === entry.player.nickname) ? entry.player.hand : [],
+      })),
+      communityCards: boardResult.communityCards,
+      pots: pots.map((pot) => ({
+        id: pot.id,
+        amount: pot.amount,
+        eligiblePlayers: pot.eligiblePlayers,
+      })),
+      totalPot,
+      pot: totalPot,
+      reason,
+    });
+  }
+
+  awardPotToLastPlayer() {
+    const winnerIndex = this.getContestingPlayerIndices()[0];
+    if (winnerIndex === undefined) {
+      return;
+    }
+
+    this.clearPlayerTimer();
+    const winner = this.room.players[winnerIndex];
+    const totalPot = this.room.players.reduce((sum, player) => sum + player.totalBet, 0);
+    winner.chips += totalPot;
+
+    this.room.players.forEach((player) => {
+      player.totalBet = 0;
+      player.currentBet = 0;
     });
 
-    if (!allBetsEqual) {
-      console.log('下注不相等，轮次未完成');
-      return false;
-    }
-
-    console.log('所有检查通过，轮次完成');
-    return true;
-  }
-
-  // 检查下一阶段
-  checkNextPhase() {
-    const activePlayers = this.room.players.filter((p) => !p.folded && !p.allIn);
-
-    if (activePlayers.length === 0) {
-      // 没有活跃玩家，进入下一阶段
-      this.nextPhase();
-    } else if (activePlayers.length === 1) {
-      // 只剩一个玩家，直接获胜
-      this.handleLastPlayerStanding(activePlayers[0]);
-    }
-    // 注意：不在这里检查是否回到起始玩家，这个检查在moveToNextPlayer中进行
-  }
-
-  // 处理最后一个站立的玩家
-  handleLastPlayerStanding(player) {
-    player.chips += this.pot;
     this.pot = 0;
+    this.sidePots = [];
+    this.currentBet = 0;
+    this.currentPlayerIndex = -1;
+    this.playersToAct = new Set();
+    this.gamePhase = 'showdown';
 
     this.io.to(this.room.id).emit('handResult', {
-      winners: [player.nickname],
+      winners: [winner.nickname],
+      winnings: [{ nickname: winner.nickname, winnings: totalPot }],
       hands: [],
-      communityCards: this.communityCards,
-      pot: 0,
+      communityCards: [...this.communityCards],
+      pots: [],
+      totalPot,
+      pot: totalPot,
       reason: '其他玩家全部弃牌',
     });
 
-    setTimeout(() => {
-      this.startNewHand();
-    }, 3000);
+    this.scheduleNextHand();
   }
 
-  // 获取下一个活跃玩家索引
-  getNextActivePlayerIndex(currentIndex) {
-    let nextIndex = (currentIndex + 1) % this.room.players.length;
-    let attempts = 0;
-    while ((this.room.players[nextIndex].folded || !this.room.players[nextIndex].isActive) && attempts < this.room.players.length) {
-      nextIndex = (nextIndex + 1) % this.room.players.length;
-      attempts++;
-    }
-    return nextIndex;
-  }
+  evaluateShowdown(communityCards) {
+    const activePlayers = this.room.players.filter((player) => player.inHand && !player.folded);
+    const hands = activePlayers.map((player) => ({
+      player,
+      hand: HandEvaluator.evaluateHand(player.hand, communityCards),
+    }));
 
-  // 获取当前玩家
-  getCurrentPlayer() {
-    return this.room.players[this.currentPlayerIndex];
-  }
-
-  // 检查玩家是否在当前手牌中
-  isPlayerInCurrentHand(player) {
-    return !player.folded && !player.allIn;
-  }
-
-  // 处理玩家断开连接
-  handlePlayerDisconnect(playerId) {
-    const player = this.room.players.find((p) => p.id === playerId);
-    if (player && this.isPlayerInCurrentHand(player)) {
-      player.folded = true;
-      this.checkNextPhase();
-    }
-  }
-
-  // 获取游戏状态
-  getGameState() {
-    const bigBlind = this.room.settings.initialChips / 50;
-    const smallBlind = this.room.settings.initialChips / 100;
+    hands.sort((a, b) => HandEvaluator.compareHands(b.hand, a.hand));
+    const winners = this.findWinningHands(hands).map((entry) => entry.player);
 
     return {
-      phase: this.gamePhase,
-      communityCards: this.communityCards,
-      pot: this.pot,
-      currentBet: this.currentBet,
-      minRaise: this.minRaise,
-      bigBlind: bigBlind,
-      smallBlind: smallBlind,
-      currentPlayerIndex: this.currentPlayerIndex,
-      dealerIndex: this.dealerIndex,
-      smallBlindIndex: this.smallBlindIndex,
-      bigBlindIndex: this.bigBlindIndex,
-      allinPlayers: this.allinPlayers.map((p) => p.nickname),
-      allinResults: this.allinResults,
-      timeRemaining: this.timeRemaining,
+      winners,
+      hands,
+      communityCards,
     };
   }
 
-  // 检查游戏是否正在进行中
-  isGameInProgress() {
-    // 如果没有游戏实例，说明游戏还没开始
-    if (!this) return false;
-
-    // 检查游戏阶段
-    const gamePhases = ['preflop', 'flop', 'turn', 'river', 'showdown'];
-    return gamePhases.includes(this.gamePhase);
+  splitAmountEvenly(amount, parts) {
+    const base = Math.floor(amount / parts);
+    const remainder = amount % parts;
+    return Array.from({ length: parts }, (_, index) => base + (index < remainder ? 1 : 0));
   }
 
-  // 启动玩家行动计时器
+  completeBoardToRiver(deck, communityCards) {
+    if (communityCards.length === 0) {
+      this.burnFromDeck(deck);
+      communityCards.push(deck.drawCard(), deck.drawCard(), deck.drawCard());
+    }
+
+    if (communityCards.length === 3) {
+      this.burnFromDeck(deck);
+      communityCards.push(deck.drawCard());
+    }
+
+    if (communityCards.length === 4) {
+      this.burnFromDeck(deck);
+      communityCards.push(deck.drawCard());
+    }
+  }
+
+  createDeckStub(cards) {
+    return {
+      cards: [...cards],
+      drawCard() {
+        if (!this.cards.length) {
+          throw new Error('牌堆已空');
+        }
+        return this.cards.pop();
+      },
+    };
+  }
+
+  burnCard() {
+    this.burnFromDeck(this.deck);
+  }
+
+  burnFromDeck(deck) {
+    if (deck.cards.length > 0) {
+      deck.drawCard();
+    }
+  }
+
+  recordAction(playerIndex, action, amount, meta = {}) {
+    const player = this.room.players[playerIndex];
+    const entry = {
+      playerId: player.id,
+      nickname: player.nickname,
+      action,
+      amount,
+      totalBet: player.currentBet,
+      timestamp: Date.now(),
+      ...meta,
+    };
+
+    player.lastAction = entry;
+    this.lastAction = entry;
+    this.actionHistory.push(entry);
+  }
+
+  refreshPotState() {
+    this.pot = this.room.players.reduce((sum, player) => sum + player.totalBet, 0);
+    const potManager = new PotManager({ pot: this.pot, sidePots: [] }, { players: this.room.players });
+    const pots = potManager.calculatePots(this.room.players);
+    this.sidePots = pots.slice(1).map((pot) => ({
+      id: pot.id,
+      amount: pot.amount,
+      eligiblePlayers: pot.eligiblePlayers,
+    }));
+  }
+
+  getActionablePlayerIndices() {
+    return this.room.players
+      .map((player, index) => ({ player, index }))
+      .filter(({ player }) => this.isPlayerActionable(player))
+      .sort((a, b) => a.player.seat - b.player.seat)
+      .map(({ index }) => index);
+  }
+
+  getContestingPlayerIndices() {
+    return this.room.players
+      .map((player, index) => ({ player, index }))
+      .filter(({ player }) => player.inHand && !player.folded)
+      .sort((a, b) => a.player.seat - b.player.seat)
+      .map(({ index }) => index);
+  }
+
+  getPendingPlayerIndices() {
+    return [...this.playersToAct]
+      .filter((index) => this.isPlayerActionable(this.room.players[index]))
+      .sort((a, b) => this.room.players[a].seat - this.room.players[b].seat);
+  }
+
+  getPendingPlayerFrom(startIndex) {
+    const pending = this.getPendingPlayerIndices();
+    if (!pending.length) {
+      return -1;
+    }
+
+    if (pending.includes(startIndex)) {
+      return startIndex;
+    }
+
+    return this.getNextIndexFromList(startIndex, pending);
+  }
+
+  getNextIndexFromList(referenceIndex, orderedIndices) {
+    if (!orderedIndices.length) {
+      return -1;
+    }
+
+    const referenceSeat = this.room.players[referenceIndex]?.seat ?? -1;
+    const next = orderedIndices.find((playerIndex) => this.room.players[playerIndex].seat > referenceSeat);
+    return next !== undefined ? next : orderedIndices[0];
+  }
+
+  rotateOrderedIndices(orderedIndices, startIndex) {
+    const startPosition = orderedIndices.indexOf(startIndex);
+    if (startPosition === -1) {
+      return [...orderedIndices];
+    }
+
+    return [...orderedIndices.slice(startPosition), ...orderedIndices.slice(0, startPosition)];
+  }
+
+  calculateSeatDistance(startSeat, targetSeat) {
+    const maxPlayers = this.room.settings.maxPlayers || this.room.players.length || 10;
+    return (targetSeat - startSeat + maxPlayers) % maxPlayers;
+  }
+
+  isPlayerActionable(player) {
+    return Boolean(player && player.inHand && !player.folded && !player.allIn && player.chips > 0);
+  }
+
+  handlePlayerDisconnect(playerId) {
+    this.forceFoldPlayer(playerId, 'disconnect');
+  }
+
+  forceFoldPlayer(playerId, reason = 'forced') {
+    const playerIndex = this.room.players.findIndex((player) => player.id === playerId);
+    if (playerIndex === -1) {
+      return;
+    }
+
+    const player = this.room.players[playerIndex];
+    if (!player.inHand || player.folded || player.allIn) {
+      return;
+    }
+
+    this.clearPlayerTimer();
+    this.applyFold(playerIndex, { auto: true, reason });
+    this.refreshPotState();
+    this.updatePendingPlayersAfterAction(playerIndex, false);
+    this.advanceGameFlow(playerIndex);
+  }
+
+  handlePlayerTimeout() {
+    const player = this.getCurrentPlayer();
+    if (!player) {
+      return;
+    }
+
+    this.clearPlayerTimer();
+    const playerIndex = this.currentPlayerIndex;
+    const canCheck = this.getAmountToCall(player) === 0;
+
+    if (canCheck) {
+      this.applyCheck(playerIndex, { auto: true, reason: 'timeout' });
+    } else {
+      this.applyFold(playerIndex, { auto: true, reason: 'timeout' });
+    }
+
+    this.refreshPotState();
+    this.updatePendingPlayersAfterAction(playerIndex, false);
+    this.advanceGameFlow(playerIndex);
+    this.roomManager.broadcastRoomState(this.room);
+  }
+
+  getCurrentPlayer() {
+    return this.room.players[this.currentPlayerIndex] || null;
+  }
+
+  isPlayerInCurrentHand(player) {
+    return Boolean(player && player.inHand);
+  }
+
+  isGameInProgress() {
+    return this.room.gameStarted;
+  }
+
+  getSmallBlind() {
+    return Math.max(1, Math.floor(this.room.settings.initialChips / 100));
+  }
+
+  getBigBlind() {
+    return Math.max(2, Math.floor(this.room.settings.initialChips / 50));
+  }
+
   startPlayerTimer() {
-    this.clearPlayerTimer(); // 清除之前的计时器
+    this.clearPlayerTimer();
+    if (!this.getCurrentPlayer()) {
+      return;
+    }
+
     this.timeRemaining = this.actionTimeLimit;
-
-    console.log(`为玩家 ${this.getCurrentPlayer().nickname} 启动 ${this.actionTimeLimit} 秒计时器`);
-
-    // 立即广播计时器状态
-    this.broadcastTimerUpdate();
+    this.roomManager.broadcastRoomState(this.room);
 
     this.playerTimer = setInterval(() => {
-      this.timeRemaining--;
-
-      // 每秒广播倒计时更新
-      this.broadcastTimerUpdate();
+      this.timeRemaining -= 1;
+      this.roomManager.broadcastRoomState(this.room);
 
       if (this.timeRemaining <= 0) {
-        console.log(`玩家 ${this.getCurrentPlayer().nickname} 操作超时，执行自动行动`);
         this.handlePlayerTimeout();
       }
     }, 1000);
   }
 
-  // 清除计时器
   clearPlayerTimer() {
     if (this.playerTimer) {
       clearInterval(this.playerTimer);
@@ -909,40 +958,45 @@ class GameLogic {
     this.timeRemaining = 0;
   }
 
-  // 广播计时器更新
-  broadcastTimerUpdate() {
-    const currentPlayer = this.getCurrentPlayer();
-    if (currentPlayer) {
+  scheduleNextHand() {
+    this.clearNextHandTimeout();
+    this.nextHandTimeout = setTimeout(() => {
+      this.startNewHand();
       this.roomManager.broadcastRoomState(this.room);
+    }, 3000);
+  }
+
+  clearNextHandTimeout() {
+    if (this.nextHandTimeout) {
+      clearTimeout(this.nextHandTimeout);
+      this.nextHandTimeout = null;
     }
   }
 
-  // 处理玩家超时
-  handlePlayerTimeout() {
-    this.clearPlayerTimer();
-
-    const currentPlayer = this.getCurrentPlayer();
-    if (!currentPlayer || currentPlayer.folded || currentPlayer.allIn) {
-      return;
-    }
-
-    console.log(`处理玩家 ${currentPlayer.nickname} 超时行动`);
-
-    // 根据德州扑克规则决定自动行动
-    const canCheck = currentPlayer.currentBet >= this.currentBet;
-
-    if (canCheck) {
-      // 可以过牌时自动过牌
-      console.log(`玩家 ${currentPlayer.nickname} 超时自动过牌`);
-      this.check(currentPlayer);
-    } else {
-      // 不能过牌时自动弃牌
-      console.log(`玩家 ${currentPlayer.nickname} 超时自动弃牌`);
-      this.fold(currentPlayer);
-    }
-
-    // 广播状态更新
-    this.roomManager.broadcastRoomState(this.room);
+  getGameState() {
+    return {
+      phase: this.gamePhase,
+      communityCards: this.communityCards,
+      pot: this.pot,
+      sidePots: this.sidePots,
+      currentBet: this.currentBet,
+      minRaise: this.minRaise,
+      bigBlind: this.getBigBlind(),
+      smallBlind: this.getSmallBlind(),
+      currentPlayerIndex: this.currentPlayerIndex,
+      currentPlayerId: this.getCurrentPlayer()?.id || null,
+      dealerIndex: this.dealerIndex,
+      dealerPosition: this.room.players[this.dealerIndex]?.seat ?? -1,
+      smallBlindIndex: this.smallBlindIndex,
+      bigBlindIndex: this.bigBlindIndex,
+      roundStartIndex: this.roundStartIndex,
+      lastRaiseIndex: this.lastRaiseIndex,
+      handNumber: this.handNumber,
+      allinPlayers: this.room.players.filter((player) => player.inHand && player.allIn).map((player) => player.nickname),
+      allinResults: this.allinResults,
+      lastAction: this.lastAction,
+      timeRemaining: this.timeRemaining,
+    };
   }
 }
 

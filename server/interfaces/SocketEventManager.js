@@ -12,15 +12,15 @@ class SocketEventManager {
     this.eventHandlers = new Map();
     this.middlewares = [];
     this.eventHistory = new Map(); // 用于调试和性能分析
-    
+
     // 事件统计
     this.stats = {
       eventsReceived: 0,
       eventsSent: 0,
       errorsCount: 0,
-      lastEventTime: null
+      lastEventTime: null,
     };
-    
+
     this.setupEventValidation();
   }
 
@@ -30,45 +30,45 @@ class SocketEventManager {
   setupEventValidation() {
     this.eventValidationRules = {
       // 房间相关事件
-      'join_room': {
+      join_room: {
         required: ['roomId'],
         optional: ['password'],
-        validate: (data) => this.validateJoinRoom(data)
+        validate: (data) => this.validateJoinRoom(data),
       },
-      'create_room': {
+      create_room: {
         required: ['roomName', 'settings'],
         optional: ['password'],
-        validate: (data) => this.validateCreateRoom(data)
+        validate: (data) => this.validateCreateRoom(data),
       },
-      'leave_room': {
+      leave_room: {
         required: ['roomId'],
         optional: [],
-        validate: (data) => this.validateLeaveRoom(data)
+        validate: (data) => this.validateLeaveRoom(data),
       },
-      
+
       // 游戏相关事件
-      'player_action': {
+      player_action: {
         required: ['action'],
         optional: ['amount'],
-        validate: (data) => this.validatePlayerAction(data)
+        validate: (data) => this.validatePlayerAction(data),
       },
-      'ready_to_play': {
+      ready_to_play: {
         required: [],
         optional: [],
-        validate: () => ({ valid: true })
+        validate: () => ({ valid: true }),
       },
-      'request_game_state': {
+      request_game_state: {
         required: [],
         optional: [],
-        validate: () => ({ valid: true })
+        validate: () => ({ valid: true }),
       },
-      
+
       // 聊天相关事件
-      'chat_message': {
+      chat_message: {
         required: ['message'],
         optional: ['type'],
-        validate: (data) => this.validateChatMessage(data)
-      }
+        validate: (data) => this.validateChatMessage(data),
+      },
     };
   }
 
@@ -79,16 +79,16 @@ class SocketEventManager {
    */
   registerSocket(socket, metadata = {}) {
     const socketId = socket.id;
-    
+
     // 注册到资源管理器
     resourceManager.registerSocket(socketId, socket, metadata);
-    
+
     // 设置中间件
     this.setupSocketMiddleware(socket);
-    
+
     // 注册基础事件处理器
     this.setupBaseEventHandlers(socket);
-    
+
     logger.connection('socket_registered', socketId, metadata);
   }
 
@@ -100,25 +100,25 @@ class SocketEventManager {
     // 事件预处理中间件
     socket.use((packet, next) => {
       const [eventName, eventData] = packet;
-      
+
       // 记录事件接收
       this.stats.eventsReceived++;
       this.stats.lastEventTime = Date.now();
-      
+
       // 验证事件格式
       const validationResult = this.validateIncomingEvent(eventName, eventData, socket);
-      
+
       if (!validationResult.valid) {
         logger.warn('Invalid event received', {
           socketId: socket.id,
           eventName,
-          error: validationResult.error
+          error: validationResult.error,
         });
-        
+
         this.sendError(socket, ERROR_CODES.VALIDATION_ERROR, validationResult.error);
         return; // 不调用next()，阻止事件处理
       }
-      
+
       // 应用自定义中间件
       this.applyMiddlewares(socket, eventName, validationResult.data, next);
     });
@@ -133,25 +133,25 @@ class SocketEventManager {
     socket.on('connect', () => {
       this.sendEvent(socket, EVENT_TYPES.CONNECTION_STATUS, {
         status: 'connected',
-        socketId: socket.id
+        socketId: socket.id,
       });
     });
-    
+
     // 断开连接事件
     socket.on('disconnect', (reason) => {
       logger.connection('socket_disconnected', socket.id, { reason });
       this.cleanupSocketEvents(socket.id);
     });
-    
+
     // 错误事件
     socket.on('error', (error) => {
       logger.error('Socket error', {
         socketId: socket.id,
-        error: error.message
+        error: error.message,
       });
       this.stats.errorsCount++;
     });
-    
+
     // Ping/Pong for connection health
     socket.on('ping', () => {
       resourceManager.updateSocketActivity(socket.id);
@@ -170,10 +170,10 @@ class SocketEventManager {
     if (!eventName || typeof eventName !== 'string') {
       return {
         valid: false,
-        error: '事件名称必须是非空字符串'
+        error: '事件名称必须是非空字符串',
       };
     }
-    
+
     // 获取验证规则
     const rule = this.eventValidationRules[eventName];
     if (!rule) {
@@ -181,28 +181,28 @@ class SocketEventManager {
       logger.debug('Unknown event type', { eventName, socketId: socket.id });
       return {
         valid: true,
-        data: eventData
+        data: eventData,
       };
     }
-    
+
     // 验证数据结构
     if (!eventData || typeof eventData !== 'object') {
       return {
         valid: false,
-        error: '事件数据必须是对象'
+        error: '事件数据必须是对象',
       };
     }
-    
+
     // 检查必需字段
     for (const field of rule.required) {
       if (!(field in eventData)) {
         return {
           valid: false,
-          error: `缺少必需字段: ${field}`
+          error: `缺少必需字段: ${field}`,
         };
       }
     }
-    
+
     // 应用自定义验证
     if (rule.validate) {
       const customResult = rule.validate(eventData, socket);
@@ -210,17 +210,17 @@ class SocketEventManager {
         return customResult;
       }
     }
-    
+
     // 添加标准字段
     const standardizedData = {
       ...eventData,
       timestamp: Date.now(),
-      socketId: socket.id
+      socketId: socket.id,
     };
-    
+
     return {
       valid: true,
-      data: standardizedData
+      data: standardizedData,
     };
   }
 
@@ -233,16 +233,16 @@ class SocketEventManager {
    */
   applyMiddlewares(socket, eventName, eventData, next) {
     let index = 0;
-    
+
     const runMiddleware = () => {
       if (index >= this.middlewares.length) {
         return next(); // 所有中间件都执行完毕
       }
-      
+
       const middleware = this.middlewares[index++];
       middleware(socket, eventName, eventData, runMiddleware);
     };
-    
+
     runMiddleware();
   }
 
@@ -266,24 +266,23 @@ class SocketEventManager {
    */
   sendEvent(socket, eventType, payload, options = {}) {
     const eventData = this.createStandardEvent(eventType, payload, options);
-    
+
     try {
       socket.emit(eventType, eventData);
-      
+
       this.stats.eventsSent++;
       this.recordEventHistory(socket.id, 'sent', eventType, eventData);
-      
+
       logger.debug('Event sent', {
         socketId: socket.id,
         eventType,
-        payloadSize: JSON.stringify(payload).length
+        payloadSize: JSON.stringify(payload).length,
       });
-      
     } catch (error) {
       logger.error('Failed to send event', {
         socketId: socket.id,
         eventType,
-        error: error.message
+        error: error.message,
       });
       this.stats.errorsCount++;
     }
@@ -299,23 +298,22 @@ class SocketEventManager {
    */
   broadcastToRoom(io, roomId, eventType, payload, options = {}) {
     const eventData = this.createStandardEvent(eventType, payload, options);
-    
+
     try {
       io.to(roomId).emit(eventType, eventData);
-      
+
       this.stats.eventsSent++;
-      
+
       logger.debug('Event broadcasted to room', {
         roomId,
         eventType,
-        payloadSize: JSON.stringify(payload).length
+        payloadSize: JSON.stringify(payload).length,
       });
-      
     } catch (error) {
       logger.error('Failed to broadcast event', {
         roomId,
         eventType,
-        error: error.message
+        error: error.message,
       });
       this.stats.errorsCount++;
     }
@@ -346,7 +344,7 @@ class SocketEventManager {
       payload: payload || {},
       timestamp: Date.now(),
       version: options.version || '1.0',
-      sequence: options.sequence || null
+      sequence: options.sequence || null,
     };
   }
 
@@ -361,15 +359,15 @@ class SocketEventManager {
     if (!this.eventHistory.has(socketId)) {
       this.eventHistory.set(socketId, []);
     }
-    
+
     const history = this.eventHistory.get(socketId);
     history.push({
       direction,
       eventType,
       timestamp: Date.now(),
-      dataSize: JSON.stringify(eventData).length
+      dataSize: JSON.stringify(eventData).length,
     });
-    
+
     // 限制历史记录长度
     if (history.length > 100) {
       history.shift();
@@ -390,11 +388,11 @@ class SocketEventManager {
     if (!roomIdResult.valid) {
       return { valid: false, error: '房间ID无效' };
     }
-    
+
     if (data.password && typeof data.password !== 'string') {
       return { valid: false, error: '房间密码必须是字符串' };
     }
-    
+
     return { valid: true };
   }
 
@@ -402,12 +400,12 @@ class SocketEventManager {
     if (!data.roomName || typeof data.roomName !== 'string' || data.roomName.trim().length < 1) {
       return { valid: false, error: '房间名称不能为空' };
     }
-    
+
     const settingsResult = Validator.validateRoomSettings(data.settings);
     if (!settingsResult.valid) {
       return settingsResult;
     }
-    
+
     return { valid: true };
   }
 
@@ -420,11 +418,11 @@ class SocketEventManager {
     if (!validActions.includes(data.action)) {
       return { valid: false, error: '无效的玩家动作' };
     }
-    
+
     if (['raise', 'allin'].includes(data.action) && typeof data.amount !== 'number') {
       return { valid: false, error: '加注和All-in需要指定金额' };
     }
-    
+
     return { valid: true };
   }
 
@@ -432,12 +430,12 @@ class SocketEventManager {
     if (!data.message || typeof data.message !== 'string') {
       return { valid: false, error: '聊天消息必须是非空字符串' };
     }
-    
+
     const trimmed = data.message.trim();
     if (trimmed.length === 0 || trimmed.length > 200) {
       return { valid: false, error: '聊天消息长度必须在1-200字符之间' };
     }
-    
+
     return { valid: true };
   }
 
@@ -450,7 +448,7 @@ class SocketEventManager {
       ...this.stats,
       activeConnections: this.eventHistory.size,
       middlewareCount: this.middlewares.length,
-      eventTypeCount: Object.keys(this.eventValidationRules).length
+      eventTypeCount: Object.keys(this.eventValidationRules).length,
     };
   }
 
@@ -462,9 +460,9 @@ class SocketEventManager {
       eventsReceived: 0,
       eventsSent: 0,
       errorsCount: 0,
-      lastEventTime: null
+      lastEventTime: null,
     };
-    
+
     logger.info('Socket event manager statistics reset');
   }
 }

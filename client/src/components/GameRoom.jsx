@@ -1,5 +1,5 @@
 import { ChevronDown, LogOut, Plus, Share2, Users } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import ActionButtons from './ActionButtons';
@@ -57,6 +57,7 @@ const GameRoom = () => {
     setShowHandResult,
     showHandResult,
     startGame,
+    resetGame,
     isCreatingRoom,
     navigationTarget,
   } = useGame();
@@ -71,6 +72,7 @@ const GameRoom = () => {
   const [showLeaveSeat, setShowLeaveSeat] = useState(false);
   const [showExitRoom, setShowExitRoom] = useState(false);
   const [gameLogs, setGameLogs] = useState([]);
+  const lastLoggedActionKeyRef = useRef(null);
 
   useEffect(() => {
     const verifyRoom = async () => {
@@ -145,14 +147,12 @@ const GameRoom = () => {
       if (currentRoomId === roomId && currentPlayerId && players.length === 0 && connected && !isCreatingRoom) {
         console.log('检测到房间状态异常，重新验证房间');
         // 清除错误的房间状态并重新验证
-        const { socket } = useGame.getState();
         if (socket) {
           socket.emit('leaveRoom', roomId);
         }
 
         // 重置客户端状态
-        const gameStore = useGame.getState();
-        gameStore.resetGame && gameStore.resetGame();
+        resetGame();
         setNeedsJoin(false);
         setCurrentPlayer(null);
 
@@ -164,7 +164,7 @@ const GameRoom = () => {
     };
 
     verifyRoom();
-  }, [currentRoomId, roomId, navigate, setShowJoinRoom, connected, checkRoom, currentPlayerId, isCreatingRoom, navigationTarget]);
+  }, [currentRoomId, roomId, navigate, setShowJoinRoom, connected, checkRoom, currentPlayerId, isCreatingRoom, navigationTarget, socket, resetGame]);
 
   useEffect(() => {
     if (currentPlayerId && players.length > 0) {
@@ -180,28 +180,46 @@ const GameRoom = () => {
     }
   }, [currentPlayerId, players, currentRoomId, roomId]);
 
+  useEffect(() => {
+    setGameLogs([]);
+    lastLoggedActionKeyRef.current = null;
+  }, [roomId]);
+
   // 监听游戏状态变化，更新日志
   useEffect(() => {
     if (!gameState || !gameState.lastAction) return;
 
     const { lastAction } = gameState;
-    const player = players.find(p => p.id === lastAction.playerId);
-    
-    if (player) {
-      const actionText = {
-        fold: '弃牌',
-        check: '过牌',
-        call: `跟注 ${lastAction.amount || 0}`,
-        raise: `加注到 ${lastAction.amount || 0}`,
-        allin: `All-in ${lastAction.amount || 0}`,
-      };
+    const actionKey = [
+      gameState.handNumber || 0,
+      lastAction.playerId,
+      lastAction.action,
+      lastAction.amount || 0,
+      lastAction.totalBet || 0,
+      lastAction.timestamp || 0,
+      lastAction.reason || '',
+      lastAction.auto ? 'auto' : 'manual',
+    ].join(':');
 
-      setGameLogs(prev => [...prev.slice(-19), {  // 保留最近20条
-        player: player.nickname,
-        action: actionText[lastAction.action] || lastAction.action,
-        amount: lastAction.amount,
-        timestamp: Date.now(),
-      }]);
+    if (lastLoggedActionKeyRef.current === actionKey) {
+      return;
+    }
+
+    const player = players.find((p) => p.id === lastAction.playerId);
+
+    if (player) {
+      lastLoggedActionKeyRef.current = actionKey;
+
+      setGameLogs((prev) => [
+        ...prev.slice(-19),
+        {
+          // 保留最近20条
+          player: player.nickname,
+          action: lastAction.action,
+          amount: lastAction.amount,
+          timestamp: lastAction.timestamp || Date.now(),
+        },
+      ]);
     }
   }, [gameState?.lastAction, players]);
 
@@ -266,14 +284,14 @@ const GameRoom = () => {
   // 确认离座
   const confirmLeaveSeat = () => {
     console.log('确认离座被调用');
-    console.log('离座状态:', { 
-      hasSocket: !!socket, 
+    console.log('离座状态:', {
+      hasSocket: !!socket,
       hasCurrentPlayer: !!currentPlayer,
       gameStarted,
       playerFolded: currentPlayer?.folded,
-      playerId: currentPlayer?.id
+      playerId: currentPlayer?.id,
     });
-    
+
     if (socket && currentPlayer) {
       if (gameStarted && !currentPlayer.folded) {
         // 游戏中自动fold
@@ -310,6 +328,7 @@ const GameRoom = () => {
       // 离开房间
       socket.emit('leaveRoom', roomId);
     }
+    resetGame();
     setShowExitRoom(false);
     navigate('/');
   };
@@ -592,7 +611,10 @@ const GameRoom = () => {
                     <div className="text-xs text-gray-400 mb-1">边池:</div>
                     <div className="space-y-1">
                       {gameState.sidePots.map((pot, index) => (
-                        <div key={index} className="flex justify-between text-xs">
+                        <div
+                          key={index}
+                          className="flex justify-between text-xs"
+                        >
                           <span className="text-gray-300">边池 {index + 1}:</span>
                           <span className="text-yellow-400">{pot.amount}</span>
                         </div>
@@ -710,11 +732,9 @@ const GameRoom = () => {
         }`}
       >
         <Leaderboard players={players} />
-        
+
         {/* 游戏日志 */}
-        {gameStarted && gameLogs.length > 0 && (
-          <GameLog logs={gameLogs} />
-        )}
+        {gameStarted && gameLogs.length > 0 && <GameLog logs={gameLogs} />}
       </div>
 
       {/* 底部UI区域 - 简化设计 */}

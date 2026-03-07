@@ -9,9 +9,9 @@ module.exports = {
   // Socket事件管理
   SocketEventManager,
   socketEventManager,
-  
+
   // API响应管理
   APIResponseManager,
   apiResponseManager,
-  ValidationSchemas
+  ValidationSchemas,
 };

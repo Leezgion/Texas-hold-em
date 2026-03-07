@@ -17,7 +17,7 @@ const JoinRoomModal = ({ roomId }) => {
       // 只有成功时才关闭模态框
       handleClose();
     } catch (error) {
-      alert(`加入房间失败：${error.message}`);
+      window.dispatchEvent(new CustomEvent('game-error', { detail: `加入房间失败：${error.message}` }));
       setIsSubmitting(false); // 重置提交状态，允许重试
     }
   };

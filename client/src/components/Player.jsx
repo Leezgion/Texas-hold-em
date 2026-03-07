@@ -5,7 +5,7 @@ import { useGame } from '../contexts/GameContext';
 
 const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted, isActiveTimer, getPositionLabel }) => {
   const [showHand, setShowHand] = useState(false);
-  const { changeSeat } = useGame();
+  const { changeSeat, showHand: requestShowHand, muckHand } = useGame();
 
   const handleCardClick = () => {
     if (isCurrentPlayer && player.hand.length > 0) {
@@ -144,13 +144,13 @@ const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted
         {gameState?.phase === 'showdown' && (
           <div className="flex space-x-1">
             <button
-              onClick={() => useGame.getState().showHand()}
+              onClick={() => requestShowHand()}
               className=" success text-xs px-2 py-1 flex-1"
             >
               亮牌
             </button>
             <button
-              onClick={() => useGame.getState().muckHand()}
+              onClick={() => muckHand()}
               className=" danger text-xs px-2 py-1 flex-1"
             >
               盖牌

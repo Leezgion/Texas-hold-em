@@ -7,15 +7,20 @@ const EmptySeat = ({ seatIndex, position, getPositionLabel }) => {
 
   const handleTakeSeat = () => {
     if (gameStarted) {
-      // 游戏进行中，提示等待下轮
-      const confirmed = window.confirm('游戏正在进行中，入座后需要等待本轮结束才能参与游戏。是否确认入座？');
-      if (confirmed) {
-        takeSeat(seatIndex);
-      }
+      window.dispatchEvent(
+        new CustomEvent('game-info', {
+          detail: '当前手牌进行中，入座后会在下一手自动加入',
+        })
+      );
     } else {
-      // 游戏未开始，直接入座
-      takeSeat(seatIndex);
+      window.dispatchEvent(
+        new CustomEvent('game-success', {
+          detail: `已选择座位 ${seatIndex + 1}`,
+        })
+      );
     }
+
+    takeSeat(seatIndex);
   };
 
   return (

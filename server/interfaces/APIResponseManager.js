@@ -12,21 +12,21 @@ class APIResponseManager {
     this.responseFormats = {
       SUCCESS: 'success',
       ERROR: 'error',
-      PARTIAL: 'partial'
+      PARTIAL: 'partial',
     };
-    
+
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'X-API-Version': '1.0',
-      'X-Response-Time': null
+      'X-Response-Time': null,
     };
-    
+
     // API统计
     this.stats = {
       totalRequests: 0,
       successfulRequests: 0,
       errorRequests: 0,
-      averageResponseTime: 0
+      averageResponseTime: 0,
     };
   }
 
@@ -37,35 +37,35 @@ class APIResponseManager {
   createMiddleware() {
     return (req, res, next) => {
       const startTime = Date.now();
-      
+
       // 增强request对象
       req.validateBody = (schema) => this.validateRequestBody(req.body, schema);
       req.validateQuery = (schema) => this.validateRequestQuery(req.query, schema);
       req.validateParams = (schema) => this.validateRequestParams(req.params, schema);
-      
+
       // 增强response对象
       res.sendSuccess = (data, message, meta) => {
         this.sendSuccessResponse(res, data, message, meta, startTime);
       };
-      
+
       res.sendError = (code, message, details, statusCode) => {
         this.sendErrorResponse(res, code, message, details, statusCode, startTime);
       };
-      
+
       res.sendPartial = (data, errors, message, meta) => {
         this.sendPartialResponse(res, data, errors, message, meta, startTime);
       };
-      
+
       // 记录请求开始
       this.stats.totalRequests++;
-      
+
       logger.debug('API Request started', {
         method: req.method,
         url: req.url,
         userAgent: req.get('User-Agent'),
-        ip: req.ip
+        ip: req.ip,
       });
-      
+
       next();
     };
   }
@@ -80,7 +80,7 @@ class APIResponseManager {
    */
   sendSuccessResponse(res, data = null, message = 'Success', meta = {}, startTime = Date.now()) {
     const responseTime = Date.now() - startTime;
-    
+
     const response = {
       status: this.responseFormats.SUCCESS,
       message,
@@ -88,20 +88,20 @@ class APIResponseManager {
       meta: {
         timestamp: new Date().toISOString(),
         responseTime: `${responseTime}ms`,
-        ...meta
-      }
+        ...meta,
+      },
     };
-    
+
     this.setResponseHeaders(res, responseTime);
     res.status(200).json(response);
-    
+
     this.recordResponse('success', responseTime);
     performanceDashboard.recordResponseTime(responseTime);
-    
+
     logger.info('API Success Response', {
       responseTime,
       dataSize: data ? JSON.stringify(data).length : 0,
-      message
+      message,
     });
   }
 
@@ -116,32 +116,32 @@ class APIResponseManager {
    */
   sendErrorResponse(res, code, message, details = null, statusCode = 400, startTime = Date.now()) {
     const responseTime = Date.now() - startTime;
-    
+
     const response = {
       status: this.responseFormats.ERROR,
       error: {
         code: ERROR_CODES[code] || code,
         message,
         details,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       meta: {
-        responseTime: `${responseTime}ms`
-      }
+        responseTime: `${responseTime}ms`,
+      },
     };
-    
+
     this.setResponseHeaders(res, responseTime);
     res.status(statusCode).json(response);
-    
+
     this.recordResponse('error', responseTime);
     performanceDashboard.recordResponseTime(responseTime);
-    
+
     logger.warn('API Error Response', {
       code,
       message,
       statusCode,
       responseTime,
-      details
+      details,
     });
   }
 
@@ -156,35 +156,35 @@ class APIResponseManager {
    */
   sendPartialResponse(res, data, errors, message = 'Partial success', meta = {}, startTime = Date.now()) {
     const responseTime = Date.now() - startTime;
-    
+
     const response = {
       status: this.responseFormats.PARTIAL,
       message,
       data,
-      errors: errors.map(error => ({
+      errors: errors.map((error) => ({
         code: error.code || 'UNKNOWN_ERROR',
         message: error.message || 'Unknown error',
-        field: error.field || null
+        field: error.field || null,
       })),
       meta: {
         timestamp: new Date().toISOString(),
         responseTime: `${responseTime}ms`,
-        successCount: Array.isArray(data) ? data.length : (data ? 1 : 0),
+        successCount: Array.isArray(data) ? data.length : data ? 1 : 0,
         errorCount: errors.length,
-        ...meta
-      }
+        ...meta,
+      },
     };
-    
+
     this.setResponseHeaders(res, responseTime);
     res.status(207).json(response); // 207 Multi-Status
-    
+
     this.recordResponse('partial', responseTime);
     performanceDashboard.recordResponseTime(responseTime);
-    
+
     logger.info('API Partial Response', {
       responseTime,
       successCount: response.meta.successCount,
-      errorCount: response.meta.errorCount
+      errorCount: response.meta.errorCount,
     });
   }
 
@@ -243,7 +243,7 @@ class APIResponseManager {
   validateData(data, schema, source) {
     const errors = [];
     const validatedData = {};
-    
+
     // 验证必需字段
     if (schema.required) {
       for (const field of schema.required) {
@@ -251,17 +251,17 @@ class APIResponseManager {
           errors.push({
             field,
             code: 'REQUIRED_FIELD_MISSING',
-            message: `Required field '${field}' is missing`
+            message: `Required field '${field}' is missing`,
           });
         }
       }
     }
-    
+
     // 验证字段类型和值
     if (schema.fields) {
       for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
         const value = data[fieldName];
-        
+
         // 跳过可选的空字段
         if (value === undefined || value === null) {
           if (fieldSchema.default !== undefined) {
@@ -269,18 +269,18 @@ class APIResponseManager {
           }
           continue;
         }
-        
+
         // 类型验证
         const typeResult = this.validateFieldType(value, fieldSchema.type, fieldName);
         if (!typeResult.valid) {
           errors.push({
             field: fieldName,
             code: 'INVALID_TYPE',
-            message: typeResult.error
+            message: typeResult.error,
           });
           continue;
         }
-        
+
         // 自定义验证
         if (fieldSchema.validate) {
           const customResult = fieldSchema.validate(typeResult.data);
@@ -288,7 +288,7 @@ class APIResponseManager {
             errors.push({
               field: fieldName,
               code: 'VALIDATION_FAILED',
-              message: customResult.error
+              message: customResult.error,
             });
             continue;
           }
@@ -298,18 +298,18 @@ class APIResponseManager {
         }
       }
     }
-    
+
     if (errors.length > 0) {
       return {
         valid: false,
         errors,
-        source
+        source,
       };
     }
-    
+
     return {
       valid: true,
-      data: validatedData
+      data: validatedData,
     };
   }
 
@@ -327,21 +327,21 @@ class APIResponseManager {
           return { valid: false, error: `Field '${fieldName}' must be a string` };
         }
         return { valid: true, data: value.trim() };
-        
+
       case 'number':
         const num = Number(value);
         if (isNaN(num)) {
           return { valid: false, error: `Field '${fieldName}' must be a valid number` };
         }
         return { valid: true, data: num };
-        
+
       case 'integer':
         const int = parseInt(value);
         if (isNaN(int) || int !== Number(value)) {
           return { valid: false, error: `Field '${fieldName}' must be an integer` };
         }
         return { valid: true, data: int };
-        
+
       case 'boolean':
         if (typeof value === 'boolean') {
           return { valid: true, data: value };
@@ -356,25 +356,25 @@ class APIResponseManager {
           }
         }
         return { valid: false, error: `Field '${fieldName}' must be a boolean` };
-        
+
       case 'array':
         if (!Array.isArray(value)) {
           return { valid: false, error: `Field '${fieldName}' must be an array` };
         }
         return { valid: true, data: value };
-        
+
       case 'object':
         if (!value || typeof value !== 'object' || Array.isArray(value)) {
           return { valid: false, error: `Field '${fieldName}' must be an object` };
         }
         return { valid: true, data: value };
-        
+
       case 'playerId':
         return Validator.validatePlayerId(value);
-        
+
       case 'nickname':
         return Validator.validateNickname(value);
-        
+
       default:
         return { valid: true, data: value };
     }
@@ -390,14 +390,14 @@ class APIResponseManager {
         error: error.message,
         stack: error.stack,
         url: req.url,
-        method: req.method
+        method: req.method,
       });
-      
+
       // 确定错误类型和状态码
       let statusCode = 500;
       let errorCode = ERROR_CODES.INTERNAL_ERROR;
       let message = 'Internal server error';
-      
+
       if (error.name === 'ValidationError') {
         statusCode = 400;
         errorCode = ERROR_CODES.VALIDATION_ERROR;
@@ -409,11 +409,17 @@ class APIResponseManager {
       } else if (error.status) {
         statusCode = error.status;
       }
-      
-      this.sendErrorResponse(res, errorCode, message, {
-        type: error.name,
-        originalMessage: error.message
-      }, statusCode);
+
+      this.sendErrorResponse(
+        res,
+        errorCode,
+        message,
+        {
+          type: error.name,
+          originalMessage: error.message,
+        },
+        statusCode
+      );
     };
   }
 
@@ -428,12 +434,9 @@ class APIResponseManager {
     } else {
       this.stats.errorRequests++;
     }
-    
+
     // 更新平均响应时间
-    this.stats.averageResponseTime = (
-      (this.stats.averageResponseTime * (this.stats.totalRequests - 1) + responseTime) / 
-      this.stats.totalRequests
-    );
+    this.stats.averageResponseTime = (this.stats.averageResponseTime * (this.stats.totalRequests - 1) + responseTime) / this.stats.totalRequests;
   }
 
   /**
@@ -443,10 +446,8 @@ class APIResponseManager {
   getStats() {
     return {
       ...this.stats,
-      successRate: this.stats.totalRequests > 0 ? 
-        (this.stats.successfulRequests / this.stats.totalRequests * 100).toFixed(2) + '%' : '0%',
-      errorRate: this.stats.totalRequests > 0 ? 
-        (this.stats.errorRequests / this.stats.totalRequests * 100).toFixed(2) + '%' : '0%'
+      successRate: this.stats.totalRequests > 0 ? ((this.stats.successfulRequests / this.stats.totalRequests) * 100).toFixed(2) + '%' : '0%',
+      errorRate: this.stats.totalRequests > 0 ? ((this.stats.errorRequests / this.stats.totalRequests) * 100).toFixed(2) + '%' : '0%',
     };
   }
 
@@ -458,9 +459,9 @@ class APIResponseManager {
       totalRequests: 0,
       successfulRequests: 0,
       errorRequests: 0,
-      averageResponseTime: 0
+      averageResponseTime: 0,
     };
-    
+
     logger.info('API response manager statistics reset');
   }
 }
@@ -478,11 +479,11 @@ const ValidationSchemas = {
             return { valid: false, error: 'Room name must be 1-50 characters' };
           }
           return { valid: true, data: value };
-        }
+        },
       },
       settings: {
         type: 'object',
-        validate: (value) => Validator.validateRoomSettings(value)
+        validate: (value) => Validator.validateRoomSettings(value),
       },
       password: {
         type: 'string',
@@ -491,20 +492,20 @@ const ValidationSchemas = {
             return { valid: false, error: 'Password must be at least 4 characters' };
           }
           return { valid: true, data: value };
-        }
-      }
-    }
+        },
+      },
+    },
   },
-  
+
   // 加入房间
   joinRoom: {
     required: ['roomId'],
     fields: {
       roomId: { type: 'playerId' },
-      password: { type: 'string' }
-    }
+      password: { type: 'string' },
+    },
   },
-  
+
   // 玩家动作
   playerAction: {
     required: ['action'],
@@ -517,21 +518,21 @@ const ValidationSchemas = {
             return { valid: false, error: 'Invalid action type' };
           }
           return { valid: true, data: value };
-        }
+        },
       },
       amount: {
         type: 'number',
-        validate: (value) => Validator.validateBetAmount(value)
-      }
-    }
-  }
+        validate: (value) => Validator.validateBetAmount(value),
+      },
+    },
+  },
 };
 
 // 创建全局API响应管理器实例
 const apiResponseManager = new APIResponseManager();
 
-module.exports = { 
-  APIResponseManager, 
-  apiResponseManager, 
-  ValidationSchemas 
+module.exports = {
+  APIResponseManager,
+  apiResponseManager,
+  ValidationSchemas,
 };

@@ -59,6 +59,9 @@ class RoomManager {
       allIn: false,
       showHand: false,
       waitingForNextRound: false,
+      inHand: false,
+      lastAction: null,
+      hasLeftRoom: false,
     };
 
     room.players.push(player);
@@ -110,10 +113,17 @@ class RoomManager {
     if (existingPlayer) {
       // 设备重连，更新Socket ID和名称
       existingPlayer.socketId = socket.id;
+      existingPlayer.hasLeftRoom = false;
+      existingPlayer.disconnected = false;
       if (playerName) {
         existingPlayer.nickname = playerName;
       }
       socket.join(roomId);
+      socket.emit('joinedRoom', {
+        roomId,
+        seat: existingPlayer.seat,
+        spectator: existingPlayer.isSpectator || existingPlayer.seat === -1,
+      });
       this.broadcastRoomState(room);
       return;
     }
@@ -149,10 +159,18 @@ class RoomManager {
       allIn: false,
       showHand: false,
       waitingForNextRound: availableSeat !== -1 && isGameInProgress, // 有座位但游戏进行中时等待下一轮
+      inHand: false,
+      lastAction: null,
+      hasLeftRoom: false,
     };
 
     room.players.push(player);
     socket.join(roomId);
+    socket.emit('joinedRoom', {
+      roomId,
+      seat: player.seat,
+      spectator: player.isSpectator || player.seat === -1,
+    });
 
     // 如果玩家有座位但游戏正在进行，通知他们将在下一轮加入
     if (availableSeat !== -1 && isGameInProgress) {
@@ -205,6 +223,7 @@ class RoomManager {
     room.gameLogic.startNewHand();
 
     // 通知所有玩家游戏开始
+    this.io.to(roomId).emit('gameStarted', { roomId });
     this.broadcastRoomState(room);
 
     // 启动游戏计时器
@@ -286,9 +305,9 @@ class RoomManager {
       throw new Error('目标座位已被占用');
     }
 
-    // 检查玩家是否可以换座（观战状态）
-    if (player.isActive && !player.folded) {
-      throw new Error('只有观战状态的玩家可以换座');
+    // 当前手牌中不能换座
+    if (room.gameStarted && room.gameLogic && room.gameLogic.isPlayerInCurrentHand(player)) {
+      throw new Error('当前手牌进行中，无法换座');
     }
 
     player.seat = toSeat;
@@ -351,20 +370,9 @@ class RoomManager {
       throw new Error('玩家不存在');
     }
 
-    // 如果游戏进行中且玩家正在参与且未弃牌，先自动弃牌
-    if (room.gameStarted && player.isActive && !player.folded) {
-      player.folded = true;
-      player.currentBet = 0;
-      
-      // 如果有游戏逻辑，通知游戏逻辑玩家弃牌
-      if (room.gameLogic) {
-        try {
-          room.gameLogic.playerAction(playerId, 'fold', 0);
-        } catch (error) {
-          // 忽略弃牌错误，继续离座
-          console.log('离座时弃牌失败:', error.message);
-        }
-      }
+    // 如果游戏进行中且玩家正在参与当前手牌，先强制弃牌
+    if (room.gameStarted && room.gameLogic && room.gameLogic.isPlayerInCurrentHand(player)) {
+      room.gameLogic.forceFoldPlayer(playerId, 'leave_seat');
     }
 
     // 离座：设置为观战状态
@@ -374,9 +382,11 @@ class RoomManager {
     player.waitingForNextRound = false;
     player.hand = [];
     player.currentBet = 0;
+    player.totalBet = 0;
     player.folded = false;
     player.allIn = false;
     player.lastAction = null;
+    player.inHand = false;
 
     this.broadcastRoomState(room);
   }
@@ -405,6 +415,10 @@ class RoomManager {
 
     // 执行补码
     player.chips += amount;
+    if (player.socketId) {
+      const socket = this.io.sockets.sockets.get(player.socketId);
+      socket?.emit('rebuySuccess', { amount, chips: player.chips });
+    }
     this.broadcastRoomState(room);
   }
 
@@ -448,17 +462,10 @@ class RoomManager {
     const player = room.players.find((p) => p.id === playerId);
     if (!player) return;
 
-    // 标记玩家为断线状态
     player.isActive = false;
     player.disconnected = true;
     player.socketId = null; // 清除socket ID
-    
-    // 如果游戏中且玩家未弃牌，自动弃牌
-    if (room.gameStarted && !player.folded && !player.isSpectator) {
-      player.folded = true;
-    }
 
-    // 如果游戏已开始，检查是否需要结束当前牌局
     if (room.gameStarted && room.gameLogic) {
       room.gameLogic.handlePlayerDisconnect(playerId);
     }
@@ -478,8 +485,9 @@ class RoomManager {
         console.log(`设备 ${deviceId} 重连到房间 ${room.id}, 玩家信息:`, player);
         // 更新Socket ID并恢复连接状态
         player.socketId = socket.id;
-        player.isActive = true;
         player.disconnected = false;
+        player.hasLeftRoom = false;
+        player.isActive = player.seat !== -1 && !player.isSpectator && !player.waitingForNextRound && player.chips > 0;
 
         // 加入房间
         socket.join(room.id);
@@ -504,6 +512,86 @@ class RoomManager {
     return null;
   }
 
+  handleLeaveRoom(playerId) {
+    const room = this.findRoomByPlayerId(playerId);
+    if (!room) {
+      return;
+    }
+
+    const player = room.players.find((entry) => entry.id === playerId);
+    if (!player) {
+      return;
+    }
+
+    const playerSocket = player.socketId ? this.io.sockets.sockets.get(player.socketId) : null;
+    playerSocket?.leave(room.id);
+
+    if (room.gameStarted) {
+      if (room.gameLogic && room.gameLogic.isPlayerInCurrentHand(player)) {
+        room.gameLogic.forceFoldPlayer(playerId, 'leave_room');
+      }
+
+      player.hasLeftRoom = true;
+      player.seat = -1;
+      player.isSpectator = true;
+      player.isActive = false;
+      player.waitingForNextRound = false;
+      player.socketId = null;
+      player.disconnected = true;
+      player.inHand = false;
+      player.hand = [];
+      player.currentBet = 0;
+      player.totalBet = 0;
+    } else {
+      room.players = room.players.filter((entry) => entry.id !== playerId);
+    }
+
+    this.reassignHostIfNeeded(room);
+    this.cleanupRoomIfEmpty(room.id);
+
+    if (this.gameRooms.has(room.id)) {
+      this.broadcastRoomState(room);
+    }
+  }
+
+  reassignHostIfNeeded(room) {
+    const currentHosts = room.players.filter((player) => player.isHost && !player.hasLeftRoom);
+    if (currentHosts.length > 0) {
+      return;
+    }
+
+    room.players.forEach((player) => {
+      player.isHost = false;
+    });
+
+    const nextHost = room.players.find((player) => !player.hasLeftRoom);
+    if (nextHost) {
+      nextHost.isHost = true;
+    }
+  }
+
+  cleanupRoomIfEmpty(roomId) {
+    const room = this.gameRooms.get(roomId);
+    if (!room) {
+      return;
+    }
+
+    const activePlayers = room.players.filter((player) => !player.hasLeftRoom);
+    if (activePlayers.length > 0) {
+      return;
+    }
+
+    if (room.timer) {
+      clearInterval(room.timer);
+    }
+    if (room.gameLogic) {
+      room.gameLogic.clearPlayerTimer();
+      room.gameLogic.clearNextHandTimeout();
+    }
+
+    this.gameRooms.delete(roomId);
+  }
+
   // 获取房间状态（用于发送给客户端）
   getRoomState(room, viewerPlayerId = null) {
     return {
@@ -524,6 +612,8 @@ class RoomManager {
         allIn: p.allIn,
         showHand: p.showHand,
         waitingForNextRound: p.waitingForNextRound || false,
+        inHand: p.inHand || false,
+        lastAction: p.lastAction || null,
         // 玩家可以看到自己的手牌，或者在摊牌阶段看到别人亮牌的手牌
         hand: (viewerPlayerId && p.id === viewerPlayerId) || p.showHand ? p.hand : [],
       })),

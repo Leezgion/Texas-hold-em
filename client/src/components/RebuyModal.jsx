@@ -27,7 +27,7 @@ const RebuyModal = ({ show, onClose }) => {
       await requestRebuy(amount);
       onClose();
     } catch (error) {
-      alert(`补码失败：${error.message}`);
+      window.dispatchEvent(new CustomEvent('game-error', { detail: `补码失败：${error.message}` }));
     } finally {
       setIsSubmitting(false);
     }

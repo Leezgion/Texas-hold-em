@@ -153,6 +153,19 @@ io.on('connection', (socket) => {
     }
   });
 
+  // 离开房间
+  socket.on('leaveRoom', (roomId) => {
+    try {
+      const deviceId = socketDeviceMap.get(socket.id);
+      if (!deviceId) {
+        throw new Error('设备未注册');
+      }
+      roomManager.handleLeaveRoom(deviceId, roomId);
+    } catch (error) {
+      socket.emit('error', error.message);
+    }
+  });
+
   // 补码请求
   socket.on('requestRebuy', (amount) => {
     try {
@@ -212,7 +225,7 @@ io.on('connection', (socket) => {
 app.get('/api/rooms', (req, res) => {
   const rooms = Array.from(gameRooms.values()).map((room) => ({
     id: room.id,
-    playerCount: room.players.length,
+    playerCount: room.players.filter((player) => !player.hasLeftRoom).length,
     maxPlayers: room.settings.maxPlayers,
     gameStarted: room.gameStarted,
     settings: room.settings,
@@ -240,7 +253,7 @@ app.get('/api/rooms/:roomId', (req, res) => {
   res.json({
     exists: true,
     id: room.id,
-    playerCount: room.players.length,
+    playerCount: room.players.filter((player) => !player.hasLeftRoom).length,
     seatedPlayers: seatedPlayers,
     maxPlayers: room.settings.maxPlayers,
     gameStarted: room.gameStarted,

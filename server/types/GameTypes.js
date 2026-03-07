@@ -202,30 +202,30 @@ const ERROR_CODES = {
   PLAYER_ALREADY_IN_ROOM: 'PLAYER_ALREADY_IN_ROOM',
   PLAYER_NOT_ACTIVE: 'PLAYER_NOT_ACTIVE',
   PLAYER_OUT_OF_TURN: 'PLAYER_OUT_OF_TURN',
-  
+
   // 房间相关错误
   ROOM_NOT_FOUND: 'ROOM_NOT_FOUND',
   ROOM_FULL: 'ROOM_FULL',
   ROOM_PASSWORD_REQUIRED: 'ROOM_PASSWORD_REQUIRED',
   ROOM_PASSWORD_INCORRECT: 'ROOM_PASSWORD_INCORRECT',
-  
+
   // 游戏状态错误
   GAME_NOT_STARTED: 'GAME_NOT_STARTED',
   GAME_ALREADY_STARTED: 'GAME_ALREADY_STARTED',
   INVALID_GAME_PHASE: 'INVALID_GAME_PHASE',
-  
+
   // 动作相关错误
   INVALID_ACTION: 'INVALID_ACTION',
   INSUFFICIENT_CHIPS: 'INSUFFICIENT_CHIPS',
   INVALID_BET_AMOUNT: 'INVALID_BET_AMOUNT',
   CANNOT_CHECK: 'CANNOT_CHECK',
   CANNOT_RAISE: 'CANNOT_RAISE',
-  
+
   // 系统错误
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   NETWORK_ERROR: 'NETWORK_ERROR',
   TIMEOUT_ERROR: 'TIMEOUT_ERROR',
-  VALIDATION_ERROR: 'VALIDATION_ERROR'
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
 };
 
 /**
@@ -238,37 +238,37 @@ const EVENT_TYPES = {
   PLAYER_JOINED: 'player_joined',
   PLAYER_LEFT: 'player_left',
   PLAYER_READY: 'player_ready',
-  
+
   // 游戏事件
   GAME_STARTED: 'game_started',
   GAME_ENDED: 'game_ended',
   HAND_STARTED: 'hand_started',
   HAND_ENDED: 'hand_ended',
   PHASE_CHANGED: 'phase_changed',
-  
+
   // 玩家动作事件
   PLAYER_FOLDED: 'player_folded',
   PLAYER_CHECKED: 'player_checked',
   PLAYER_CALLED: 'player_called',
   PLAYER_RAISED: 'player_raised',
   PLAYER_ALLIN: 'player_allin',
-  
+
   // 发牌事件
   CARDS_DEALT: 'cards_dealt',
   FLOP_DEALT: 'flop_dealt',
   TURN_DEALT: 'turn_dealt',
   RIVER_DEALT: 'river_dealt',
-  
+
   // 奖池事件
   POT_UPDATED: 'pot_updated',
   POT_DISTRIBUTED: 'pot_distributed',
   SIDE_POT_CREATED: 'side_pot_created',
-  
+
   // 系统事件
   TIMER_STARTED: 'timer_started',
   TIMER_WARNING: 'timer_warning',
   TIMER_EXPIRED: 'timer_expired',
-  CONNECTION_STATUS: 'connection_status'
+  CONNECTION_STATUS: 'connection_status',
 };
 
 /**
@@ -287,11 +287,11 @@ const GAME_CONFIG = {
   COMMUNITY_CARDS_COUNT: 5,
   FLOP_CARDS: 3,
   TURN_CARDS: 1,
-  RIVER_CARDS: 1
+  RIVER_CARDS: 1,
 };
 
 module.exports = {
   ERROR_CODES,
   EVENT_TYPES,
-  GAME_CONFIG
+  GAME_CONFIG,
 };

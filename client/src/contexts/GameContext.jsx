@@ -172,6 +172,7 @@ const useGameStore = create((set, get) => ({
       }
 
       const previousRoomId = get().roomId;
+      const previousGameState = get().gameState;
       const currentPlayerId = get().currentPlayerId;
 
       // 如果已经有房间ID且与接收到的不同，忽略此更新（除非是首次连接）
@@ -179,6 +180,8 @@ const useGameStore = create((set, get) => ({
         console.log('收到其他房间的状态更新，忽略:', gameState.id, 'vs', previousRoomId);
         return;
       }
+
+      const nextPhase = gameState.gameState?.phase || null;
 
       set({
         roomId: gameState.id, // 设置roomId
@@ -188,16 +191,23 @@ const useGameStore = create((set, get) => ({
         roomSettings: gameState.settings,
       });
 
+      // 新一手开始后自动关闭上一手的结果弹窗，避免遮挡后续操作
+      if (get().showHandResult && previousGameState && nextPhase !== 'showdown') {
+        set({ showHandResult: false, handResult: null });
+      }
+
       // 更新当前玩家状态
       const currentPlayer = gameState.players.find((p) => p.id === currentPlayerId);
 
       if (currentPlayer) {
+        const amountToCall = Math.max(0, (gameState.gameState?.currentBet || 0) - currentPlayer.currentBet);
         set({
+          currentPlayer,
           playerHand: currentPlayer.hand,
           playerChips: currentPlayer.chips,
           playerBet: currentPlayer.currentBet,
           canCheck: currentPlayer.currentBet >= (gameState.gameState?.currentBet || 0),
-          canRaise: currentPlayer.chips > (gameState.gameState?.currentBet || 0),
+          canRaise: currentPlayer.chips - amountToCall >= (gameState.gameState?.minRaise || 0),
           minRaise: gameState.gameState?.minRaise || 0,
         });
 
@@ -206,14 +216,12 @@ const useGameStore = create((set, get) => ({
         // 只有在用户主动加入房间时才跳转（通过joinRoom方法设置的intentionalJoin标志）
         const currentPath = window.location.pathname;
         const isNotInGameRoom = !currentPath.includes(`/game/${gameState.id}`);
-        const isNewRoom = !previousRoomId || previousRoomId !== gameState.id;
         const { isCreatingRoom, intentionalJoin } = get();
 
-        // 只有在明确尝试加入房间时才进行跳转（不再依赖currentPlayer，因为可能还没找到）
-        if (isNewRoom && isNotInGameRoom && !isCreatingRoom && intentionalJoin) {
+        // 只要是主动加入且当前不在目标房间页，就执行跳转
+        if (isNotInGameRoom && !isCreatingRoom && intentionalJoin) {
           console.log('加入房间成功，跳转到房间页面:', gameState.id);
           console.log('跳转条件检查:', {
-            isNewRoom,
             isNotInGameRoom,
             isCreatingRoom,
             intentionalJoin,
@@ -227,7 +235,6 @@ const useGameStore = create((set, get) => ({
           });
         } else {
           console.log('跳转条件不满足:', {
-            isNewRoom,
             isNotInGameRoom,
             isCreatingRoom,
             intentionalJoin,
@@ -249,13 +256,13 @@ const useGameStore = create((set, get) => ({
     // 观战模式通知
     socket.on('spectatorMode', (data) => {
       console.log('进入观战模式:', data.message);
-      // 可以在这里添加UI提示
+      window.dispatchEvent(new CustomEvent('game-info', { detail: data.message }));
     });
 
     // 等待下一轮通知
     socket.on('waitingForNextRound', (data) => {
       console.log('等待下一轮游戏:', data);
-      // 可以在这里添加UI提示
+      window.dispatchEvent(new CustomEvent('game-info', { detail: data.message }));
     });
 
     socket.on('error', (message) => {
@@ -321,22 +328,31 @@ const useGameStore = create((set, get) => ({
       let resolved = false;
 
       // 创建一次性监听器来处理响应
-      const successHandler = (gameState) => {
+      const successHandler = ({ roomId: joinedRoomId }) => {
         if (resolved) return;
-        if (gameState && gameState.id === roomId) {
+        if (joinedRoomId === roomId) {
           resolved = true;
           socket.off('error', errorHandler);
           clearTimeout(timeoutId);
-          set({ roomId });
-          resolve(gameState);
+          const targetPath = `/game/${joinedRoomId}`;
+          const currentPath = window.location.pathname;
+
+          set({
+            roomId,
+            showJoinRoom: false,
+            intentionalJoin: false,
+            navigationTarget: currentPath === targetPath ? null : targetPath,
+          });
+          resolve({ roomId: joinedRoomId });
         }
       };
 
       const errorHandler = (message) => {
         if (resolved) return;
         resolved = true;
-        socket.off('gameStateUpdate', successHandler);
+        socket.off('joinedRoom', successHandler);
         clearTimeout(timeoutId);
+        set({ intentionalJoin: false });
         reject(new Error(message));
       };
 
@@ -344,14 +360,15 @@ const useGameStore = create((set, get) => ({
       timeoutId = setTimeout(() => {
         if (!resolved) {
           resolved = true;
-          socket.off('gameStateUpdate', successHandler);
+          socket.off('joinedRoom', successHandler);
           socket.off('error', errorHandler);
+          set({ intentionalJoin: false });
           reject(new Error('加入房间超时'));
         }
       }, 10000); // 10秒超时
 
       // 监听成功和错误响应
-      socket.once('gameStateUpdate', successHandler);
+      socket.once('joinedRoom', successHandler);
       socket.once('error', errorHandler);
 
       // 发送加入房间请求（只传递roomId和deviceId）
@@ -417,18 +434,18 @@ const useGameStore = create((set, get) => ({
       let resolved = false;
 
       // 创建一次性监听器来处理响应
-      const successHandler = (gameState) => {
+      const successHandler = (payload) => {
         if (resolved) return;
         resolved = true;
         socket.off('error', errorHandler);
         clearTimeout(timeoutId);
-        resolve(gameState);
+        resolve(payload);
       };
 
       const errorHandler = (message) => {
         if (resolved) return;
         resolved = true;
-        socket.off('gameStateUpdate', successHandler);
+        socket.off('rebuySuccess', successHandler);
         clearTimeout(timeoutId);
         reject(new Error(message));
       };
@@ -437,14 +454,14 @@ const useGameStore = create((set, get) => ({
       timeoutId = setTimeout(() => {
         if (!resolved) {
           resolved = true;
-          socket.off('gameStateUpdate', successHandler);
+          socket.off('rebuySuccess', successHandler);
           socket.off('error', errorHandler);
           reject(new Error('补码请求超时'));
         }
       }, 5000); // 5秒超时
 
       // 监听成功和错误响应
-      socket.once('gameStateUpdate', successHandler);
+      socket.once('rebuySuccess', successHandler);
       socket.once('error', errorHandler);
 
       // 发送补码请求
@@ -480,7 +497,8 @@ const useGameStore = create((set, get) => ({
   // 模态框控制
   setShowCreateRoom: (show) => set({ showCreateRoom: show }),
   setShowJoinRoom: (show) => set({ showJoinRoom: show }),
-  setShowHandResult: (show) => set({ showHandResult: show }),
+  setShowHandResult: (show) =>
+    set(show ? { showHandResult: true } : { showHandResult: false, handResult: null }),
 
   // 导航控制
   clearNavigationTarget: () => set({ navigationTarget: null }),
@@ -510,6 +528,8 @@ const useGameStore = create((set, get) => ({
       canCheck: false,
       canRaise: false,
       minRaise: 0,
+      showHandResult: false,
+      handResult: null,
     });
   },
 }));

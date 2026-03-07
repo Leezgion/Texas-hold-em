@@ -22,14 +22,15 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
   // 检查是否可以过牌
   const canCheck = canAct && player.currentBet >= gameState.currentBet;
 
-  // 检查是否可以加注
-  const canRaise = canAct && player.chips > gameState.currentBet;
-
   // 计算底池大小
   const potSize = gameState?.pot || 0;
 
   // 计算需要跟注的金额
-  const callAmount = gameState.currentBet - player.currentBet;
+  const callAmount = Math.max(0, gameState.currentBet - player.currentBet);
+  const maxRaiseAmount = Math.max(0, player.chips - callAmount);
+
+  // 检查是否可以加注
+  const canRaise = canAct && maxRaiseAmount >= gameState.minRaise;
 
   // 获取大盲注作为步进单位
   const bigBlind = gameState?.bigBlind || gameState?.minRaise || 20;
@@ -57,16 +58,29 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
     { label: '1/2池', amount: alignToBigBlind(Math.max(gameState.minRaise, Math.floor(potSize / 2))) },
     { label: '1x池', amount: alignToBigBlind(Math.max(gameState.minRaise, potSize)) },
     { label: '1.2x池', amount: alignToBigBlind(Math.max(gameState.minRaise, Math.floor(potSize * 1.2))) },
-  ].filter((raise) => raise.amount <= player.chips);
+  ].filter((raise) => raise.amount <= maxRaiseAmount);
 
   // 初始化滑块值为最小加注（对齐到大盲）
   useEffect(() => {
-    if (gameState?.minRaise && sliderValue === 0) {
+    if (canRaise && gameState?.minRaise && sliderValue === 0) {
       const alignedMinRaise = alignToBigBlind(gameState.minRaise);
       setSliderValue(alignedMinRaise);
       setRaiseAmount(alignedMinRaise.toString());
     }
-  }, [gameState?.minRaise, sliderValue, bigBlind]);
+  }, [canRaise, gameState?.minRaise, sliderValue, bigBlind]);
+
+  useEffect(() => {
+    if (!canRaise) {
+      setShowRaiseInput(false);
+      setSliderValue(0);
+      return;
+    }
+
+    if (sliderValue > maxRaiseAmount) {
+      setSliderValue(maxRaiseAmount);
+      setRaiseAmount(maxRaiseAmount.toString());
+    }
+  }, [canRaise, sliderValue, maxRaiseAmount]);
 
   // 收到新游戏状态时解锁UI
   useEffect(() => {
@@ -93,7 +107,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
       playerAction(action, amount);
       setShowRaiseInput(false);
       setRaiseAmount('');
-      setSliderValue(gameState?.minRaise || 0);
+      setSliderValue(canRaise ? gameState?.minRaise || 0 : 0);
     }
   };
 
@@ -103,17 +117,16 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
   };
 
   const handleQuickRaise = (amount) => {
-    if (amount <= player.chips) {
+    if (amount <= maxRaiseAmount) {
       handleAction('raise', amount);
     }
   };
 
   const handleCustomRaise = () => {
     const amount = sliderValue;
-    if (amount && amount >= gameState.minRaise && amount <= player.chips) {
-      // 如果滑到最大值，执行All-in
-      if (amount === player.chips) {
-        handleAction('call', player.chips);
+    if (amount && amount >= gameState.minRaise && amount <= maxRaiseAmount) {
+      if (amount === maxRaiseAmount) {
+        handleAction('allin');
       } else {
         handleAction('raise', amount);
       }
@@ -129,7 +142,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
     onCheck: () => handleAction('check'),
     onCall: () => handleAction('call'),
     onRaise: () => setShowRaiseInput(true),
-    onAllIn: () => handleAction('call', player.chips),
+    onAllIn: () => handleAction('allin'),
     onCancel: () => setShowRaiseInput(false),
   });
 
@@ -202,7 +215,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
         {/* All-in */}
         {canRaise && (
           <button
-            onClick={() => handleAction('call', player.chips)}
+            onClick={() => handleAction('allin')}
             className="h-11 px-3 bg-purple-600/90 hover:bg-purple-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-purple-500/30 transform hover:scale-105 text-sm font-bold"
             title={`All-in ${player.chips} (A)`}
           >
@@ -241,7 +254,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
           <div className="mb-4">
             <SliderInput
               min={gameState.minRaise}
-              max={player.chips}
+              max={maxRaiseAmount}
               value={sliderValue}
               step={stepSize}
               onChange={handleSliderChange}
@@ -251,26 +264,28 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
               showQuickButtons={false}
               showMinMaxLabels={true}
               minLabel={`最小: ${gameState.minRaise}`}
-              maxLabel={`All-in: ${player.chips}`}
-              formatValue={(value) => value === player.chips ? 'All-in' : value}
+              maxLabel={`All-in: ${maxRaiseAmount}`}
+              formatValue={(value) => value === maxRaiseAmount ? 'All-in' : value}
             />
-            {sliderValue === player.chips && <div className="text-center text-purple-400 text-sm font-bold mt-1 animate-pulse">🚀 全押！</div>}
+            {sliderValue === maxRaiseAmount && <div className="text-center text-purple-400 text-sm font-bold mt-1 animate-pulse">🚀 全押！</div>}
           </div>
 
           {/* 当前加注金额显示 */}
           <div className="text-center mb-3">
-            <div className="text-lg font-bold text-yellow-400">{sliderValue === player.chips ? 'All-in' : `加注 ${sliderValue}`}</div>
-            <div className="text-xs text-gray-400">{sliderValue === player.chips ? '全部筹码' : `总下注: ${sliderValue}`}</div>
+            <div className="text-lg font-bold text-yellow-400">{sliderValue === maxRaiseAmount ? 'All-in' : `加注 ${sliderValue}`}</div>
+            <div className="text-xs text-gray-400">
+              {sliderValue === maxRaiseAmount ? '全部筹码' : `本轮总投入: ${callAmount + sliderValue}`}
+            </div>
           </div>
 
           <div className="flex items-center space-x-2">
             <button
               onClick={handleCustomRaise}
               className={`flex-1 h-10 ${
-                sliderValue === player.chips ? 'bg-purple-600 hover:bg-purple-500' : 'bg-green-600 hover:bg-green-500'
+                sliderValue === maxRaiseAmount ? 'bg-purple-600 hover:bg-purple-500' : 'bg-green-600 hover:bg-green-500'
               } text-white rounded-lg text-sm font-bold transition-all duration-200 shadow-md hover:shadow-lg`}
             >
-              {sliderValue === player.chips ? 'All-in' : '确认加注'}
+              {sliderValue === maxRaiseAmount ? 'All-in' : '确认加注'}
             </button>
             <button
               onClick={() => {
@@ -286,7 +301,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players }) => {
           </div>
 
           <div className="text-xs text-gray-400 mt-2 text-center">
-            范围: {gameState.minRaise} - {player.chips} 筹码
+            范围: {gameState.minRaise} - {maxRaiseAmount} 筹码
           </div>
         </div>
       )}

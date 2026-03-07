@@ -13,17 +13,17 @@ module.exports = {
   Logger,
   logger,
   logPerformance,
-  
+
   // 资源管理
   ResourceManager,
   resourceManager,
-  
+
   // 状态差异管理
   StateDiffManager,
   stateDiffManager,
-  
+
   // 性能监控
   PerformanceDashboard,
   performanceDashboard,
-  createPerformanceMiddleware
+  createPerformanceMiddleware,
 };
