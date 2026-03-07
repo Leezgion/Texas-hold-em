@@ -6,7 +6,7 @@ import { ScrollText } from 'lucide-react';
  * 游戏日志组件
  * 显示玩家操作历史，自动滚动到最新消息
  */
-const GameLog = ({ logs = [] }) => {
+const GameLog = ({ logs = [], title = '游戏日志', emptyText = '暂无操作记录' }) => {
   const logEndRef = useRef(null);
 
   // 自动滚动到最新消息
@@ -64,10 +64,10 @@ const GameLog = ({ logs = [] }) => {
       <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
         <div className="flex items-center space-x-2 mb-3">
           <ScrollText size={18} className="text-poker-gold" />
-          <h3 className="text-sm font-semibold text-white">游戏日志</h3>
+          <h3 className="text-sm font-semibold text-white">{title}</h3>
         </div>
         <div className="text-sm text-gray-400 text-center py-4">
-          暂无操作记录
+          {emptyText}
         </div>
       </div>
     );
@@ -77,7 +77,7 @@ const GameLog = ({ logs = [] }) => {
     <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
       <div className="flex items-center space-x-2 mb-3">
         <ScrollText size={18} className="text-poker-gold" />
-        <h3 className="text-sm font-semibold text-white">游戏日志</h3>
+        <h3 className="text-sm font-semibold text-white">{title}</h3>
       </div>
 
       <div className="max-h-48 overflow-y-auto space-y-1 game-log-scrollbar">

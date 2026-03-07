@@ -479,19 +479,21 @@ const useGameStore = create((set, get) => ({
   },
 
   // 亮牌
-  showHand: () => {
+  revealHand: (mode, cardIndex = null) => {
     const { socket } = get();
     if (socket) {
-      socket.emit('revealHand', { mode: 'show_all' });
+      socket.emit('revealHand', { mode, cardIndex });
     }
+  },
+
+  // 亮牌
+  showHand: () => {
+    get().revealHand('show_all');
   },
 
   // 盖牌
   muckHand: () => {
-    const { socket } = get();
-    if (socket) {
-      socket.emit('revealHand', { mode: 'hide' });
-    }
+    get().revealHand('hide');
   },
 
   // 手动重连

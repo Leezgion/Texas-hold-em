@@ -6,7 +6,7 @@ import ActionButtons from './ActionButtons';
 import Card from './Card';
 import CommunityCards from './CommunityCards';
 import EmptySeat from './EmptySeat';
-import GameLog from './GameLog';
+import HandHistoryDrawer from './HandHistoryDrawer';
 import HandResultModal from './HandResultModal';
 import JoinRoomModal from './JoinRoomModal';
 import Leaderboard from './Leaderboard';
@@ -14,6 +14,7 @@ import LeaveSeatModal from './LeaveSeatModal';
 import Player from './Player';
 import PlayerPanel from './PlayerPanel';
 import RebuyModal from './RebuyModal';
+import SettlementOverlay from './SettlementOverlay';
 import ShareLinkModal from './ShareLinkModal';
 import { useGame } from '../contexts/GameContext';
 import { deriveCanStartGame, derivePlayerStateView } from '../view-models/gameViewModel';
@@ -63,6 +64,7 @@ const GameRoom = () => {
     isCreatingRoom,
     navigationTarget,
     currentPlayerView,
+    revealHand,
   } = useGame();
 
   const [showShareLink, setShowShareLink] = useState(false);
@@ -187,6 +189,7 @@ const GameRoom = () => {
     ? derivePlayerStateView(currentPlayer, roomState || 'idle')
     : currentPlayerView;
   const canStartGame = deriveCanStartGame(currentPlayer, players, roomState || 'idle');
+  const handHistoryRecords = gameState?.handHistory || [];
 
   useEffect(() => {
     setGameLogs([]);
@@ -651,6 +654,14 @@ const GameRoom = () => {
           )}
         </div>
 
+        <SettlementOverlay
+          roomState={roomState}
+          gameState={gameState}
+          currentPlayer={currentPlayer}
+          currentPlayerId={currentPlayerId}
+          onReveal={revealHand}
+        />
+
         {/* 所有座位（玩家和空座位） */}
         {Array.from({ length: roomSettings?.maxPlayers || 6 }, (_, seatIndex) => {
           // 找到该座位的玩家（包括当前玩家）
@@ -736,15 +747,14 @@ const GameRoom = () => {
       <div
         className={`absolute ${
           windowSize.width < 768
-            ? 'hidden' // 移动端隐藏排行榜以避免遮挡游戏区域
-            : 'right-4 top-20 w-72 space-y-4' // 桌面版正常显示
+            ? 'hidden'
+            : 'right-4 top-20 w-72 space-y-4'
         }`}
       >
         <Leaderboard players={players} />
-
-        {/* 游戏日志 */}
-        {gameStarted && gameLogs.length > 0 && <GameLog logs={gameLogs} />}
       </div>
+
+      <HandHistoryDrawer records={handHistoryRecords} />
 
       {/* 底部UI区域 - 简化设计 */}
       {currentPlayer && (
