@@ -9,7 +9,6 @@ import JoinRoomModal from './JoinRoomModal';
 import LeaveSeatModal from './LeaveSeatModal';
 import RebuyModal from './RebuyModal';
 import RoomPanelSheet from './RoomPanelSheet';
-import SeatRing from './SeatRing';
 import SettlementOverlay from './SettlementOverlay';
 import ShareLinkModal from './ShareLinkModal';
 import TableBanner from './TableBanner';
@@ -18,8 +17,8 @@ import TableStage from './TableStage';
 import { useGame } from '../contexts/GameContext';
 import { getDisplayModeTheme } from '../utils/productMode';
 import { resolveRoomViewportLayout } from '../utils/roomViewportLayout';
-import { buildSeatRingPositions, resolveTableDiameter } from '../utils/seatRingLayout';
-import { resolveRoomGeometryContract, resolveSeatRingRotationSeatIndex } from '../utils/tableStageLayout';
+import { resolveTableDiameter } from '../utils/seatRingLayout';
+import { resolveRoomGeometryContract } from '../utils/tableStageLayout';
 import {
   deriveCanStartGame,
   deriveIntelRailView,
@@ -28,7 +27,6 @@ import {
   derivePendingJoinBanner,
   derivePlayerStateView,
   deriveRequestErrorFeedback,
-  deriveSeatRingView,
   deriveTableShellView,
   deriveRecoveryBanner,
   deriveRecoverRoomFeedback,
@@ -71,35 +69,6 @@ const mapViewportModelToStageShellLayout = (viewportModel) => {
     default:
       return 'stacked';
   }
-};
-
-const buildCanonicalSeatSlots = ({
-  maxPlayers = 6,
-  currentPlayerSeat = null,
-  seatRingLayout = null,
-} = {}) => {
-  const safeMaxPlayers = Math.max(2, Number(maxPlayers) || 6);
-  const heroSeat = resolveSeatRingRotationSeatIndex({ seat: currentPlayerSeat });
-  const positions = buildSeatRingPositions({
-    playerCount: safeMaxPlayers,
-    ...(seatRingLayout || {}),
-  });
-
-  return Array.from({ length: safeMaxPlayers }, (_, seatIndex) => {
-    const relativeSeat = (seatIndex - heroSeat + safeMaxPlayers) % safeMaxPlayers;
-    const position = positions[relativeSeat] || null;
-    const anchorRole = position?.anchorRole || 'ring';
-    const anchorZone = position?.anchorZone || (anchorRole === 'hero' ? 'dock-edge' : 'table-flank');
-    const profile = position?.profile || seatRingLayout?.profile || 'desktop-oval';
-
-    return {
-      seatIndex,
-      anchorSlotId: `${profile}:${safeMaxPlayers}:${anchorRole}:${relativeSeat}`,
-      anchorRole,
-      anchorZone,
-      position,
-    };
-  });
 };
 
 const GameRoom = () => {
@@ -147,7 +116,6 @@ const GameRoom = () => {
   const playersList = Array.isArray(players) ? players : EMPTY_PLAYERS;
   const activeRoomState = roomState || 'idle';
   const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
-  const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
   const roomViewportLayout = resolveRoomViewportLayout(windowSize);
   const stageShellLayout = mapViewportModelToStageShellLayout(roomViewportLayout.viewportModel);
   const usesSideRails = roomViewportLayout.viewportModel === 'ultrawide-terminal';
@@ -581,11 +549,6 @@ const GameRoom = () => {
     roomShellLayout: stageShellLayout,
     tableDiameter,
   });
-  const canonicalSeatSlots = buildCanonicalSeatSlots({
-    maxPlayers,
-    currentPlayerSeat: currentPlayer?.seat,
-    seatRingLayout: roomGeometryContract.seatRingLayout,
-  });
   const toggleSupportPanel = (panelId) => {
     if (!usesSupportPanels) {
       return;
@@ -602,24 +565,6 @@ const GameRoom = () => {
       : tableDiameter === 352
       ? 'w-[22rem] h-[22rem]'
       : 'w-80 h-80';
-
-  const seatRingEntries = deriveSeatRingView({
-    players: playersList,
-    maxPlayers,
-    currentPlayerId,
-    roomState: activeRoomState,
-    gameState: safeGameState,
-    canonicalSlots: canonicalSeatSlots,
-  }).map((seat) => {
-    const isCurrentTurn =
-      seat.player && safeGameState ? safeGameState.currentPlayerIndex === playersList.indexOf(seat.player) : false;
-
-    return {
-      ...seat,
-      isCurrentTurn,
-      isActiveTimer: Boolean(safeGameState && safeGameState.timeRemaining > 0 && isCurrentTurn),
-    };
-  });
 
   return (
     <div
@@ -697,7 +642,7 @@ const GameRoom = () => {
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}
-                    seatGuides={seatRingEntries}
+                    seatGuides={roomGeometryContract.seatGuides}
                     geometryContract={roomGeometryContract}
                     settlementOverlay={
                       <SettlementOverlay
@@ -707,15 +652,6 @@ const GameRoom = () => {
                         currentPlayerId={currentPlayerId}
                         onReveal={revealHand}
                         effectiveDisplayMode={effectiveDisplayMode}
-                      />
-                    }
-                    seatRing={
-                      <SeatRing
-                        seats={seatRingEntries}
-                        roomState={activeRoomState}
-                        gameState={safeGameState}
-                        gameStarted={gameStarted}
-                        geometryContract={roomGeometryContract}
                       />
                     }
                   />
@@ -746,7 +682,7 @@ const GameRoom = () => {
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}
-                    seatGuides={seatRingEntries}
+                    seatGuides={roomGeometryContract.seatGuides}
                     geometryContract={roomGeometryContract}
                     settlementOverlay={
                       <SettlementOverlay
@@ -756,15 +692,6 @@ const GameRoom = () => {
                         currentPlayerId={currentPlayerId}
                         onReveal={revealHand}
                         effectiveDisplayMode={effectiveDisplayMode}
-                      />
-                    }
-                    seatRing={
-                      <SeatRing
-                        seats={seatRingEntries}
-                        roomState={activeRoomState}
-                        gameState={safeGameState}
-                        gameStarted={gameStarted}
-                        geometryContract={roomGeometryContract}
                       />
                     }
                   />
