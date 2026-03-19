@@ -111,6 +111,24 @@ export function deriveRecoveryBanner(currentPlayer = {}, roomState = 'idle') {
   };
 }
 
+export function derivePendingJoinBanner(player = {}, roomState = 'idle') {
+  if ((player?.tableState || 'spectating') !== 'seated_wait_next_hand') {
+    return null;
+  }
+
+  if (roomState === 'settling') {
+    return {
+      title: '已入座，等待下一手',
+      detail: '本手正在结算，你会在下一手开始时自动收到手牌并参与行动。',
+    };
+  }
+
+  return {
+    title: '已入座，本手观战',
+    detail: '你已经占住座位，会在本手结束后自动加入；当前还没有两张底牌，也不会参与本手底池。',
+  };
+}
+
 export function isPlayerCommittedToCurrentHand(player = {}, roomState = 'idle') {
   if (roomState !== 'in_hand') {
     return false;

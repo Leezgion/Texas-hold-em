@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   deriveCanStartGame,
+  derivePendingJoinBanner,
   deriveLeaveSeatDialog,
   derivePlayerStateView,
   deriveRecoveryBanner,
@@ -163,4 +164,34 @@ test('keeps spectator non-hosts from starting even when enough players are seate
   ];
 
   assert.equal(deriveCanStartGame(currentPlayer, players, 'idle'), false);
+});
+
+test('explains clearly why a seated next-hand player has no cards yet', () => {
+  assert.deepEqual(
+    derivePendingJoinBanner(
+      {
+        tableState: 'seated_wait_next_hand',
+      },
+      'in_hand'
+    ),
+    {
+      title: '已入座，本手观战',
+      detail: '你已经占住座位，会在本手结束后自动加入；当前还没有两张底牌，也不会参与本手底池。',
+    }
+  );
+});
+
+test('shows a settling-specific pending-join explanation', () => {
+  assert.deepEqual(
+    derivePendingJoinBanner(
+      {
+        tableState: 'seated_wait_next_hand',
+      },
+      'settling'
+    ),
+    {
+      title: '已入座，等待下一手',
+      detail: '本手正在结算，你会在下一手开始时自动收到手牌并参与行动。',
+    }
+  );
 });

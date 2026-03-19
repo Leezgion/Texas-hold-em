@@ -41,9 +41,15 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
         <div className="rounded-full border border-white/20 px-3 py-1 text-sm text-gray-200">{remainingSeconds}s</div>
       </div>
 
+      {latestSummary?.lines?.[0] && (
+        <div className="mt-3 rounded-xl border border-poker-gold/30 bg-poker-gold/10 px-3 py-2 text-sm font-semibold text-poker-gold">
+          {latestSummary.lines[0]}
+        </div>
+      )}
+
       {latestSummary?.lines?.length > 0 && (
         <div className="mt-3 space-y-1 text-sm text-gray-200">
-          {latestSummary.lines.slice(0, 3).map((line, index) => (
+          {latestSummary.lines.slice(1, 5).map((line, index) => (
             <div
               key={`${latestSummary.handNumber}-${index}`}
               className="rounded-lg bg-white/5 px-3 py-2"

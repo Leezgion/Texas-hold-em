@@ -46,6 +46,13 @@ function cloneBoardResult(boardResult) {
   };
 }
 
+function clonePotResult(potResult) {
+  return {
+    ...potResult,
+    winners: (potResult.winners || []).map((winner) => ({ ...winner })),
+  };
+}
+
 function buildEmptyStreetBuckets() {
   return STREET_ORDER.reduce((accumulator, street) => {
     accumulator[street] = [];
@@ -111,6 +118,7 @@ function buildHandRecord(snapshot) {
     actions: (snapshot.actions || []).map(cloneAction),
     actionsByStreet: buildActionsByStreet(snapshot.actions),
     pots: (snapshot.pots || []).map(clonePot),
+    potResults: (snapshot.potResults || []).map(clonePotResult),
     winners: (snapshot.winners || []).map((winner) => ({ ...winner })),
     chipDeltas: snapshot.chipDeltas ? { ...snapshot.chipDeltas } : buildChipDeltas(snapshot.players),
     reveals: snapshot.reveals ? snapshot.reveals.map((reveal) => ({ ...reveal })) : buildReveals(snapshot.players),

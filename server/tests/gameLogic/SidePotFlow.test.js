@@ -128,5 +128,29 @@ describe('Side pot flow regression', () => {
         winnings: 2000,
       }),
     ]);
+    expect(handRecord.potResults).toEqual([
+      {
+        potId: 0,
+        potType: 'main',
+        amount: 3000,
+        winners: [
+          expect.objectContaining({
+            playerId: 'device-host',
+            amount: 3000,
+          }),
+        ],
+      },
+      {
+        potId: 1,
+        potType: 'side',
+        amount: 2000,
+        winners: [
+          expect.objectContaining({
+            playerId: 'device-p2',
+            amount: 2000,
+          }),
+        ],
+      },
+    ]);
   });
 });

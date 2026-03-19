@@ -17,7 +17,16 @@ import RebuyModal from './RebuyModal';
 import SettlementOverlay from './SettlementOverlay';
 import ShareLinkModal from './ShareLinkModal';
 import { useGame } from '../contexts/GameContext';
-import { deriveCanStartGame, derivePlayerStateView, deriveRecoveryBanner } from '../view-models/gameViewModel';
+import {
+  deriveCanStartGame,
+  derivePendingJoinBanner,
+  derivePlayerStateView,
+  deriveRecoveryBanner,
+} from '../view-models/gameViewModel';
+import { buildTablePotSummary } from '../view-models/handHistoryViewModel';
+
+const EMPTY_PLAYERS = [];
+const EMPTY_CARDS = [];
 
 // 自定义hook来检测屏幕尺寸
 const useWindowSize = () => {
@@ -79,6 +88,10 @@ const GameRoom = () => {
   const [showExitRoom, setShowExitRoom] = useState(false);
   const [gameLogs, setGameLogs] = useState([]);
   const lastLoggedActionKeyRef = useRef(null);
+  const playersList = Array.isArray(players) ? players : EMPTY_PLAYERS;
+  const activeRoomState = roomState || 'idle';
+  const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
+  const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
 
   useEffect(() => {
     const verifyRoom = async () => {
@@ -150,7 +163,7 @@ const GameRoom = () => {
 
       // 如果当前状态显示已连接到房间，但实际上没有玩家数据，可能房间已被删除
       // 但在创建房间过程中不要触发这个逻辑，因为玩家数据可能还在传输中
-      if (currentRoomId === roomId && currentPlayerId && players.length === 0 && connected && !isCreatingRoom) {
+      if (currentRoomId === roomId && currentPlayerId && playersList.length === 0 && connected && !isCreatingRoom) {
         console.log('检测到房间状态异常，重新验证房间');
         // 清除错误的房间状态并重新验证
         if (socket) {
@@ -170,11 +183,11 @@ const GameRoom = () => {
     };
 
     verifyRoom();
-  }, [currentRoomId, roomId, navigate, setShowJoinRoom, connected, checkRoom, currentPlayerId, isCreatingRoom, navigationTarget, socket, resetGame]);
+  }, [currentRoomId, roomId, navigate, setShowJoinRoom, connected, checkRoom, currentPlayerId, isCreatingRoom, navigationTarget, socket, resetGame, playersList.length]);
 
   useEffect(() => {
-    if (currentPlayerId && players.length > 0) {
-      const player = players.find((p) => p.id === currentPlayerId);
+    if (currentPlayerId && playersList.length > 0) {
+      const player = playersList.find((p) => p.id === currentPlayerId);
       setCurrentPlayer(player);
 
       // 如果找到了玩家且房间ID匹配，停止加载并重置加入状态
@@ -184,14 +197,16 @@ const GameRoom = () => {
         setRoomError(null);
       }
     }
-  }, [currentPlayerId, players, currentRoomId, roomId]);
+  }, [currentPlayerId, playersList, currentRoomId, roomId]);
 
   const currentPlayerStateView = currentPlayer
-    ? derivePlayerStateView(currentPlayer, roomState || 'idle')
+    ? derivePlayerStateView(currentPlayer, activeRoomState)
     : currentPlayerView;
-  const canStartGame = deriveCanStartGame(currentPlayer, players, roomState || 'idle');
-  const recoveryBanner = deriveRecoveryBanner(currentPlayer, roomState || 'idle');
-  const handHistoryRecords = gameState?.handHistory || [];
+  const canStartGame = deriveCanStartGame(currentPlayer, playersList, activeRoomState);
+  const recoveryBanner = deriveRecoveryBanner(currentPlayer, activeRoomState);
+  const pendingJoinBanner = derivePendingJoinBanner(currentPlayer, activeRoomState);
+  const handHistoryRecords = safeGameState?.handHistory || [];
+  const tablePotSummary = buildTablePotSummary(safeGameState);
 
   useEffect(() => {
     setGameLogs([]);
@@ -200,11 +215,11 @@ const GameRoom = () => {
 
   // 监听游戏状态变化，更新日志
   useEffect(() => {
-    if (!gameState || !gameState.lastAction) return;
+    if (!safeGameState || !safeGameState.lastAction) return;
 
-    const { lastAction } = gameState;
+    const { lastAction } = safeGameState;
     const actionKey = [
-      gameState.handNumber || 0,
+      safeGameState.handNumber || 0,
       lastAction.playerId,
       lastAction.action,
       lastAction.amount || 0,
@@ -218,7 +233,7 @@ const GameRoom = () => {
       return;
     }
 
-    const player = players.find((p) => p.id === lastAction.playerId);
+    const player = playersList.find((p) => p.id === lastAction.playerId);
 
     if (player) {
       lastLoggedActionKeyRef.current = actionKey;
@@ -227,14 +242,14 @@ const GameRoom = () => {
         ...prev.slice(-19),
         {
           // 保留最近20条
-          player: player.nickname,
+          player: player.nickname || player.id || '玩家',
           action: lastAction.action,
           amount: lastAction.amount,
           timestamp: lastAction.timestamp || Date.now(),
         },
       ]);
     }
-  }, [gameState?.lastAction, players]);
+  }, [safeGameState?.handNumber, safeGameState?.lastAction, playersList]);
 
   // 如果有房间错误，显示错误信息
   if (roomError) {
@@ -259,7 +274,7 @@ const GameRoom = () => {
   }
 
   // 如果还没有玩家信息，显示加载状态
-  if (isLoading || (!currentPlayer && !needsJoin && currentRoomId === roomId && players.length === 0)) {
+  if (isLoading || (!currentPlayer && !needsJoin && currentRoomId === roomId && playersList.length === 0)) {
     return (
       <div className="min-h-screen bg-poker-dark flex items-center justify-center">
         <div className="text-center">
@@ -445,29 +460,31 @@ const GameRoom = () => {
 
   // 简化设备ID显示
   const getDisplayName = (nickname) => {
-    if (nickname.startsWith('房主-')) {
+    const safeNickname = typeof nickname === 'string' && nickname.trim() ? nickname : '玩家';
+
+    if (safeNickname.startsWith('房主-')) {
       return '房主';
     }
     // 如果是设备ID，显示前6位
-    if (nickname.length > 10) {
-      return nickname.slice(0, 6) + '...';
+    if (safeNickname.length > 10) {
+      return safeNickname.slice(0, 6) + '...';
     }
-    return nickname;
+    return safeNickname;
   };
 
   // 获取德州扑克位置标记
   const getPositionLabel = (seatIndex) => {
-    if (!gameStarted || !gameState || gameState.dealerPosition === undefined) {
+    if (!gameStarted || !safeGameState || safeGameState.dealerPosition === undefined) {
       return `座位 ${seatIndex + 1}`;
     }
 
     // 找到该座位的玩家
-    const seatPlayer = players.find((p) => p.seat === seatIndex);
+    const seatPlayer = playersList.find((p) => p.seat === seatIndex);
     if (!seatPlayer) {
       return `座位 ${seatIndex + 1}`;
     }
 
-    const activePlayers = players.filter((p) => p.isActive);
+    const activePlayers = playersList.filter((p) => p.isActive);
     const playerCount = activePlayers.length;
 
     if (playerCount < 2) {
@@ -475,7 +492,7 @@ const GameRoom = () => {
     }
 
     // 获取庄家位置
-    const dealerPosition = gameState.dealerPosition;
+    const dealerPosition = safeGameState.dealerPosition;
 
     // 计算位置
     if (playerCount === 2) {
@@ -526,27 +543,27 @@ const GameRoom = () => {
       <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center">
         {/* 左侧：玩家面板 */}
         <PlayerPanel
-          players={players}
+          players={playersList}
           roomSettings={roomSettings}
           gameStarted={gameStarted}
-          roomState={roomState}
+          roomState={activeRoomState}
           currentPlayerId={currentPlayerId}
         />
 
         {/* 右侧：操作按钮组 + 倒计时 */}
         <div className="flex items-center space-x-2">
           {/* 倒计时器 - 紧凑版 */}
-          {gameState && gameState.timeRemaining > 0 && gameState.currentPlayerIndex !== undefined && (
+          {safeGameState && safeGameState.timeRemaining > 0 && safeGameState.currentPlayerIndex !== undefined && (
             <div
               className={`w-12 h-12 rounded-full border-2 ${
-                gameState.timeRemaining > 30
+                safeGameState.timeRemaining > 30
                   ? 'border-green-400 text-green-400'
-                  : gameState.timeRemaining > 10
+                  : safeGameState.timeRemaining > 10
                   ? 'border-yellow-400 text-yellow-400'
                   : 'border-red-400 text-red-400'
               } bg-gray-800/95 backdrop-blur-sm flex items-center justify-center`}
             >
-              <div className="text-sm font-bold font-mono">{gameState.timeRemaining}</div>
+              <div className="text-sm font-bold font-mono">{safeGameState.timeRemaining}</div>
             </div>
           )}
 
@@ -592,24 +609,33 @@ const GameRoom = () => {
         </div>
       </div>
 
-      {recoveryBanner && (
-        <div className="absolute top-20 left-4 right-4 z-10">
-          <div className="mx-auto max-w-3xl rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 backdrop-blur-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-amber-200">{recoveryBanner.title}</p>
-                <p className="text-sm text-amber-100/90">{recoveryBanner.detail}</p>
+      {(recoveryBanner || pendingJoinBanner) && (
+        <div className="absolute top-20 left-4 right-4 z-10 space-y-3">
+          {recoveryBanner && (
+            <div className="mx-auto max-w-3xl rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 backdrop-blur-sm">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-amber-200">{recoveryBanner.title}</p>
+                  <p className="text-sm text-amber-100/90">{recoveryBanner.detail}</p>
+                </div>
+                {recoveryBanner.canRecover && (
+                  <button
+                    onClick={() => recoverRoom()}
+                    className="rounded-lg border border-amber-300/60 bg-amber-200/10 px-4 py-2 text-sm font-medium text-amber-100 transition hover:bg-amber-200/20"
+                  >
+                    {recoveryBanner.actionLabel}
+                  </button>
+                )}
               </div>
-              {recoveryBanner.canRecover && (
-                <button
-                  onClick={() => recoverRoom()}
-                  className="rounded-lg border border-amber-300/60 bg-amber-200/10 px-4 py-2 text-sm font-medium text-amber-100 transition hover:bg-amber-200/20"
-                >
-                  {recoveryBanner.actionLabel}
-                </button>
-              )}
             </div>
-          </div>
+          )}
+
+          {pendingJoinBanner && (
+            <div className="mx-auto max-w-3xl rounded-2xl border border-sky-400/40 bg-sky-500/10 px-4 py-3 backdrop-blur-sm">
+              <p className="text-sm font-semibold text-sky-100">{pendingJoinBanner.title}</p>
+              <p className="mt-1 text-sm text-sky-50/90">{pendingJoinBanner.detail}</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -631,46 +657,39 @@ const GameRoom = () => {
           </div>
 
           {/* 底池 */}
-          {gameState && (
+          {safeGameState && (
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-16">
               <div className="bg-black bg-opacity-50 px-4 py-2 rounded-lg border border-poker-gold">
-                {/* 主底池 */}
-                <div className="text-center">
-                  <span className="text-poker-gold font-semibold">底池: </span>
-                  <span className="text-white text-lg">{gameState.pot}</span>
-                </div>
-
-                {/* 边池显示 */}
-                {gameState.sidePots && gameState.sidePots.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-gray-600">
-                    <div className="text-xs text-gray-400 mb-1">边池:</div>
-                    <div className="space-y-1">
-                      {gameState.sidePots.map((pot, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between text-xs"
-                        >
-                          <span className="text-gray-300">边池 {index + 1}:</span>
-                          <span className="text-yellow-400">{pot.amount}</span>
-                        </div>
-                      ))}
+                <div className="space-y-1">
+                  {tablePotSummary.items.map((item, index) => (
+                    <div
+                      key={`${item.label}-${index}`}
+                      className={`flex items-center justify-between gap-4 text-xs ${
+                        index === 0 ? 'border-b border-gray-600 pb-1 text-sm' : ''
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className={index === 0 ? 'text-poker-gold font-semibold' : 'text-gray-300'}>{item.label}</div>
+                        {item.detail && <div className="text-[11px] text-gray-500">{item.detail}</div>}
+                      </div>
+                      <span className={index === 0 ? 'text-white text-lg' : 'text-yellow-400'}>{item.amount}</span>
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {/* 游戏阶段和倒计时 */}
-          {gameState && (
+          {safeGameState && (
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-32">
               <div className="bg-black bg-opacity-50 px-4 py-2 rounded-lg border border-poker-gold">
                 <span className="text-poker-gold font-semibold">
-                  {gameState.phase === 'preflop' && '翻牌前'}
-                  {gameState.phase === 'flop' && '翻牌'}
-                  {gameState.phase === 'turn' && '转牌'}
-                  {gameState.phase === 'river' && '河牌'}
-                  {gameState.phase === 'showdown' && '摊牌'}
+                  {safeGameState.phase === 'preflop' && '翻牌前'}
+                  {safeGameState.phase === 'flop' && '翻牌'}
+                  {safeGameState.phase === 'turn' && '转牌'}
+                  {safeGameState.phase === 'river' && '河牌'}
+                  {safeGameState.phase === 'showdown' && '摊牌'}
                 </span>
               </div>
             </div>
@@ -678,27 +697,27 @@ const GameRoom = () => {
         </div>
 
         <SettlementOverlay
-          roomState={roomState}
-          gameState={gameState}
+          roomState={activeRoomState}
+          gameState={safeGameState}
           currentPlayer={currentPlayer}
           currentPlayerId={currentPlayerId}
           onReveal={revealHand}
         />
 
         {/* 所有座位（玩家和空座位） */}
-        {Array.from({ length: roomSettings?.maxPlayers || 6 }, (_, seatIndex) => {
+        {Array.from({ length: maxPlayers }, (_, seatIndex) => {
           // 找到该座位的玩家（包括当前玩家）
-          const seatPlayer = players.find((player) => player.seat === seatIndex);
+          const seatPlayer = playersList.find((player) => player.seat === seatIndex);
 
           // 为了正确计算位置，我们需要模拟一个玩家数组
-          const allPlayers = Array.from({ length: roomSettings?.maxPlayers || 6 }, (_, i) => ({ seat: i }));
+          const allPlayers = Array.from({ length: maxPlayers }, (_, i) => ({ seat: i }));
           const position = getPlayerPosition({ seat: seatIndex }, allPlayers);
 
           if (seatPlayer) {
             // 有玩家的座位
             const isCurrentPlayer = seatPlayer.id === currentPlayerId;
-            const isCurrentTurn = gameState && gameState.currentPlayerIndex === players.indexOf(seatPlayer);
-            const isActiveTimer = gameState && gameState.timeRemaining > 0 && isCurrentTurn;
+            const isCurrentTurn = safeGameState && safeGameState.currentPlayerIndex === playersList.indexOf(seatPlayer);
+            const isActiveTimer = safeGameState && safeGameState.timeRemaining > 0 && isCurrentTurn;
 
             if (isCurrentPlayer) {
               // 当前玩家的座位显示为占用状态，但不显示详细信息（详细信息在底部）
@@ -744,7 +763,7 @@ const GameRoom = () => {
                     player={seatPlayer}
                     isCurrentPlayer={false}
                     isCurrentTurn={isCurrentTurn}
-                    gameState={gameState}
+                    gameState={safeGameState}
                     gameStarted={gameStarted}
                     isActiveTimer={isActiveTimer}
                     getPositionLabel={getPositionLabel}
@@ -760,7 +779,7 @@ const GameRoom = () => {
                 seatIndex={seatIndex}
                 position={position}
                 getPositionLabel={getPositionLabel}
-                roomState={roomState || 'idle'}
+                roomState={activeRoomState}
               />
             );
           }
@@ -775,7 +794,7 @@ const GameRoom = () => {
             : 'right-4 top-20 w-72 space-y-4'
         }`}
       >
-        <Leaderboard players={players} />
+        <Leaderboard players={playersList} />
       </div>
 
       <HandHistoryDrawer records={handHistoryRecords} />
@@ -788,18 +807,18 @@ const GameRoom = () => {
             <div className="flex justify-center mb-3">
               <ActionButtons
                 player={currentPlayer}
-                gameState={gameState}
+                gameState={safeGameState}
                 currentPlayerId={currentPlayerId}
-                players={players}
+                players={playersList}
               />
             </div>
           )}
 
           <div className="relative">
             {/* 手牌区域 - 居中显示 */}
-            {gameStarted && currentPlayer.hand && currentPlayer.hand.length > 0 && (
+            {gameStarted && (Array.isArray(currentPlayer.hand) ? currentPlayer.hand : EMPTY_CARDS).length > 0 && (
               <div className="flex justify-center space-x-4 mb-4">
-                {currentPlayer.hand.map((card, index) => (
+                {(Array.isArray(currentPlayer.hand) ? currentPlayer.hand : EMPTY_CARDS).map((card, index) => (
                   <Card
                     key={index}
                     card={card}
@@ -814,13 +833,13 @@ const GameRoom = () => {
               <div className="flex items-center space-x-2 text-sm">
                 <span
                   className="font-semibold text-white"
-                  title={currentPlayer.nickname}
+                  title={currentPlayer.nickname || currentPlayer.id || '玩家'}
                 >
                   {getDisplayName(currentPlayer.nickname)}
                 </span>
                 {currentPlayer.isHost && <span className="text-poker-gold">👑</span>}
               </div>
-              <div className="text-poker-gold font-semibold">{currentPlayer.chips}</div>
+              <div className="text-poker-gold font-semibold">{Number(currentPlayer.chips) || 0}</div>
               {gameStarted && currentPlayerStateView && (
                 <div
                   className={`text-xs ${
@@ -828,13 +847,13 @@ const GameRoom = () => {
                       ? 'text-red-400'
                       : currentPlayerStateView.tableState === 'all_in_this_hand'
                       ? 'text-poker-gold'
-                      : currentPlayer.currentBet > 0
+                      : (Number(currentPlayer.currentBet) || 0) > 0
                       ? 'text-blue-400'
                       : 'text-gray-400'
                   }`}
                 >
-                  {currentPlayer.currentBet > 0 && currentPlayerStateView.tableState === 'active_in_hand'
-                    ? `下注: ${currentPlayer.currentBet}`
+                  {(Number(currentPlayer.currentBet) || 0) > 0 && currentPlayerStateView.tableState === 'active_in_hand'
+                    ? `下注: ${Number(currentPlayer.currentBet) || 0}`
                     : currentPlayerStateView.statusLabel}
                 </div>
               )}
@@ -878,7 +897,7 @@ const GameRoom = () => {
         onClose={() => setShowLeaveSeat(false)}
         onConfirm={confirmLeaveSeat}
         player={currentPlayer}
-        roomState={roomState || 'idle'}
+        roomState={activeRoomState}
         isExitingRoom={false}
       />
 
@@ -888,7 +907,7 @@ const GameRoom = () => {
         onClose={() => setShowExitRoom(false)}
         onConfirm={confirmExitRoom}
         player={currentPlayer}
-        roomState={roomState || 'idle'}
+        roomState={activeRoomState}
         isExitingRoom={true}
       />
 

@@ -39,12 +39,19 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
   }
 
   // 如果players未定义，使用空数组
-  const playersArray = players || [];
+  const playersArray = Array.isArray(players) ? players.filter(Boolean) : [];
 
   const { seatedPlayers, spectators } = deriveRoomOccupancy(playersArray, roomState);
 
-  const maxPlayers = roomSettings.maxPlayers || 6;
+  const maxPlayers = Math.max(2, Number(roomSettings.maxPlayers) || 6);
   const totalPlayers = playersArray.length;
+  const getSafeNickname = (player) => {
+    if (typeof player?.nickname === 'string' && player.nickname.trim()) {
+      return player.nickname;
+    }
+
+    return player?.id || '未知玩家';
+  };
 
   // 获取玩家状态文本和图标
   const getPlayerStatus = (player) => {
@@ -98,15 +105,17 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
 
   // 获取玩家显示名称
   const getDisplayName = (player) => {
+    const safeNickname = getSafeNickname(player);
+
     // 如果是房主，显示真实昵称而不是"房主-xxx"格式
-    if (player.isHost && player.nickname.startsWith('房主-')) {
+    if (player.isHost && safeNickname.startsWith('房主-')) {
       // 提取设备ID或显示"房主"
       return '房主';
     }
-    if (player.nickname.length > 12) {
-      return player.nickname.slice(0, 8) + '...';
+    if (safeNickname.length > 12) {
+      return safeNickname.slice(0, 8) + '...';
     }
-    return player.nickname;
+    return safeNickname;
   };
 
   return (
@@ -178,7 +187,7 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                 </div>
                 <div className="space-y-2">
                   {seatedPlayers
-                    .sort((a, b) => a.seat - b.seat)
+                    .sort((a, b) => (Number(a.seat) || 0) - (Number(b.seat) || 0))
                     .map((player) => {
                       const status = getPlayerStatus(player);
                       const StatusIcon = status.icon;
@@ -191,7 +200,7 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                         >
                           <div className="flex items-center space-x-2 min-w-0">
                             <div className="flex items-center space-x-1 flex-shrink-0">
-                              <span className="text-xs bg-gray-600 px-1.5 py-0.5 rounded text-gray-300">座{player.seat + 1}</span>
+                              <span className="text-xs bg-gray-600 px-1.5 py-0.5 rounded text-gray-300">座{(Number(player.seat) || 0) + 1}</span>
                               {player.isHost && (
                                 <Crown
                                   size={12}
@@ -202,14 +211,14 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                             </div>
                             <span
                               className="text-sm text-white truncate"
-                              title={player.nickname}
+                              title={getSafeNickname(player)}
                             >
                               {getDisplayName(player)}
                             </span>
                           </div>
                           <div className="flex items-center space-x-2 flex-shrink-0">
                             <div className="text-right">
-                              <div className="text-xs text-yellow-400 font-mono">{player.chips.toLocaleString()}</div>
+                              <div className="text-xs text-yellow-400 font-mono">{(Number(player.chips) || 0).toLocaleString()}</div>
                               <div className={`text-[11px] ${player.ledger?.sessionNet >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                 {derivePlayerStateView(player, roomState).netLabel}
                               </div>
@@ -265,7 +274,7 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                           </div>
                           <span
                             className="text-sm text-gray-300 truncate"
-                            title={player.nickname}
+                            title={getSafeNickname(player)}
                           >
                             {getDisplayName(player)}
                           </span>

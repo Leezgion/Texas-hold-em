@@ -550,12 +550,13 @@ class GameLogic {
 
     this.completeBoardToRiver(this.deck, this.communityCards);
     const result = this.evaluateShowdown(this.communityCards);
-    const { pots, winnings, totalPot } = this.distributePotsAcrossBoards([{ result, communityCards: [...this.communityCards] }]);
+    const { pots, winnings, potResults, totalPot } = this.distributePotsAcrossBoards([{ result, communityCards: [...this.communityCards] }]);
 
     this.emitHandResult({
       boardResult: result,
       winnings,
       pots,
+      potResults,
       totalPot,
     });
     this.beginSettlement({
@@ -579,7 +580,7 @@ class GameLogic {
       });
     }
 
-    const { pots, winnings, totalPot } = this.distributePotsAcrossBoards(boards);
+    const { pots, winnings, potResults, totalPot } = this.distributePotsAcrossBoards(boards);
     this.communityCards = [...boards[0].communityCards];
     this.allinResults = boards.map((board) => ({
       round: board.round,
@@ -589,6 +590,7 @@ class GameLogic {
     this.captureHandRecord({
       communityCards: boards[0]?.communityCards || [...this.communityCards],
       pots,
+      potResults,
       winners: this.buildFinalDistribution(winnings),
       totalPot,
       reason: 'multiple_runouts',
@@ -615,6 +617,10 @@ class GameLogic {
         amount: pot.amount,
         eligiblePlayers: pot.eligiblePlayers,
       })),
+      potResults: potResults.map((potResult) => ({
+        ...potResult,
+        winners: (potResult.winners || []).map((winner) => ({ ...winner })),
+      })),
     });
 
     this.scheduleNextHand();
@@ -625,6 +631,12 @@ class GameLogic {
     const pots = potManager.calculatePots(this.room.players);
     const totalPot = pots.reduce((sum, pot) => sum + pot.amount, 0);
     const winnings = new Map(this.room.players.map((player) => [player.id, 0]));
+    const potResults = pots.map((pot) => ({
+      potId: pot.id,
+      potType: pot.id === 0 ? 'main' : 'side',
+      amount: pot.amount,
+      winners: [],
+    }));
 
     pots.forEach((pot) => {
       const boardShares = this.splitAmountEvenly(pot.amount, boards.length);
@@ -636,7 +648,8 @@ class GameLogic {
         const board = boards[boardIndex];
         const eligibleHands = board.result.hands.filter((hand) => pot.eligiblePlayers.includes(hand.player.id));
         const winningHands = this.findWinningHands(eligibleHands);
-        this.distributeAmountToWinners(share, winningHands, winnings);
+        const allocations = this.distributeAmountToWinners(share, winningHands, winnings);
+        this.mergePotAllocations(potResults, pot.id, allocations);
       });
     });
 
@@ -650,7 +663,7 @@ class GameLogic {
     this.pot = 0;
     this.sidePots = [];
     this.currentBet = 0;
-    return { pots, winnings, totalPot };
+    return { pots, winnings, totalPot, potResults };
   }
 
   findWinningHands(hands) {
@@ -665,22 +678,51 @@ class GameLogic {
 
   distributeAmountToWinners(amount, winners, winnings) {
     if (!winners.length) {
-      return;
+      return [];
     }
 
     const share = Math.floor(amount / winners.length);
     const remainder = amount % winners.length;
+    const allocations = [];
 
     winners.forEach((winner) => {
       winnings.set(winner.player.id, (winnings.get(winner.player.id) || 0) + share);
+      allocations.push({
+        playerId: winner.player.id,
+        nickname: winner.player.nickname,
+        amount: share,
+      });
     });
 
     if (remainder > 0) {
       const oddChipWinner = this.findClosestWinnerToSmallBlind(winners);
       if (oddChipWinner) {
         winnings.set(oddChipWinner.player.id, (winnings.get(oddChipWinner.player.id) || 0) + remainder);
+        const oddChipAllocation = allocations.find((entry) => entry.playerId === oddChipWinner.player.id);
+        if (oddChipAllocation) {
+          oddChipAllocation.amount += remainder;
+        }
       }
     }
+
+    return allocations;
+  }
+
+  mergePotAllocations(potResults, potId, allocations) {
+    const potResult = potResults.find((entry) => entry.potId === potId);
+    if (!potResult) {
+      return;
+    }
+
+    allocations.forEach((allocation) => {
+      const existingWinner = potResult.winners.find((winner) => winner.playerId === allocation.playerId);
+      if (existingWinner) {
+        existingWinner.amount += allocation.amount;
+        return;
+      }
+
+      potResult.winners.push({ ...allocation });
+    });
   }
 
   findClosestWinnerToSmallBlind(winners) {
@@ -840,12 +882,16 @@ class GameLogic {
     this.room.settlementReason = null;
   }
 
-  captureHandRecord({ communityCards, pots = [], winners = [], totalPot = 0, reason = null, boardResults = [] }) {
+  captureHandRecord({ communityCards, pots = [], potResults = [], winners = [], totalPot = 0, reason = null, boardResults = [] }) {
     this.pendingSettlementSnapshot = {
       communityCards: [...communityCards],
       pots: pots.map((pot) => ({
         ...pot,
         eligiblePlayers: [...(pot.eligiblePlayers || [])],
+      })),
+      potResults: potResults.map((potResult) => ({
+        ...potResult,
+        winners: (potResult.winners || []).map((winner) => ({ ...winner })),
       })),
       winners: winners.map((winner) => ({ ...winner })),
       totalPot,
@@ -877,6 +923,7 @@ class GameLogic {
       actions: this.actionHistory,
       communityCards: this.pendingSettlementSnapshot.communityCards,
       pots: this.pendingSettlementSnapshot.pots,
+      potResults: this.pendingSettlementSnapshot.potResults,
       winners: this.pendingSettlementSnapshot.winners,
       boardResults: this.pendingSettlementSnapshot.boardResults,
     });
@@ -891,11 +938,12 @@ class GameLogic {
     return handRecord;
   }
 
-  emitHandResult({ boardResult, winnings, pots, totalPot, reason = null }) {
+  emitHandResult({ boardResult, winnings, pots, potResults = [], totalPot, reason = null }) {
     const winners = this.buildFinalDistribution(winnings);
     this.captureHandRecord({
       communityCards: boardResult.communityCards,
       pots,
+      potResults,
       winners,
       totalPot,
       reason,
@@ -914,6 +962,10 @@ class GameLogic {
         id: pot.id,
         amount: pot.amount,
         eligiblePlayers: pot.eligiblePlayers,
+      })),
+      potResults: potResults.map((potResult) => ({
+        ...potResult,
+        winners: (potResult.winners || []).map((winner) => ({ ...winner })),
       })),
       totalPot,
       pot: totalPot,
@@ -947,6 +999,14 @@ class GameLogic {
     this.captureHandRecord({
       communityCards: [...this.communityCards],
       pots: [],
+      potResults: [
+        {
+          potId: 0,
+          potType: 'main',
+          amount: totalPot,
+          winners: [{ playerId: winner.id, nickname: winner.nickname, amount: totalPot }],
+        },
+      ],
       winners,
       totalPot,
       reason: '其他玩家全部弃牌',
@@ -962,6 +1022,14 @@ class GameLogic {
       hands: [],
       communityCards: [...this.communityCards],
       pots: [],
+      potResults: [
+        {
+          potId: 0,
+          potType: 'main',
+          amount: totalPot,
+          winners: [{ playerId: winner.id, nickname: winner.nickname, amount: totalPot }],
+        },
+      ],
       totalPot,
       pot: totalPot,
       reason: '其他玩家全部弃牌',
