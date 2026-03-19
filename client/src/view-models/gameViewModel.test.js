@@ -566,6 +566,74 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
   );
 });
 
+test('threads canonical anchor semantics through every seat-ring entry', () => {
+  const seatRing = deriveSeatRingView({
+    maxPlayers: 4,
+    currentPlayerId: 'p2',
+    roomState: 'in_hand',
+    players: [
+      {
+        id: 'p1',
+        nickname: 'Alice',
+        seat: 2,
+        chips: 1200,
+        tableState: 'active_in_hand',
+      },
+      {
+        id: 'p2',
+        nickname: 'Bob',
+        seat: 0,
+        chips: 980,
+        tableState: 'seated_wait_next_hand',
+      },
+    ],
+    gameState: {
+      dealerPosition: 2,
+    },
+    canonicalSlots: [
+      { seatIndex: 0, anchorSlotId: 'slot-hero', anchorRole: 'hero', anchorZone: 'dock-edge' },
+      { seatIndex: 1, anchorSlotId: 'slot-left', anchorRole: 'lower-left', anchorZone: 'table-flank' },
+      { seatIndex: 2, anchorSlotId: 'slot-top', anchorRole: 'top-center', anchorZone: 'stage-band-clear' },
+      { seatIndex: 3, anchorSlotId: 'slot-right', anchorRole: 'lower-right', anchorZone: 'table-flank' },
+    ],
+  });
+
+  assert.deepEqual(
+    seatRing.map((seat) => ({
+      seatIndex: seat.seatIndex,
+      anchorSlotId: seat.anchorSlotId,
+      anchorRole: seat.anchorRole,
+      anchorZone: seat.anchorZone,
+    })),
+    [
+      {
+        seatIndex: 0,
+        anchorSlotId: 'slot-hero',
+        anchorRole: 'hero',
+        anchorZone: 'dock-edge',
+      },
+      {
+        seatIndex: 1,
+        anchorSlotId: 'slot-left',
+        anchorRole: 'lower-left',
+        anchorZone: 'table-flank',
+      },
+      {
+        seatIndex: 2,
+        anchorSlotId: 'slot-top',
+        anchorRole: 'top-center',
+        anchorZone: 'stage-band-clear',
+      },
+      {
+        seatIndex: 3,
+        anchorSlotId: 'slot-right',
+        anchorRole: 'lower-right',
+        anchorZone: 'table-flank',
+      },
+    ]
+  );
+});
+
 test('derives intel-rail summaries for occupancy and host controls', () => {
   const intelRail = deriveIntelRailView({
     roomState: 'recovery_required',

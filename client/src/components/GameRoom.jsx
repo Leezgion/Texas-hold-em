@@ -72,6 +72,39 @@ const mapViewportModelToStageShellLayout = (viewportModel) => {
   }
 };
 
+const buildCanonicalSeatSlots = ({
+  maxPlayers = 6,
+  currentPlayerSeat = null,
+  viewportWidth = 0,
+  roomShellLayout = 'stacked',
+  tableDiameter,
+} = {}) => {
+  const safeMaxPlayers = Math.max(2, Number(maxPlayers) || 6);
+  const heroSeat = Number.isInteger(currentPlayerSeat) && currentPlayerSeat >= 0 ? currentPlayerSeat : 0;
+  const positions = buildSeatRingPositions({
+    playerCount: safeMaxPlayers,
+    viewportWidth,
+    roomShellLayout,
+    tableDiameter,
+  });
+
+  return Array.from({ length: safeMaxPlayers }, (_, seatIndex) => {
+    const relativeSeat = (seatIndex - heroSeat + safeMaxPlayers) % safeMaxPlayers;
+    const position = positions[relativeSeat] || null;
+    const anchorRole = position?.anchorRole || 'ring';
+    const anchorZone = position?.anchorZone || (anchorRole === 'hero' ? 'dock-edge' : 'table-flank');
+    const profile = position?.profile || (viewportWidth < 768 ? 'phone-oval' : 'desktop-oval');
+
+    return {
+      seatIndex,
+      anchorSlotId: `${profile}:${safeMaxPlayers}:${anchorRole}:${relativeSeat}`,
+      anchorRole,
+      anchorZone,
+      position,
+    };
+  });
+};
+
 const GameRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -461,25 +494,6 @@ const GameRoom = () => {
     }
   };
 
-  // 计算玩家座位位置 - 主观视角，当前玩家总是在底部
-  const getPlayerPosition = (player, allPlayers) => {
-    // 找到当前玩家的座位号
-    const currentPlayerSeat = currentPlayer ? currentPlayer.seat : 0;
-
-    // 计算相对座位位置（当前玩家为0）
-    const totalPlayers = allPlayers.length;
-    const relativeSeat = (player.seat - currentPlayerSeat + totalPlayers) % totalPlayers;
-
-    const positions = buildSeatRingPositions({
-      playerCount: totalPlayers,
-      viewportWidth: windowSize.width,
-      roomShellLayout: stageShellLayout,
-      tableDiameter,
-    });
-
-    return positions[relativeSeat] || { x: 0, y: 0 };
-  };
-
   // 简化设备ID显示
   const getDisplayName = (nickname) => {
     const safeNickname = typeof nickname === 'string' && nickname.trim() ? nickname : '玩家';
@@ -579,6 +593,13 @@ const GameRoom = () => {
       : tableDiameter === 352
       ? 'w-[22rem] h-[22rem]'
       : 'w-80 h-80';
+  const canonicalSeatSlots = buildCanonicalSeatSlots({
+    maxPlayers,
+    currentPlayerSeat: currentPlayer?.seat,
+    viewportWidth: windowSize.width,
+    roomShellLayout: stageShellLayout,
+    tableDiameter,
+  });
 
   const seatRingEntries = deriveSeatRingView({
     players: playersList,
@@ -586,14 +607,13 @@ const GameRoom = () => {
     currentPlayerId,
     roomState: activeRoomState,
     gameState: safeGameState,
+    canonicalSlots: canonicalSeatSlots,
   }).map((seat) => {
-    const position = getPlayerPosition({ seat: seat.seatIndex }, Array.from({ length: maxPlayers }, (_, index) => ({ seat: index })));
     const isCurrentTurn =
       seat.player && safeGameState ? safeGameState.currentPlayerIndex === playersList.indexOf(seat.player) : false;
 
     return {
       ...seat,
-      position,
       isCurrentTurn,
       isActiveTimer: Boolean(safeGameState && safeGameState.timeRemaining > 0 && isCurrentTurn),
     };

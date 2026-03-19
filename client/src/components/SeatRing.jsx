@@ -9,7 +9,7 @@ const SeatRing = ({ seats = [], roomState, gameState, gameStarted }) => {
     <div className="absolute inset-0 z-20" data-table-profile={tableProfile}>
       {seats.map((seat) => (
         <SeatCard
-          key={`seat-${seat.seatIndex}`}
+          key={seat.anchorSlotId || `seat-${seat.seatIndex}`}
           seat={seat}
           roomState={roomState}
           gameState={gameState}
