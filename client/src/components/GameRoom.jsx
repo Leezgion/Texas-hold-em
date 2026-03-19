@@ -17,7 +17,7 @@ import RebuyModal from './RebuyModal';
 import SettlementOverlay from './SettlementOverlay';
 import ShareLinkModal from './ShareLinkModal';
 import { useGame } from '../contexts/GameContext';
-import { deriveCanStartGame, derivePlayerStateView } from '../view-models/gameViewModel';
+import { deriveCanStartGame, derivePlayerStateView, deriveRecoveryBanner } from '../view-models/gameViewModel';
 
 // 自定义hook来检测屏幕尺寸
 const useWindowSize = () => {
@@ -60,6 +60,7 @@ const GameRoom = () => {
     setShowHandResult,
     showHandResult,
     startGame,
+    recoverRoom,
     resetGame,
     isCreatingRoom,
     navigationTarget,
@@ -189,6 +190,7 @@ const GameRoom = () => {
     ? derivePlayerStateView(currentPlayer, roomState || 'idle')
     : currentPlayerView;
   const canStartGame = deriveCanStartGame(currentPlayer, players, roomState || 'idle');
+  const recoveryBanner = deriveRecoveryBanner(currentPlayer, roomState || 'idle');
   const handHistoryRecords = gameState?.handHistory || [];
 
   useEffect(() => {
@@ -589,6 +591,27 @@ const GameRoom = () => {
           </div>
         </div>
       </div>
+
+      {recoveryBanner && (
+        <div className="absolute top-20 left-4 right-4 z-10">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 backdrop-blur-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-amber-200">{recoveryBanner.title}</p>
+                <p className="text-sm text-amber-100/90">{recoveryBanner.detail}</p>
+              </div>
+              {recoveryBanner.canRecover && (
+                <button
+                  onClick={() => recoverRoom()}
+                  className="rounded-lg border border-amber-300/60 bg-amber-200/10 px-4 py-2 text-sm font-medium text-amber-100 transition hover:bg-amber-200/20"
+                >
+                  {recoveryBanner.actionLabel}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 游戏桌 */}
       <div className="relative w-full h-screen flex items-center justify-center">

@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  deriveCanStartGame,
   deriveLeaveSeatDialog,
   derivePlayerStateView,
+  deriveRecoveryBanner,
   deriveSeatSelectionNotice,
   formatSignedChips,
 } from './gameViewModel.js';
@@ -111,4 +113,54 @@ test('formats signed chip values for the table UI', () => {
   assert.equal(formatSignedChips(0), '0');
   assert.equal(formatSignedChips(3200), '+3,200');
   assert.equal(formatSignedChips(-450), '-450');
+});
+
+test('gives hosts an explicit recovery action when the room is stuck', () => {
+  assert.deepEqual(deriveRecoveryBanner({ isHost: true }, 'recovery_required'), {
+    title: '房间状态异常',
+    detail: '牌桌状态异常，请先恢复房间，再重新开始游戏。',
+    actionLabel: '恢复房间',
+    canRecover: true,
+  });
+});
+
+test('shows non-host players a waiting-for-recovery message only', () => {
+  assert.deepEqual(deriveRecoveryBanner({ isHost: false }, 'recovery_required'), {
+    title: '房间状态异常',
+    detail: '牌桌状态异常，等待房主恢复房间后继续。',
+    actionLabel: null,
+    canRecover: false,
+  });
+});
+
+test('allows spectator hosts to start when two other players are seated', () => {
+  const currentPlayer = {
+    isHost: true,
+    tableState: 'spectating',
+    seat: -1,
+  };
+
+  const players = [
+    currentPlayer,
+    { id: 'guest-a', tableState: 'seated_ready', seat: 0 },
+    { id: 'guest-b', tableState: 'seated_ready', seat: 1 },
+  ];
+
+  assert.equal(deriveCanStartGame(currentPlayer, players, 'idle'), true);
+});
+
+test('keeps spectator non-hosts from starting even when enough players are seated', () => {
+  const currentPlayer = {
+    isHost: false,
+    tableState: 'spectating',
+    seat: -1,
+  };
+
+  const players = [
+    currentPlayer,
+    { id: 'guest-a', tableState: 'seated_ready', seat: 0 },
+    { id: 'guest-b', tableState: 'seated_ready', seat: 1 },
+  ];
+
+  assert.equal(deriveCanStartGame(currentPlayer, players, 'idle'), false);
 });

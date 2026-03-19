@@ -121,4 +121,36 @@ describe('Settling window and reveal policies', () => {
     expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
     expect(room.gameLogic.handNumber).toBe(8);
   });
+
+  it('restores settling state and reveal eligibility when a player reconnects during settlement', () => {
+    const { io, socketDeviceMap, roomManager, room, guest } = createSettlingRoom({
+      revealPolicy: 'showdown_only',
+      settleMs: 3000,
+    });
+
+    room.gameLogic.beginSettlement({
+      eligibleRevealPlayerIds: [guest.id],
+      reason: 'test',
+    });
+
+    const endsAt = room.gameLogic.settlementWindowEndsAt;
+
+    roomManager.handlePlayerDisconnect(guest.id);
+
+    const reconnectSocket = registerDevice(io, socketDeviceMap, 'socket-guest-reconnect', guest.id);
+    roomManager.handleDeviceReconnect(guest.id, reconnectSocket);
+
+    expect(reconnectSocket.join).toHaveBeenCalledWith(room.id);
+    expect(reconnectSocket.emit).toHaveBeenCalledWith(
+      'gameStateUpdate',
+      expect.objectContaining({
+        roomState: ROOM_STATES.SETTLING,
+        gameState: expect.objectContaining({
+          settlementWindowEndsAt: endsAt,
+          eligibleRevealPlayerIds: [guest.id],
+          revealLocked: false,
+        }),
+      })
+    );
+  });
 });

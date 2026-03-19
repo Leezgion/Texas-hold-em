@@ -86,13 +86,29 @@ export function deriveCanStartGame(currentPlayer, players = [], roomState = 'idl
     return false;
   }
 
-  const currentPlayerView = derivePlayerStateView(currentPlayer, roomState);
-  if (!currentPlayerView.isSeated || roomState !== 'idle') {
+  if (roomState !== 'idle') {
     return false;
   }
 
   const seatedCount = players.filter((player) => derivePlayerStateView(player, roomState).isSeated).length;
   return seatedCount >= 2;
+}
+
+export function deriveRecoveryBanner(currentPlayer = {}, roomState = 'idle') {
+  if (roomState !== 'recovery_required') {
+    return null;
+  }
+
+  const isHost = Boolean(currentPlayer?.isHost);
+
+  return {
+    title: '房间状态异常',
+    detail: isHost
+      ? '牌桌状态异常，请先恢复房间，再重新开始游戏。'
+      : '牌桌状态异常，等待房主恢复房间后继续。',
+    actionLabel: isHost ? '恢复房间' : null,
+    canRecover: isHost,
+  };
 }
 
 export function isPlayerCommittedToCurrentHand(player = {}, roomState = 'idle') {

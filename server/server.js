@@ -28,8 +28,23 @@ const socketDeviceMap = new Map(); // socketId -> deviceId
 // 导入游戏逻辑
 const RoomManager = require('./gameLogic/RoomManager');
 
+function parseOptionalInteger(value) {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) ? parsed : undefined;
+}
+
+const defaultSettleMs = parseOptionalInteger(process.env.DEFAULT_SETTLE_MS);
+
 // 初始化房间管理器
-const roomManager = new RoomManager(io, gameRooms, socketDeviceMap);
+const roomManager = new RoomManager(io, gameRooms, socketDeviceMap, {
+  roomDefaults: {
+    ...(defaultSettleMs !== undefined ? { settleMs: defaultSettleMs } : {}),
+  },
+});
 
 // Socket.IO 连接处理
 io.on('connection', (socket) => {
@@ -102,6 +117,20 @@ io.on('connection', (socket) => {
           message: error.message,
         });
       }
+      socket.emit('error', error.message);
+    }
+  });
+
+  socket.on('recoverRoom', (roomId) => {
+    try {
+      const deviceId = socketDeviceMap.get(socket.id);
+      if (!deviceId) {
+        throw new Error('设备未注册');
+      }
+
+      roomManager.recoverRoom(roomId, deviceId);
+      console.log(`房间 ${roomId} 已恢复到空闲状态`);
+    } catch (error) {
       socket.emit('error', error.message);
     }
   });

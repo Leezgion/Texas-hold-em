@@ -67,6 +67,12 @@ class GameLogic {
     if (eligibleIndices.length < 2) {
       this.gamePhase = GAME_PHASES.WAITING;
       this.room.roomState = ROOM_STATES.IDLE;
+      if (this.room.timer) {
+        clearInterval(this.room.timer);
+        this.room.timer = null;
+      }
+      this.room.gameStarted = false;
+      this.room.startTime = null;
       this.refreshPotState();
       return false;
     }

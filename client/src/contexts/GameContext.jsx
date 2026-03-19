@@ -275,6 +275,15 @@ const useGameStore = create((set, get) => ({
       window.dispatchEvent(new CustomEvent('game-info', { detail: data.message }));
     });
 
+    socket.on('roomRecoveryRequired', ({ roomState, message }) => {
+      const currentPlayer = get().currentPlayer;
+      set({
+        roomState,
+        currentPlayerView: currentPlayer ? derivePlayerStateView(currentPlayer, roomState) : null,
+      });
+      window.dispatchEvent(new CustomEvent('game-info', { detail: message }));
+    });
+
     socket.on('error', (message) => {
       // 如果是创建房间时出错，重置创建状态
       const { isCreatingRoom } = get();
@@ -396,6 +405,13 @@ const useGameStore = create((set, get) => ({
       socket.emit('startGame', roomId);
     } else {
       console.log('无法开始游戏：socket或roomId不存在');
+    }
+  },
+
+  recoverRoom: () => {
+    const { socket, roomId } = get();
+    if (socket && roomId) {
+      socket.emit('recoverRoom', roomId);
     }
   },
 

@@ -2,10 +2,11 @@ const GameLogic = require('./GameLogic');
 const { ERROR_CODES, GAME_PHASES, REVEAL_MODES, REVEAL_POLICIES, ROOM_STATES, TABLE_STATES } = require('../types/GameTypes');
 
 class RoomManager {
-  constructor(io, gameRooms, socketDeviceMap) {
+  constructor(io, gameRooms, socketDeviceMap, options = {}) {
     this.io = io;
     this.gameRooms = gameRooms;
     this.socketDeviceMap = socketDeviceMap;
+    this.roomDefaults = options.roomDefaults || {};
   }
 
   deriveRoomState(room) {
@@ -217,6 +218,42 @@ class RoomManager {
     return player.ledger;
   }
 
+  resetPlayerAfterRecovery(player) {
+    player.hand = [];
+    player.currentBet = 0;
+    player.totalBet = 0;
+    player.lastAction = null;
+    player.showHand = false;
+    player.revealMode = REVEAL_MODES.HIDE;
+    player.revealedCardIndices = [];
+    player.waitingForNextRound = false;
+    player.inHand = false;
+    player.folded = false;
+    player.allIn = false;
+
+    if (player.ledger) {
+      player.ledger.handStartChips = player.chips;
+      player.ledger.showdownDelta = 0;
+    }
+
+    if (player.hasLeftRoom) {
+      player.isActive = false;
+      return;
+    }
+
+    if (player.chips <= 0 || player.needsRebuy) {
+      this.transitionPlayerState(player, TABLE_STATES.BUSTED_WAIT_REBUY);
+      return;
+    }
+
+    if (player.seat === -1 || player.isSpectator) {
+      this.transitionPlayerState(player, TABLE_STATES.SPECTATING);
+      return;
+    }
+
+    this.transitionPlayerState(player, TABLE_STATES.SEATED_READY, { seat: player.seat });
+  }
+
   roomRequiresRecovery(room) {
     if (!room?.gameStarted || !room.gameLogic || typeof room.gameLogic.getGameState !== 'function') {
       return false;
@@ -224,6 +261,51 @@ class RoomManager {
 
     const gameState = room.gameLogic.getGameState();
     return gameState.phase === GAME_PHASES.WAITING && !gameState.currentPlayerId;
+  }
+
+  recoverRoom(roomId, playerId) {
+    const room = this.gameRooms.get(roomId);
+    if (!room) {
+      throw new Error('房间不存在');
+    }
+
+    const player = room.players.find((entry) => entry.id === playerId);
+    if (!player) {
+      throw new Error('玩家不存在');
+    }
+
+    if (!player.isHost) {
+      throw this.createError('只有房主可以恢复房间', ERROR_CODES.HOST_ONLY_ACTION);
+    }
+
+    const shouldRecover =
+      room.roomState === ROOM_STATES.RECOVERY_REQUIRED || this.roomRequiresRecovery(room);
+    if (!shouldRecover) {
+      throw this.createError('房间当前不需要恢复', ERROR_CODES.ROOM_RECOVERY_REQUIRED);
+    }
+
+    if (room.timer) {
+      clearInterval(room.timer);
+      room.timer = null;
+    }
+
+    if (room.gameLogic) {
+      room.gameLogic.clearPlayerTimer?.();
+      room.gameLogic.clearNextHandTimeout?.();
+      room.gameLogic.clearSettlementState?.();
+    }
+
+    room.gameStarted = false;
+    room.roomState = ROOM_STATES.IDLE;
+    room.startTime = null;
+    room.gameLogic = null;
+
+    room.players.forEach((entry) => {
+      this.resetPlayerAfterRecovery(entry);
+      this.syncPlayerLedger(entry);
+    });
+
+    this.broadcastRoomState(room);
   }
 
   canPlayerRebuy(player) {
@@ -239,19 +321,23 @@ class RoomManager {
   // 创建新房间
   createRoom(socket, settings) {
     const roomId = this.generateRoomId();
+    const mergedSettings = {
+      ...this.roomDefaults,
+      ...(settings || {}),
+    };
 
     // 验证设置
-    this.validateRoomSettings(settings);
+    this.validateRoomSettings(mergedSettings);
 
     const room = {
       id: roomId,
       settings: {
-        duration: settings.duration || 60, // 默认60分钟
-        maxPlayers: settings.maxPlayers || 6,
-        allowStraddle: settings.allowStraddle || false,
-        allinDealCount: settings.allinDealCount || 1,
-        settleMs: settings.settleMs ?? 3000,
-        revealPolicy: settings.revealPolicy || REVEAL_POLICIES.SHOWDOWN_ONLY,
+        duration: mergedSettings.duration || 60, // 默认60分钟
+        maxPlayers: mergedSettings.maxPlayers || 6,
+        allowStraddle: mergedSettings.allowStraddle || false,
+        allinDealCount: mergedSettings.allinDealCount || 1,
+        settleMs: mergedSettings.settleMs ?? 3000,
+        revealPolicy: mergedSettings.revealPolicy || REVEAL_POLICIES.SHOWDOWN_ONLY,
         initialChips: 1000,
       },
       players: [],
@@ -464,11 +550,8 @@ class RoomManager {
 
     if (this.roomRequiresRecovery(room)) {
       room.roomState = ROOM_STATES.RECOVERY_REQUIRED;
+      this.broadcastRoomState(room);
       throw this.createError('房间状态异常，需要恢复', ERROR_CODES.ROOM_RECOVERY_REQUIRED);
-    }
-
-    if (player.isSpectator || player.seat === -1) {
-      throw new Error('只有入座玩家可以开始游戏');
     }
 
     // 检查入座玩家数量
@@ -486,7 +569,11 @@ class RoomManager {
     room.gameLogic = new GameLogic(room, this.io, this);
 
     // 开始游戏逻辑
-    room.gameLogic.startNewHand();
+    const handStarted = room.gameLogic.startNewHand();
+    if (!handStarted) {
+      this.broadcastRoomState(room);
+      return;
+    }
 
     // 通知所有玩家游戏开始
     this.io.to(roomId).emit('gameStarted', { roomId });
@@ -757,14 +844,10 @@ class RoomManager {
 
   // 处理设备重连
   handleDeviceReconnect(deviceId, socket) {
-    console.log(`检查设备重连: ${deviceId}, 当前房间数量: ${this.gameRooms.size}`);
-
     // 查找设备所在的房间
     for (const room of this.gameRooms.values()) {
-      console.log(`检查房间 ${room.id}, 玩家数量: ${room.players.length}`);
       const player = room.players.find((p) => p.id === deviceId);
       if (player) {
-        console.log(`设备 ${deviceId} 重连到房间 ${room.id}, 玩家信息:`, player);
         // 更新Socket ID并恢复连接状态
         player.socketId = socket.id;
         player.disconnected = false;
@@ -775,13 +858,10 @@ class RoomManager {
         socket.join(room.id);
 
         // 广播房间状态给所有玩家（包括重连的玩家）
-        console.log(`设备 ${deviceId} 重连成功`);
         this.broadcastRoomState(room);
         return; // 找到了就返回
       }
     }
-
-    console.log(`设备 ${deviceId} 不在任何房间中`);
   }
 
   // 根据玩家ID查找房间

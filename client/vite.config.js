@@ -1,5 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolveDevProxyTarget } from './vite.proxyTarget.js';
+
+const devProxyTarget = resolveDevProxyTarget(process.env);
 
 export default defineConfig({
   plugins: [react()],
@@ -8,11 +11,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: devProxyTarget,
         changeOrigin: true,
       },
       '/socket.io': {
-        target: 'http://localhost:3001',
+        target: devProxyTarget,
         changeOrigin: true,
         ws: true,
       },
