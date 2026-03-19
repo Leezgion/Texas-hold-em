@@ -431,6 +431,14 @@ test('derives a poker-os shell summary for the room header and shared banners', 
     modeLabel: 'Study',
     modeTitle: '训练复盘',
     effectiveDisplayMode: 'pro',
+    shellLayout: 'single-screen-terminal',
+    heroDockPriority: 'always-visible',
+    supportSurfacePolicy: {
+      phone: 'sheet',
+      tablet: 'panel',
+      desktop: 'panel-or-rail',
+      ultrawide: 'rail',
+    },
     pendingJoinBanner: {
       title: '已入座，等待下一手',
       detail: '本手正在结算，你会在下一手开始时自动收到手牌并参与行动。',
@@ -474,6 +482,9 @@ test('derives current-turn stage emphasis for in-hand rooms', () => {
   assert.equal(shell.stagePulseTone, 'live-turn');
   assert.equal(shell.stageActionLabel, '轮到 座2 · TO CALL 10');
   assert.equal(shell.lastActionLabel, '上一动作 座1 加注到 20');
+  assert.equal(shell.heroDockPriority, 'always-visible');
+  assert.equal(shell.supportSurfacePolicy.phone, 'sheet');
+  assert.equal(shell.supportSurfacePolicy.desktop, 'panel-or-rail');
 });
 
 test('builds ordered seat-ring entries with current-player and empty-seat markers', () => {

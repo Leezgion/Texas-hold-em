@@ -21,6 +21,7 @@ const ModeShell = ({ mode = 'pro', children }) => {
         className={`mode-shell ${theme.shellClassName}`}
         style={shellMotionStyle}
         data-display-mode={theme.mode}
+        data-room-terminal-intent={theme.roomTerminal?.intent}
         data-shell-tone={theme.shellTone}
         data-table-tone={theme.tableTone}
         data-seat-tone={theme.seatTone}

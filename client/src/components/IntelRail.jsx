@@ -13,6 +13,7 @@ const IntelRail = ({
   gameState,
   effectiveDisplayMode,
   roomStateLabel,
+  viewportLayout,
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const roomCopy = theme.room;
@@ -76,7 +77,11 @@ const IntelRail = ({
   const summaryCards = summaryCardsByMode[effectiveDisplayMode] || summaryCardsByMode.pro;
 
   return (
-    <aside className="tactical-rail tactical-rail--intel">
+    <aside
+      className="room-terminal-support-rail tactical-rail tactical-rail--intel"
+      data-viewport-model={viewportLayout?.viewportModel}
+      data-support-surface-model={viewportLayout?.supportSurfaceModel}
+    >
       <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--intel rounded-[1.75rem] p-4 sm:p-5">
         <div className="tactical-rail__header">
           <div>

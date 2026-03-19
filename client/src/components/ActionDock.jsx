@@ -19,6 +19,7 @@ const ActionDock = ({
   effectiveDisplayMode,
   roomState,
   viewportLayout,
+  shellView,
 }) => {
   if (!currentPlayer) {
     return null;
@@ -41,10 +42,11 @@ const ActionDock = ({
 
   return (
     <section
-      className="poker-shell-panel poker-shell-panel--accent tactical-dock rounded-[1.75rem] px-4 py-4"
+      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock rounded-[1.75rem] px-4 py-4"
       data-viewport-model={viewportLayout?.viewportModel}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
       data-hero-dock-placement={viewportLayout?.heroDockPlacement}
+      data-hero-dock-priority={shellView?.heroDockPriority}
     >
       <div className="tactical-dock__grid">
         <div className="min-w-0">

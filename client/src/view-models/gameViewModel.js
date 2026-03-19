@@ -12,6 +12,12 @@ const SEATED_STATES = new Set([
 const SPECTATOR_STATES = new Set(['spectating', 'busted_wait_rebuy']);
 const CURRENT_HAND_STATES = new Set(['active_in_hand', 'all_in_this_hand', 'disconnected']);
 const POSITIONED_HAND_STATES = new Set(['active_in_hand', 'folded_this_hand', 'all_in_this_hand', 'disconnected']);
+const TERMINAL_SUPPORT_SURFACE_POLICY = Object.freeze({
+  phone: 'sheet',
+  tablet: 'panel',
+  desktop: 'panel-or-rail',
+  ultrawide: 'rail',
+});
 
 function mapRoomStateToLabel(roomState = 'idle') {
   switch (roomState) {
@@ -412,6 +418,9 @@ export function deriveTableShellView({
     modeLabel: modeMeta.label,
     modeTitle: modeMeta.title,
     effectiveDisplayMode,
+    shellLayout: 'single-screen-terminal',
+    heroDockPriority: 'always-visible',
+    supportSurfacePolicy: TERMINAL_SUPPORT_SURFACE_POLICY,
     pendingJoinBanner: derivePendingJoinBanner(currentPlayer, roomState),
     recoveryBanner: deriveRecoveryBanner(currentPlayer, roomState),
     phaseLabel,

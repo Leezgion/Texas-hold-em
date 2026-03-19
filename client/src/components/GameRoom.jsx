@@ -105,12 +105,10 @@ const GameRoom = () => {
   const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
   const roomShellLayout = resolveRoomShellLayout(windowSize.width);
   const roomViewportLayout = resolveRoomViewportLayout(windowSize);
-  const roomShellGridClassName =
-    roomShellLayout === 'three-column'
-      ? 'room-shell-grid room-shell-grid--three-column'
-      : roomShellLayout === 'split-stage'
-      ? 'room-shell-grid room-shell-grid--split-stage'
-      : 'room-shell-grid';
+  const usesSideRails = roomViewportLayout.viewportModel === 'ultrawide-terminal';
+  const roomShellGridClassName = usesSideRails
+    ? 'room-shell-grid room-shell-grid--three-column'
+    : 'room-shell-grid room-shell-grid--terminal-stack';
 
   useEffect(() => {
     const verifyRoom = async () => {
@@ -565,113 +563,193 @@ const GameRoom = () => {
 
   return (
     <div
-      className="min-h-screen px-3 py-3 sm:px-4 lg:px-6"
+      className="room-terminal-shell px-3 py-3 sm:px-4 lg:px-6"
       data-viewport-model={roomViewportLayout.viewportModel}
       data-page-scroll={roomViewportLayout.pageScroll}
       data-hero-dock-placement={roomViewportLayout.heroDockPlacement}
       data-support-surface-model={roomViewportLayout.supportSurfaceModel}
+      data-shell-layout={shellView.shellLayout}
+      data-hero-dock-priority={shellView.heroDockPriority}
+      data-support-surface-phone={shellView.supportSurfacePolicy.phone}
+      data-support-surface-desktop={shellView.supportSurfacePolicy.desktop}
     >
       <div
-        className="mx-auto flex min-h-screen w-full flex-col gap-4 pb-6"
+        className="room-terminal-frame mx-auto w-full"
         style={{ maxWidth: roomViewportLayout.contentMaxWidth }}
       >
-        <TableHeader
-          shellView={shellView}
-          viewportLayout={roomViewportLayout}
-          onShare={() => setShowShareLink(true)}
-          onLeaveRoom={handleExitRoom}
-          onLeaveSeat={handleLeaveSeat}
-          onOpenRebuy={() => setShowRebuy(true)}
-          canLeaveSeat={Boolean(currentPlayerStateView?.canLeaveSeat)}
-          canRequestRebuy={Boolean(currentPlayerStateView?.canRequestRebuy)}
-        />
+        <div className="room-terminal-header-stack">
+          <TableHeader
+            shellView={shellView}
+            viewportLayout={roomViewportLayout}
+            onShare={() => setShowShareLink(true)}
+            onLeaveRoom={handleExitRoom}
+            onLeaveSeat={handleLeaveSeat}
+            onOpenRebuy={() => setShowRebuy(true)}
+            canLeaveSeat={Boolean(currentPlayerStateView?.canLeaveSeat)}
+            canRequestRebuy={Boolean(currentPlayerStateView?.canRequestRebuy)}
+          />
 
-        {(shellView.recoveryBanner || shellView.pendingJoinBanner) && (
-          <div className="grid gap-3">
-            <TableBanner
-              banner={shellView.recoveryBanner}
-              tone="amber"
-              onAction={handleRecoverRoom}
-            />
-            <TableBanner
-              banner={shellView.pendingJoinBanner}
-              tone="sky"
-            />
-          </div>
-        )}
+          {(shellView.recoveryBanner || shellView.pendingJoinBanner) && (
+            <div className="room-terminal-banner-stack">
+              <TableBanner
+                banner={shellView.recoveryBanner}
+                tone="amber"
+                onAction={handleRecoverRoom}
+              />
+              <TableBanner
+                banner={shellView.pendingJoinBanner}
+                tone="sky"
+              />
+            </div>
+          )}
+        </div>
 
-        <div className={roomShellGridClassName}>
-          <div className="room-shell-grid__intel">
-            <IntelRail
-              intelRailView={intelRailView}
-              players={playersList}
-              roomSettings={roomSettings}
-              gameStarted={gameStarted}
-              roomState={activeRoomState}
-              roomStateLabel={shellView.roomStateLabel}
-              currentPlayerId={currentPlayerId}
-              gameState={safeGameState}
-              effectiveDisplayMode={effectiveDisplayMode}
-            />
-          </div>
+        <div className="room-terminal-main">
+          <div className={roomShellGridClassName}>
+            {usesSideRails ? (
+              <>
+                <div className="room-shell-grid__intel">
+                  <IntelRail
+                    intelRailView={intelRailView}
+                    players={playersList}
+                    roomSettings={roomSettings}
+                    gameStarted={gameStarted}
+                    roomState={activeRoomState}
+                    roomStateLabel={shellView.roomStateLabel}
+                    currentPlayerId={currentPlayerId}
+                    gameState={safeGameState}
+                    effectiveDisplayMode={effectiveDisplayMode}
+                    viewportLayout={roomViewportLayout}
+                  />
+                </div>
 
-          <div className="room-shell-grid__stage">
-            <TableStage
-              shellView={shellView}
-              tablePotSummary={tablePotSummary}
-              tableSizeClassName={tableSizeClassName}
-              viewportWidth={windowSize.width}
-              tableDiameter={tableDiameter}
-              effectiveDisplayMode={effectiveDisplayMode}
-              roomShellLayout={roomShellLayout}
-              seatGuides={seatRingEntries}
-              settlementOverlay={
-                <SettlementOverlay
-                  roomState={activeRoomState}
-                  gameState={safeGameState}
-                  currentPlayer={currentPlayer}
-                  currentPlayerId={currentPlayerId}
-                  onReveal={revealHand}
-                  effectiveDisplayMode={effectiveDisplayMode}
-                />
-              }
-              seatRing={
-                <SeatRing
-                  seats={seatRingEntries}
-                  roomState={activeRoomState}
-                  gameState={safeGameState}
-                  gameStarted={gameStarted}
-                />
-              }
-            />
-          </div>
+                <div className="room-shell-grid__stage">
+                  <TableStage
+                    shellView={shellView}
+                    tablePotSummary={tablePotSummary}
+                    tableSizeClassName={tableSizeClassName}
+                    viewportWidth={windowSize.width}
+                    tableDiameter={tableDiameter}
+                    effectiveDisplayMode={effectiveDisplayMode}
+                    roomShellLayout={roomShellLayout}
+                    seatGuides={seatRingEntries}
+                    settlementOverlay={
+                      <SettlementOverlay
+                        roomState={activeRoomState}
+                        gameState={safeGameState}
+                        currentPlayer={currentPlayer}
+                        currentPlayerId={currentPlayerId}
+                        onReveal={revealHand}
+                        effectiveDisplayMode={effectiveDisplayMode}
+                      />
+                    }
+                    seatRing={
+                      <SeatRing
+                        seats={seatRingEntries}
+                        roomState={activeRoomState}
+                        gameState={safeGameState}
+                        gameStarted={gameStarted}
+                      />
+                    }
+                  />
+                </div>
 
-          <div className="room-shell-grid__event">
-            <EventRail
-              eventRailView={eventRailView}
-              records={handHistoryRecords}
-              players={playersList}
-              roomState={activeRoomState}
-              gameState={safeGameState}
-              currentPlayerId={currentPlayerId}
-              effectiveDisplayMode={effectiveDisplayMode}
-            />
+                <div className="room-shell-grid__event">
+                  <EventRail
+                    eventRailView={eventRailView}
+                    records={handHistoryRecords}
+                    players={playersList}
+                    roomState={activeRoomState}
+                    gameState={safeGameState}
+                    currentPlayerId={currentPlayerId}
+                    effectiveDisplayMode={effectiveDisplayMode}
+                    viewportLayout={roomViewportLayout}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="room-shell-grid__stage">
+                  <TableStage
+                    shellView={shellView}
+                    tablePotSummary={tablePotSummary}
+                    tableSizeClassName={tableSizeClassName}
+                    viewportWidth={windowSize.width}
+                    tableDiameter={tableDiameter}
+                    effectiveDisplayMode={effectiveDisplayMode}
+                    roomShellLayout={roomShellLayout}
+                    seatGuides={seatRingEntries}
+                    settlementOverlay={
+                      <SettlementOverlay
+                        roomState={activeRoomState}
+                        gameState={safeGameState}
+                        currentPlayer={currentPlayer}
+                        currentPlayerId={currentPlayerId}
+                        onReveal={revealHand}
+                        effectiveDisplayMode={effectiveDisplayMode}
+                      />
+                    }
+                    seatRing={
+                      <SeatRing
+                        seats={seatRingEntries}
+                        roomState={activeRoomState}
+                        gameState={safeGameState}
+                        gameStarted={gameStarted}
+                      />
+                    }
+                  />
+                </div>
+
+                <div className="room-shell-grid__support">
+                  <div className="room-shell-grid__intel">
+                    <IntelRail
+                      intelRailView={intelRailView}
+                      players={playersList}
+                      roomSettings={roomSettings}
+                      gameStarted={gameStarted}
+                      roomState={activeRoomState}
+                      roomStateLabel={shellView.roomStateLabel}
+                      currentPlayerId={currentPlayerId}
+                      gameState={safeGameState}
+                      effectiveDisplayMode={effectiveDisplayMode}
+                      viewportLayout={roomViewportLayout}
+                    />
+                  </div>
+
+                  <div className="room-shell-grid__event">
+                    <EventRail
+                      eventRailView={eventRailView}
+                      records={handHistoryRecords}
+                      players={playersList}
+                      roomState={activeRoomState}
+                      gameState={safeGameState}
+                      currentPlayerId={currentPlayerId}
+                      effectiveDisplayMode={effectiveDisplayMode}
+                      viewportLayout={roomViewportLayout}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        <ActionDock
-          currentPlayer={currentPlayer}
-          currentPlayerView={currentPlayerStateView}
-          gameStarted={gameStarted}
-          canStartGame={canStartGame}
-          onStartGame={handleStartGame}
-          gameState={safeGameState}
-          currentPlayerId={currentPlayerId}
-          players={playersList}
-          effectiveDisplayMode={effectiveDisplayMode}
-          roomState={activeRoomState}
-          viewportLayout={roomViewportLayout}
-        />
+        <div className="room-terminal-dock">
+          <ActionDock
+            currentPlayer={currentPlayer}
+            currentPlayerView={currentPlayerStateView}
+            gameStarted={gameStarted}
+            canStartGame={canStartGame}
+            onStartGame={handleStartGame}
+            gameState={safeGameState}
+            currentPlayerId={currentPlayerId}
+            players={playersList}
+            effectiveDisplayMode={effectiveDisplayMode}
+            roomState={activeRoomState}
+            viewportLayout={roomViewportLayout}
+            shellView={shellView}
+          />
+        </div>
 
         <ShareLinkModal
           show={showShareLink}

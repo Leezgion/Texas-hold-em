@@ -570,24 +570,87 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       "stage"
-      "intel"
-      "event";
-    align-items: start;
+      "support";
+    grid-template-rows: minmax(0, 1fr) auto;
+    align-items: stretch;
+    min-height: 0;
   }
 
   .room-shell-grid__stage {
     grid-area: stage;
     min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .room-shell-grid__stage > * {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .room-shell-grid__intel {
     grid-area: intel;
     min-width: 0;
+    min-height: 0;
   }
 
   .room-shell-grid__event {
     grid-area: event;
     min-width: 0;
+    min-height: 0;
+  }
+
+  .room-shell-grid__support {
+    grid-area: support;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(18rem, 88vw);
+    gap: 1rem;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.38) transparent;
+  }
+
+  .room-terminal-shell {
+    min-height: calc(100dvh - (var(--mode-shell-page-padding-y) * 2));
+    overflow: hidden;
+  }
+
+  .room-terminal-frame {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 1rem;
+    min-height: calc(100dvh - (var(--mode-shell-page-padding-y) * 2));
+    max-height: calc(100dvh - (var(--mode-shell-page-padding-y) * 2));
+    overflow: hidden;
+  }
+
+  .room-terminal-header-stack {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .room-terminal-banner-stack {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .room-terminal-main {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .room-terminal-dock {
+    min-width: 0;
+    min-height: 0;
+    position: relative;
+    z-index: 5;
   }
 
   .poker-shell-kicker {
@@ -1068,25 +1131,66 @@
       inset 0 1px 0 rgba(186, 230, 253, 0.05);
   }
 
-  @media (min-width: 1280px) and (max-width: 1535px) {
-    .room-shell-grid--split-stage {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-areas:
-        "stage stage"
-        "intel event";
-      align-items: start;
-    }
+  .room-terminal-shell[data-viewport-model="phone-terminal"] .table-stage-surface,
+  .room-terminal-shell[data-viewport-model="tablet-terminal"] .table-stage-surface {
+    min-height: min(29rem, calc(100dvh - 24rem));
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"] .room-terminal-dock {
+    position: sticky;
+    bottom: 0;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"] .room-shell-grid__support {
+    grid-auto-columns: minmax(16rem, 86vw);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"] .tactical-rail,
+  .room-terminal-shell[data-viewport-model="tablet-terminal"] .tactical-rail {
+    max-height: 13rem;
+    overflow-y: auto;
+    padding-right: 0.2rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="desktop-terminal"] .room-shell-grid__support,
+  .room-terminal-shell[data-viewport-model="tablet-terminal"] .room-shell-grid__support {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    overflow-x: visible;
   }
 
   @media (min-width: 1536px) {
     .room-shell-grid--three-column {
       grid-template-columns: 260px minmax(0, 1fr) 300px;
       grid-template-areas: "intel stage event";
-      align-items: start;
+      align-items: stretch;
+    }
+
+    .room-terminal-shell[data-viewport-model="ultrawide-terminal"] .room-terminal-main {
+      overflow: visible;
     }
   }
 
   @media (max-width: 767px) {
+    .room-terminal-shell {
+      padding-inline: 0.65rem;
+    }
+
+    .room-terminal-frame {
+      gap: 0.75rem;
+      min-height: calc(100dvh - 1.5rem);
+      max-height: calc(100dvh - 1.5rem);
+    }
+
+    .room-terminal-header {
+      padding: 0.9rem 1rem;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"] .table-stage-surface {
+      min-height: min(25rem, calc(100dvh - 23rem));
+    }
+
     .table-stage-core {
       min-height: 21rem;
     }

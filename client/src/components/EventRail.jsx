@@ -14,6 +14,7 @@ const EventRail = ({
   gameState,
   currentPlayerId,
   effectiveDisplayMode,
+  viewportLayout,
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const reducedMotion = useReducedMotion();
@@ -24,7 +25,11 @@ const EventRail = ({
   const historyLineLimit = effectiveDisplayMode === 'study' ? 6 : 4;
 
   return (
-    <aside className="tactical-rail tactical-rail--event">
+    <aside
+      className="room-terminal-support-rail tactical-rail tactical-rail--event"
+      data-viewport-model={viewportLayout?.viewportModel}
+      data-support-surface-model={viewportLayout?.supportSurfaceModel}
+    >
       <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--event rounded-[1.75rem] p-4 sm:p-5">
         <div className="tactical-rail__header">
           <div>

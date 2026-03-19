@@ -35,10 +35,11 @@ const TableHeader = ({
 }) => {
   return (
     <header
-      className="rounded-[1.75rem] border border-white/10 bg-black/25 px-4 py-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl"
+      className="room-terminal-header rounded-[1.75rem] border border-white/10 bg-black/25 px-4 py-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl"
       data-viewport-model={viewportLayout?.viewportModel}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
       data-page-scroll={viewportLayout?.pageScroll}
+      data-hero-dock-priority={shellView?.heroDockPriority}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-3">
