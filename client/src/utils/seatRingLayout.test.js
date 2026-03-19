@@ -144,3 +144,34 @@ test('phone portrait profile keeps short-handed hero seats anchored to the dock 
   assert.equal(layout.overlaps.stageBand, 0);
   assert.equal(layout.overlaps.tableBody, 0);
 });
+
+test('keeps supported desktop 7-9 player rooms outside the table body and stage band', () => {
+  for (const playerCount of [7, 8, 9]) {
+    const layout = buildSeatRingPositions({
+      playerCount,
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      profile: 'desktop-oval',
+    });
+
+    assert.equal(layout.overlaps.tableBody, 0, `table overlap for ${playerCount} players`);
+    assert.equal(layout.overlaps.stageBand, 0, `stage overlap for ${playerCount} players`);
+  }
+});
+
+test('keeps supported phone 7-9 player rooms anchored to the dock edge', () => {
+  for (const playerCount of [7, 8, 9]) {
+    const layout = buildSeatRingPositions({
+      playerCount,
+      viewportWidth: 390,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      profile: 'phone-oval',
+    });
+
+    assert.equal(layout.heroAnchor.zone, 'dock-edge', `hero anchor for ${playerCount} players`);
+    assert.equal(layout.overlaps.tableBody, 0, `table overlap for ${playerCount} players`);
+    assert.equal(layout.overlaps.stageBand, 0, `stage overlap for ${playerCount} players`);
+  }
+});

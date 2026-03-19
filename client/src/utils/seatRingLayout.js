@@ -39,117 +39,180 @@ function resolveTableFootprint({ tableDiameter = 0, profile = 'desktop-oval' } =
   };
 }
 
-function buildSeatRingPositionsForSix({
+const SUPPORTS_2_TO_9_OCCUPANCY = {
+  2: [0, 4],
+  3: [0, 3, 7],
+  4: [0, 2, 4, 7],
+  5: [0, 1, 3, 5, 7],
+  6: [0, 1, 2, 4, 5, 7],
+  7: [0, 1, 2, 3, 4, 5, 7],
+  8: [0, 1, 2, 3, 4, 5, 6, 7],
+  9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+};
+
+function buildDesktop9MaxAnchors({
   tableWidth,
   tableHeight,
   cardWidth,
   cardHeight,
   horizontalGap,
   verticalGap,
-  profile,
 } = {}) {
   const halfWidth = tableWidth / 2;
   const halfHeight = tableHeight / 2;
-
-  if (profile === 'phone-oval') {
-    return [
-      {
-        x: 0,
-        y: halfHeight + cardHeight * 0.38 + verticalGap * 1.05,
-        anchorZone: 'dock-edge',
-        anchorRole: 'hero',
-      },
-      {
-        x: -(halfWidth + cardWidth * 0.44 + horizontalGap),
-        y: halfHeight * 0.26,
-        anchorZone: 'table-flank',
-        anchorRole: 'lower-left',
-      },
-      {
-        x: -(halfWidth + cardWidth * 0.4 + horizontalGap),
-        y: -(halfHeight * 0.34),
-        anchorZone: 'table-flank',
-        anchorRole: 'upper-left',
-      },
-      {
-        x: 0,
-        y: -(halfHeight + cardHeight * 0.78 + verticalGap * 1.15),
-        anchorZone: 'stage-band-clear',
-        anchorRole: 'top',
-      },
-      {
-        x: halfWidth + cardWidth * 0.4 + horizontalGap,
-        y: -(halfHeight * 0.34),
-        anchorZone: 'table-flank',
-        anchorRole: 'upper-right',
-      },
-      {
-        x: halfWidth + cardWidth * 0.44 + horizontalGap,
-        y: halfHeight * 0.26,
-        anchorZone: 'table-flank',
-        anchorRole: 'lower-right',
-      },
-    ].map(roundPosition);
-  }
+  const sideX = halfWidth + cardWidth * 0.5 + horizontalGap;
+  const topY = -(halfHeight + cardHeight * 0.82 + verticalGap * 1.2);
+  const heroY = halfHeight + cardHeight * 0.52 + verticalGap * 1.05;
+  const lowerY = halfHeight * 0.48;
+  const upperY = -(halfHeight * 0.46);
+  const middleY = 0;
+  const bottomCornerX = halfWidth * 0.34 + cardWidth * 0.25 + horizontalGap;
 
   return [
     {
       x: 0,
-      y: halfHeight + cardHeight * 0.52 + verticalGap * 1.05,
+      y: heroY,
       anchorZone: 'table-edge',
       anchorRole: 'hero',
     },
     {
-      x: -(halfWidth + cardWidth * 0.5 + horizontalGap),
-      y: halfHeight * 0.48,
+      x: -sideX,
+      y: lowerY,
       anchorZone: 'table-flank',
       anchorRole: 'lower-left',
     },
     {
-      x: -(halfWidth + cardWidth * 0.5 + horizontalGap),
-      y: -(halfHeight * 0.46),
+      x: -sideX,
+      y: middleY,
+      anchorZone: 'table-flank',
+      anchorRole: 'left-middle',
+    },
+    {
+      x: -sideX,
+      y: upperY,
       anchorZone: 'table-flank',
       anchorRole: 'upper-left',
     },
     {
       x: 0,
-      y: -(halfHeight + cardHeight * 0.82 + verticalGap * 1.2),
+      y: topY,
       anchorZone: 'stage-band-clear',
       anchorRole: 'top',
     },
     {
-      x: halfWidth + cardWidth * 0.5 + horizontalGap,
-      y: -(halfHeight * 0.46),
+      x: sideX,
+      y: upperY,
       anchorZone: 'table-flank',
       anchorRole: 'upper-right',
     },
     {
-      x: halfWidth + cardWidth * 0.5 + horizontalGap,
-      y: halfHeight * 0.48,
+      x: sideX,
+      y: middleY,
+      anchorZone: 'table-flank',
+      anchorRole: 'right-middle',
+    },
+    {
+      x: sideX,
+      y: lowerY,
       anchorZone: 'table-flank',
       anchorRole: 'lower-right',
+    },
+    {
+      x: bottomCornerX,
+      y: heroY,
+      anchorZone: 'table-flank',
+      anchorRole: 'bottom-right',
     },
   ].map(roundPosition);
 }
 
-const OVAL_TEMPLATE_INDEXES = {
-  2: [0, 3],
-  3: [0, 2, 4],
-  4: [0, 1, 3, 5],
-  5: [0, 1, 2, 4, 5],
-  6: [0, 1, 2, 3, 4, 5],
-};
+function buildPhonePortrait9MaxAnchors({
+  tableWidth,
+  tableHeight,
+  cardWidth,
+  cardHeight,
+  horizontalGap,
+  verticalGap,
+} = {}) {
+  const halfWidth = tableWidth / 2;
+  const halfHeight = tableHeight / 2;
+  const sideX = halfWidth + cardWidth * 0.44 + horizontalGap;
+  const upperSideX = halfWidth + cardWidth * 0.4 + horizontalGap;
+  const topY = -(halfHeight + cardHeight * 0.78 + verticalGap * 1.15);
+  const heroY = halfHeight + cardHeight * 0.38 + verticalGap * 1.05;
+  const lowerY = halfHeight * 0.26;
+  const upperY = -(halfHeight * 0.34);
+  const middleY = 0;
+  const bottomCornerX = halfWidth * 0.4 + cardWidth * 0.22 + horizontalGap;
 
-function buildSeatRingPositionsForOvalProfile({
+  return [
+    {
+      x: 0,
+      y: heroY,
+      anchorZone: 'dock-edge',
+      anchorRole: 'hero',
+    },
+    {
+      x: -sideX,
+      y: lowerY,
+      anchorZone: 'table-flank',
+      anchorRole: 'lower-left',
+    },
+    {
+      x: -sideX,
+      y: middleY,
+      anchorZone: 'table-flank',
+      anchorRole: 'left-middle',
+    },
+    {
+      x: -upperSideX,
+      y: upperY,
+      anchorZone: 'table-flank',
+      anchorRole: 'upper-left',
+    },
+    {
+      x: 0,
+      y: topY,
+      anchorZone: 'stage-band-clear',
+      anchorRole: 'top',
+    },
+    {
+      x: upperSideX,
+      y: upperY,
+      anchorZone: 'table-flank',
+      anchorRole: 'upper-right',
+    },
+    {
+      x: sideX,
+      y: middleY,
+      anchorZone: 'table-flank',
+      anchorRole: 'right-middle',
+    },
+    {
+      x: sideX,
+      y: lowerY,
+      anchorZone: 'table-flank',
+      anchorRole: 'lower-right',
+    },
+    {
+      x: bottomCornerX,
+      y: heroY,
+      anchorZone: 'table-flank',
+      anchorRole: 'bottom-right',
+    },
+  ].map(roundPosition);
+}
+
+function buildSeatRingPositionsForSupportedProfile({
   playerCount = 0,
   profile = 'desktop-oval',
   ...layoutProfile
 } = {}) {
-  const template = buildSeatRingPositionsForSix({
-    ...layoutProfile,
-    profile,
-  });
-  const templateIndexes = OVAL_TEMPLATE_INDEXES[playerCount];
+  const template =
+    profile === 'phone-oval'
+      ? buildPhonePortrait9MaxAnchors(layoutProfile)
+      : buildDesktop9MaxAnchors(layoutProfile);
+  const templateIndexes = SUPPORTS_2_TO_9_OCCUPANCY[playerCount];
 
   if (!templateIndexes) {
     return null;
@@ -285,7 +348,7 @@ export function buildSeatRingPositions({
 
   let positions;
   if (layoutProfile.profile === 'desktop-oval' || layoutProfile.profile === 'phone-oval') {
-    positions = buildSeatRingPositionsForOvalProfile({
+    positions = buildSeatRingPositionsForSupportedProfile({
       playerCount: safePlayerCount,
       ...layoutProfile,
     });
