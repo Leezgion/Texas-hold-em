@@ -28,7 +28,7 @@ const SeatCard = ({
   const tableProfile = seat.position?.profile || 'desktop-oval';
   const anchorZone = seat.anchorZone || seat.position?.anchorZone || 'table-flank';
   const anchorRole = seat.anchorRole || seat.position?.anchorRole || 'ring';
-  const canonicalSlotIndex = Number.isInteger(Number(seat.canonicalSlotIndex)) ? Number(seat.canonicalSlotIndex) : null;
+  const canonicalSlotIndex = Number.isInteger(seat.canonicalSlotIndex) ? seat.canonicalSlotIndex : null;
 
   return (
     <div

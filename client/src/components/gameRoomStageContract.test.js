@@ -22,8 +22,12 @@ test('GameRoom derives current-turn styling from the authoritative current playe
 });
 
 test('SeatRing and SeatCard expose canonical slot metadata instead of count-driven fallbacks', () => {
-  assert.doesNotMatch(seatRingSource, /seats\[0\]\?\.position\?\.profile/);
-  assert.match(seatRingSource, /geometryContract\?\.tableSurfaceLayout\?\.profile \|\| 'desktop-oval'/);
+  assert.match(
+    seatRingSource,
+    /geometryContract\?\.tableSurfaceLayout\?\.profile \|\| seats\[0\]\?\.position\?\.profile \|\| 'desktop-oval'/
+  );
   assert.match(seatCardSource, /data-anchor-slot-id/);
   assert.match(seatCardSource, /data-canonical-slot-index/);
+  assert.match(seatCardSource, /Number\.isInteger\(seat\.canonicalSlotIndex\)/);
+  assert.doesNotMatch(seatCardSource, /Number\(seat\.canonicalSlotIndex\)/);
 });
