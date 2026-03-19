@@ -107,8 +107,6 @@ const CREATE_ROOM_META = Object.freeze({
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
     advancedSettingsMode: 'collapsed',
-    sectionOrder: Object.freeze(['mode', 'essentials', 'advanced']),
-    phoneChrome: 'sticky-header-footer',
     scrollbarStyle: 'themed',
     essentialSectionTitle: '基础设置',
     advancedSectionTitle: '高级规则',
@@ -121,8 +119,6 @@ const CREATE_ROOM_META = Object.freeze({
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
     advancedSettingsMode: 'collapsed',
-    sectionOrder: Object.freeze(['mode', 'essentials', 'advanced']),
-    phoneChrome: 'sticky-header-footer',
     scrollbarStyle: 'themed',
     essentialSectionTitle: '基础设置',
     advancedSectionTitle: '高级规则',
@@ -135,8 +131,6 @@ const CREATE_ROOM_META = Object.freeze({
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
     advancedSettingsMode: 'collapsed',
-    sectionOrder: Object.freeze(['mode', 'essentials', 'advanced']),
-    phoneChrome: 'sticky-header-footer',
     scrollbarStyle: 'themed',
     essentialSectionTitle: '基础设置',
     advancedSectionTitle: '高级规则',
@@ -329,6 +323,14 @@ export function resolveDisplayMode(roomMode, displayModePreference = 'inherit') 
   }
 
   return normalizedDisplayModePreference;
+}
+
+export function deriveCreateRoomAdvancedPanelState({ wasOpen = false, isOpen = false, showAdvanced = false } = {}) {
+  if (!wasOpen && isOpen) {
+    return false;
+  }
+
+  return showAdvanced;
 }
 
 export function getDisplayModeTheme(mode) {

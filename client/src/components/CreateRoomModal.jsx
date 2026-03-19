@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
-import { ROOM_MODE_META, buildModePreviewCards, getDisplayModeTheme } from '../utils/productMode';
+import { ROOM_MODE_META, buildModePreviewCards, deriveCreateRoomAdvancedPanelState, getDisplayModeTheme } from '../utils/productMode';
 import { deriveRequestErrorFeedback } from '../view-models/gameViewModel';
 import ModePreviewCard from './ModePreviewCard';
 import SliderInput from './SliderInput';
@@ -12,6 +12,7 @@ const CreateRoomModal = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const modeCards = buildModePreviewCards();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const wasOpenRef = useRef(showCreateRoom);
 
   const [settings, setSettings] = useState({
     roomMode: 'pro',
@@ -20,6 +21,20 @@ const CreateRoomModal = () => {
     allowStraddle: false,
     allinDealCount: 1,
   });
+
+  useEffect(() => {
+    const nextShowAdvanced = deriveCreateRoomAdvancedPanelState({
+      wasOpen: wasOpenRef.current,
+      isOpen: showCreateRoom,
+      showAdvanced,
+    });
+
+    wasOpenRef.current = showCreateRoom;
+
+    if (nextShowAdvanced !== showAdvanced) {
+      setShowAdvanced(nextShowAdvanced);
+    }
+  }, [showAdvanced, showCreateRoom]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   buildModePreviewCards,
+  deriveCreateRoomAdvancedPanelState,
   getDisplayModeTheme,
   normalizeDisplayModePreference,
   normalizeRoomMode,
@@ -245,12 +246,39 @@ test('exposes profile-first create-room surface contract for the terminal modal'
     assert.equal(theme.createRoom.phoneSurface, 'full-screen-sheet');
     assert.equal(theme.createRoom.tileLayout, 'horizontal');
     assert.equal(theme.createRoom.advancedSettingsMode, 'collapsed');
-    assert.deepEqual(theme.createRoom.sectionOrder, ['mode', 'essentials', 'advanced']);
-    assert.equal(theme.createRoom.phoneChrome, 'sticky-header-footer');
     assert.equal(theme.createRoom.scrollbarStyle, 'themed');
   }
 
   assert.equal(clubTheme.createRoom.essentialSectionTitle, '基础设置');
   assert.equal(proTheme.createRoom.primaryActionLabel, '创建房间');
   assert.equal(studyTheme.createRoom.advancedSectionTitle, '高级规则');
+});
+
+test('resets the create-room advanced panel when the modal reopens', () => {
+  assert.equal(
+    deriveCreateRoomAdvancedPanelState({
+      wasOpen: false,
+      isOpen: true,
+      showAdvanced: true,
+    }),
+    false
+  );
+
+  assert.equal(
+    deriveCreateRoomAdvancedPanelState({
+      wasOpen: true,
+      isOpen: true,
+      showAdvanced: true,
+    }),
+    true
+  );
+
+  assert.equal(
+    deriveCreateRoomAdvancedPanelState({
+      wasOpen: true,
+      isOpen: false,
+      showAdvanced: true,
+    }),
+    true
+  );
 });
