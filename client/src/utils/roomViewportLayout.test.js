@@ -10,7 +10,7 @@ test('phone portrait keeps the hero dock fixed and moves support surfaces into s
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'bottom-sheets');
-  assert.deepEqual(layout.supportSurfaceOrder, ['players', 'history', 'room']);
+  assert.equal(layout.contentMaxWidth, '100%');
 });
 
 test('tablet keeps the room terminal in a split but single-screen form', () => {
@@ -20,6 +20,7 @@ test('tablet keeps the room terminal in a split but single-screen form', () => {
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
+  assert.equal(layout.contentMaxWidth, '100%');
 });
 
 test('desktop keeps the room terminal centered with secondary rails', () => {
@@ -29,6 +30,7 @@ test('desktop keeps the room terminal centered with secondary rails', () => {
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'rails-and-overlays');
+  assert.equal(layout.contentMaxWidth, '1440px');
 });
 
 test('ultrawide expands the same terminal without turning it into a page layout', () => {
@@ -45,7 +47,7 @@ test('tablet landscape still keeps the room terminal single-screen', () => {
   const layout = resolveRoomViewportLayout({ width: 1180, height: 820 });
 
   assert.equal(layout.viewportModel, 'tablet-terminal');
-  assert.equal(layout.orientation, 'landscape');
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+  assert.equal(layout.contentMaxWidth, '100%');
 });

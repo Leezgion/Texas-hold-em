@@ -571,7 +571,10 @@ const GameRoom = () => {
       data-hero-dock-placement={roomViewportLayout.heroDockPlacement}
       data-support-surface-model={roomViewportLayout.supportSurfaceModel}
     >
-      <div className="mx-auto flex min-h-screen max-w-[1600px] flex-col gap-4 pb-6">
+      <div
+        className="mx-auto flex min-h-screen w-full flex-col gap-4 pb-6"
+        style={{ maxWidth: roomViewportLayout.contentMaxWidth }}
+      >
         <TableHeader
           shellView={shellView}
           viewportLayout={roomViewportLayout}

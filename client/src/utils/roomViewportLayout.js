@@ -1,7 +1,5 @@
 export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
   const safeWidth = Number(width) || 0;
-  const safeHeight = Number(height) || 0;
-  const isPortrait = safeHeight > safeWidth;
 
   if (safeWidth >= 1536) {
     return {
@@ -9,9 +7,7 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
       pageScroll: 'locked',
       heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'rails-and-overlays',
-      supportSurfaceOrder: ['players', 'history', 'room'],
       contentMaxWidth: '1600px',
-      orientation: isPortrait ? 'portrait' : 'landscape',
     };
   }
 
@@ -21,9 +17,7 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
       pageScroll: 'locked',
       heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'rails-and-overlays',
-      supportSurfaceOrder: ['players', 'history', 'room'],
       contentMaxWidth: '1440px',
-      orientation: isPortrait ? 'portrait' : 'landscape',
     };
   }
 
@@ -33,9 +27,7 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
       pageScroll: 'locked',
       heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'slide-panels',
-      supportSurfaceOrder: ['players', 'history', 'room'],
       contentMaxWidth: '100%',
-      orientation: isPortrait ? 'portrait' : 'landscape',
     };
   }
 
@@ -44,8 +36,6 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
     pageScroll: 'locked',
     heroDockPlacement: 'fixed-bottom',
     supportSurfaceModel: 'bottom-sheets',
-    supportSurfaceOrder: ['players', 'history', 'room'],
     contentMaxWidth: '100%',
-    orientation: isPortrait ? 'portrait' : 'landscape',
   };
 }
