@@ -130,6 +130,7 @@ export function resolveRoomGeometryContract({
   roomShellLayout = 'stacked',
   tableDiameter = 0,
   tableProfile = null,
+  playerCount = 0,
 } = {}) {
   const resolvedViewportLayout =
     viewportLayout || resolveRoomViewportLayout({ width: viewportWidth, height: viewportHeight });
@@ -147,18 +148,41 @@ export function resolveRoomGeometryContract({
     tableProfile: tableSurfaceLayout.profile,
     tableSurfaceLayout,
   });
+  const seatRingLayout = {
+    viewportWidth,
+    viewportHeight,
+    roomShellLayout,
+    tableDiameter: tableSurfaceLayout.effectiveTableDiameter,
+    profile: tableSurfaceLayout.profile,
+  };
+  const safePlayerCount = Math.max(0, Number(playerCount) || 0);
+  const canonicalPositions =
+    safePlayerCount >= 2
+      ? buildSeatRingPositions({
+          playerCount: safePlayerCount,
+          ...seatRingLayout,
+        })
+      : [];
+  const canonicalSlots = canonicalPositions.map((position, seatIndex) => ({
+    seatIndex,
+    anchorSlotId: `${tableSurfaceLayout.profile}:${safePlayerCount}:${position.anchorRole || 'ring'}:${seatIndex}`,
+    anchorRole: position.anchorRole || null,
+    anchorZone: position.anchorZone || null,
+    position: {
+      x: position.x,
+      y: position.y,
+      profile: tableSurfaceLayout.profile,
+      anchorRole: position.anchorRole || null,
+      anchorZone: position.anchorZone || null,
+    },
+  }));
 
   return {
     viewportLayout: resolvedViewportLayout,
     tableSurfaceLayout,
     communityCardLayout,
-    seatRingLayout: {
-      viewportWidth,
-      viewportHeight,
-      roomShellLayout,
-      tableDiameter: tableSurfaceLayout.effectiveTableDiameter,
-      profile: tableSurfaceLayout.profile,
-    },
+    seatRingLayout,
+    canonicalSlots,
     roomShellLayout,
   };
 }

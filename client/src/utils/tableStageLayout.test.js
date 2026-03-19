@@ -118,6 +118,23 @@ test('builds one shared runtime geometry contract for short-height landscape roo
   assert.equal(heroGuide.cy, chrome.centerY + canonical[0].y);
 });
 
+test('exposes canonical anchor slots on the runtime geometry contract for supported room sizes', () => {
+  const contract = resolveRoomGeometryContract({
+    viewportWidth: 1280,
+    viewportHeight: 900,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    playerCount: 6,
+  });
+
+  assert.equal(contract.canonicalSlots.length, 6);
+  assert.equal(contract.canonicalSlots[0].anchorRole, 'hero');
+  assert.equal(contract.canonicalSlots[0].anchorZone, 'table-edge');
+  assert.ok(contract.canonicalSlots.every((slot) => slot.anchorSlotId));
+  assert.ok(contract.canonicalSlots.every((slot) => slot.position));
+  assert.equal(contract.canonicalSlots[0].position.x, 0);
+});
+
 test('falls back to hero orientation when the current player is spectating', () => {
   assert.equal(resolveSeatRingRotationSeatIndex({ seat: -1 }), 0);
   assert.equal(resolveSeatRingRotationSeatIndex({ seat: 4 }), 4);

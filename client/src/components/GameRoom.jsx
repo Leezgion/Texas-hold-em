@@ -551,6 +551,7 @@ const GameRoom = () => {
     viewportHeight: windowSize.height,
     roomShellLayout: stageShellLayout,
     tableDiameter,
+    playerCount: maxPlayers,
   });
   const toggleSupportPanel = (panelId) => {
     if (!usesSupportPanels) {
@@ -574,7 +575,7 @@ const GameRoom = () => {
     currentPlayerId,
     roomState: activeRoomState,
     gameState: safeGameState,
-    canonicalSlots: roomGeometryContract.seatGuides,
+    canonicalSlots: roomGeometryContract.canonicalSlots,
   }).map((seat) => {
     const isCurrentTurn =
       seat.player && safeGameState ? safeGameState.currentPlayerIndex === playersList.indexOf(seat.player) : false;
@@ -662,7 +663,7 @@ const GameRoom = () => {
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}
-                    seatGuides={roomGeometryContract.seatGuides}
+                    seatGuides={seatRingEntries}
                     geometryContract={roomGeometryContract}
                     settlementOverlay={
                       <SettlementOverlay
@@ -711,7 +712,7 @@ const GameRoom = () => {
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}
-                    seatGuides={roomGeometryContract.seatGuides}
+                    seatGuides={seatRingEntries}
                     geometryContract={roomGeometryContract}
                     settlementOverlay={
                       <SettlementOverlay
