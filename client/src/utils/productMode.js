@@ -54,14 +54,25 @@ const ROOM_TERMINAL_LABELS = Object.freeze({
   }),
 });
 
+const ROOM_TERMINAL_TABLE_CONTRACT = Object.freeze({
+  tableFamily: 'tournament-capsule-9max',
+  maxVisualSeats: 9,
+  desktopGeometryModel: 'unified-9max',
+  phoneGeometryModel: 'unified-9max-portrait',
+});
+
 const ROOM_TERMINAL_META = Object.freeze({
   club: Object.freeze({
     intent: 'single-screen-terminal',
+    tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
+    maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
     desktop: Object.freeze({
+      geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',
       surfacePolicy: 'table-and-dock',
     }),
     phone: Object.freeze({
+      geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.phoneGeometryModel,
       surfaceModel: 'single-screen',
       heroDock: 'fixed-bottom',
       sheetOrder: Object.freeze(['players', 'history', 'room']),
@@ -71,11 +82,15 @@ const ROOM_TERMINAL_META = Object.freeze({
   }),
   pro: Object.freeze({
     intent: 'single-screen-terminal',
+    tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
+    maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
     desktop: Object.freeze({
+      geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',
       surfacePolicy: 'table-and-dock',
     }),
     phone: Object.freeze({
+      geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.phoneGeometryModel,
       surfaceModel: 'single-screen',
       heroDock: 'fixed-bottom',
       sheetOrder: Object.freeze(['players', 'history', 'room']),
@@ -85,11 +100,15 @@ const ROOM_TERMINAL_META = Object.freeze({
   }),
   study: Object.freeze({
     intent: 'single-screen-terminal',
+    tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
+    maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
     desktop: Object.freeze({
+      geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',
       surfacePolicy: 'table-and-dock',
     }),
     phone: Object.freeze({
+      geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.phoneGeometryModel,
       surfaceModel: 'single-screen',
       heroDock: 'fixed-bottom',
       sheetOrder: Object.freeze(['players', 'history', 'room']),

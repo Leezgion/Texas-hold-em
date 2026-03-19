@@ -163,6 +163,15 @@ test('exposes shell chrome tokens for the responsive tactical arena layout', () 
   assert.equal(studyTheme.shellLayout.tablet, 'split-review');
 });
 
+test('exposes a unified 9-max tournament terminal contract for the room shell', () => {
+  const proTheme = getDisplayModeTheme('pro');
+
+  assert.equal(proTheme.roomTerminal.tableFamily, 'tournament-capsule-9max');
+  assert.equal(proTheme.roomTerminal.maxVisualSeats, 9);
+  assert.equal(proTheme.roomTerminal.desktop.geometryModel, 'unified-9max');
+  assert.equal(proTheme.roomTerminal.phone.geometryModel, 'unified-9max-portrait');
+});
+
 test('uses a split room shell on mid desktop widths and reserves full three-column layout for wider screens', () => {
   assert.equal(resolveRoomShellLayout(390), 'stacked');
   assert.equal(resolveRoomShellLayout(1024), 'stacked');

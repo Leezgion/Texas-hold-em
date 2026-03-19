@@ -14,6 +14,7 @@
 
 - shared room-level mode presets for table behavior and defaults
 - local client display modes for information density and presentation
+- room-shell terminal metadata now targets a unified `9-max` tournament capsule table family across modes
 - one common recovery / seat / hand / ledger model underneath
 
 ---
@@ -680,6 +681,7 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Tactical Arena Motion choreography rerun with fresh browser evidence on `2026-03-19`
 - `[done]` Tactical Arena rail Motion + SVG-backed stage rerun with fresh browser evidence on `2026-03-19`
 - `[done]` Single-screen terminal motion-cost / mobile-scroll rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Unified `9-max` room-shell table contract now advertised through `roomTerminal` metadata
 
 ## Next Tactical Arena Backlog
 
