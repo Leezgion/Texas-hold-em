@@ -80,12 +80,28 @@ cd client
 npm run dev
 ```
 
+### 2.1 `feat/presentation-state-refactor` 的真实浏览器回归入口
+
+这个分支的产品化回归，不再依赖口头步骤或临时命令。请直接使用：
+
+- [docs/runbooks/real-browser-regression-runbook.md](./docs/runbooks/real-browser-regression-runbook.md)
+- [scripts/manage-real-browser-env.ps1](./scripts/manage-real-browser-env.ps1)
+- [scripts/browser-room-workflow.ps1](./scripts/browser-room-workflow.ps1)
+
+这套 runbook 的固定端口约定是：
+
+- worktree server: `3101`
+- worktree client: `5173`
+
+如果你只是普通开发，可以继续用下面的常规启动方式；如果你是在做真实浏览器矩阵、重连验证或产品化回归，优先走 runbook，不要混用旧流程。
+
 ### 3. 访问游戏
 
 #### 本地访问
 
 - 客户端：<http://localhost:5173/>
 - 服务器：<http://localhost:3001>
+- worktree 浏览器回归：<http://127.0.0.1:5173/> 配合 <http://127.0.0.1:3101/>
 
 #### 局域网访问（多设备游戏）
 
@@ -207,6 +223,21 @@ cd client
 npm run dev
 ```
 
+### 真实浏览器回归模式
+
+精确的启动、验证、取证、清理流程见：
+
+- [docs/runbooks/real-browser-regression-runbook.md](./docs/runbooks/real-browser-regression-runbook.md)
+
+常用命令：
+
+```powershell
+pwsh -NoProfile -File .\scripts\manage-real-browser-env.ps1 start-all -CleanProfile
+pwsh -NoProfile -File .\scripts\manage-real-browser-env.ps1 status
+pwsh -NoProfile -File .\scripts\browser-room-workflow.ps1 show-current-room
+pwsh -NoProfile -File .\scripts\manage-real-browser-env.ps1 stop-all
+```
+
 ### 构建生产版本
 
 ```bash
@@ -233,7 +264,9 @@ npm start
 
 - 确保服务器和客户端都已启动
 - 检查防火墙设置
-- 确认端口3001和5173未被占用
+- 常规开发确认端口 `3001` 和 `5173`
+- worktree 浏览器回归确认端口 `3101` 和 `5173`
+- 若 `start-all` 返回失败，不要立刻重试；先按 runbook 检查 `status` 和 `.runlogs`
 
 ### 游戏问题
 
