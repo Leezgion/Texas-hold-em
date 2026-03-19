@@ -49,7 +49,7 @@
 
 /**
  * @typedef {Object} RoomSettings
- * @property {number} maxPlayers - 最大玩家数量（2-10）
+ * @property {number} maxPlayers - 最大玩家数量（2-9）
  * @property {number} initialChips - 初始筹码数量
  * @property {number} timeLimit - 行动时间限制（秒）
  * @property {boolean} allowSpectators - 是否允许观众
@@ -318,7 +318,7 @@ const EVENT_TYPES = {
  */
 const GAME_CONFIG = {
   MIN_PLAYERS: 2,
-  MAX_PLAYERS: 10,
+  MAX_PLAYERS: 9,
   MIN_CHIPS: 100,
   MAX_CHIPS: 1000000,
   DEFAULT_TIME_LIMIT: 30,

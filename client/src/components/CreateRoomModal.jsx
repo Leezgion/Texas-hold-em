@@ -179,7 +179,7 @@ const CreateRoomModal = () => {
               <label className="form-label">游戏人数</label>
               <SliderInput
                 min={2}
-                max={10}
+                max={9}
                 value={settings.maxPlayers}
                 step={1}
                 onChange={(value) => setSettings({ ...settings, maxPlayers: value })}
@@ -187,7 +187,7 @@ const CreateRoomModal = () => {
                 showQuickButtons={false}
                 showMinMaxLabels={true}
                 minLabel="2"
-                maxLabel="10"
+                maxLabel="9"
                 formatValue={(value) => `${value} 人`}
               />
             </div>

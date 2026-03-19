@@ -102,7 +102,7 @@ const ShareLinkModal = ({ show, onClose, roomId }) => {
               <li>• 将链接发送给朋友，邀请他们加入游戏</li>
               <li>• 朋友点击链接后输入昵称即可加入</li>
               <li>• 游戏开始后无法再加入新玩家</li>
-              <li>• 支持2-10人同时游戏</li>
+              <li>• 支持2-9人同时游戏</li>
             </ul>
           </div>
 

@@ -403,8 +403,8 @@ class RoomManager {
 
   // 验证房间设置
   validateRoomSettings(settings) {
-    if (settings.maxPlayers < 2 || settings.maxPlayers > 10) {
-      throw new Error('游戏人数必须在2-10人之间');
+    if (settings.maxPlayers < 2 || settings.maxPlayers > 9) {
+      throw new Error('游戏人数必须在2-9人之间');
     }
 
     if (settings.duration < 30 || settings.duration > 300) {

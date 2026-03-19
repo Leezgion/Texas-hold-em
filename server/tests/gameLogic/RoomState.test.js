@@ -156,6 +156,19 @@ describe('RoomManager state vocabularies', () => {
     ).toThrow('无效的房间模式');
   });
 
+  it('rejects room creation requests that expose 10-player tables', () => {
+    const { io, socketDeviceMap, roomManager } = createManager();
+    const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+
+    expect(() =>
+      roomManager.createRoom(hostSocket, {
+        duration: 60,
+        maxPlayers: 10,
+        allinDealCount: 1,
+      })
+    ).toThrow('游戏人数必须在2-9人之间');
+  });
+
   it('rejects startGame from a non-host player', () => {
     jest.useFakeTimers();
     try {

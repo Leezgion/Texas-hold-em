@@ -1193,7 +1193,7 @@ class GameLogic {
   }
 
   calculateSeatDistance(startSeat, targetSeat) {
-    const maxPlayers = this.room.settings.maxPlayers || this.room.players.length || 10;
+    const maxPlayers = this.room.settings.maxPlayers || this.room.players.length || 9;
     return (targetSeat - startSeat + maxPlayers) % maxPlayers;
   }
 
