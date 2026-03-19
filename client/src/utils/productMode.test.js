@@ -202,3 +202,35 @@ test('exposes tactical motion tokens that differ by display mode', () => {
     ambientOpacity: 0.82,
   });
 });
+
+test('exposes single-screen room terminal metadata for each display mode', () => {
+  const clubTheme = getDisplayModeTheme('club');
+  const proTheme = getDisplayModeTheme('pro');
+  const studyTheme = getDisplayModeTheme('study');
+
+  for (const theme of [clubTheme, proTheme, studyTheme]) {
+    assert.equal(theme.roomTerminal.intent, 'single-screen-terminal');
+    assert.equal(theme.roomTerminal.desktop.surfaceModel, 'single-screen');
+    assert.equal(theme.roomTerminal.desktop.surfacePolicy, 'table-and-dock');
+    assert.equal(theme.roomTerminal.phone.heroDock, 'fixed-bottom');
+    assert.deepEqual(theme.roomTerminal.phone.sheetOrder, ['players', 'history', 'room']);
+    assert.equal(theme.roomTerminal.phone.surfacePolicy, 'bottom-sheets');
+    assert.equal(theme.createRoom.entryModel, 'profile-first');
+    assert.equal(theme.createRoom.primaryActionLabel, '创建房间');
+    assert.equal(theme.sheetLabels.players, theme.roomTerminal.sheetLabels.players);
+    assert.equal(theme.sheetLabels.history, theme.roomTerminal.sheetLabels.history);
+    assert.equal(theme.sheetLabels.room, theme.roomTerminal.sheetLabels.room);
+  }
+
+  assert.equal(clubTheme.sheetLabels.players, '成员');
+  assert.equal(clubTheme.sheetLabels.history, '最近动态');
+  assert.equal(clubTheme.sheetLabels.room, '房间设置');
+
+  assert.equal(proTheme.sheetLabels.players, 'Roster');
+  assert.equal(proTheme.sheetLabels.history, 'Hand Tape');
+  assert.equal(proTheme.sheetLabels.room, 'Room');
+
+  assert.equal(studyTheme.sheetLabels.players, '状态面板');
+  assert.equal(studyTheme.sheetLabels.history, 'Timeline');
+  assert.equal(studyTheme.sheetLabels.room, '复盘设置');
+});

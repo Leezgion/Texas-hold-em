@@ -36,6 +36,96 @@ export const DISPLAY_MODE_META = Object.freeze({
   ...ROOM_MODE_META,
 });
 
+const ROOM_TERMINAL_LABELS = Object.freeze({
+  club: Object.freeze({
+    players: '成员',
+    history: '最近动态',
+    room: '房间设置',
+  }),
+  pro: Object.freeze({
+    players: 'Roster',
+    history: 'Hand Tape',
+    room: 'Room',
+  }),
+  study: Object.freeze({
+    players: '状态面板',
+    history: 'Timeline',
+    room: '复盘设置',
+  }),
+});
+
+const ROOM_TERMINAL_META = Object.freeze({
+  club: Object.freeze({
+    intent: 'single-screen-terminal',
+    desktop: Object.freeze({
+      surfaceModel: 'single-screen',
+      surfacePolicy: 'table-and-dock',
+    }),
+    phone: Object.freeze({
+      surfaceModel: 'single-screen',
+      heroDock: 'fixed-bottom',
+      sheetOrder: Object.freeze(['players', 'history', 'room']),
+      surfacePolicy: 'bottom-sheets',
+    }),
+    sheetLabels: ROOM_TERMINAL_LABELS.club,
+  }),
+  pro: Object.freeze({
+    intent: 'single-screen-terminal',
+    desktop: Object.freeze({
+      surfaceModel: 'single-screen',
+      surfacePolicy: 'table-and-dock',
+    }),
+    phone: Object.freeze({
+      surfaceModel: 'single-screen',
+      heroDock: 'fixed-bottom',
+      sheetOrder: Object.freeze(['players', 'history', 'room']),
+      surfacePolicy: 'bottom-sheets',
+    }),
+    sheetLabels: ROOM_TERMINAL_LABELS.pro,
+  }),
+  study: Object.freeze({
+    intent: 'single-screen-terminal',
+    desktop: Object.freeze({
+      surfaceModel: 'single-screen',
+      surfacePolicy: 'table-and-dock',
+    }),
+    phone: Object.freeze({
+      surfaceModel: 'single-screen',
+      heroDock: 'fixed-bottom',
+      sheetOrder: Object.freeze(['players', 'history', 'room']),
+      surfacePolicy: 'bottom-sheets',
+    }),
+    sheetLabels: ROOM_TERMINAL_LABELS.study,
+  }),
+});
+
+const CREATE_ROOM_META = Object.freeze({
+  club: Object.freeze({
+    entryModel: 'profile-first',
+    primaryActionLabel: '创建房间',
+    surface: 'panel',
+    phoneSurface: 'full-screen-sheet',
+    tileLayout: 'horizontal',
+    advancedSettingsMode: 'collapsed',
+  }),
+  pro: Object.freeze({
+    entryModel: 'profile-first',
+    primaryActionLabel: '创建房间',
+    surface: 'panel',
+    phoneSurface: 'full-screen-sheet',
+    tileLayout: 'horizontal',
+    advancedSettingsMode: 'collapsed',
+  }),
+  study: Object.freeze({
+    entryModel: 'profile-first',
+    primaryActionLabel: '创建房间',
+    surface: 'panel',
+    phoneSurface: 'full-screen-sheet',
+    tileLayout: 'horizontal',
+    advancedSettingsMode: 'collapsed',
+  }),
+});
+
 const DISPLAY_MODE_THEME_META = Object.freeze({
   club: Object.freeze({
     mode: 'club',
@@ -69,6 +159,9 @@ const DISPLAY_MODE_THEME_META = Object.freeze({
       desktop: 'command-center',
       ultrawide: 'framed-center',
     }),
+    roomTerminal: ROOM_TERMINAL_META.club,
+    createRoom: CREATE_ROOM_META.club,
+    sheetLabels: ROOM_TERMINAL_LABELS.club,
     room: Object.freeze({
       stageLabel: 'Table Console',
       stageCaption: '把牌桌状态、入座和主持动作放在最稳的视线里。',
@@ -120,6 +213,9 @@ const DISPLAY_MODE_THEME_META = Object.freeze({
       desktop: 'command-center',
       ultrawide: 'framed-center',
     }),
+    roomTerminal: ROOM_TERMINAL_META.pro,
+    createRoom: CREATE_ROOM_META.pro,
+    sheetLabels: ROOM_TERMINAL_LABELS.pro,
     room: Object.freeze({
       stageLabel: 'Table Stage',
       stageCaption: '底池、牌面和轮转保持在同一焦点内。',
@@ -171,6 +267,9 @@ const DISPLAY_MODE_THEME_META = Object.freeze({
       desktop: 'command-center',
       ultrawide: 'framed-center',
     }),
+    roomTerminal: ROOM_TERMINAL_META.study,
+    createRoom: CREATE_ROOM_META.study,
+    sheetLabels: ROOM_TERMINAL_LABELS.study,
     room: Object.freeze({
       stageLabel: 'Review Stage',
       stageCaption: '当前牌面、池子层级和结算窗口都为回看服务。',
