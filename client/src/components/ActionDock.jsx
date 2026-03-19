@@ -20,6 +20,8 @@ const ActionDock = ({
   roomState,
   viewportLayout,
   shellView,
+  activeSupportPanel = null,
+  onToggleSupportPanel = null,
 }) => {
   if (!currentPlayer) {
     return null;
@@ -29,6 +31,7 @@ const ActionDock = ({
   const reducedMotion = useReducedMotion();
   const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
   const roomCopy = theme.room;
+  const supportLabels = theme.sheetLabels || {};
   const dockView = deriveActionDockView({
     currentPlayer,
     currentPlayerView,
@@ -39,6 +42,10 @@ const ActionDock = ({
     roomState,
   });
   const handCards = dockView?.handCards || [];
+  const supportsSecondaryPanels =
+    typeof onToggleSupportPanel === 'function' &&
+    viewportLayout?.supportSurfaceModel &&
+    viewportLayout.supportSurfaceModel !== 'rails-and-overlays';
 
   return (
     <section
@@ -114,6 +121,27 @@ const ActionDock = ({
               )}
             </div>
           </motion.div>
+
+          {supportsSecondaryPanels ? (
+            <div className="room-support-launcher">
+              {[
+                { key: 'players', label: supportLabels.players || 'Players' },
+                { key: 'history', label: supportLabels.history || 'History' },
+                { key: 'room', label: supportLabels.room || 'Room' },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  className={`room-support-launcher__button ${
+                    activeSupportPanel === item.key ? 'room-support-launcher__button--active' : ''
+                  }`}
+                  onClick={() => onToggleSupportPanel(item.key)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div className="tactical-dock__center">

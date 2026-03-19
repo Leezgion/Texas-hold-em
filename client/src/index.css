@@ -653,6 +653,224 @@
     z-index: 5;
   }
 
+  .room-support-launcher {
+    margin-top: 0.9rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .room-support-launcher__button {
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(3, 7, 18, 0.24)),
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 12rem);
+    padding: 0.75rem 0.9rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(226 232 240 / 0.96);
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      background-color var(--arena-motion-enter) ease;
+  }
+
+  .room-support-launcher__button:hover {
+    transform: translateY(-1px);
+    border-color: var(--mode-shell-accent-border);
+  }
+
+  .room-support-launcher__button--active {
+    border-color: var(--mode-shell-accent-border);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(3, 7, 18, 0.34)),
+      radial-gradient(circle at top, var(--mode-shell-accent-soft-strong), transparent 12rem);
+    color: white;
+    box-shadow: 0 0 0 1px var(--mode-shell-accent-ring);
+  }
+
+  .room-panel-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    background: rgba(2, 6, 23, 0.68);
+    backdrop-filter: blur(10px);
+    padding: 1rem;
+  }
+
+  .room-panel-sheet__surface {
+    display: flex;
+    max-height: calc(100dvh - 2rem);
+    width: min(100%, 34rem);
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 1.75rem;
+    border: 1px solid var(--mode-shell-border);
+    background:
+      linear-gradient(180deg, var(--mode-shell-surface-strong), rgba(4, 8, 18, 0.96)),
+      radial-gradient(circle at top right, var(--mode-shell-accent-soft-strong), transparent 14rem);
+    box-shadow:
+      0 32px 96px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .room-panel-sheet__surface[data-room-panel-presentation="slide-panel"] {
+    width: min(100%, 30rem);
+    height: calc(100dvh - 2rem);
+    border-radius: 1.5rem;
+  }
+
+  .room-panel-sheet__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1rem 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(2, 6, 23, 0.35);
+    backdrop-filter: blur(18px);
+  }
+
+  .room-panel-sheet__kicker {
+    font-size: 0.65rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: rgb(148 163 184 / 0.92);
+  }
+
+  .room-panel-sheet__title {
+    margin-top: 0.35rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+  }
+
+  .room-panel-sheet__subtitle {
+    margin-top: 0.35rem;
+    font-size: 0.88rem;
+    color: rgb(203 213 225 / 0.92);
+  }
+
+  .room-panel-sheet__close {
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.55rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgb(226 232 240 / 0.96);
+  }
+
+  .room-panel-sheet__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245, 158, 11, 0.72) rgba(15, 23, 42, 0.45);
+  }
+
+  .room-panel-sheet__body::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .room-panel-sheet__body::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .room-panel-sheet__body::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    border: 2px solid rgba(15, 23, 42, 0.92);
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.88), rgba(217, 119, 6, 0.88));
+  }
+
+  .room-tool-panel {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .room-tool-panel__section {
+    border-radius: 1.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(3, 7, 18, 0.28)),
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.04), transparent 14rem);
+    padding: 1rem;
+  }
+
+  .room-tool-panel__section--grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .room-tool-panel__kicker,
+  .room-tool-panel__metric-label {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgb(148 163 184 / 0.92);
+  }
+
+  .room-tool-panel__headline,
+  .room-tool-panel__metric-value {
+    margin-top: 0.4rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .room-tool-panel__copy {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: rgb(203 213 225 / 0.92);
+    line-height: 1.6;
+  }
+
+  .room-tool-panel__actions {
+    margin-top: 0.8rem;
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .room-tool-panel__button {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.85rem 1rem;
+    text-align: left;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .room-tool-panel__button--success {
+    border-color: rgba(52, 211, 153, 0.32);
+    background: rgba(16, 185, 129, 0.14);
+  }
+
+  .room-tool-panel__button--warning {
+    border-color: rgba(251, 191, 36, 0.32);
+    background: rgba(245, 158, 11, 0.14);
+  }
+
+  .room-tool-panel__button--danger {
+    border-color: rgba(251, 113, 133, 0.34);
+    background: rgba(225, 29, 72, 0.14);
+  }
+
   .poker-shell-kicker {
     @apply text-[11px] uppercase tracking-[0.28em] text-slate-400;
   }
@@ -1188,6 +1406,11 @@
   .room-terminal-shell[data-viewport-model="phone-terminal"] .table-stage-surface,
   .room-terminal-shell[data-viewport-model="tablet-terminal"] .table-stage-surface {
     min-height: min(29rem, calc(100dvh - 24rem));
+  }
+
+  .room-terminal-shell[data-support-surface-model="bottom-sheets"] .room-terminal-main,
+  .room-terminal-shell[data-support-surface-model="slide-panels"] .room-terminal-main {
+    overflow: hidden;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"] .room-shell-grid__support {
@@ -1963,6 +2186,10 @@
     overflow: hidden;
   }
 
+  .tactical-ledger[data-surface-variant="panel"] {
+    margin-top: 0.75rem;
+  }
+
   .tactical-ledger__header {
     width: 100%;
     padding: 0.95rem 1rem;
@@ -2038,6 +2265,32 @@
     backdrop-filter: blur(18px);
   }
 
+  .tactical-rail[data-surface-variant="panel"] {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .tactical-rail[data-surface-variant="panel"] .tactical-rail__panel {
+    padding: 1rem;
+  }
+
+  .tactical-history-drawer[data-surface-variant="embedded"] {
+    position: static;
+    height: auto;
+    transform: none;
+    display: block;
+  }
+
+  .tactical-history-drawer[data-surface-variant="embedded"] .tactical-history-drawer__panel {
+    width: 100%;
+    border-radius: 1.35rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
   @media (min-width: 1280px) {
     .tactical-dock__grid {
       grid-template-columns: minmax(0, 0.95fr) minmax(22rem, 1.05fr);
@@ -2064,6 +2317,43 @@
   }
 
   @media (max-width: 767px) {
+    .room-support-launcher {
+      gap: 0.55rem;
+    }
+
+    .room-support-launcher__button {
+      padding: 0.72rem 0.75rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+    }
+
+    .room-panel-sheet {
+      padding: 0;
+      align-items: stretch;
+    }
+
+    .room-panel-sheet__surface {
+      width: 100%;
+      max-height: 100dvh;
+      border-radius: 1.5rem 1.5rem 0 0;
+      margin-top: auto;
+    }
+
+    .room-panel-sheet__surface[data-room-panel-presentation="bottom-sheet"] {
+      height: min(80dvh, 42rem);
+      width: 100%;
+    }
+
+    .room-panel-sheet__surface[data-room-panel-presentation="slide-panel"] {
+      width: 100%;
+      height: min(86dvh, 44rem);
+      border-radius: 1.5rem 1.5rem 0 0;
+    }
+
+    .room-tool-panel__section--grid {
+      grid-template-columns: 1fr;
+    }
+
     .tactical-dock__grid,
     .tactical-rail__metric-grid,
     .tactical-roster__summary-grid {

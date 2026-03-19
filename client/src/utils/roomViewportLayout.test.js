@@ -29,7 +29,7 @@ test('desktop keeps the room terminal centered with secondary rails', () => {
   assert.equal(layout.viewportModel, 'desktop-terminal');
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
-  assert.equal(layout.supportSurfaceModel, 'rails-and-overlays');
+  assert.equal(layout.supportSurfaceModel, 'slide-panels');
   assert.equal(layout.contentMaxWidth, '1440px');
 });
 
@@ -50,4 +50,14 @@ test('tablet landscape still keeps the room terminal single-screen', () => {
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.contentMaxWidth, '100%');
+});
+
+test('compact desktop keeps support surfaces out of the main page flow', () => {
+  const layout = resolveRoomViewportLayout({ width: 1280, height: 900 });
+
+  assert.equal(layout.viewportModel, 'desktop-terminal');
+  assert.equal(layout.pageScroll, 'locked');
+  assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+  assert.equal(layout.supportSurfaceModel, 'slide-panels');
+  assert.equal(layout.contentMaxWidth, '1440px');
 });

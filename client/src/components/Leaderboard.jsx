@@ -23,17 +23,21 @@ const Leaderboard = ({
   roomState = 'idle',
   gameState = null,
   currentPlayerId = null,
+  surfaceVariant = 'rail',
 }) => {
+  const allowCollapse = surfaceVariant === 'rail';
   const [isExpanded, setIsExpanded] = useState(true);
   const sortedPlayers = [...players].sort((left, right) => (Number(right?.chips) || 0) - (Number(left?.chips) || 0));
   const leader = sortedPlayers[0] || null;
   const totalChips = sortedPlayers.reduce((sum, player) => sum + (Number(player?.chips) || 0), 0);
+  const shouldShowBody = allowCollapse ? isExpanded : true;
+  const HeaderTag = allowCollapse ? 'button' : 'div';
 
   return (
-    <div className="tactical-ledger">
-      <button
-        type="button"
-        onClick={() => setIsExpanded((value) => !value)}
+    <div className="tactical-ledger" data-surface-variant={surfaceVariant}>
+      <HeaderTag
+        type={allowCollapse ? 'button' : undefined}
+        onClick={allowCollapse ? () => setIsExpanded((value) => !value) : undefined}
         className="tactical-ledger__header"
       >
         <div>
@@ -46,9 +50,9 @@ const Leaderboard = ({
           <span>{sortedPlayers.length} 人</span>
           <span>{totalChips.toLocaleString()} 筹码</span>
         </div>
-      </button>
+      </HeaderTag>
 
-      {isExpanded && (
+      {shouldShowBody && (
         <div className="tactical-ledger__body">
           {sortedPlayers.length === 0 ? (
             <div className="tactical-ledger__empty">当前没有可展示的筹码数据</div>

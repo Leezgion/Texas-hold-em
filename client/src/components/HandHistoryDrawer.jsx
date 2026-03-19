@@ -5,23 +5,35 @@ import { motion, useReducedMotion } from 'motion/react';
 import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
 import { buildHandHistoryView } from '../view-models/handHistoryViewModel';
 
-const HandHistoryDrawer = ({ records = [], effectiveDisplayMode = 'pro' }) => {
-  const [open, setOpen] = useState(false);
+const HandHistoryDrawer = ({
+  records = [],
+  effectiveDisplayMode = 'pro',
+  surfaceVariant = 'drawer',
+  defaultOpen = false,
+}) => {
+  const [open, setOpen] = useState(defaultOpen);
   const reducedMotion = useReducedMotion();
   const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
   const summaries = buildHandHistoryView(records);
   const lineLimit = effectiveDisplayMode === 'study' ? 6 : 4;
+  const embedded = surfaceVariant === 'embedded';
+  const isOpen = embedded ? true : open;
 
   return (
-    <div className={`tactical-history-drawer ${open ? 'tactical-history-drawer--open' : ''}`}>
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="tactical-history-drawer__toggle"
-        title={open ? '收起牌局记录' : '展开牌局记录'}
-      >
-        {open ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-      </button>
+    <div
+      className={`tactical-history-drawer ${isOpen ? 'tactical-history-drawer--open' : ''}`}
+      data-surface-variant={surfaceVariant}
+    >
+      {!embedded ? (
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          className="tactical-history-drawer__toggle"
+          title={open ? '收起牌局记录' : '展开牌局记录'}
+        >
+          {open ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
+      ) : null}
 
       <div className="tactical-history-drawer__panel">
         <div className="tactical-history-drawer__header">

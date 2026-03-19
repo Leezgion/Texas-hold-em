@@ -16,7 +16,7 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
       viewportModel: 'desktop-terminal',
       pageScroll: 'locked',
       heroDockPlacement: 'fixed-bottom',
-      supportSurfaceModel: 'rails-and-overlays',
+      supportSurfaceModel: 'slide-panels',
       contentMaxWidth: '1440px',
     };
   }

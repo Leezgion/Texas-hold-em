@@ -8,6 +8,7 @@ import IntelRail from './IntelRail';
 import JoinRoomModal from './JoinRoomModal';
 import LeaveSeatModal from './LeaveSeatModal';
 import RebuyModal from './RebuyModal';
+import RoomPanelSheet from './RoomPanelSheet';
 import SeatRing from './SeatRing';
 import SettlementOverlay from './SettlementOverlay';
 import ShareLinkModal from './ShareLinkModal';
@@ -15,6 +16,7 @@ import TableBanner from './TableBanner';
 import TableHeader from './TableHeader';
 import TableStage from './TableStage';
 import { useGame } from '../contexts/GameContext';
+import { getDisplayModeTheme } from '../utils/productMode';
 import { resolveRoomViewportLayout } from '../utils/roomViewportLayout';
 import { buildSeatRingPositions, resolveTableDiameter } from '../utils/seatRingLayout';
 import {
@@ -109,6 +111,7 @@ const GameRoom = () => {
   const [roomError, setRoomError] = useState(null);
   const [showLeaveSeat, setShowLeaveSeat] = useState(false);
   const [showExitRoom, setShowExitRoom] = useState(false);
+  const [activeSupportPanel, setActiveSupportPanel] = useState(null);
   const [gameLogs, setGameLogs] = useState([]);
   const lastLoggedActionKeyRef = useRef(null);
   const playersList = Array.isArray(players) ? players : EMPTY_PLAYERS;
@@ -118,9 +121,14 @@ const GameRoom = () => {
   const roomViewportLayout = resolveRoomViewportLayout(windowSize);
   const stageShellLayout = mapViewportModelToStageShellLayout(roomViewportLayout.viewportModel);
   const usesSideRails = roomViewportLayout.viewportModel === 'ultrawide-terminal';
+  const usesSupportPanels = roomViewportLayout.supportSurfaceModel !== 'rails-and-overlays';
+  const supportPanelPresentation =
+    roomViewportLayout.supportSurfaceModel === 'bottom-sheets' ? 'bottom-sheet' : 'slide-panel';
   const roomShellGridClassName = usesSideRails
     ? 'room-shell-grid room-shell-grid--three-column'
     : 'room-shell-grid room-shell-grid--terminal-stack';
+  const theme = getDisplayModeTheme(effectiveDisplayMode);
+  const supportLabels = theme.sheetLabels || {};
 
   useEffect(() => {
     const verifyRoom = async () => {
@@ -258,6 +266,16 @@ const GameRoom = () => {
   useEffect(() => {
     setGameLogs([]);
     lastLoggedActionKeyRef.current = null;
+  }, [roomId]);
+
+  useEffect(() => {
+    if (usesSideRails) {
+      setActiveSupportPanel(null);
+    }
+  }, [usesSideRails]);
+
+  useEffect(() => {
+    setActiveSupportPanel(null);
   }, [roomId]);
 
   // 监听游戏状态变化，更新日志
@@ -545,6 +563,14 @@ const GameRoom = () => {
     viewportWidth: windowSize.width,
     roomShellLayout: stageShellLayout,
   });
+  const toggleSupportPanel = (panelId) => {
+    if (!usesSupportPanels) {
+      return;
+    }
+
+    setActiveSupportPanel((currentValue) => (currentValue === panelId ? null : panelId));
+  };
+  const closeSupportPanel = () => setActiveSupportPanel(null);
   const tableSizeClassName =
     tableDiameter === 208
       ? 'w-52 h-52'
@@ -711,36 +737,6 @@ const GameRoom = () => {
                     }
                   />
                 </div>
-
-                <div className="room-shell-grid__support">
-                  <div className="room-shell-grid__intel">
-                    <IntelRail
-                      intelRailView={intelRailView}
-                      players={playersList}
-                      roomSettings={roomSettings}
-                      gameStarted={gameStarted}
-                      roomState={activeRoomState}
-                      roomStateLabel={shellView.roomStateLabel}
-                      currentPlayerId={currentPlayerId}
-                      gameState={safeGameState}
-                      effectiveDisplayMode={effectiveDisplayMode}
-                      viewportLayout={roomViewportLayout}
-                    />
-                  </div>
-
-                  <div className="room-shell-grid__event">
-                    <EventRail
-                      eventRailView={eventRailView}
-                      records={handHistoryRecords}
-                      players={playersList}
-                      roomState={activeRoomState}
-                      gameState={safeGameState}
-                      currentPlayerId={currentPlayerId}
-                      effectiveDisplayMode={effectiveDisplayMode}
-                      viewportLayout={roomViewportLayout}
-                    />
-                  </div>
-                </div>
               </>
             )}
           </div>
@@ -760,8 +756,143 @@ const GameRoom = () => {
             roomState={activeRoomState}
             viewportLayout={roomViewportLayout}
             shellView={shellView}
+            activeSupportPanel={activeSupportPanel}
+            onToggleSupportPanel={toggleSupportPanel}
           />
         </div>
+
+        {usesSupportPanels && (
+          <>
+            <RoomPanelSheet
+              open={activeSupportPanel === 'players'}
+              title={supportLabels.players || 'Players'}
+              subtitle={intelRailView.occupancyLabel}
+              presentation={supportPanelPresentation}
+              onClose={closeSupportPanel}
+            >
+              <IntelRail
+                intelRailView={intelRailView}
+                players={playersList}
+                roomSettings={roomSettings}
+                gameStarted={gameStarted}
+                roomState={activeRoomState}
+                roomStateLabel={shellView.roomStateLabel}
+                currentPlayerId={currentPlayerId}
+                gameState={safeGameState}
+                effectiveDisplayMode={effectiveDisplayMode}
+                viewportLayout={roomViewportLayout}
+                presentation="panel"
+              />
+            </RoomPanelSheet>
+
+            <RoomPanelSheet
+              open={activeSupportPanel === 'history'}
+              title={supportLabels.history || 'History'}
+              subtitle={`${eventRailView.historyCount} 手牌`}
+              presentation={supportPanelPresentation}
+              onClose={closeSupportPanel}
+            >
+              <EventRail
+                eventRailView={eventRailView}
+                records={handHistoryRecords}
+                players={playersList}
+                roomState={activeRoomState}
+                gameState={safeGameState}
+                currentPlayerId={currentPlayerId}
+                effectiveDisplayMode={effectiveDisplayMode}
+                viewportLayout={roomViewportLayout}
+                presentation="panel"
+              />
+            </RoomPanelSheet>
+
+            <RoomPanelSheet
+              open={activeSupportPanel === 'room'}
+              title={supportLabels.room || 'Room'}
+              subtitle={`${shellView.modeLabel} · ${shellView.modeTitle}`}
+              presentation={supportPanelPresentation}
+              onClose={closeSupportPanel}
+            >
+              <div className="room-tool-panel">
+                <section className="room-tool-panel__section">
+                  <div className="room-tool-panel__kicker">Room State</div>
+                  <div className="room-tool-panel__headline">{shellView.roomStateLabel}</div>
+                  <div className="room-tool-panel__copy">
+                    {shellView.connectedLabel} · {intelRailView.occupancyLabel} 在桌
+                  </div>
+                </section>
+
+                <section className="room-tool-panel__section room-tool-panel__section--grid">
+                  <div className="room-tool-panel__metric">
+                    <span className="room-tool-panel__metric-label">模式</span>
+                    <span className="room-tool-panel__metric-value">{shellView.modeTitle}</span>
+                  </div>
+                  <div className="room-tool-panel__metric">
+                    <span className="room-tool-panel__metric-label">入座</span>
+                    <span className="room-tool-panel__metric-value">{intelRailView.seatedCount}</span>
+                  </div>
+                  <div className="room-tool-panel__metric">
+                    <span className="room-tool-panel__metric-label">观战</span>
+                    <span className="room-tool-panel__metric-value">{intelRailView.spectatorCount}</span>
+                  </div>
+                  <div className="room-tool-panel__metric">
+                    <span className="room-tool-panel__metric-label">房间码</span>
+                    <span className="room-tool-panel__metric-value">{shellView.roomCode}</span>
+                  </div>
+                </section>
+
+                <section className="room-tool-panel__section">
+                  <div className="room-tool-panel__kicker">Tools</div>
+                  <div className="room-tool-panel__actions">
+                    <button
+                      type="button"
+                      className="room-tool-panel__button"
+                      onClick={() => {
+                        closeSupportPanel();
+                        setShowShareLink(true);
+                      }}
+                    >
+                      分享房间链接
+                    </button>
+                    {currentPlayerStateView?.canRequestRebuy ? (
+                      <button
+                        type="button"
+                        className="room-tool-panel__button room-tool-panel__button--success"
+                        onClick={() => {
+                          closeSupportPanel();
+                          setShowRebuy(true);
+                        }}
+                      >
+                        补码
+                      </button>
+                    ) : null}
+                    {currentPlayerStateView?.canLeaveSeat ? (
+                      <button
+                        type="button"
+                        className="room-tool-panel__button room-tool-panel__button--warning"
+                        onClick={() => {
+                          closeSupportPanel();
+                          handleLeaveSeat();
+                        }}
+                      >
+                        离座观战
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="room-tool-panel__button room-tool-panel__button--danger"
+                      onClick={() => {
+                        closeSupportPanel();
+                        handleExitRoom();
+                      }}
+                    >
+                      退出房间
+                    </button>
+                  </div>
+                </section>
+              </div>
+            </RoomPanelSheet>
+          </>
+        )}
 
         <ShareLinkModal
           show={showShareLink}

@@ -14,6 +14,7 @@ const IntelRail = ({
   effectiveDisplayMode,
   roomStateLabel,
   viewportLayout,
+  presentation = 'rail',
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const roomCopy = theme.room;
@@ -75,12 +76,14 @@ const IntelRail = ({
     ],
   };
   const summaryCards = summaryCardsByMode[effectiveDisplayMode] || summaryCardsByMode.pro;
+  const ContainerTag = presentation === 'rail' ? 'aside' : 'div';
 
   return (
-    <aside
+    <ContainerTag
       className="room-terminal-support-rail tactical-rail tactical-rail--intel"
       data-viewport-model={viewportLayout?.viewportModel}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
+      data-surface-variant={presentation}
     >
       <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--intel rounded-[1.75rem] p-4 sm:p-5">
         <div className="tactical-rail__header">
@@ -133,7 +136,7 @@ const IntelRail = ({
           effectiveDisplayMode={effectiveDisplayMode}
         />
       </section>
-    </aside>
+    </ContainerTag>
   );
 };
 
