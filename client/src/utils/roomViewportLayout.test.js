@@ -40,3 +40,12 @@ test('ultrawide expands the same terminal without turning it into a page layout'
   assert.equal(layout.supportSurfaceModel, 'rails-and-overlays');
   assert.equal(layout.contentMaxWidth, '1600px');
 });
+
+test('tablet landscape still keeps the room terminal single-screen', () => {
+  const layout = resolveRoomViewportLayout({ width: 1180, height: 820 });
+
+  assert.equal(layout.viewportModel, 'tablet-terminal');
+  assert.equal(layout.orientation, 'landscape');
+  assert.equal(layout.pageScroll, 'locked');
+  assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+});
