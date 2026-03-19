@@ -19,7 +19,7 @@ import { useGame } from '../contexts/GameContext';
 import { getDisplayModeTheme } from '../utils/productMode';
 import { resolveRoomViewportLayout } from '../utils/roomViewportLayout';
 import { buildSeatRingPositions, resolveTableDiameter } from '../utils/seatRingLayout';
-import { resolveRoomGeometryContract } from '../utils/tableStageLayout';
+import { resolveRoomGeometryContract, resolveSeatRingRotationSeatIndex } from '../utils/tableStageLayout';
 import {
   deriveCanStartGame,
   deriveIntelRailView,
@@ -574,7 +574,7 @@ const GameRoom = () => {
       : 'w-80 h-80';
 
   const getPlayerPosition = (player, allPlayers) => {
-    const currentPlayerSeat = currentPlayer ? currentPlayer.seat : 0;
+    const currentPlayerSeat = resolveSeatRingRotationSeatIndex(currentPlayer);
     const totalPlayers = allPlayers.length;
     const relativeSeat = (player.seat - currentPlayerSeat + totalPlayers) % totalPlayers;
     return seatRingPositions[relativeSeat] || { x: 0, y: 0 };

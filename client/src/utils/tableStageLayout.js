@@ -8,6 +8,12 @@ function clampNumber(value, fallback = 0) {
   return Number.isFinite(normalized) ? normalized : fallback;
 }
 
+export function resolveSeatRingRotationSeatIndex(currentPlayer = null) {
+  const seatIndex = Number(currentPlayer?.seat);
+
+  return Number.isInteger(seatIndex) && seatIndex >= 0 ? seatIndex : 0;
+}
+
 function resolveTableProfile({ viewportWidth = 0, viewportHeight = 0, tableProfile = null } = {}) {
   if (tableProfile === 'desktop-oval' || tableProfile === 'phone-oval') {
     return tableProfile;

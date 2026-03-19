@@ -5,6 +5,7 @@ import {
   buildStageChromeLayout,
   resolveCommunityCardLayout,
   resolveRoomGeometryContract,
+  resolveSeatRingRotationSeatIndex,
   resolveTableSurfaceLayout,
 } from './tableStageLayout.js';
 import { resolveStageViewportContract } from './roomViewportLayout.js';
@@ -115,6 +116,11 @@ test('builds one shared runtime geometry contract for short-height landscape roo
   assert.equal(heroGuide.anchorZone, 'dock-edge');
   assert.equal(heroGuide.cx, chrome.centerX + canonical[0].x);
   assert.equal(heroGuide.cy, chrome.centerY + canonical[0].y);
+});
+
+test('falls back to hero orientation when the current player is spectating', () => {
+  assert.equal(resolveSeatRingRotationSeatIndex({ seat: -1 }), 0);
+  assert.equal(resolveSeatRingRotationSeatIndex({ seat: 4 }), 4);
 });
 
 test('pins the stage chrome orbit to nine markers with a single head marker', () => {
