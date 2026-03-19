@@ -47,7 +47,7 @@ The project does **not** need to support older browsers, so the Tailwind 4 brows
 
 ### Chosen Approach
 
-Use **Tailwind 4.2.2 with `@tailwindcss/vite`** as the primary integration path.
+Use **Tailwind 4.2.2 with `@tailwindcss/postcss`** for this migration pass.
 
 Keep:
 
@@ -59,14 +59,24 @@ Change:
 
 - Tailwind package family to `4.2.2`
 - CSS entrypoint from `@tailwind ...` directives to Tailwind 4 import syntax
-- Vite configuration to use the official Tailwind Vite plugin
-- PostCSS config so it no longer depends on the legacy Tailwind 3 plugin wiring
+- PostCSS config so it uses the Tailwind 4 PostCSS plugin
+- keep `tailwind.config.js` loaded explicitly through `@config` for compatibility
+- defer the Tailwind Vite plugin until a later Vite major upgrade
 
-### Why `@tailwindcss/vite`
+### Why Not `@tailwindcss/vite` Yet
 
-The project is already Vite-based, and this is the most direct, current integration path for Tailwind 4.
+The project is already Vite-based, and the Tailwind Vite plugin would normally be the preferred integration path.
 
-It reduces the chance of keeping stale Tailwind 3 assumptions in PostCSS and keeps the client styling pipeline easier to reason about.
+However, in this repository the current client is still on Vite 4, and `@tailwindcss/vite@4.2.2` requires Vite `^5.2.0 || ^6 || ^7 || ^8`.
+
+That means using the Vite plugin would force a Vite major upgrade in the same task.
+
+For this migration, that is unnecessary risk. The safer path is:
+
+- upgrade Tailwind to `4.2.2`
+- use `@tailwindcss/postcss`
+- keep Vite 4 stable
+- revisit the dedicated Vite plugin later in a separate toolchain task
 
 ## Render Stack Decision
 

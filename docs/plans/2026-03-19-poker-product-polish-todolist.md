@@ -107,6 +107,34 @@ This is a client preference. It should not change server truth or give one playe
 
 ## Active Queue
 
+### Task M1: Migrate The Client To Tailwind 4.2.2 Before Further UI Work
+
+- Status: `[done]`
+- Why this moved ahead of more Tactical Arena work:
+  - the project no longer uses Tailwind as a tiny utility layer; it now depends on a large semantic shell and table CSS surface
+  - continuing visual work on Tailwind 3 would have forced a second disruptive styling migration later
+- Scope:
+  - upgrade `tailwindcss` to `4.2.2`
+  - move from the Tailwind 3 PostCSS plugin to `@tailwindcss/postcss`
+  - switch the CSS entrypoint to Tailwind 4 syntax
+  - keep `Vite 4` stable for now
+  - rerun browser evidence on the Tactical Arena shell after migration
+- Fresh evidence:
+  - `cd client && npm ls tailwindcss @tailwindcss/postcss vite`
+    - `tailwindcss@4.2.2`
+    - `@tailwindcss/postcss@4.2.2`
+    - `vite@4.5.14`
+  - `cd client && node --test src/utils/productMode.test.js src/view-models/gameViewModel.test.js src/view-models/handHistoryViewModel.test.js`
+    - `50/50` passed on `2026-03-19`
+  - `cd client && npm run build`
+    - passed on `2026-03-19`
+  - fresh browser screenshots captured after the migration:
+    - `tailwind4-home-1280.png`
+    - `tailwind4-room-1280.png`
+    - `tailwind4-room-phone.png`
+  - important implementation note:
+    - `@tailwindcss/vite@4.2.2` was not used in this pass because it requires `vite ^5.2.0 || ^6 || ^7 || ^8`, while the current repo is still on `vite 4.5.14`
+
 ### Task 0: Remove Post-Merge Documentation Drift
 
 - Status: `[done]`

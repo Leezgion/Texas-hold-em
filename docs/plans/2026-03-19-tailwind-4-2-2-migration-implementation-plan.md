@@ -4,9 +4,9 @@
 
 **Goal:** Migrate the client from Tailwind CSS 3.x to Tailwind CSS 4.2.2 before continuing Tactical Arena UI work, while keeping the current React/Vite app behavior stable.
 
-**Architecture:** Keep the current React and Vite runtime intact, but replace the Tailwind 3-era CSS pipeline with Tailwind 4.2.2 plus the official Vite integration. Preserve the semantic CSS architecture in `client/src/index.css`, then verify the migrated pipeline against both tests and live browser screenshots.
+**Architecture:** Keep the current React and Vite runtime intact, but replace the Tailwind 3-era CSS pipeline with Tailwind 4.2.2 plus the Tailwind 4 PostCSS plugin. Preserve the semantic CSS architecture in `client/src/index.css`, explicitly load the legacy JS config through `@config`, then verify the migrated pipeline against both tests and live browser screenshots.
 
-**Tech Stack:** React 18, Vite 4, Tailwind CSS 4.2.2, `@tailwindcss/vite`, Node test runner, semantic CSS in `client/src/index.css`, Chrome DevTools MCP for browser regression.
+**Tech Stack:** React 18, Vite 4, Tailwind CSS 4.2.2, `@tailwindcss/postcss`, Node test runner, semantic CSS in `client/src/index.css`, Chrome DevTools MCP for browser regression.
 
 ---
 
@@ -61,13 +61,13 @@ git add client/src/utils/productMode.js client/src/utils/productMode.test.js
 git commit -m "test: lock the room shell layout contract"
 ```
 
-### Task 2: Upgrade Tailwind dependencies and Vite integration
+### Task 2: Upgrade Tailwind dependencies and PostCSS integration
 
 **Files:**
 - Modify: `client/package.json`
 - Modify: `client/package-lock.json`
-- Modify: `client/vite.config.js`
 - Modify: `client/postcss.config.js`
+- Modify: `client/vite.config.js`
 
 **Step 1: Write the failing verification**
 
@@ -85,10 +85,10 @@ Expected: FAIL or render with missing styles until the Tailwind 4 integration is
 **Step 2: Write minimal implementation**
 
 - upgrade `tailwindcss` to `4.2.2`
-- add `@tailwindcss/vite`
-- add `@tailwindcss/postcss` only if needed for compatibility
-- update `vite.config.js` to use the official Tailwind Vite plugin
+- add `@tailwindcss/postcss`
 - remove legacy Tailwind 3 PostCSS wiring
+- keep Vite 4 in place
+- do not upgrade to the Tailwind Vite plugin in this task
 
 **Step 3: Reinstall and verify dependency graph**
 
@@ -116,7 +116,7 @@ Expected: PASS.
 **Step 5: Commit**
 
 ```bash
-git add client/package.json client/package-lock.json client/vite.config.js client/postcss.config.js
+git add client/package.json client/package-lock.json client/postcss.config.js client/vite.config.js
 git commit -m "build: migrate the client to tailwind 4"
 ```
 
