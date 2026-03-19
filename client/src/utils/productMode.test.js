@@ -163,15 +163,6 @@ test('exposes shell chrome tokens for the responsive tactical arena layout', () 
   assert.equal(studyTheme.shellLayout.tablet, 'split-review');
 });
 
-test('exposes a unified 9-max tournament terminal contract for the room shell', () => {
-  const proTheme = getDisplayModeTheme('pro');
-
-  assert.equal(proTheme.roomTerminal.tableFamily, 'tournament-capsule-9max');
-  assert.equal(proTheme.roomTerminal.maxVisualSeats, 9);
-  assert.equal(proTheme.roomTerminal.desktop.geometryModel, 'unified-9max');
-  assert.equal(proTheme.roomTerminal.phone.geometryModel, 'unified-9max-portrait');
-});
-
 test('uses a split room shell on mid desktop widths and reserves full three-column layout for wider screens', () => {
   assert.equal(resolveRoomShellLayout(390), 'stacked');
   assert.equal(resolveRoomShellLayout(1024), 'stacked');
@@ -220,8 +211,12 @@ test('exposes single-screen room terminal metadata for each display mode', () =>
 
   for (const theme of [clubTheme, proTheme, studyTheme]) {
     assert.equal(theme.roomTerminal.intent, 'single-screen-terminal');
+    assert.equal(theme.roomTerminal.tableFamily, 'tournament-capsule-9max');
+    assert.equal(theme.roomTerminal.maxVisualSeats, 9);
+    assert.equal(theme.roomTerminal.desktop.geometryModel, 'unified-9max');
     assert.equal(theme.roomTerminal.desktop.surfaceModel, 'single-screen');
     assert.equal(theme.roomTerminal.desktop.surfacePolicy, 'table-and-dock');
+    assert.equal(theme.roomTerminal.phone.geometryModel, 'unified-9max-portrait');
     assert.equal(theme.roomTerminal.phone.heroDock, 'fixed-bottom');
     assert.deepEqual(theme.roomTerminal.phone.sheetOrder, ['players', 'history', 'room']);
     assert.equal(theme.roomTerminal.phone.surfacePolicy, 'bottom-sheets');
