@@ -484,19 +484,12 @@ export function deriveSeatRingView({
   currentPlayerId = null,
   roomState = 'idle',
   gameState = null,
-  canonicalSlots = [],
 } = {}) {
   const safePlayers = Array.isArray(players) ? players : [];
   const safeMaxPlayers = Math.max(2, Number(maxPlayers) || 6);
-  const canonicalSlotMap = new Map(
-    (Array.isArray(canonicalSlots) ? canonicalSlots : [])
-      .map((slot) => [Number(slot?.seatIndex), slot])
-      .filter(([seatIndex]) => Number.isInteger(seatIndex) && seatIndex >= 0)
-  );
 
   return Array.from({ length: safeMaxPlayers }, (_, seatIndex) => {
     const player = safePlayers.find((candidate) => Number(candidate?.seat) === seatIndex);
-    const canonicalSlot = canonicalSlotMap.get(seatIndex) || null;
 
     if (!player) {
       return {
@@ -507,10 +500,6 @@ export function deriveSeatRingView({
         statusLabel: '空座',
         seatTone: 'open-seat',
         positionLabel: null,
-        anchorSlotId: canonicalSlot?.anchorSlotId || null,
-        anchorRole: canonicalSlot?.anchorRole || null,
-        anchorZone: canonicalSlot?.anchorZone || null,
-        position: canonicalSlot?.position || null,
         player: null,
       };
     }
@@ -533,10 +522,6 @@ export function deriveSeatRingView({
       positionLabel: summary.positionLabel,
       chipsLabel: summary.chipsLabel,
       netLabel: summary.netLabel,
-      anchorSlotId: canonicalSlot?.anchorSlotId || null,
-      anchorRole: canonicalSlot?.anchorRole || null,
-      anchorZone: canonicalSlot?.anchorZone || null,
-      position: canonicalSlot?.position || null,
       player,
     };
   });

@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React from 'react';
 
 const Modal = ({
   show,
@@ -19,37 +19,11 @@ const Modal = ({
   headerClassName = '',
   footerClassName = '',
 }) => {
-  const dialogTitleId = useId();
-  const dialogSurfaceRef = useRef(null);
-  const previousActiveElementRef = useRef(null);
-
   const handleOverlayClick = () => {
     if (closeOnOverlayClick) {
       onClose();
     }
   };
-
-  useEffect(() => {
-    if (!show) {
-      return undefined;
-    }
-
-    previousActiveElementRef.current = document.activeElement;
-    dialogSurfaceRef.current?.focus();
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        onClose?.();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      previousActiveElementRef.current?.focus?.();
-    };
-  }, [show, onClose]);
 
   if (!show) return null;
 
@@ -65,24 +39,18 @@ const Modal = ({
           className={`modal-content ${maxWidth} ${className}`}
           data-modal-surface={surface}
           data-modal-phone-surface={phoneSurface}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={title ? dialogTitleId : undefined}
-          tabIndex={-1}
-          ref={dialogSurfaceRef}
           onClick={(e) => e.stopPropagation()}
         >
           {(title || showCloseButton) && (
             <div className={`modal-content__header ${headerClassName}`}>
               {title && (
-                <h2 id={dialogTitleId} className="text-xl sm:text-2xl font-bold text-poker-gold">{title}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-poker-gold">{title}</h2>
               )}
               {showCloseButton && (
                 <button
                   onClick={onClose}
                   className="modal-content__close-button"
                   type="button"
-                  aria-label="关闭对话框"
                 >
                   ×
                 </button>
@@ -119,24 +87,18 @@ const Modal = ({
         className={`modal-content ${maxWidth} ${padding} ${className}`}
         data-modal-surface={surface}
         data-modal-phone-surface={phoneSurface}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={title ? dialogTitleId : undefined}
-        tabIndex={-1}
-        ref={dialogSurfaceRef}
         onClick={(e) => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
           <div className={`modal-content__header modal-content__header--default ${headerClassName}`}>
             {title && (
-              <h2 id={dialogTitleId} className="text-2xl font-bold text-poker-gold">{title}</h2>
+              <h2 className="text-2xl font-bold text-poker-gold">{title}</h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
                 className="modal-content__close-button"
                 type="button"
-                aria-label="关闭对话框"
               >
                 ×
               </button>
