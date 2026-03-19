@@ -433,10 +433,35 @@ This is a client preference. It should not change server truth or give one playe
     - `server`: `112/112` on `2026-03-19`
     - `client`: `53/53` on `2026-03-19`
     - `build`: passed on `2026-03-19`
+  - tactical dock / rail redesign batch landed in `8b76fc2` and reran cleanly:
+    - `server`: `112/112` on `2026-03-19`
+    - `client`: `61/61` on `2026-03-19`
+    - `build`: passed on `2026-03-19`
+  - fresh browser evidence after the dock / rail redesign:
+    - desktop `pro` room `M3SN1S` now renders:
+      - `INTEL RAIL / Tactical Intel`
+      - `EVENT RAIL / Event Console`
+      - `HERO SEAT`
+      - the denser tactical dock stat strip without runtime regressions
+    - desktop `club` room `AO6TQR` now renders:
+      - `桌况总览 / 桌面控制台`
+      - `最近动态`
+      - `本席控制`
+    - desktop `study` room `20KEUB` now renders:
+      - `STATE NOTES / 桌况分析台`
+      - `REVIEW STAGE`
+      - `REVIEW RAIL`
+      - `HERO REVIEW`
+    - mobile portrait `study` room `20KEUB` rerendered cleanly in `390x844`:
+      - seat ring stayed inside the stage
+      - rails stacked vertically without overlap
+      - hero dock stayed readable below the rails
+      - long host nickname truncated inside the stack ledger instead of tearing the card
 - Newly discovered pitfall:
   - the old full-screen seat geometry does not fit unchanged inside the new shell panels; desktop clipping and mobile side-seat overflow both reappeared until the seat-ring scale was reduced for panel-based layout
   - long device-style nicknames can tear open narrow rail cards if the new shell forgets to apply explicit truncation rules
   - if the same `deviceId` is open in multiple pages, the page that re-registers last owns the server mapping; an older page can still look “connected” but fail `createRoom` with `设备未注册`
+  - responsive shell verification cannot rely on accessibility snapshots alone; take at least one real screenshot for phone portrait before concluding that seat ring spacing, rail stacking, and hero dock spacing are truly stable
 
 ## Living Evidence
 
@@ -448,6 +473,7 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Poker OS redesign design + implementation plan committed on `2026-03-19`
 - `[done]` Poker OS shell migration and cross-mode UI differentiation
 - `[done]` Functional edge-flow and exception-surface hardening rerun
+- `[done]` Tactical dock / rail redesign rerun with fresh browser evidence on `2026-03-19`
 
 ## Risks To Watch
 

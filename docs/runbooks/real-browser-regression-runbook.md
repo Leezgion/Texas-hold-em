@@ -141,11 +141,17 @@ For Poker OS shell work, add these spot checks explicitly:
 - gateway mobile: cards stack cleanly without overlap
 - room shell desktop: seat ring stays inside the stage panel and the hero dock remains readable
 - room shell mobile: side seats stay inside the stage, the current-player marker does not wrap badly, and long nicknames truncate instead of stretching rail cards
+- room shell mobile: `IntelRail / EventRail / Hero Dock` stack in a stable top-to-bottom order without overlapping the stage or each other
+- tactical dock: stat cards wrap cleanly on phone portrait instead of compressing into unreadable chips
+- roster and stack ledger: long device-style nicknames truncate instead of widening narrow cards
 - cross-mode check: `club / pro / study` remain visibly different in theme and information emphasis
+
+For phone portrait verification, do not rely on DevTools accessibility snapshots alone. Capture at least one real screenshot after resizing to a narrow viewport; snapshot text can confirm semantics, but it will not prove that the seat ring and dock spacing still fit visually.
 
 Update both of these after the run:
 
 - `docs/plans/2026-03-19-poker-product-readiness-todolist.md`
+- `docs/plans/2026-03-19-poker-product-polish-todolist.md`
 - `真实浏览器联机回归踩坑记录.md`
 
 ## 7. Cleanup
