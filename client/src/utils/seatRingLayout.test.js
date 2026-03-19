@@ -179,6 +179,11 @@ test('keeps supported 2-9 player rooms on the explicit anchor templates', () => 
 
       assertUsesExplicitAnchorPath(layout, playerCount);
 
+      if (config.profile === 'desktop-oval' && playerCount >= 7) {
+        assert.equal(layout.overlaps.tableBody, 0, `table overlap for ${playerCount} players`);
+        assert.equal(layout.overlaps.stageBand, 0, `stage overlap for ${playerCount} players`);
+      }
+
       if (config.profile === 'phone-oval' && playerCount >= 7) {
         assert.equal(layout.heroAnchor.zone, 'dock-edge', `hero anchor for ${playerCount} players`);
         assert.equal(layout[0].anchorZone, 'dock-edge', `hero seat zone for ${playerCount} players`);
