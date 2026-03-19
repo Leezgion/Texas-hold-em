@@ -37,6 +37,8 @@ const TableHeader = ({
     <header
       className="room-terminal-header rounded-[1.75rem] border border-white/10 bg-black/25 px-4 py-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl"
       data-viewport-model={viewportLayout?.viewportModel}
+      data-height-class={viewportLayout?.heightClass}
+      data-stage-density={viewportLayout?.stageDensity}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
       data-page-scroll={viewportLayout?.pageScroll}
       data-hero-dock-priority={shellView?.heroDockPriority}

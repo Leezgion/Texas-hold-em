@@ -623,6 +623,8 @@ const GameRoom = () => {
     <div
       className="room-terminal-shell px-3 py-3 sm:px-4 lg:px-6"
       data-viewport-model={roomViewportLayout.viewportModel}
+      data-height-class={roomViewportLayout.heightClass}
+      data-stage-density={roomViewportLayout.stageDensity}
       data-page-scroll={roomViewportLayout.pageScroll}
       data-hero-dock-placement={roomViewportLayout.heroDockPlacement}
       data-support-surface-model={roomViewportLayout.supportSurfaceModel}
@@ -631,6 +633,7 @@ const GameRoom = () => {
       data-hero-dock-priority={shellView.heroDockPriority}
       data-room-motion-budget={roomViewportLayout.viewportModel === 'phone-terminal' ? 'mobile-tight' : 'standard'}
       data-room-scroll-contract={roomViewportLayout.viewportModel === 'phone-terminal' ? 'single-screen' : 'default'}
+      style={{ '--room-terminal-stage-budget': `${roomViewportLayout.minStageBudgetPx}px` }}
     >
       <div
         className="room-terminal-frame mx-auto w-full"

@@ -1,45 +1,79 @@
+function resolveHeightClass({ width = 0, height = 0 } = {}) {
+  const safeWidth = Number(width) || 0;
+  const safeHeight = Number(height) || 0;
+
+  if (safeHeight > 0 && (safeHeight < 520 || (safeWidth >= 768 && safeHeight < 720))) {
+    return 'short-height';
+  }
+
+  return 'regular-height';
+}
+
+function buildViewportLayout({
+  viewportModel,
+  supportSurfaceModel,
+  supportSurfacePolicy,
+  contentMaxWidth,
+  width = 0,
+  height = 0,
+} = {}) {
+  const heightClass = resolveHeightClass({ width, height });
+
+  return {
+    viewportModel,
+    pageScroll: 'locked',
+    heroDockPlacement: 'fixed-bottom',
+    supportSurfaceModel,
+    supportSurfacePolicy,
+    contentMaxWidth,
+    heightClass,
+    stageDensity: heightClass === 'short-height' ? 'compressed' : width < 768 ? 'compact' : 'standard',
+    minStageBudgetPx: heightClass === 'short-height' ? 180 : width < 768 ? 220 : width >= 1280 ? 300 : 260,
+  };
+}
+
 export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
   const safeWidth = Number(width) || 0;
 
   if (safeWidth >= 1536) {
-    return {
+    return buildViewportLayout({
       viewportModel: 'ultrawide-terminal',
-      pageScroll: 'locked',
-      heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'rails-and-overlays',
       supportSurfacePolicy: 'rails-and-overlays',
       contentMaxWidth: '1600px',
-    };
+      width: safeWidth,
+      height,
+    });
   }
 
   if (safeWidth >= 1280) {
-    return {
+    return buildViewportLayout({
       viewportModel: 'desktop-terminal',
-      pageScroll: 'locked',
-      heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'slide-panels',
       supportSurfacePolicy: 'slide-panels',
       contentMaxWidth: '1440px',
-    };
+      width: safeWidth,
+      height,
+    });
   }
 
   if (safeWidth >= 768) {
-    return {
+    return buildViewportLayout({
       viewportModel: 'tablet-terminal',
-      pageScroll: 'locked',
-      heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'slide-panels',
       supportSurfacePolicy: 'slide-panels',
       contentMaxWidth: '100%',
-    };
+      width: safeWidth,
+      height,
+    });
   }
 
-  return {
+  return buildViewportLayout({
     viewportModel: 'phone-terminal',
-    pageScroll: 'locked',
-    heroDockPlacement: 'fixed-bottom',
     supportSurfaceModel: 'bottom-sheets',
     supportSurfacePolicy: 'bottom-sheets',
     contentMaxWidth: '100%',
-  };
+    width: safeWidth,
+    height,
+  });
 }

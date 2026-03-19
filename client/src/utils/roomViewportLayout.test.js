@@ -65,3 +65,13 @@ test('compact desktop keeps support surfaces out of the main page flow', () => {
   assert.equal(layout.supportSurfacePolicy, 'slide-panels');
   assert.equal(layout.contentMaxWidth, '1440px');
 });
+
+test('short-height landscape windows switch the room terminal into a compressed stage budget', () => {
+  const layout = resolveRoomViewportLayout({ width: 844, height: 390 });
+
+  assert.equal(layout.viewportModel, 'tablet-terminal');
+  assert.equal(layout.heightClass, 'short-height');
+  assert.equal(layout.stageDensity, 'compressed');
+  assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+  assert.ok(layout.minStageBudgetPx >= 180);
+});

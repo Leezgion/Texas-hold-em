@@ -656,6 +656,10 @@
     overflow: hidden;
   }
 
+  .room-terminal-shell[data-height-class="short-height"] {
+    min-height: calc(100dvh - 1rem);
+  }
+
   .room-terminal-shell[data-room-scroll-contract="single-screen"] {
     overscroll-behavior: none;
     touch-action: pan-x pan-y;
@@ -672,6 +676,12 @@
 
   .room-terminal-shell[data-room-scroll-contract="single-screen"] .room-terminal-frame {
     overscroll-behavior: none;
+  }
+
+  .room-terminal-shell[data-height-class="short-height"] .room-terminal-frame {
+    gap: 0.75rem;
+    min-height: calc(100dvh - 1rem);
+    max-height: calc(100dvh - 1rem);
   }
 
   .room-terminal-header-stack {
@@ -695,6 +705,14 @@
     min-height: 0;
     position: relative;
     z-index: 5;
+  }
+
+  .room-terminal-header[data-height-class="short-height"] {
+    padding-block: 0.85rem;
+  }
+
+  .room-terminal-dock-panel[data-height-class="short-height"] {
+    padding-block: 0.85rem;
   }
 
   .room-support-launcher {
@@ -1526,6 +1544,14 @@
     min-height: min(29rem, calc(100dvh - 24rem));
   }
 
+  .room-terminal-shell[data-stage-density="compressed"] .table-stage-surface {
+    min-height: min(23rem, calc(100dvh - 18rem));
+  }
+
+  .room-terminal-shell[data-stage-density="compressed"] .table-stage-core {
+    min-height: var(--room-terminal-stage-budget, 180px);
+  }
+
   .room-terminal-shell[data-support-surface-model="bottom-sheets"] .room-terminal-main,
   .room-terminal-shell[data-support-surface-model="slide-panels"] .room-terminal-main {
     overflow: hidden;
@@ -1679,6 +1705,10 @@
     gap: 1rem;
   }
 
+  .room-terminal-dock-panel[data-stage-density="compressed"] .tactical-dock__grid {
+    gap: 0.75rem;
+  }
+
   .tactical-dock__hero-panel,
   .tactical-rail__spotlight,
   .tactical-rail__metric,
@@ -1707,6 +1737,11 @@
     border-radius: 1.5rem;
     padding: 1rem;
     animation: arenaPanelRise var(--arena-motion-enter) ease-out both;
+  }
+
+  .room-terminal-dock-panel[data-stage-density="compressed"] .tactical-dock__hero-panel {
+    margin-top: 0.7rem;
+    padding: 0.85rem;
   }
 
   .tactical-dock__hero-header,

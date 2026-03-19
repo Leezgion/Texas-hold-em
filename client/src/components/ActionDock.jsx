@@ -54,6 +54,8 @@ const ActionDock = ({
     <section
       className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock rounded-[1.75rem] px-4 py-4"
       data-viewport-model={viewportLayout?.viewportModel}
+      data-height-class={viewportLayout?.heightClass}
+      data-stage-density={viewportLayout?.stageDensity}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
       data-hero-dock-placement={viewportLayout?.heroDockPlacement}
       data-hero-dock-priority={shellView?.heroDockPriority}
