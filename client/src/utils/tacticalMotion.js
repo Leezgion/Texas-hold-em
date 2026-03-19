@@ -4,10 +4,34 @@ function toSeconds(milliseconds) {
   return Number((milliseconds / 1000).toFixed(3));
 }
 
-export function buildTacticalMotionProfile(mode = 'pro', { reducedMotion = false } = {}) {
+function buildViewportMotionContract(viewport, ambientOpacity) {
+  const isPhoneTerminal = viewport === 'phone-terminal';
+
+  return {
+    viewport,
+    allowBackdropBlurStacks: !isPhoneTerminal,
+    pageFloat: isPhoneTerminal ? 'disabled' : 'enabled',
+    primaryTransitions: isPhoneTerminal ? 'transform-opacity-only' : 'full-shell',
+    surfaceBlur: isPhoneTerminal ? 'minimal' : 'layered',
+    ambientMotion: isPhoneTerminal ? 'reduced' : 'full',
+    shell: {
+      ambientOpacity: isPhoneTerminal ? Math.min(ambientOpacity ?? 0.85, 0.42) : ambientOpacity ?? 0.85,
+      ambientBlurPx: isPhoneTerminal ? 28 : 56,
+      overlayBackdropBlurPx: isPhoneTerminal ? 0 : 10,
+      panelBackdropBlurPx: isPhoneTerminal ? 6 : 18,
+      headerBackdropBlurPx: isPhoneTerminal ? 6 : 18,
+    },
+  };
+}
+
+export function buildTacticalMotionProfile(mode = 'pro', { reducedMotion = false, viewport = 'desktop-terminal' } = {}) {
+  const theme = getDisplayModeTheme(mode);
+  const viewportContract = buildViewportMotionContract(viewport, theme.motion?.ambientOpacity);
+
   if (reducedMotion) {
     return {
       reducedMotion: true,
+      ...viewportContract,
       durations: {
         enter: 0.01,
         emphasis: 0.01,
@@ -55,7 +79,6 @@ export function buildTacticalMotionProfile(mode = 'pro', { reducedMotion = false
     };
   }
 
-  const theme = getDisplayModeTheme(mode);
   const durations = {
     enter: toSeconds(theme.motion.enterMs || 180),
     emphasis: toSeconds(theme.motion.emphasisMs || 260),
@@ -64,6 +87,7 @@ export function buildTacticalMotionProfile(mode = 'pro', { reducedMotion = false
 
   return {
     reducedMotion: false,
+    ...viewportContract,
     durations,
     stage: {
       initial: { opacity: 0, y: 18, scale: 0.985 },

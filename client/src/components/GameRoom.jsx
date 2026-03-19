@@ -609,6 +609,8 @@ const GameRoom = () => {
       data-support-surface-policy={roomViewportLayout.supportSurfacePolicy}
       data-shell-layout={shellView.shellLayout}
       data-hero-dock-priority={shellView.heroDockPriority}
+      data-room-motion-budget={roomViewportLayout.viewportModel === 'phone-terminal' ? 'mobile-tight' : 'standard'}
+      data-room-scroll-contract={roomViewportLayout.viewportModel === 'phone-terminal' ? 'single-screen' : 'default'}
     >
       <div
         className="room-terminal-frame mx-auto w-full"

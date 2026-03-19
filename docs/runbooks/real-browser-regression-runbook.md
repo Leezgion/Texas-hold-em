@@ -41,6 +41,15 @@ pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\manage-real-browser-env.ps
 pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\browser-room-workflow.ps1 clear-current-room
 ```
 
+If you intentionally already have local `pnpm dev` running, do not restart blindly just because `status` only shows `5173` or misses `3101`. Verify whether you are on the local-dev pair instead:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:3001/api/debug/devices | ConvertTo-Json -Depth 4
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:5173/ | Select-Object StatusCode
+```
+
+If `3001` and `5173` are healthy and clearly serving the current checkout, you may reuse them for UI evidence. Fall back to `start-all` only when that local-dev environment is missing, stale, or pointing at the wrong code.
+
 ## 2. Start The Environment
 
 Standard start:
@@ -154,6 +163,9 @@ For Poker OS shell work, add these spot checks explicitly:
 - room shell mobile: side seats stay inside the stage, the current-player marker does not wrap badly, and long nicknames truncate instead of stretching rail cards
 - room shell mobile: side seats must stay outside both the table circle and the community-card band; checking the table bounds alone is not sufficient
 - room shell mobile: `IntelRail / EventRail / Hero Dock` stack in a stable top-to-bottom order without overlapping the stage or each other
+- room shell mobile: opening `Players / History / Room` must not reintroduce page-length scrolling; verify:
+  - `document.scrollingElement.scrollHeight === document.scrollingElement.clientHeight`
+  - the sheet body still has its own independent scroll range when content is long
 - tactical dock: stat cards wrap cleanly on phone portrait instead of compressing into unreadable chips
 - roster and stack ledger: long device-style nicknames truncate instead of widening narrow cards
 - cross-mode check: `club / pro / study` remain visibly different in theme and information emphasis
@@ -204,6 +216,7 @@ Expected final state:
 
 - `start-all` can fail fast even though `3101` is already up and `5173` comes up shortly after. Always check `status` and `.runlogs` before retrying.
 - If `5173` points at the wrong backend, stop and restart using this worktree runbook. Do not trust a stale dev server.
+- If you are intentionally reusing local `pnpm dev` on `3001 / 5173`, check `3001/api/debug/devices` first; `manage-real-browser-env.ps1 status` only tells you whether the dedicated `3101` regression backend is up.
 - If a browser page shows old room state, verify the room via `/api/debug/rooms/:roomId` before assuming a gameplay bug.
 - If multi-player testing looks wrong, check whether you accidentally reused the same browser context and therefore the same `deviceId`.
 - If one page on the same device suddenly fails `createRoom` or `joinRoom` with `设备未注册`, check whether another page re-registered the same `deviceId` more recently.
@@ -213,3 +226,4 @@ Expected final state:
 - Settlement UI evidence is easy to miss on the default `settleMs = 3000`; if you need screenshots of the countdown, winner-first ordering, or reveal controls, restart with a longer settlement window before testing.
 - Motion surfaces can look fine in a static screenshot while their entrance choreography is actually dead; inspect inline transforms or opacity on the live element before declaring the animation layer healthy.
 - DevTools window resizing can under-report the real layout width; when you need a true tablet or ultrawide breakpoint, verify `window.innerWidth` before trusting the screenshot.
+- Phone portrait support sheets can look visually correct while the page still has a hidden extra scroll range under them; inspect `document.scrollingElement` after opening a sheet instead of trusting the screenshot alone.

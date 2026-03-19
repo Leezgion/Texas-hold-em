@@ -612,6 +612,39 @@ This is a client preference. It should not change server truth or give one playe
     - fresh wider-shell checks on `2026-03-19`:
       - emulated `1024x1366` stayed on the stacked shell with the SVG stage still rendering `6` seat guides
       - emulated `1720x1000` switched to `room-shell-grid--three-column` and preserved the stage chrome in the wider shell
+  - single-screen terminal motion-cost and mobile-scroll rerun:
+    - `tacticalMotion` now carries an explicit phone-terminal contract:
+      - `allowBackdropBlurStacks = false`
+      - `pageFloat = disabled`
+      - `primaryTransitions = transform-opacity-only`
+    - `ModeShell` now maps that contract into shell-level CSS vars and route-aware motion guards
+    - room-route phone portrait now locks the shell to a true single-screen viewport instead of leaving residual page scroll under the support sheet
+    - phone support surfaces now scroll inside the sheet body instead of fighting the page container or nested rail scroll areas
+    - fresh automated rerun on `2026-03-19`:
+      - `client`: `63/63`
+      - `server`: `112/112`
+      - `build`: passed
+    - fresh browser evidence on room `9219U5` while reusing the live local `3001 / 5173` dev environment:
+      - create-room desktop:
+        - `.runlogs/task7-create-room-desktop.png`
+      - create-room phone portrait:
+        - `.runlogs/task7-create-room-phone.png`
+      - room desktop `1280x900`:
+        - `.runlogs/task7-room-desktop-1280.png`
+      - room phone portrait `390x844`:
+        - `.runlogs/task7-room-phone-prehand.png`
+      - live-hand table + hero-dock:
+        - `.runlogs/task7-live-hand-desktop-table-plus-dock.png`
+        - `.runlogs/task7-live-hand-phone-table-plus-dock.png`
+      - phone portrait support sheet:
+        - `.runlogs/task7-room-phone-roster-sheet.png`
+      - browser-side scroll contract after opening the phone roster sheet:
+        - `pageScrollable = false`
+        - `sheetScrollable = true`
+        - `shellOverflow = hidden`
+        - `contentOverflow = hidden`
+      - authoritative backend state still matched the UI:
+        - `GET http://127.0.0.1:3001/api/debug/rooms/9219U5`
 - Newly discovered pitfall:
   - the old full-screen seat geometry does not fit unchanged inside the new shell panels; desktop clipping and mobile side-seat overflow both reappeared until the seat-ring scale was reduced for panel-based layout
   - mobile seat geometry cannot use guessed card heights; the real rendered `arena-seat-card` footprint was about `70 x 123-128`, while the first helper pass only budgeted `70 x 60`, which hid the regression in unit tests
@@ -625,6 +658,8 @@ This is a client preference. It should not change server truth or give one playe
     - CSS animation names confirm the ambient layer is still running
     - inline styles on the same elements confirm Motion is actually driving entrances or pulse transforms
   - `resize_page` alone is not enough to validate ultrawide breakpoints in DevTools; if `window.innerWidth` stays below the target breakpoint, use viewport emulation before concluding that the three-column shell is broken
+  - phone portrait support-sheet validation must also inspect `document.scrollingElement`; the UI can look visually correct while the page still has a hidden extra scroll range under the sheet
+  - if you intentionally reuse local `pnpm dev` on `3001 / 5173`, treat that as a separate healthy environment from the runbook’s `3101 / 5173` regression pair and verify the backend with `/api/debug/devices` before restarting anything
 
 ## Living Evidence
 
@@ -643,6 +678,7 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Tactical Arena winner-first settlement hierarchy rerun with fresh browser evidence on `2026-03-19`
 - `[done]` Tactical Arena Motion choreography rerun with fresh browser evidence on `2026-03-19`
 - `[done]` Tactical Arena rail Motion + SVG-backed stage rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Single-screen terminal motion-cost / mobile-scroll rerun with fresh browser evidence on `2026-03-19`
 
 ## Next Tactical Arena Backlog
 

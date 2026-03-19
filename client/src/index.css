@@ -34,6 +34,12 @@
     --arena-motion-spotlight: 2.4s;
     --arena-motion-float: 7s;
     --arena-motion-ambient-opacity: 0.85;
+    --arena-shell-ambient-blur: 56px;
+    --arena-shell-overlay-blur: 10px;
+    --arena-shell-panel-blur: 18px;
+    --arena-shell-header-blur: 18px;
+    --arena-shell-ambient-play-state: running;
+    --arena-shell-float-play-state: running;
   }
 
   body {
@@ -63,6 +69,18 @@
       var(--mode-shell-page-padding-bottom);
   }
 
+  .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] .mode-shell__content,
+  .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] .mode-app-shell {
+    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
   .mode-app-shell {
     min-height: calc(100vh - (var(--mode-shell-page-padding-y) * 2));
     margin: 0 auto;
@@ -71,10 +89,11 @@
 
   .mode-shell__ambient {
     @apply pointer-events-none absolute inset-0;
-    filter: blur(56px);
+    filter: blur(var(--arena-shell-ambient-blur));
     opacity: var(--arena-motion-ambient-opacity);
     transform-origin: center;
     animation: arenaAmbientDrift var(--arena-motion-ambient) ease-in-out infinite alternate;
+    animation-play-state: var(--arena-shell-ambient-play-state);
   }
 
   .mode-shell__ambient--primary {
@@ -113,6 +132,7 @@
     background-size: 64px 64px;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 85%);
     animation: arenaGridDrift var(--arena-motion-ambient) linear infinite;
+    animation-play-state: var(--arena-shell-ambient-play-state);
   }
 
   .mode-shell-club {
@@ -237,7 +257,7 @@
     box-shadow:
       0 24px 80px rgba(0, 0, 0, 0.35),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(var(--arena-shell-panel-blur));
   }
 
   .mode-gateway-panel {
@@ -304,6 +324,7 @@
       0 24px 54px rgba(0, 0, 0, 0.32),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
     animation: arenaStageFloat var(--arena-motion-float) ease-in-out infinite;
+    animation-play-state: var(--arena-shell-float-play-state);
   }
 
   .mode-gateway-stage::after {
@@ -314,6 +335,7 @@
     opacity: 0.32;
     transform: translateX(-42%);
     animation: arenaSheenSweep var(--arena-motion-ambient) linear infinite;
+    animation-play-state: var(--arena-shell-ambient-play-state);
     pointer-events: none;
   }
 
@@ -373,6 +395,19 @@
       transform var(--arena-motion-enter) ease,
       border-color var(--arena-motion-enter) ease,
       box-shadow var(--arena-motion-emphasis) ease;
+  }
+
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .mode-preview-card,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .mode-primary-button,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .mode-secondary-button,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .poker-shell-panel,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .room-support-launcher__button,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .tactical-dock__hero-panel,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .tactical-dock__action-frame,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .tactical-event-card,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .tactical-history-card,
+  .mode-shell[data-shell-transition-budget="transform-opacity-only"] .settlement-sheet {
+    transition-property: transform, opacity;
   }
 
   .mode-preview-card::after {
@@ -551,7 +586,7 @@
     box-shadow:
       0 24px 72px rgba(0, 0, 0, 0.34),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(var(--arena-shell-panel-blur));
     transition:
       transform var(--arena-motion-enter) ease,
       border-color var(--arena-motion-enter) ease,
@@ -621,6 +656,11 @@
     overflow: hidden;
   }
 
+  .room-terminal-shell[data-room-scroll-contract="single-screen"] {
+    overscroll-behavior: none;
+    touch-action: pan-x pan-y;
+  }
+
   .room-terminal-frame {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
@@ -628,6 +668,10 @@
     min-height: calc(100dvh - (var(--mode-shell-page-padding-y) * 2));
     max-height: calc(100dvh - (var(--mode-shell-page-padding-y) * 2));
     overflow: hidden;
+  }
+
+  .room-terminal-shell[data-room-scroll-contract="single-screen"] .room-terminal-frame {
+    overscroll-behavior: none;
   }
 
   .room-terminal-header-stack {
@@ -700,7 +744,7 @@
     align-items: flex-end;
     justify-content: flex-end;
     background: rgba(2, 6, 23, 0.68);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(var(--arena-shell-overlay-blur));
     padding: 1rem;
   }
 
@@ -734,7 +778,7 @@
     padding: 1rem 1rem 0.9rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(2, 6, 23, 0.35);
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(var(--arena-shell-header-blur));
   }
 
   .room-panel-sheet__kicker {
@@ -774,6 +818,9 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     padding: 1rem;
     scrollbar-width: thin;
     scrollbar-color: rgba(245, 158, 11, 0.72) rgba(15, 23, 42, 0.45);
@@ -1424,6 +1471,12 @@
     padding-right: 0.2rem;
   }
 
+  .room-terminal-shell[data-room-scroll-contract="single-screen"] .tactical-rail {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
   .room-terminal-shell[data-viewport-model="desktop-terminal"] .room-shell-grid__support,
   .room-terminal-shell[data-viewport-model="tablet-terminal"] .room-shell-grid__support {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1445,6 +1498,13 @@
   }
 
   @media (max-width: 767px) {
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .mode-shell__ambient,
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .mode-shell__grid,
+    .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] .tactical-dock,
+    .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] .tactical-dock::after {
+      animation: none !important;
+    }
+
     .room-terminal-shell {
       padding-inline: 0.65rem;
     }
@@ -1461,6 +1521,10 @@
 
     .room-terminal-shell[data-viewport-model="phone-terminal"] .table-stage-surface {
       min-height: min(25rem, calc(100dvh - 23rem));
+    }
+
+    .room-terminal-shell[data-room-scroll-contract="single-screen"] .room-terminal-main {
+      overflow: clip;
     }
 
     .table-stage-core {
@@ -1521,6 +1585,7 @@
     position: relative;
     overflow: hidden;
     animation: arenaStageFloat var(--arena-motion-float) ease-in-out infinite;
+    animation-play-state: var(--arena-shell-float-play-state);
   }
 
   .tactical-dock::after {
@@ -1533,6 +1598,7 @@
     pointer-events: none;
     opacity: 0.7;
     animation: arenaSheenSweep var(--arena-motion-ambient) linear infinite;
+    animation-play-state: var(--arena-shell-ambient-play-state);
   }
 
   .tactical-dock__grid {
@@ -2330,6 +2396,7 @@
     .room-panel-sheet {
       padding: 0;
       align-items: stretch;
+      overscroll-behavior: contain;
     }
 
     .room-panel-sheet__surface {
@@ -2348,6 +2415,10 @@
       width: 100%;
       height: min(86dvh, 44rem);
       border-radius: 1.5rem 1.5rem 0 0;
+    }
+
+    .room-panel-sheet__body {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
     }
 
     .room-tool-panel__section--grid {
@@ -2599,7 +2670,7 @@
   .modal-overlay {
     @apply fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/65;
     padding: 1rem;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(var(--arena-shell-overlay-blur));
   }
 
   .modal-content {
@@ -2613,7 +2684,7 @@
 
   .modal-content__header {
     @apply flex items-center gap-4 border-b border-white/10 bg-slate-950/95 px-4 py-4 sm:px-6;
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(var(--arena-shell-header-blur));
   }
 
   .modal-content__header--default {
@@ -2622,6 +2693,9 @@
 
   .modal-content__body {
     @apply flex-1 overflow-y-auto px-4 py-4 sm:px-6;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   .modal-content__body--default {
@@ -2630,7 +2704,7 @@
 
   .modal-content__footer {
     @apply shrink-0 border-t border-white/10 bg-slate-950/95 px-4 py-4 sm:px-6;
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(var(--arena-shell-header-blur));
   }
 
   .modal-content__close-button {
@@ -2789,6 +2863,8 @@
       padding: 0;
       align-items: stretch;
       justify-content: stretch;
+      overflow: hidden;
+      overscroll-behavior: none;
     }
 
     .modal-content[data-modal-phone-surface="full-screen-sheet"] {
@@ -2798,6 +2874,7 @@
       border-radius: 0;
       border-left: 0;
       border-right: 0;
+      overflow: hidden;
     }
 
     .create-room-modal__body {
