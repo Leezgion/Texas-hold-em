@@ -2,11 +2,20 @@ import React from 'react';
 
 import { buildStageChromeLayout } from '../utils/tableStageLayout';
 
-const TableStageChrome = ({ viewportWidth = 1280, tableDiameter = 320, seatGuides = [], tableProfile = null }) => {
+const TableStageChrome = ({
+  viewportWidth = 1280,
+  viewportHeight = 0,
+  tableDiameter = 320,
+  seatGuides = [],
+  roomShellLayout = 'stacked',
+  tableProfile = null,
+}) => {
   const chrome = buildStageChromeLayout({
     viewportWidth,
+    viewportHeight,
     tableDiameter,
     seatGuides,
+    roomShellLayout,
     tableProfile,
   });
 

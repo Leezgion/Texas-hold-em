@@ -18,6 +18,7 @@ const TableStage = ({
   tableDiameter = 320,
   seatGuides = [],
 }) => {
+  const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const reducedMotion = useReducedMotion();
   const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, {
@@ -29,13 +30,16 @@ const TableStage = ({
   const secondaryPotItems = tablePotSummary.items.slice(1, 3);
   const tableSurfaceLayout = resolveTableSurfaceLayout({
     viewportWidth,
+    viewportHeight,
     tableDiameter,
   });
   const boardLayout = resolveCommunityCardLayout({
     viewportWidth,
+    viewportHeight,
     tableDiameter,
     tableProfile: tableSurfaceLayout.profile,
   });
+  const isCompressedStage = tableSurfaceLayout.heightClass === 'short-height';
   const stageLayoutClassName =
     roomShellLayout === 'three-column'
       ? 'table-stage-surface table-stage-surface--three-column'
@@ -68,9 +72,12 @@ const TableStage = ({
       </div>
 
       <div
-        className={`${stageLayoutClassName} ${stagePulseClassName} table-stage-surface--${theme.mode} relative flex min-h-[34rem] items-center justify-center overflow-visible rounded-[2rem] px-4 py-6`}
+        className={`${stageLayoutClassName} ${stagePulseClassName} table-stage-surface--${theme.mode} relative flex items-center justify-center rounded-[2rem] px-4 py-6 ${isCompressedStage ? 'overflow-hidden' : 'overflow-visible'}`}
         data-table-profile={tableSurfaceLayout.profile}
+        data-height-class={tableSurfaceLayout.heightClass}
+        data-stage-density={tableSurfaceLayout.stageDensity}
         data-table-family={tableSurfaceLayout.family}
+        style={{ minHeight: `${tableSurfaceLayout.stageMinHeightPx}px` }}
       >
         <div className="table-stage-atmosphere" aria-hidden="true" />
 
@@ -143,17 +150,23 @@ const TableStage = ({
         <div
           className="table-stage-core"
           data-table-profile={tableSurfaceLayout.profile}
+          data-height-class={tableSurfaceLayout.heightClass}
+          data-stage-density={tableSurfaceLayout.stageDensity}
           data-table-family={tableSurfaceLayout.family}
         >
           <TableStageChrome
             viewportWidth={viewportWidth}
+            viewportHeight={viewportHeight}
             tableDiameter={tableDiameter}
             seatGuides={seatGuides}
+            roomShellLayout={roomShellLayout}
             tableProfile={tableSurfaceLayout.profile}
           />
           <div
             className="poker-table table-stage-table-shell relative z-10"
             data-table-profile={tableSurfaceLayout.profile}
+            data-height-class={tableSurfaceLayout.heightClass}
+            data-stage-density={tableSurfaceLayout.stageDensity}
             data-table-family={tableSurfaceLayout.family}
             style={{
               width: `${tableSurfaceLayout.tableWidth}px`,
@@ -163,6 +176,8 @@ const TableStage = ({
             <div
               className="table-stage-board-tray absolute inset-0 flex items-center justify-center"
               data-table-profile={tableSurfaceLayout.profile}
+              data-height-class={tableSurfaceLayout.heightClass}
+              data-stage-density={tableSurfaceLayout.stageDensity}
               data-table-family={tableSurfaceLayout.family}
               style={{
                 width: `${boardLayout.trayWidth}px`,

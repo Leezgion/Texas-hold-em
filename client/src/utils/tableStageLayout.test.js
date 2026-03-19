@@ -6,6 +6,7 @@ import {
   resolveCommunityCardLayout,
   resolveTableSurfaceLayout,
 } from './tableStageLayout.js';
+import { buildSeatRingPositions } from './seatRingLayout.js';
 
 function getCommunityRowWidth({ cardWidth, gap, cardCount = 5 }) {
   return cardWidth * cardCount + gap * Math.max(0, cardCount - 1);
@@ -45,6 +46,26 @@ test('builds the same tournament table family for desktop and phone portrait', (
   assert.equal(phone.family, 'tournament-capsule-9max');
   assert.equal(desktop.profile, 'desktop-oval');
   assert.equal(phone.profile, 'phone-oval');
+});
+
+test('compresses short-height landscape stage layout without changing the family', () => {
+  const shortLandscape = resolveTableSurfaceLayout({
+    viewportWidth: 844,
+    viewportHeight: 390,
+    tableDiameter: 320,
+  });
+  const regularLandscape = resolveTableSurfaceLayout({
+    viewportWidth: 844,
+    viewportHeight: 900,
+    tableDiameter: 320,
+  });
+
+  assert.equal(shortLandscape.family, 'tournament-capsule-9max');
+  assert.equal(shortLandscape.heightClass, 'short-height');
+  assert.equal(shortLandscape.stageDensity, 'compressed');
+  assert.ok(shortLandscape.stageScale < 1);
+  assert.ok(shortLandscape.tableHeight < regularLandscape.tableHeight);
+  assert.ok(shortLandscape.stageMinHeightPx < regularLandscape.stageMinHeightPx);
 });
 
 test('pins the stage chrome orbit to nine markers with a single head marker', () => {
@@ -111,6 +132,73 @@ test('keeps phone portrait stage chrome compact while preserving marker metadata
   assert.ok(layout.width < 520);
   assert.equal(layout.seatGuides[0].markerLabel, 'BB');
   assert.equal(layout.seatGuides[1].markerLabel, 'SB/BTN');
+});
+
+test('normalizes stage chrome guides to canonical 9-max anchors for supported counts', () => {
+  const rawSeatGuides = [
+    {
+      seatIndex: 0,
+      seatLabel: 'Seat 1',
+      positionLabel: 'SB/BTN',
+      position: { x: 999, y: -999, anchorZone: 'legacy' },
+    },
+    {
+      seatIndex: 1,
+      seatLabel: 'Seat 2',
+      positionLabel: 'BB',
+      position: { x: -999, y: 999, anchorZone: 'legacy' },
+    },
+    {
+      seatIndex: 2,
+      seatLabel: 'Seat 3',
+      positionLabel: null,
+      position: { x: 777, y: 777, anchorZone: 'legacy' },
+    },
+    {
+      seatIndex: 3,
+      seatLabel: 'Seat 4',
+      positionLabel: null,
+      position: { x: -444, y: -444, anchorZone: 'legacy' },
+    },
+    {
+      seatIndex: 4,
+      seatLabel: 'Seat 5',
+      positionLabel: null,
+      position: { x: 333, y: -333, anchorZone: 'legacy' },
+    },
+    {
+      seatIndex: 5,
+      seatLabel: 'Seat 6',
+      positionLabel: null,
+      position: { x: -222, y: 222, anchorZone: 'legacy' },
+    },
+  ];
+  const layout = buildStageChromeLayout({
+    viewportWidth: 1440,
+    viewportHeight: 900,
+    tableDiameter: 352,
+    roomShellLayout: 'split-stage',
+    seatGuides: rawSeatGuides,
+    tableProfile: 'desktop-oval',
+  });
+  const canonicalGuides = buildSeatRingPositions({
+    playerCount: rawSeatGuides.length,
+    viewportWidth: 1440,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+
+  assert.equal(layout.seatGuides.length, rawSeatGuides.length);
+  layout.seatGuides.forEach((guide, index) => {
+    const canonical = canonicalGuides[index];
+
+    assert.equal(guide.cx, layout.centerX + canonical.x);
+    assert.equal(guide.cy, layout.centerY + canonical.y);
+    assert.equal(guide.anchorZone, canonical.anchorZone);
+  });
+  assert.notEqual(layout.seatGuides[0].cx, layout.centerX + rawSeatGuides[0].position.x);
+  assert.notEqual(layout.seatGuides[0].cy, layout.centerY + rawSeatGuides[0].position.y);
 });
 
 test('uses a desktop oval table profile for wide stages', () => {
