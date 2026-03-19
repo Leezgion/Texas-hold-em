@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 
 const RoomPanelSheet = ({
   open = false,
@@ -7,7 +7,42 @@ const RoomPanelSheet = ({
   presentation = 'bottom-sheet',
   onClose,
   children,
+  closeOnEscape = true,
 }) => {
+  const surfaceRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const previousActiveElementRef = useRef(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    previousActiveElementRef.current =
+      typeof document !== 'undefined' ? document.activeElement : null;
+
+    const focusTarget = closeButtonRef.current || surfaceRef.current;
+    focusTarget?.focus();
+
+    return () => {
+      const previousActiveElement = previousActiveElementRef.current;
+      previousActiveElementRef.current = null;
+
+      if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+        previousActiveElement.focus();
+      }
+    };
+  }, [open]);
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape' && closeOnEscape) {
+      event.preventDefault();
+      event.stopPropagation();
+      onClose();
+    }
+  };
+
   if (!open) {
     return null;
   }
@@ -22,16 +57,25 @@ const RoomPanelSheet = ({
         className="room-panel-sheet__surface"
         data-room-panel-presentation={presentation}
         onClick={(event) => event.stopPropagation()}
+        ref={surfaceRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
       >
         <div className="room-panel-sheet__header">
           <div className="min-w-0">
             <div className="room-panel-sheet__kicker">Support Surface</div>
-            <div className="room-panel-sheet__title">{title}</div>
+            <h2 id={titleId} className="room-panel-sheet__title">
+              {title}
+            </h2>
             {subtitle ? <div className="room-panel-sheet__subtitle">{subtitle}</div> : null}
           </div>
           <button
             type="button"
             className="room-panel-sheet__close"
+            ref={closeButtonRef}
             onClick={onClose}
           >
             关闭

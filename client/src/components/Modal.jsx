@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 
 const Modal = ({
   show,
@@ -18,14 +18,77 @@ const Modal = ({
   bodyClassName = '',
   headerClassName = '',
   footerClassName = '',
+  closeOnEscape = closeOnOverlayClick,
 }) => {
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const previousActiveElementRef = useRef(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!show) {
+      return undefined;
+    }
+
+    previousActiveElementRef.current =
+      typeof document !== 'undefined' ? document.activeElement : null;
+
+    const focusTarget = closeButtonRef.current || dialogRef.current;
+    focusTarget?.focus();
+
+    return () => {
+      const previousActiveElement = previousActiveElementRef.current;
+      previousActiveElementRef.current = null;
+
+      if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+        previousActiveElement.focus();
+      }
+    };
+  }, [show]);
+
   const handleOverlayClick = () => {
     if (closeOnOverlayClick) {
       onClose();
     }
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape' && closeOnEscape) {
+      event.preventDefault();
+      event.stopPropagation();
+      onClose();
+    }
+  };
+
   if (!show) return null;
+
+  const dialogProps = {
+    role: 'dialog',
+    'aria-modal': 'true',
+    'aria-labelledby': title ? titleId : undefined,
+    tabIndex: -1,
+    ref: dialogRef,
+    onKeyDown: handleKeyDown,
+  };
+
+  const renderTitle = (titleClassName) =>
+    title ? (
+      <h2 id={titleId} className={titleClassName}>
+        {title}
+      </h2>
+    ) : null;
+
+  const renderCloseButton = () =>
+    showCloseButton ? (
+      <button
+        ref={closeButtonRef}
+        onClick={onClose}
+        className="modal-content__close-button"
+        type="button"
+      >
+        ×
+      </button>
+    ) : null;
 
   if (layout === 'scrollable') {
     return (
@@ -40,21 +103,12 @@ const Modal = ({
           data-modal-surface={surface}
           data-modal-phone-surface={phoneSurface}
           onClick={(e) => e.stopPropagation()}
+          {...dialogProps}
         >
           {(title || showCloseButton) && (
             <div className={`modal-content__header ${headerClassName}`}>
-              {title && (
-                <h2 className="text-xl sm:text-2xl font-bold text-poker-gold">{title}</h2>
-              )}
-              {showCloseButton && (
-                <button
-                  onClick={onClose}
-                  className="modal-content__close-button"
-                  type="button"
-                >
-                  ×
-                </button>
-              )}
+              {renderTitle('text-xl sm:text-2xl font-bold text-poker-gold')}
+              {renderCloseButton()}
             </div>
           )}
 
@@ -88,21 +142,12 @@ const Modal = ({
         data-modal-surface={surface}
         data-modal-phone-surface={phoneSurface}
         onClick={(e) => e.stopPropagation()}
+        {...dialogProps}
       >
         {(title || showCloseButton) && (
           <div className={`modal-content__header modal-content__header--default ${headerClassName}`}>
-            {title && (
-              <h2 className="text-2xl font-bold text-poker-gold">{title}</h2>
-            )}
-            {showCloseButton && (
-              <button
-                onClick={onClose}
-                className="modal-content__close-button"
-                type="button"
-              >
-                ×
-              </button>
-            )}
+            {renderTitle('text-2xl font-bold text-poker-gold')}
+            {renderCloseButton()}
           </div>
         )}
 
