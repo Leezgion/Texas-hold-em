@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import ActionButtons from './ActionButtons';
 import Card from './Card';
 import { getDisplayModeTheme } from '../utils/productMode';
-import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
+import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
 import { deriveActionDockView } from '../view-models/gameViewModel';
 
 const ActionDock = ({
@@ -29,7 +29,10 @@ const ActionDock = ({
 
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const reducedMotion = useReducedMotion();
-  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, {
+    reducedMotion,
+    viewport: resolveTacticalMotionViewport({ viewportModel: viewportLayout?.viewportModel }),
+  });
   const roomCopy = theme.room;
   const supportLabels = theme.sheetLabels || {};
   const dockView = deriveActionDockView({

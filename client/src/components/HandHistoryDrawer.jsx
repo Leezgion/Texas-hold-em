@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight, ScrollText } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 
-import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
+import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
 import { buildHandHistoryView } from '../view-models/handHistoryViewModel';
 
 const HandHistoryDrawerContent = ({
@@ -123,11 +123,27 @@ const HandHistoryDrawer = ({
   effectiveDisplayMode = 'pro',
   surfaceVariant = 'drawer',
   defaultOpen = false,
+  viewportModel,
 }) => {
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   const reducedMotion = useReducedMotion();
-  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, {
+    reducedMotion,
+    viewport: resolveTacticalMotionViewport({ viewportModel, viewportWidth }),
+  });
   const summaries = buildHandHistoryView(records);
   const lineLimit = effectiveDisplayMode === 'study' ? 6 : 4;
+
+  useEffect(() => {
+    if (viewportModel) {
+      return undefined;
+    }
+
+    const handleResize = () => setViewportWidth(window.innerWidth);
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewportModel]);
 
   if (surfaceVariant === 'embedded') {
     return (

@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import HandHistoryDrawer from './HandHistoryDrawer';
 import Leaderboard from './Leaderboard';
 import { getDisplayModeTheme } from '../utils/productMode';
-import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
+import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
 import { buildHandHistoryView } from '../view-models/handHistoryViewModel';
 
 const EventRail = ({
@@ -20,7 +20,10 @@ const EventRail = ({
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const reducedMotion = useReducedMotion();
-  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, {
+    reducedMotion,
+    viewport: resolveTacticalMotionViewport({ viewportModel: viewportLayout?.viewportModel }),
+  });
   const roomCopy = theme.room;
   const historyItems = buildHandHistoryView(records).slice(0, roomCopy.historyPreviewCount);
   const summaryLineLimit = effectiveDisplayMode === 'study' ? 6 : effectiveDisplayMode === 'club' ? 2 : 4;
@@ -207,6 +210,7 @@ const EventRail = ({
             effectiveDisplayMode={effectiveDisplayMode}
             surfaceVariant="embedded"
             defaultOpen
+            viewportModel={viewportLayout?.viewportModel}
           />
         )}
       </section>

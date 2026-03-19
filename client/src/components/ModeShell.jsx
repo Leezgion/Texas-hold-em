@@ -3,7 +3,7 @@ import { MotionConfig } from 'motion/react';
 import { useLocation } from 'react-router-dom';
 
 import { getDisplayModeTheme } from '../utils/productMode';
-import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
+import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
 
 const ModeShell = ({ mode = 'pro', children }) => {
   const location = useLocation();
@@ -18,13 +18,7 @@ const ModeShell = ({ mode = 'pro', children }) => {
   }, []);
 
   const motionViewport =
-    viewportWidth < 768
-      ? 'phone-terminal'
-      : viewportWidth < 1280
-      ? 'tablet-terminal'
-      : viewportWidth >= 1536
-      ? 'ultrawide-terminal'
-      : 'desktop-terminal';
+    resolveTacticalMotionViewport({ viewportWidth });
   const motionProfile = buildTacticalMotionProfile(mode, { viewport: motionViewport });
   const motion = theme.motion || {};
   const shellMotionStyle = {

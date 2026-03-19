@@ -621,7 +621,8 @@ This is a client preference. It should not change server truth or give one playe
     - room-route phone portrait now locks the shell to a true single-screen viewport instead of leaving residual page scroll under the support sheet
     - phone support surfaces now scroll inside the sheet body instead of fighting the page container or nested rail scroll areas
     - fresh automated rerun on `2026-03-19`:
-      - `client`: `63/63`
+      - `cd client && node --test src/utils/tacticalMotion.test.js src/utils/roomViewportLayout.test.js src/utils/seatRingLayout.test.js src/utils/tableStageLayout.test.js src/view-models/gameViewModel.test.js src/view-models/handHistoryViewModel.test.js`
+      - `client`: `63/63` on that focused room-shell + motion + view-model scope
       - `server`: `112/112`
       - `build`: passed
     - fresh browser evidence on room `9219U5` while reusing the live local `3001 / 5173` dev environment:

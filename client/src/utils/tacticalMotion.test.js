@@ -52,4 +52,11 @@ test('enforces the stricter phone-terminal motion contract', () => {
   assert.equal(desktop.allowBackdropBlurStacks, true);
   assert.equal(desktop.pageFloat, 'enabled');
   assert.equal(desktop.primaryTransitions, 'full-shell');
+  assert.ok(phone.stage.initial.y < desktop.stage.initial.y);
+  assert.ok(phone.cue.initial.y < desktop.cue.initial.y);
+  assert.ok(phone.eventCard.initial.y < desktop.eventCard.initial.y);
+  assert.ok(phone.settlement.staggerChildren < desktop.settlement.staggerChildren);
+  assert.ok(phone.handTape.staggerChildren < desktop.handTape.staggerChildren);
+  assert.equal(phone.turnChip.animate.scale, 1);
+  assert.equal(phone.turnChip.transition.scale, undefined);
 });

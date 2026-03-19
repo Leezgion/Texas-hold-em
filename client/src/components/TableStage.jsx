@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import CommunityCards from './CommunityCards';
 import TableStageChrome from './TableStageChrome';
 import { getDisplayModeTheme } from '../utils/productMode';
-import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
+import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
 import { resolveCommunityCardLayout, resolveTableSurfaceLayout } from '../utils/tableStageLayout';
 
 const TableStage = ({
@@ -20,7 +20,10 @@ const TableStage = ({
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const reducedMotion = useReducedMotion();
-  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, {
+    reducedMotion,
+    viewport: resolveTacticalMotionViewport({ viewportWidth }),
+  });
   const roomCopy = theme.room;
   const primaryPotItem = tablePotSummary.items[0] || null;
   const secondaryPotItems = tablePotSummary.items.slice(1, 3);

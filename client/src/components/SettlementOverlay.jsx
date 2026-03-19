@@ -2,13 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 import { getDisplayModeTheme } from '../utils/productMode';
-import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
+import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
 import { getLatestHandSummary } from '../view-models/handHistoryViewModel';
 
 const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerId, onReveal, effectiveDisplayMode = 'pro' }) => {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   const reducedMotion = useReducedMotion();
-  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, {
+    reducedMotion,
+    viewport: resolveTacticalMotionViewport({ viewportWidth }),
+  });
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (roomState !== 'settling' || !gameState?.settlementWindowEndsAt) {
