@@ -140,13 +140,35 @@ For Poker OS shell work, add these spot checks explicitly:
 - gateway desktop: three readable mode cards plus create/join controls
 - gateway mobile: cards stack cleanly without overlap
 - room shell desktop: seat ring stays inside the stage panel and the hero dock remains readable
+- room shell desktop: in-hand current-turn verification must include the stage beacon, not only the hero dock; confirm the beacon shows the active seat and, after one real action, a last-action cue
+- settlement hierarchy: when validating settlement UI, prefer a long-settlement room such as `-SettleMs 15000` so the overlay, countdown, and winner-first ordering can be captured before the next hand starts
+- settlement hierarchy: confirm both the desktop settlement sheet and the phone event rail show winner-first ordering:
+  - winner/pot headline first
+  - total-pot line second
+  - chip-delta lines afterwards
+- Motion choreography: when a surface uses `motion/react` on top of CSS ambience, inspect both:
+  - computed `animationName` to confirm the CSS ambience is still active
+  - inline `style` transforms/opacity on the same element to confirm Motion is driving the entrance or pulse state
+- SVG stage chrome: verify `.table-stage-chrome` exists and the seat-guide count still matches the visible seat ring; when blinds or button labels are available, confirm the SVG marker texts mirror them
+- ultrawide verification: if `resize_page` does not push `window.innerWidth` across the intended breakpoint, switch to viewport emulation before diagnosing the shell layout
 - room shell mobile: side seats stay inside the stage, the current-player marker does not wrap badly, and long nicknames truncate instead of stretching rail cards
+- room shell mobile: side seats must stay outside both the table circle and the community-card band; checking the table bounds alone is not sufficient
 - room shell mobile: `IntelRail / EventRail / Hero Dock` stack in a stable top-to-bottom order without overlapping the stage or each other
 - tactical dock: stat cards wrap cleanly on phone portrait instead of compressing into unreadable chips
 - roster and stack ledger: long device-style nicknames truncate instead of widening narrow cards
 - cross-mode check: `club / pro / study` remain visibly different in theme and information emphasis
 
 For phone portrait verification, do not rely on DevTools accessibility snapshots alone. Capture at least one real screenshot after resizing to a narrow viewport; snapshot text can confirm semantics, but it will not prove that the seat ring and dock spacing still fit visually.
+
+If responsive geometry still looks suspicious after a helper refactor, measure the real rendered rectangles in the browser:
+
+- `.arena-seat-anchor`
+- `.poker-table`
+- `.poker-card.community`
+
+For split-stage desktop checks, do not trust the visual plaque body height. Measure the real rendered live-turn footprint after badges and the turn marker appear; the regression on `2026-03-19` only reproduced once the browser showed a footprint close to `132 x 144`.
+
+Do not trust guessed mobile footprints from unit tests alone; the first broken phone pass under-budgeted the real seat-card height by roughly half and only browser rects exposed it.
 
 Update both of these after the run:
 
@@ -188,3 +210,6 @@ Expected final state:
 - If a stale room page now shows `当前页面身份已失效，请刷新页面后重试。`, treat that as the expected front-end warning for a stolen `deviceId -> socket` mapping rather than a gameplay-state bug.
 - `stop-all` should always be followed by `status`; a printed success line is not sufficient evidence that both listeners are already gone.
 - After any Tailwind or build-pipeline dependency change, always hard-restart `5173`; do not trust a dev server that stayed alive across `npm install` or config rewiring.
+- Settlement UI evidence is easy to miss on the default `settleMs = 3000`; if you need screenshots of the countdown, winner-first ordering, or reveal controls, restart with a longer settlement window before testing.
+- Motion surfaces can look fine in a static screenshot while their entrance choreography is actually dead; inspect inline transforms or opacity on the live element before declaring the animation layer healthy.
+- DevTools window resizing can under-report the real layout width; when you need a true tablet or ultrawide breakpoint, verify `window.innerWidth` before trusting the screenshot.

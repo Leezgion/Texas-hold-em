@@ -485,11 +485,146 @@ This is a client preference. It should not change server truth or give one playe
       - rails stacked vertically without overlap
       - hero dock stayed readable below the rails
       - long host nickname truncated inside the stack ledger instead of tearing the card
+  - responsive geometry rerun after the Tailwind 4 migration and layout-helper pass:
+    - desktop room `KANQ0R` at `1280x900` stayed in `split-stage`
+    - desktop script verification showed:
+      - `overlappingTableSeats = 0`
+      - `overlappingCardBandSeats = 0`
+    - phone portrait room `KANQ0R` at `390x844` rerendered cleanly after:
+      - updating the mobile seat-ring profile to use the real rendered seat-card height budget
+      - shrinking the community-card band into the phone table safe width
+    - phone script verification showed:
+      - `overlappingTableSeats = 0`
+      - `overlappingCardBandSeats = 0`
+  - motion-system foundation rerun after the responsive geometry fix:
+    - `productMode` now exposes mode-specific motion tokens for `club / pro / study`
+    - `ModeShell` now maps those tokens into CSS variables consumed by:
+      - shell ambience
+      - gateway stage
+      - preview cards
+      - table pot capsule and beacon
+      - tactical dock
+      - settlement sheet
+    - fresh automated verification on `2026-03-19`:
+      - `client`: `55/55`
+      - `build`: passed
+    - fresh browser spot checks on `2026-03-19`:
+      - desktop gateway showed active motion vars and `arenaStageFloat / arenaAmbientDrift`
+      - desktop room `QSPNVK` showed active `arenaStageFloat / arenaSpotlightPulse` on the stage surfaces without reintroducing overlap
+      - phone portrait room `QSPNVK` preserved `tableOverlaps = 0` and `cardBandOverlaps = 0` while the stage motion remained active
+  - current-turn stage emphasis rerun after the split-stage geometry fix:
+    - new view-model coverage landed for:
+      - `phaseLabel`
+      - `currentTurnSeatLabel`
+      - `stageActionLabel`
+      - `lastActionLabel`
+    - fresh automated rerun on `2026-03-19`:
+      - `client`: `57/57`
+      - `build`: passed
+    - fresh browser evidence on room `ID7LH3`:
+      - desktop `1280x900` initially exposed a real overlap regression where the live-turn plaque height budget was too small and the bottom seat clipped into the felt
+      - after raising the desktop seat-ring helper to the real rendered live-turn plaque footprint, browser rect checks returned:
+        - `overlaps = 0`
+        - `cardBandOverlaps = 0`
+      - the stage beacon now renders live cues in-hand:
+        - `轮到 座2 · TO CALL 10`
+        - `上一动作 座2 跟注 10`
+      - phone portrait rerun at `390x844` stayed green with:
+        - `overlaps = 0`
+        - `cardBandOverlaps = 0`
+  - winner-first settlement hierarchy rerun after renaming the product shell to `Tactical Hold'em`:
+    - `client/index.html` now exposes the product title `Tactical Hold'em`
+    - hand-history summaries now split into:
+      - `headlineLine`
+      - `totalLine`
+      - `scoreboardLines`
+      - `detailLines`
+    - `EventRail` and `SettlementOverlay` now render winner-first ordering instead of treating the total-pot line as the first result row
+    - fresh automated rerun on `2026-03-19`:
+      - `client`: `58/58`
+      - `build`: passed
+    - fresh browser evidence on room `A8BQG5` with `settleMs = 15000`:
+      - desktop settlement overlay showed:
+        - `LATEST HAND`
+        - `第 3 手`
+        - `主池 +30: device_mmx9ri4m_6bw0ze_lbfwmz +30`
+        - `总池 +30`
+        - chip-delta lines below the winner line
+      - desktop screenshot evidence saved to:
+        - `.runlogs/winner-first-settlement-desktop.png`
+        - `.runlogs/winner-first-settlement-desktop-refresh.png`
+      - phone portrait rerun preserved the winner-first order in the live event rail:
+        - `主池 +30: ...`
+        - `总池 +30`
+        - chip-delta lines
+      - phone screenshot evidence saved to:
+        - `.runlogs/winner-first-event-rail-phone.png`
+      - the same browser batch also confirmed the shell title:
+        - `document.title === Tactical Hold'em`
+        - screenshot `.runlogs/tactical-holdem-home-title.png`
+  - Motion library integration rerun for stage / dock / settlement choreography:
+    - client dependency now includes `motion`
+    - new helper coverage landed in:
+      - `client/src/utils/tacticalMotion.test.js`
+      - `client/src/utils/tacticalMotion.js`
+    - `ModeShell` now mounts a global `MotionConfig` with `reducedMotion=\"user\"`
+    - `TableStage`, `ActionDock`, and `SettlementOverlay` now use `motion/react` for:
+      - stage pot-capsule entrances
+      - stage cue / last-action transitions
+      - hero-dock turn-context emphasis
+      - settlement-sheet entrance and line stagger
+    - fresh automated rerun on `2026-03-19`:
+      - `client`: `60/60`
+      - `build`: passed
+    - fresh browser evidence on room `4SJK71` with `settleMs = 15000`:
+      - live desktop hand showed Motion-managed inline transforms on:
+        - `.table-stage-pot-capsule`
+        - `.table-stage-beacon`
+        - `.tactical-dock__chip` for `您的回合`
+      - settlement rerun showed Motion-managed inline styles on:
+        - `.settlement-sheet`
+        - `.settlement-sheet__countdown`
+      - fresh screenshots:
+        - `.runlogs/motion-settlement-desktop.png`
+        - `.runlogs/motion-phone-live.png`
+  - rail Motion and SVG-backed stage rerun:
+    - `EventRail` and `Hand Tape` now use `motion/react` entrance timing instead of only static CSS cards
+    - `TableStage` now mounts an SVG-backed chrome layer driven by `buildStageChromeLayout`
+    - the stage chrome now renders:
+      - seat guides
+      - blind / button marker labels when available
+      - board-tray framing lines
+    - fresh automated rerun on `2026-03-19`:
+      - `client`: `25/25` on the focused helper/model suite
+      - `build`: passed
+    - fresh browser evidence on room `01ELEM` with `settleMs = 15000`:
+      - desktop live room showed:
+        - `.table-stage-chrome` present
+        - `6` seat guides
+        - marker labels `SB/BTN` and `BB`
+      - desktop settlement rerun showed:
+        - `EventRail` latest card and `Hand Tape` cards rendered with Motion-managed inline styles
+        - `SettlementOverlay` remained intact over the new SVG stage chrome
+      - fresh screenshots:
+        - `.runlogs/svg-stage-settlement-desktop.png`
+        - `.runlogs/svg-stage-tablet-emulated.png`
+        - `.runlogs/svg-stage-ultrawide.png`
+    - fresh wider-shell checks on `2026-03-19`:
+      - emulated `1024x1366` stayed on the stacked shell with the SVG stage still rendering `6` seat guides
+      - emulated `1720x1000` switched to `room-shell-grid--three-column` and preserved the stage chrome in the wider shell
 - Newly discovered pitfall:
   - the old full-screen seat geometry does not fit unchanged inside the new shell panels; desktop clipping and mobile side-seat overflow both reappeared until the seat-ring scale was reduced for panel-based layout
+  - mobile seat geometry cannot use guessed card heights; the real rendered `arena-seat-card` footprint was about `70 x 123-128`, while the first helper pass only budgeted `70 x 60`, which hid the regression in unit tests
+  - on narrow tables, “seat ring vs table circle” is not the whole problem; the community-card band can still extend beyond the safe width and collide with side seats unless it is included in the responsive layout contract
   - long device-style nicknames can tear open narrow rail cards if the new shell forgets to apply explicit truncation rules
   - if the same `deviceId` is open in multiple pages, the page that re-registers last owns the server mapping; an older page can still look “connected” but fail `createRoom` with `设备未注册`
   - responsive shell verification cannot rely on accessibility snapshots alone; take at least one real screenshot for phone portrait before concluding that seat ring spacing, rail stacking, and hero dock spacing are truly stable
+  - desktop `split-stage` cannot budget seat geometry from the visual plaque body alone; once the live-turn halo, badges, and footer rows render, the real footprint grows to roughly `132 x 144`, and the helper must reserve that larger height or the bottom seat will clip back into the felt even while older unit tests still pass
+  - the default `settleMs = 3000` window is too short for reliable UI evidence capture; use a long-settlement browser batch such as `-SettleMs 15000` when validating settlement hierarchy, countdown placement, or winner-first result ordering
+  - once `motion/react` is layered on top of CSS keyframes, browser verification must inspect both sides:
+    - CSS animation names confirm the ambient layer is still running
+    - inline styles on the same elements confirm Motion is actually driving entrances or pulse transforms
+  - `resize_page` alone is not enough to validate ultrawide breakpoints in DevTools; if `window.innerWidth` stays below the target breakpoint, use viewport emulation before concluding that the three-column shell is broken
 
 ## Living Evidence
 
@@ -502,6 +637,18 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Poker OS shell migration and cross-mode UI differentiation
 - `[done]` Functional edge-flow and exception-surface hardening rerun
 - `[done]` Tactical dock / rail redesign rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Seat-ring and community-card responsive geometry rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Tactical Arena motion-system foundation rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Tactical Arena current-turn stage emphasis rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Tactical Arena winner-first settlement hierarchy rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Tactical Arena Motion choreography rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Tactical Arena rail Motion + SVG-backed stage rerun with fresh browser evidence on `2026-03-19`
+
+## Next Tactical Arena Backlog
+
+- `[done]` Extend Motion choreography into `EventRail` and `Hand Tape`
+- `[done]` Upgrade `TableStage` to an SVG-backed stage chrome
+- `[done]` Capture tablet and ultrawide shell screenshots after the Motion pass
 
 ## Risks To Watch
 
