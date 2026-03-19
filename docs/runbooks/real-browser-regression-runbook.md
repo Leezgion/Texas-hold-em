@@ -1,10 +1,10 @@
 # Real Browser Regression Runbook
 
-This runbook is the authoritative operator workflow for real-browser regression on `feat/presentation-state-refactor`.
+This runbook is the authoritative operator workflow for real-browser regression in the current repository checkout on `main`.
 
 Use it when you need to:
 
-- start the worktree server and client
+- start the regression server and client
 - confirm the correct backend is live
 - run browser scenarios with isolated player identities
 - capture room-state evidence
@@ -12,9 +12,9 @@ Use it when you need to:
 
 ## Scope
 
-- Worktree root: `D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor`
-- Server port for this worktree: `3101`
-- Client port for this worktree: `5173`
+- Repo root: `D:\GITHUB\Texas-hold'em`
+- Server port for regression runs: `3101`
+- Client port for regression runs: `5173`
 - Stable scripts:
   - `scripts/manage-real-browser-env.ps1`
   - `scripts/browser-room-workflow.ps1`
@@ -26,7 +26,7 @@ Close old browser pages first. Keep one `about:blank` page if you are using Chro
 Run:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\manage-real-browser-env.ps1 status
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\manage-real-browser-env.ps1 status
 ```
 
 Expected:
@@ -37,8 +37,8 @@ Expected:
 Optional hard reset:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\manage-real-browser-env.ps1 stop-all
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\browser-room-workflow.ps1 clear-current-room
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\manage-real-browser-env.ps1 stop-all
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\browser-room-workflow.ps1 clear-current-room
 ```
 
 ## 2. Start The Environment
@@ -46,13 +46,13 @@ pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refa
 Standard start:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\manage-real-browser-env.ps1 start-all -CleanProfile
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\manage-real-browser-env.ps1 start-all -CleanProfile
 ```
 
 Long-settlement start for reconnect or settlement UI verification:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\manage-real-browser-env.ps1 start-all -CleanProfile -SettleMs 15000
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\manage-real-browser-env.ps1 start-all -CleanProfile -SettleMs 15000
 ```
 
 Important:
@@ -65,7 +65,7 @@ Important:
 Check listeners:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\manage-real-browser-env.ps1 status
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\manage-real-browser-env.ps1 status
 ```
 
 Check server health:
@@ -83,9 +83,9 @@ Invoke-WebRequest -UseBasicParsing http://127.0.0.1:5173/index.html | Select-Obj
 If `5173` is missing or startup returned an unexpected failure, inspect the logs before retrying:
 
 ```powershell
-Get-Content D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\.runlogs\server-3101.out.log -Tail 80
-Get-Content D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\.runlogs\client-5173.out.log -Tail 80
-Get-Content D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\.runlogs\client-5173.err.log -Tail 80
+Get-Content D:\GITHUB\Texas-hold'em\.runlogs\server-3101.out.log -Tail 80
+Get-Content D:\GITHUB\Texas-hold'em\.runlogs\client-5173.out.log -Tail 80
+Get-Content D:\GITHUB\Texas-hold'em\.runlogs\client-5173.err.log -Tail 80
 ```
 
 Only proceed when both `3101` and `5173` are confirmed alive.
@@ -95,6 +95,7 @@ Only proceed when both `3101` and `5173` are confirmed alive.
 - Prefer Chrome DevTools MCP over ad-hoc shell browser commands.
 - Use a fresh `isolatedContext` for every non-host player and every new scenario.
 - Do not reuse old contexts across rooms unless you are intentionally testing reconnect with the same browser identity.
+- Do not keep multiple active host pages on the same `deviceId`; the most recently registered page owns the server-side device mapping and older pages can fail later actions with `设备未注册`.
 - After every major UI change, take a fresh snapshot instead of reusing stale element handles.
 
 ## 5. Room Tracking
@@ -102,19 +103,19 @@ Only proceed when both `3101` and `5173` are confirmed alive.
 After creating a room in the browser, save it immediately:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\browser-room-workflow.ps1 set-from-url -Url http://127.0.0.1:5173/game/ABC123
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\browser-room-workflow.ps1 set-from-url -Url http://127.0.0.1:5173/game/ABC123
 ```
 
 Show the current saved room:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\browser-room-workflow.ps1 show-current-room
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\browser-room-workflow.ps1 show-current-room
 ```
 
 Print the saved room URL for a new browser context:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\browser-room-workflow.ps1 print-current-room-url
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\browser-room-workflow.ps1 print-current-room-url
 ```
 
 ## 6. Evidence Capture
@@ -134,6 +135,14 @@ At minimum, record:
 - `handHistory`
 - `potResults` when side-pot settlement is involved
 
+For Poker OS shell work, add these spot checks explicitly:
+
+- gateway desktop: three readable mode cards plus create/join controls
+- gateway mobile: cards stack cleanly without overlap
+- room shell desktop: seat ring stays inside the stage panel and the hero dock remains readable
+- room shell mobile: side seats stay inside the stage, the current-player marker does not wrap badly, and long nicknames truncate instead of stretching rail cards
+- cross-mode check: `club / pro / study` remain visibly different in theme and information emphasis
+
 Update both of these after the run:
 
 - `docs/plans/2026-03-19-poker-product-readiness-todolist.md`
@@ -144,16 +153,16 @@ Update both of these after the run:
 After the scenario batch:
 
 1. Close all extra browser pages and leave only one blank page.
-2. Stop the worktree services.
+2. Stop the regression services.
 3. Clear the saved room id.
 4. Confirm the ports are gone.
 
 Commands:
 
 ```powershell
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\manage-real-browser-env.ps1 stop-all
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\browser-room-workflow.ps1 clear-current-room
-pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\.worktrees\presentation-state-refactor\scripts\manage-real-browser-env.ps1 status
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\manage-real-browser-env.ps1 stop-all
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\browser-room-workflow.ps1 clear-current-room
+pwsh -NoProfile -File D:\GITHUB\Texas-hold'em\scripts\manage-real-browser-env.ps1 status
 ```
 
 Expected final state:
@@ -169,4 +178,6 @@ Expected final state:
 - If `5173` points at the wrong backend, stop and restart using this worktree runbook. Do not trust a stale dev server.
 - If a browser page shows old room state, verify the room via `/api/debug/rooms/:roomId` before assuming a gameplay bug.
 - If multi-player testing looks wrong, check whether you accidentally reused the same browser context and therefore the same `deviceId`.
+- If one page on the same device suddenly fails `createRoom` or `joinRoom` with `设备未注册`, check whether another page re-registered the same `deviceId` more recently.
+- If a stale room page now shows `当前页面身份已失效，请刷新页面后重试。`, treat that as the expected front-end warning for a stolen `deviceId -> socket` mapping rather than a gameplay-state bug.
 - `stop-all` should always be followed by `status`; a printed success line is not sufficient evidence that both listeners are already gone.

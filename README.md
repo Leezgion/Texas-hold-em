@@ -80,9 +80,9 @@ cd client
 npm run dev
 ```
 
-### 2.1 `feat/presentation-state-refactor` 的真实浏览器回归入口
+### 2.1 真实浏览器回归入口
 
-这个分支的产品化回归，不再依赖口头步骤或临时命令。请直接使用：
+当前仓库的真实浏览器回归，不再依赖口头步骤或临时命令。请直接使用：
 
 - [docs/runbooks/real-browser-regression-runbook.md](./docs/runbooks/real-browser-regression-runbook.md)
 - [scripts/manage-real-browser-env.ps1](./scripts/manage-real-browser-env.ps1)
@@ -90,8 +90,8 @@ npm run dev
 
 这套 runbook 的固定端口约定是：
 
-- worktree server: `3101`
-- worktree client: `5173`
+- regression server: `3101`
+- regression client: `5173`
 
 如果你只是普通开发，可以继续用下面的常规启动方式；如果你是在做真实浏览器矩阵、重连验证或产品化回归，优先走 runbook，不要混用旧流程。
 
@@ -101,7 +101,7 @@ npm run dev
 
 - 客户端：<http://localhost:5173/>
 - 服务器：<http://localhost:3001>
-- worktree 浏览器回归：<http://127.0.0.1:5173/> 配合 <http://127.0.0.1:3101/>
+- 浏览器回归环境：<http://127.0.0.1:5173/> 配合 <http://127.0.0.1:3101/>
 
 #### 局域网访问（多设备游戏）
 
@@ -265,7 +265,7 @@ npm start
 - 确保服务器和客户端都已启动
 - 检查防火墙设置
 - 常规开发确认端口 `3001` 和 `5173`
-- worktree 浏览器回归确认端口 `3101` 和 `5173`
+- 浏览器回归确认端口 `3101` 和 `5173`
 - 若 `start-all` 返回失败，不要立刻重试；先按 runbook 检查 `status` 和 `.runlogs`
 
 ### 游戏问题

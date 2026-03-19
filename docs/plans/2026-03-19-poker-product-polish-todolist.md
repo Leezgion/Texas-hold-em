@@ -239,7 +239,7 @@ This is a client preference. It should not change server truth or give one playe
 
 ### Task 5: Harden Functional Edge Flows Before Cosmetic Work
 
-- Status: `[in_progress]`
+- Status: `[done]`
 - Scope focus:
   - join / leave / seat-switch timing edges
   - spectator -> seat -> next-hand transitions
@@ -278,12 +278,18 @@ This is a client preference. It should not change server truth or give one playe
       - no `操作失败：游戏未开始` toast
       - `GET /api/debug/rooms/C9ZUGP` returned `404`
       - `GET /api/debug/rooms/C20LNR` showed the accepted fold and `handHistory[0]` under the new room
-- Next concrete subtask:
-  - browser-level evidence is still missing for the newly hardened denied-action paths; the next step is to capture at least one real stale-action / denied-action browser regression and verify the new immediate error feedback behaves as intended
+  - fresh stale-action browser evidence on `2026-03-19`:
+    - page A created room `K5CQ52`
+    - page B opened the home route with the same device identity and re-registered the device
+    - back on stale page A, clicking `退出房间` immediately produced the new warning toast:
+      - `当前页面身份已失效，请刷新页面后重试。`
+    - `GET /api/debug/rooms/K5CQ52` still showed a healthy room with the latest active socket on the newer page
+- Explicit non-goal note:
+  - several invalid actions such as non-eligible reveal choices are intentionally suppressed in the UI, so browser verification for those paths is “button not offered”; their denial semantics remain covered by server and view-model tests
 
 ### Task 6: Tighten Exception Surfaces And Operator Feedback
 
-- Status: `[in_progress]`
+- Status: `[done]`
 - Why this matters:
   - serious players tolerate rule complexity, but not silent failure or ambiguous table state
 - Scope:
@@ -297,13 +303,25 @@ This is a client preference. It should not change server truth or give one playe
   - `[done]` `recoverRoom` now uses `recoverRoomSuccess / recoverRoomError` and emits explicit success feedback after recovery completes
   - `[done]` `playerAction` now uses `playerActionSuccess / playerActionError`, so denied or stale clicks unlock the action UI immediately instead of waiting for the fallback timeout
   - `[done]` `revealHand` now uses `revealHandSuccess / revealHandError`, so showdown choice failures no longer share the loose global `error` channel
-- Newly discovered gap:
-  - we still need fresh browser evidence for these newly tightened denied-action surfaces, especially stale clicks near turn changes and invalid reveal attempts during settlement/showdown mode boundaries
-  - if room-switch regressions ever reappear, we must distinguish server truth from client residue first by checking `GET /api/debug/rooms/:roomId`; earlier runs showed the client could briefly render stale old-room occupants and hand history even when the new room on the server was already clean
+  - `[done]` new client error-feedback mapping now turns structured denied-operation codes into stable user-facing copy in `deriveRequestErrorFeedback`
+  - `[done]` action components (`ActionButtons`, `GameRoom`, `Player`, `EmptySeat`, `JoinRoomModal`, `RebuyModal`, `CreateRoomModal`) now consume that shared mapping instead of each rendering raw `error.message`
+- Fresh evidence:
+  - new view-model coverage landed for:
+    - `PLAYER_OUT_OF_TURN`
+    - `ROOM_RECOVERY_REQUIRED`
+    - stale `设备未注册` page-identity failures
+  - post-feedback rerun stayed green:
+    - `client`: `57/57` on `2026-03-19`
+    - `build`: passed on `2026-03-19`
+  - fresh browser evidence on stale room page `K5CQ52` confirmed the user now sees:
+    - `当前页面身份已失效，请刷新页面后重试。`
+    - instead of a raw backend string
+- Ongoing operator reminder:
+  - if room-switch regressions ever reappear, distinguish server truth from client residue first by checking `GET /api/debug/rooms/:roomId`; earlier runs showed the client could briefly render stale old-room occupants and hand history even when the new room on the server was already clean
 
 ### Task 7: Build The `pro` Mode First
 
-- Status: `[in_progress]`
+- Status: `[done]`
 - Why this is the anchor mode:
   - existing product direction already uses professional real-play semantics as the backbone
 - Scope candidates:
@@ -321,18 +339,65 @@ This is a client preference. It should not change server truth or give one playe
   - action decision density
   - player/seat/table awareness
   - hand-history and settlement readability
+- Fresh evidence:
+  - new client view-model coverage landed for:
+    - `deriveProActionSummary`
+    - `buildProActionStatRows`
+    - `deriveProPlayerSummary`
+    - object-based board / reveal formatting in `handHistoryViewModel`
+  - automated rerun after the `pro` batch:
+    - `server`: `112/112` on `2026-03-19`
+    - `client`: `41/41` on `2026-03-19`
+    - `build`: passed on `2026-03-19`
+  - fresh browser evidence on room `2O2MST`:
+    - pre-hand `Leaderboard` already showed `座位 · 状态 · 净额`
+    - after `startGame`, the acting host saw a `pro` decision strip with:
+      - `TO CALL`
+      - `MIN RAISE`
+      - `POT`
+      - `EFF`
+    - mid-hand third-player join showed both:
+      - the pending-join banner
+      - compact panel text `座3 · 下一手加入`
+    - after a two-player `all-in / call`, the drawer rendered a readable board line:
+      - `Board 2♠ 5♠ 3♠ 5♦ 8♠`
+- Newly discovered pitfall:
+  - hand-history `communityCards` and reveal `cards` arrive as card objects, not preformatted strings; direct string joining renders `[object Object]`, so `pro` board / reveal summaries must format `{ rank, suit }` explicitly
 
 ### Task 8: Add `club` And `study` Differentiation Without Forking The App
 
-- Status: `[todo]`
+- Status: `[done]`
 - Scope:
   - `club`: lower cognitive load, clearer banners, safer defaults
   - `study`: richer explanations, better review context, stronger history readability
   - keep one common view-model surface and only vary presentation/config density
+- Fresh evidence:
+  - approved redesign docs landed and were committed:
+    - `docs/plans/2026-03-19-poker-os-redesign-design.md`
+    - `docs/plans/2026-03-19-poker-os-redesign-implementation-plan.md`
+  - shared `ModeShell` theme tokens now exist in `client/src/utils/productMode.js`
+  - the new `Mode Gateway` now renders visible `club / pro / study` preview cards instead of only a flat preference toggle
+  - room creation now presents room mode as a table preset card instead of a raw setting row
+  - fresh browser evidence on `2026-03-19`:
+    - desktop gateway shows three clearly different mode cards with distinct copy and accents
+    - mobile gateway still renders the three cards as separate readable blocks
+  - fresh desktop `club` room `Y2TFWJ` rendered a visibly different operator-first shell:
+    - `桌况总览`
+    - `Table Console`
+    - `最近动态`
+    - `本席控制`
+  - fresh desktop + mobile `study` room `WM360K` rendered a visibly different review-first shell:
+    - `State Notes`
+    - `Review Stage`
+    - `Review Rail`
+    - `Hero Review`
+  - cross-mode room-shell differentiation is no longer only a theme-card/gateway effect; the room-page headings, captions, stat ordering, and history density now differ per mode
+- Newly discovered pitfall:
+  - when a user creates a new room from inside an older room session, the first payload for the new room must not be filtered as an “unrelated room” broadcast; this regression appeared during the `club` verification and is now guarded by `client/src/utils/roomTransition.js`
 
 ### Task 9: UI / UX Polish Pass
 
-- Status: `[todo]`
+- Status: `[done]`
 - Gating rule:
   - this only starts after Tasks 1-6 are stable enough that we are not repainting over moving logic
 - Scope:
@@ -340,6 +405,38 @@ This is a client preference. It should not change server truth or give one playe
   - remove remaining confusing copy
   - improve mobile and desktop density choices by mode
   - revisit optional delight items such as card-flip sound only after functional polish
+- Fresh evidence:
+  - the client now has a new `Poker OS` shell on both routes:
+    - `ModeGateway`
+    - `TableHeader`
+    - `TableStage`
+    - `SeatRing`
+    - `IntelRail`
+    - `EventRail`
+    - `ActionDock`
+  - shell view models now exist for:
+    - room header state
+    - seat ring state
+    - intel rail occupancy summaries
+    - event rail summaries
+  - automated rerun after the shell migration stayed green:
+    - `server`: `112/112` on `2026-03-19`
+    - `client`: `49/49` on `2026-03-19`
+    - `build`: passed on `2026-03-19`
+  - fresh browser evidence on `2026-03-19`:
+    - desktop room `0D470R` rendered the new header, stage, rails, and hero dock without compile/runtime regressions
+    - mobile gateway rendered without card overlap or unreadable action panels
+    - mobile room `0D470R` rendered the new shell after seat-radius tuning and long-name truncation fixes
+    - mobile `study` room `WM360K` rerendered cleanly after the cross-mode pass; the new shell stayed readable in a `390x844` viewport without side-seat overflow or history-rail tearing
+  - new client transition coverage landed in `client/src/utils/roomTransition.test.js`
+  - post-fix automated rerun stayed green:
+    - `server`: `112/112` on `2026-03-19`
+    - `client`: `53/53` on `2026-03-19`
+    - `build`: passed on `2026-03-19`
+- Newly discovered pitfall:
+  - the old full-screen seat geometry does not fit unchanged inside the new shell panels; desktop clipping and mobile side-seat overflow both reappeared until the seat-ring scale was reduced for panel-based layout
+  - long device-style nicknames can tear open narrow rail cards if the new shell forgets to apply explicit truncation rules
+  - if the same `deviceId` is open in multiple pages, the page that re-registers last owns the server mapping; an older page can still look “connected” but fail `createRoom` with `设备未注册`
 
 ## Living Evidence
 
@@ -348,6 +445,9 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` First post-readiness implementation landed without breaking baseline
 - `[done]` First mode-system implementation evidence
 - `[done]` First post-plan browser regression batch
+- `[done]` Poker OS redesign design + implementation plan committed on `2026-03-19`
+- `[done]` Poker OS shell migration and cross-mode UI differentiation
+- `[done]` Functional edge-flow and exception-surface hardening rerun
 
 ## Risks To Watch
 
@@ -355,3 +455,4 @@ This is a client preference. It should not change server truth or give one playe
 - presets can become marketing labels unless they map to real user-visible differences
 - UI density changes can reintroduce mobile regressions if they are only validated on desktop
 - study-mode feature ideas can bloat the live-play product if not constrained
+- shell-level geometry can invalidate previously safe seat layouts because the old table lived in a full-screen canvas, not inside nested panels

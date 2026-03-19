@@ -1,5 +1,7 @@
 # Poker Product Readiness Todo
 
+> Archived on `main` after the presentation-state merge. The active follow-up plan is `docs/plans/2026-03-19-poker-product-polish-todolist.md`.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Drive `feat/presentation-state-refactor` to a state where the poker game is credible as a real product and can be merged into `main` without known gameplay, recovery, or operator-flow blockers.
