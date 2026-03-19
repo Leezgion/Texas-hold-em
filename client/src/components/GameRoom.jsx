@@ -667,6 +667,7 @@ const GameRoom = () => {
                     tablePotSummary={tablePotSummary}
                     tableSizeClassName={tableSizeClassName}
                     viewportWidth={windowSize.width}
+                    viewportHeight={windowSize.height}
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}
@@ -713,6 +714,7 @@ const GameRoom = () => {
                     tablePotSummary={tablePotSummary}
                     tableSizeClassName={tableSizeClassName}
                     viewportWidth={windowSize.width}
+                    viewportHeight={windowSize.height}
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}

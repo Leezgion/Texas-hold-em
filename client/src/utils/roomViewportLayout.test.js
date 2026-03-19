@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { resolveRoomViewportLayout } from './roomViewportLayout.js';
+import { resolveRoomViewportLayout, resolveStageViewportContract } from './roomViewportLayout.js';
+import { resolveTableSurfaceLayout } from './tableStageLayout.js';
 
 test('phone portrait keeps the hero dock fixed and moves support surfaces into sheets', () => {
   const layout = resolveRoomViewportLayout({ width: 390, height: 844 });
@@ -73,5 +74,26 @@ test('short-height landscape windows switch the room terminal into a compressed 
   assert.equal(layout.heightClass, 'short-height');
   assert.equal(layout.stageDensity, 'compressed');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
-  assert.ok(layout.minStageBudgetPx >= 180);
+  assert.equal(layout.minStageBudgetPx, 180);
+});
+
+test('room shell and table stage share the same short-height stage budget contract', () => {
+  const viewport = { width: 844, height: 390 };
+  const roomLayout = resolveRoomViewportLayout(viewport);
+  const stageContract = resolveStageViewportContract(viewport);
+  const tableLayout = resolveTableSurfaceLayout({
+    viewportWidth: viewport.width,
+    viewportHeight: viewport.height,
+    tableDiameter: 320,
+  });
+
+  assert.equal(roomLayout.heightClass, 'short-height');
+  assert.equal(roomLayout.stageDensity, 'compressed');
+  assert.equal(stageContract.heightClass, roomLayout.heightClass);
+  assert.equal(stageContract.stageDensity, roomLayout.stageDensity);
+  assert.equal(stageContract.minStageBudgetPx, roomLayout.minStageBudgetPx);
+  assert.equal(tableLayout.heightClass, roomLayout.heightClass);
+  assert.equal(tableLayout.stageDensity, roomLayout.stageDensity);
+  assert.equal(tableLayout.stageBudget.minStageBudgetPx, roomLayout.minStageBudgetPx);
+  assert.equal(tableLayout.stageMinHeightPx, roomLayout.minStageBudgetPx);
 });

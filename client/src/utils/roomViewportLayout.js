@@ -9,6 +9,17 @@ function resolveHeightClass({ width = 0, height = 0 } = {}) {
   return 'regular-height';
 }
 
+export function resolveStageViewportContract({ width = 0, height = 0 } = {}) {
+  const safeWidth = Number(width) || 0;
+  const heightClass = resolveHeightClass({ width: safeWidth, height });
+
+  return {
+    heightClass,
+    stageDensity: heightClass === 'short-height' ? 'compressed' : safeWidth < 768 ? 'compact' : 'standard',
+    minStageBudgetPx: heightClass === 'short-height' ? 180 : safeWidth < 768 ? 220 : safeWidth >= 1280 ? 300 : 260,
+  };
+}
+
 function buildViewportLayout({
   viewportModel,
   supportSurfaceModel,
@@ -17,7 +28,7 @@ function buildViewportLayout({
   width = 0,
   height = 0,
 } = {}) {
-  const heightClass = resolveHeightClass({ width, height });
+  const stageViewportContract = resolveStageViewportContract({ width, height });
 
   return {
     viewportModel,
@@ -26,9 +37,7 @@ function buildViewportLayout({
     supportSurfaceModel,
     supportSurfacePolicy,
     contentMaxWidth,
-    heightClass,
-    stageDensity: heightClass === 'short-height' ? 'compressed' : width < 768 ? 'compact' : 'standard',
-    minStageBudgetPx: heightClass === 'short-height' ? 180 : width < 768 ? 220 : width >= 1280 ? 300 : 260,
+    ...stageViewportContract,
   };
 }
 

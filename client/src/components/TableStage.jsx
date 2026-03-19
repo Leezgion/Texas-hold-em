@@ -15,10 +15,10 @@ const TableStage = ({
   effectiveDisplayMode = 'pro',
   roomShellLayout = 'stacked',
   viewportWidth = 1280,
+  viewportHeight = 0,
   tableDiameter = 320,
   seatGuides = [],
 }) => {
-  const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const reducedMotion = useReducedMotion();
   const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, {
@@ -77,7 +77,7 @@ const TableStage = ({
         data-height-class={tableSurfaceLayout.heightClass}
         data-stage-density={tableSurfaceLayout.stageDensity}
         data-table-family={tableSurfaceLayout.family}
-        style={{ minHeight: `${tableSurfaceLayout.stageMinHeightPx}px` }}
+        style={{ minHeight: `${tableSurfaceLayout.stageBudget.minStageBudgetPx}px` }}
       >
         <div className="table-stage-atmosphere" aria-hidden="true" />
 

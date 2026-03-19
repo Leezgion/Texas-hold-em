@@ -6,6 +6,7 @@ import {
   resolveCommunityCardLayout,
   resolveTableSurfaceLayout,
 } from './tableStageLayout.js';
+import { resolveStageViewportContract } from './roomViewportLayout.js';
 import { buildSeatRingPositions } from './seatRingLayout.js';
 
 function getCommunityRowWidth({ cardWidth, gap, cardCount = 5 }) {
@@ -63,6 +64,8 @@ test('compresses short-height landscape stage layout without changing the family
   assert.equal(shortLandscape.family, 'tournament-capsule-9max');
   assert.equal(shortLandscape.heightClass, 'short-height');
   assert.equal(shortLandscape.stageDensity, 'compressed');
+  assert.equal(shortLandscape.stageBudget.minStageBudgetPx, 180);
+  assert.equal(shortLandscape.stageBudget.minStageBudgetPx, resolveStageViewportContract({ width: 844, height: 390 }).minStageBudgetPx);
   assert.ok(shortLandscape.stageScale < 1);
   assert.ok(shortLandscape.tableHeight < regularLandscape.tableHeight);
   assert.ok(shortLandscape.stageMinHeightPx < regularLandscape.stageMinHeightPx);
@@ -199,6 +202,75 @@ test('normalizes stage chrome guides to canonical 9-max anchors for supported co
   });
   assert.notEqual(layout.seatGuides[0].cx, layout.centerX + rawSeatGuides[0].position.x);
   assert.notEqual(layout.seatGuides[0].cy, layout.centerY + rawSeatGuides[0].position.y);
+});
+
+test('keeps the hero anchor on the hero-relative slot for split-stage tables', () => {
+  const rawSeatGuides = [
+    { seatIndex: 0, seatLabel: 'Seat 1', positionLabel: 'UTG', isCurrentPlayer: false, position: { x: -999, y: -999 } },
+    { seatIndex: 1, seatLabel: 'Seat 2', positionLabel: 'HJ', isCurrentPlayer: false, position: { x: -888, y: -888 } },
+    { seatIndex: 2, seatLabel: 'Seat 3', positionLabel: 'CO', isCurrentPlayer: false, position: { x: -777, y: -777 } },
+    { seatIndex: 3, seatLabel: 'Seat 4', positionLabel: 'BTN', isCurrentPlayer: true, position: { x: 111, y: 222 } },
+    { seatIndex: 4, seatLabel: 'Seat 5', positionLabel: 'SB', isCurrentPlayer: false, position: { x: 333, y: 444 } },
+    { seatIndex: 5, seatLabel: 'Seat 6', positionLabel: 'BB', isCurrentPlayer: false, position: { x: 555, y: 666 } },
+  ];
+  const layout = buildStageChromeLayout({
+    viewportWidth: 1280,
+    viewportHeight: 900,
+    tableDiameter: 352,
+    roomShellLayout: 'split-stage',
+    seatGuides: rawSeatGuides,
+    tableProfile: 'desktop-oval',
+  });
+  const canonical = buildSeatRingPositions({
+    playerCount: rawSeatGuides.length,
+    viewportWidth: 1280,
+    roomShellLayout: 'split-stage',
+    tableDiameter: layout.effectiveTableDiameter,
+    profile: 'desktop-oval',
+  });
+  const heroGuide = layout.seatGuides.find((guide) => guide.isHero);
+
+  assert.ok(heroGuide);
+  assert.equal(heroGuide.seatIndex, 3);
+  assert.equal(heroGuide.anchorRole, 'hero');
+  assert.equal(heroGuide.anchorZone, 'table-edge');
+  assert.equal(heroGuide.cx, layout.centerX + canonical[0].x);
+  assert.equal(heroGuide.cy, layout.centerY + canonical[0].y);
+});
+
+test('keeps short-height phone-oval normalization aligned to the unified hero anchor', () => {
+  const rawSeatGuides = Array.from({ length: 9 }, (_, seatIndex) => ({
+    seatIndex,
+    seatLabel: `Seat ${seatIndex + 1}`,
+    positionLabel: null,
+    isCurrentPlayer: seatIndex === 5,
+    position: { x: 900 - seatIndex * 90, y: -900 + seatIndex * 80 },
+  }));
+  const layout = buildStageChromeLayout({
+    viewportWidth: 844,
+    viewportHeight: 390,
+    tableDiameter: 320,
+    roomShellLayout: 'stacked',
+    seatGuides: rawSeatGuides,
+  });
+  const canonical = buildSeatRingPositions({
+    playerCount: rawSeatGuides.length,
+    viewportWidth: 844,
+    roomShellLayout: 'stacked',
+    tableDiameter: layout.effectiveTableDiameter,
+    profile: 'phone-oval',
+  });
+  const heroGuide = layout.seatGuides.find((guide) => guide.isHero);
+
+  assert.equal(layout.profile, 'phone-oval');
+  assert.equal(layout.heightClass, 'short-height');
+  assert.equal(layout.stageDensity, 'compressed');
+  assert.ok(heroGuide);
+  assert.equal(heroGuide.seatIndex, 5);
+  assert.equal(heroGuide.anchorRole, 'hero');
+  assert.equal(heroGuide.anchorZone, 'dock-edge');
+  assert.equal(heroGuide.cx, layout.centerX + canonical[0].x);
+  assert.equal(heroGuide.cy, layout.centerY + canonical[0].y);
 });
 
 test('uses a desktop oval table profile for wide stages', () => {

@@ -1,4 +1,5 @@
 import { buildSeatRingPositions } from './seatRingLayout.js';
+import { resolveStageViewportContract } from './roomViewportLayout.js';
 
 const TABLE_FAMILY = 'tournament-capsule-9max';
 
@@ -7,23 +8,12 @@ function clampNumber(value, fallback = 0) {
   return Number.isFinite(normalized) ? normalized : fallback;
 }
 
-function resolveStageHeightClass({ viewportWidth = 0, viewportHeight = 0 } = {}) {
-  const safeWidth = clampNumber(viewportWidth);
-  const safeHeight = clampNumber(viewportHeight);
-
-  if (safeHeight > 0 && (safeHeight < 520 || (safeWidth >= 768 && safeHeight < 720))) {
-    return 'short-height';
-  }
-
-  return 'regular-height';
-}
-
 function resolveTableProfile({ viewportWidth = 0, viewportHeight = 0, tableProfile = null } = {}) {
   if (tableProfile === 'desktop-oval' || tableProfile === 'phone-oval') {
     return tableProfile;
   }
 
-  if (resolveStageHeightClass({ viewportWidth, viewportHeight }) === 'short-height') {
+  if (resolveStageViewportContract({ width: viewportWidth, height: viewportHeight }).heightClass === 'short-height') {
     return 'phone-oval';
   }
 
@@ -36,12 +26,13 @@ export function resolveTableSurfaceLayout({
   tableDiameter = 0,
   tableProfile = null,
 } = {}) {
-  const heightClass = resolveStageHeightClass({ viewportWidth, viewportHeight });
+  const stageViewportContract = resolveStageViewportContract({ width: viewportWidth, height: viewportHeight });
+  const heightClass = stageViewportContract.heightClass;
   const profile = resolveTableProfile({ viewportWidth, viewportHeight, tableProfile });
   const safeTableDiameter = clampNumber(tableDiameter, viewportWidth < 768 ? 208 : 320);
   const stageScale = heightClass === 'short-height' ? (profile === 'phone-oval' ? 0.58 : 0.74) : 1;
   const effectiveTableDiameter = Math.max(0, Math.round(safeTableDiameter * stageScale));
-  const stageDensity = heightClass === 'short-height' ? 'compressed' : viewportWidth < 768 ? 'compact' : 'standard';
+  const stageDensity = stageViewportContract.stageDensity;
 
   if (profile === 'phone-oval') {
     return {
@@ -56,7 +47,8 @@ export function resolveTableSurfaceLayout({
       boardTrayInsetX: 20,
       boardTrayInsetY: 18,
       stageBandHeight: heightClass === 'short-height' ? 36 : 40,
-      stageMinHeightPx: Math.round(Math.max(220, Math.min(360, effectiveTableDiameter + 72))),
+      stageBudget: stageViewportContract,
+      stageMinHeightPx: stageViewportContract.minStageBudgetPx,
     };
   }
 
@@ -72,7 +64,8 @@ export function resolveTableSurfaceLayout({
     boardTrayInsetX: 26,
     boardTrayInsetY: 20,
     stageBandHeight: heightClass === 'short-height' ? 40 : 46,
-    stageMinHeightPx: Math.round(Math.max(240, Math.min(420, effectiveTableDiameter + 144))),
+    stageBudget: stageViewportContract,
+    stageMinHeightPx: stageViewportContract.minStageBudgetPx,
   };
 }
 
@@ -171,7 +164,10 @@ export function buildStageChromeLayout({
       isHeadMarker,
     };
   });
-  const seatCount = Array.isArray(seatGuides) ? seatGuides.length : 0;
+  const safeSeatGuides = Array.isArray(seatGuides) ? seatGuides : [];
+  const seatCount = safeSeatGuides.length;
+  const heroSeatGuide = safeSeatGuides.find((seat) => Boolean(seat?.isHero || seat?.isCurrentPlayer)) || null;
+  const heroSeatIndex = Number.isInteger(Number(heroSeatGuide?.seatIndex)) ? Number(heroSeatGuide.seatIndex) : 0;
   const canonicalSeatPositions =
     seatCount > 0
       ? buildSeatRingPositions({
@@ -182,19 +178,23 @@ export function buildStageChromeLayout({
           profile: surface.profile,
         })
       : [];
-  const normalizedSeatGuides = canonicalSeatPositions.map((position, index) => {
-    const sourceSeat = Array.isArray(seatGuides) ? seatGuides[index] || {} : {};
+  const normalizedSeatGuides = safeSeatGuides.map((sourceSeat, inputIndex) => {
+    const seatIndex = Number.isInteger(Number(sourceSeat?.seatIndex)) ? Number(sourceSeat.seatIndex) : inputIndex;
+    const relativeSeat = seatCount > 0 ? ((seatIndex - heroSeatIndex + seatCount) % seatCount) : inputIndex;
+    const canonicalPosition = canonicalSeatPositions[relativeSeat] || null;
 
     return {
-      seatIndex: sourceSeat.seatIndex ?? index,
+      seatIndex,
       seatLabel: sourceSeat.seatLabel,
       markerLabel: sourceSeat.positionLabel || null,
       occupied: Boolean(sourceSeat.occupied),
       isCurrentTurn: Boolean(sourceSeat.isCurrentTurn),
-      isHero: Boolean(sourceSeat.isCurrentPlayer),
-      anchorZone: position.anchorZone || null,
-      cx: centerX + position.x,
-      cy: centerY + position.y,
+      isHero: Boolean(sourceSeat.isHero || sourceSeat.isCurrentPlayer),
+      anchorSlotId: canonicalPosition?.anchorRole ? `${surface.profile}:${seatCount}:${canonicalPosition.anchorRole}:${relativeSeat}` : null,
+      anchorRole: canonicalPosition?.anchorRole || null,
+      anchorZone: canonicalPosition?.anchorZone || null,
+      cx: canonicalPosition ? centerX + canonicalPosition.x : centerX,
+      cy: canonicalPosition ? centerY + canonicalPosition.y : centerY,
     };
   });
   const maxSeatOffsetX = canonicalSeatPositions.length
@@ -229,8 +229,8 @@ export function buildStageChromeLayout({
   };
   const adjustedSeatGuides = normalizedSeatGuides.map((guide, index) => ({
     ...guide,
-    cx: adjustedCenterX + canonicalSeatPositions[index].x,
-    cy: adjustedCenterY + canonicalSeatPositions[index].y,
+    cx: guide.cx + centerDeltaX,
+    cy: guide.cy + centerDeltaY,
   }));
 
   return {
