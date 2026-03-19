@@ -27,3 +27,12 @@ test('RoomPanelSheet source emits real dialog semantics and focus handling', () 
   assert.match(source, /previousActiveElement/);
   assert.match(source, /focus\(\)/);
 });
+
+test('dialog surfaces keep a visible focus treatment instead of removing focus cues outright', () => {
+  const source = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+
+  assert.match(source, /\.modal-content:focus-visible,/);
+  assert.match(source, /\.room-panel-sheet__surface:focus-visible/);
+  assert.match(source, /outline:\s*2px solid/);
+  assert.match(source, /outline-offset:\s*3px/);
+});

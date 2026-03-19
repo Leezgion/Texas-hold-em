@@ -782,9 +782,10 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
-  .modal-content:focus,
-  .room-panel-sheet__surface:focus {
-    outline: none;
+  .modal-content:focus-visible,
+  .room-panel-sheet__surface:focus-visible {
+    outline: 2px solid rgba(251, 191, 36, 0.92);
+    outline-offset: 3px;
   }
 
   .room-panel-sheet__surface[data-room-panel-presentation="slide-panel"] {
