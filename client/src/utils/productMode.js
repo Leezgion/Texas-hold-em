@@ -107,6 +107,12 @@ const CREATE_ROOM_META = Object.freeze({
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
     advancedSettingsMode: 'collapsed',
+    sectionOrder: Object.freeze(['mode', 'essentials', 'advanced']),
+    phoneChrome: 'sticky-header-footer',
+    scrollbarStyle: 'themed',
+    essentialSectionTitle: '基础设置',
+    advancedSectionTitle: '高级规则',
+    modeSectionTitle: '桌型预设',
   }),
   pro: Object.freeze({
     entryModel: 'profile-first',
@@ -115,6 +121,12 @@ const CREATE_ROOM_META = Object.freeze({
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
     advancedSettingsMode: 'collapsed',
+    sectionOrder: Object.freeze(['mode', 'essentials', 'advanced']),
+    phoneChrome: 'sticky-header-footer',
+    scrollbarStyle: 'themed',
+    essentialSectionTitle: '基础设置',
+    advancedSectionTitle: '高级规则',
+    modeSectionTitle: '桌型预设',
   }),
   study: Object.freeze({
     entryModel: 'profile-first',
@@ -123,6 +135,12 @@ const CREATE_ROOM_META = Object.freeze({
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
     advancedSettingsMode: 'collapsed',
+    sectionOrder: Object.freeze(['mode', 'essentials', 'advanced']),
+    phoneChrome: 'sticky-header-footer',
+    scrollbarStyle: 'themed',
+    essentialSectionTitle: '基础设置',
+    advancedSectionTitle: '高级规则',
+    modeSectionTitle: '桌型预设',
   }),
 });
 

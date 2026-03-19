@@ -12,6 +12,12 @@ const Modal = ({
   className = '',
   layout = 'default', // 'default' | 'scrollable'
   footer = null,
+  surface = 'default',
+  phoneSurface = 'default',
+  scrollbarStyle = 'default',
+  bodyClassName = '',
+  headerClassName = '',
+  footerClassName = '',
 }) => {
   const handleOverlayClick = () => {
     if (closeOnOverlayClick) {
@@ -22,26 +28,28 @@ const Modal = ({
   if (!show) return null;
 
   if (layout === 'scrollable') {
-    // 特殊布局：固定头部、可滚动内容、固定底部
     return (
       <div
         className="modal-overlay"
+        data-modal-surface={surface}
+        data-modal-phone-surface={phoneSurface}
         onClick={handleOverlayClick}
       >
         <div
           className={`modal-content ${maxWidth} ${className}`}
+          data-modal-surface={surface}
+          data-modal-phone-surface={phoneSurface}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* 固定头部 */}
           {(title || showCloseButton) && (
-            <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-700 bg-gray-800 rounded-t-lg shrink-0">
+            <div className={`modal-content__header ${headerClassName}`}>
               {title && (
                 <h2 className="text-xl sm:text-2xl font-bold text-poker-gold">{title}</h2>
               )}
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-white text-2xl shrink-0 p-1 hover:bg-gray-700 rounded ml-auto"
+                  className="modal-content__close-button"
                   type="button"
                 >
                   ×
@@ -49,15 +57,16 @@ const Modal = ({
               )}
             </div>
           )}
-          
-          {/* 可滚动内容区域 */}
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+
+          <div
+            className={`modal-content__body ${bodyClassName}`}
+            data-modal-scrollbar={scrollbarStyle}
+          >
             {children}
           </div>
 
-          {/* 固定底部 */}
           {footer && (
-            <div className="shrink-0 px-4 sm:px-6 py-4 border-t border-gray-700 bg-gray-800 rounded-b-lg">
+            <div className={`modal-content__footer ${footerClassName}`}>
               {footer}
             </div>
           )}
@@ -70,22 +79,25 @@ const Modal = ({
   return (
     <div
       className="modal-overlay"
+      data-modal-surface={surface}
+      data-modal-phone-surface={phoneSurface}
       onClick={handleOverlayClick}
     >
       <div
         className={`modal-content ${maxWidth} ${padding} ${className}`}
+        data-modal-surface={surface}
+        data-modal-phone-surface={phoneSurface}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 标题栏 */}
         {(title || showCloseButton) && (
-          <div className="flex justify-between items-center mb-6">
+          <div className={`modal-content__header modal-content__header--default ${headerClassName}`}>
             {title && (
               <h2 className="text-2xl font-bold text-poker-gold">{title}</h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white text-2xl ml-auto"
+                className="modal-content__close-button"
                 type="button"
               >
                 ×
@@ -93,9 +105,13 @@ const Modal = ({
             )}
           </div>
         )}
-        
-        {/* 内容区域 */}
-        {children}
+
+        <div
+          className={`modal-content__body modal-content__body--default ${bodyClassName}`}
+          data-modal-scrollbar={scrollbarStyle}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -5,17 +5,19 @@ const ModePreviewCard = ({
   selected = false,
   active = false,
   compact = false,
+  surfaceVariant = 'default',
   onSelect,
 }) => {
   const baseClassName = compact
     ? 'mode-preview-card mode-preview-card--compact'
     : 'mode-preview-card';
+  const variantClassName = surfaceVariant === 'create-room' ? 'mode-preview-card--create-room' : '';
 
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={`${baseClassName} ${card.shellClassName} ${selected ? 'mode-preview-card--selected' : ''}`}
+      className={`${baseClassName} ${variantClassName} ${card.shellClassName} ${selected ? 'mode-preview-card--selected' : ''}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -33,7 +35,15 @@ const ModePreviewCard = ({
         </div>
       </div>
 
-      {!compact && (
+      {surfaceVariant === 'create-room' ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {(card.highlights || []).slice(0, 2).map((item) => (
+            <span key={item} className="mode-preview-card__chip">
+              {item}
+            </span>
+          ))}
+        </div>
+      ) : !compact ? (
         <>
           <div className="mt-4 text-sm text-slate-400">{card.detail}</div>
           <div className="mode-preview-card__persona mt-4">
@@ -48,7 +58,7 @@ const ModePreviewCard = ({
             ))}
           </div>
         </>
-      )}
+      ) : null}
     </button>
   );
 };

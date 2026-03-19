@@ -234,3 +234,23 @@ test('exposes single-screen room terminal metadata for each display mode', () =>
   assert.equal(studyTheme.sheetLabels.history, 'Timeline');
   assert.equal(studyTheme.sheetLabels.room, '复盘设置');
 });
+
+test('exposes profile-first create-room surface contract for the terminal modal', () => {
+  const clubTheme = getDisplayModeTheme('club');
+  const proTheme = getDisplayModeTheme('pro');
+  const studyTheme = getDisplayModeTheme('study');
+
+  for (const theme of [clubTheme, proTheme, studyTheme]) {
+    assert.equal(theme.createRoom.surface, 'panel');
+    assert.equal(theme.createRoom.phoneSurface, 'full-screen-sheet');
+    assert.equal(theme.createRoom.tileLayout, 'horizontal');
+    assert.equal(theme.createRoom.advancedSettingsMode, 'collapsed');
+    assert.deepEqual(theme.createRoom.sectionOrder, ['mode', 'essentials', 'advanced']);
+    assert.equal(theme.createRoom.phoneChrome, 'sticky-header-footer');
+    assert.equal(theme.createRoom.scrollbarStyle, 'themed');
+  }
+
+  assert.equal(clubTheme.createRoom.essentialSectionTitle, '基础设置');
+  assert.equal(proTheme.createRoom.primaryActionLabel, '创建房间');
+  assert.equal(studyTheme.createRoom.advancedSectionTitle, '高级规则');
+});
