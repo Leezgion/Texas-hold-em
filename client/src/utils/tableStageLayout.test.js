@@ -47,6 +47,29 @@ test('builds the same tournament table family for desktop and phone portrait', (
   assert.equal(phone.profile, 'phone-oval');
 });
 
+test('pins the stage chrome orbit to nine markers with a single head marker', () => {
+  const layout = buildStageChromeLayout({
+    viewportWidth: 1280,
+    tableDiameter: 352,
+    seatGuides: [],
+  });
+
+  assert.equal(layout.family, 'tournament-capsule-9max');
+  assert.equal(layout.orbit.markerCount, 9);
+  assert.equal(layout.orbitMarkers.length, 9);
+  assert.equal(
+    layout.orbitMarkers.filter((marker) => marker.isHeadMarker).length,
+    1,
+    'expected exactly one head marker in the orbit'
+  );
+  assert.equal(layout.orbitMarkers[0].isHeadMarker, true);
+  assert.equal(
+    Math.min(...layout.orbitMarkers.map((marker) => marker.cy)),
+    layout.orbitMarkers[0].cy,
+    'expected the head marker to anchor the top of the orbit'
+  );
+});
+
 test('maps seat guides and board tray into desktop stage chrome bounds', () => {
   const layout = buildStageChromeLayout({
     viewportWidth: 1280,
