@@ -27,11 +27,7 @@ function countTableRectOverlaps({
 
 function assertUsesExplicitAnchorPath(layout, playerCount) {
   assert.equal(layout.length, playerCount);
-  assert.equal(
-    layout.some(({ anchorRole }) => anchorRole === 'ring'),
-    false,
-    'generic fallback uses ring roles'
-  );
+  assert.equal(layout.templateSource, 'explicit-9max');
 }
 
 function getSeatCardCollisionPairs({

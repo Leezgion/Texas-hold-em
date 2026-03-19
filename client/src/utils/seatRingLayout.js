@@ -345,6 +345,7 @@ export function buildSeatRingPositions({
     profile,
   });
   const safePlayerCount = Math.max(2, Number(playerCount) || 0);
+  let templateSource = 'fallback-generic';
 
   let positions;
   if (layoutProfile.profile === 'desktop-oval' || layoutProfile.profile === 'phone-oval') {
@@ -352,6 +353,9 @@ export function buildSeatRingPositions({
       playerCount: safePlayerCount,
       ...layoutProfile,
     });
+    if (positions) {
+      templateSource = 'explicit-9max';
+    }
   }
 
   if (!positions) {
@@ -408,5 +412,6 @@ export function buildSeatRingPositions({
     heroAnchor: {
       zone: layoutProfile.profile === 'phone-oval' ? 'dock-edge' : 'table-edge',
     },
+    templateSource,
   });
 }
