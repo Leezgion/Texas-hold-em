@@ -265,6 +265,7 @@
     - reconnect soak room `WF625O`
     - rebuy / reseat / next hand room `J54RJ0`
     - 6-player smoke room `J05H3O`
+    - extended 4-player reconnect soak room `7GHPD4`
   - `J54RJ0`
     - losing player reached `seat = -1`, `chips = 0`
     - same player rebought `1000`, re-seated into seat `2`, and entered the next hand as `BB`
@@ -275,6 +276,17 @@
     - by hand `4` `preflop`, `/api/debug/rooms/J05H3O` confirmed:
       - stable seats `0 / 1 / 2 / 3 / 4 / 5`
       - `handHistoryCount = 3`
+      - latest hand `totalPot = 30`
+      - latest hand `reason = 其他玩家全部弃牌`
+      - latest hand `pots = []`
+      - `gameState.sidePots = []`
+  - `7GHPD4`
+    - four isolated browser identities completed five consecutive hands
+    - same-identity reconnects were forced during hand `2` and hand `4`
+    - both reconnects restored a new `socketId` onto the original seated player without seat drift
+    - by hand `6` `preflop`, `/api/debug/rooms/7GHPD4` confirmed:
+      - stable seats `0 / 1 / 2 / 3`
+      - `handHistoryCount = 5`
       - latest hand `totalPot = 30`
       - latest hand `reason = 其他玩家全部弃牌`
       - latest hand `pots = []`
