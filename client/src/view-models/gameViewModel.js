@@ -488,15 +488,18 @@ export function deriveSeatRingView({
 } = {}) {
   const safePlayers = Array.isArray(players) ? players : [];
   const safeMaxPlayers = Math.max(2, Number(maxPlayers) || 6);
-  const canonicalSlotMap = new Map(
-    (Array.isArray(canonicalSlots) ? canonicalSlots : [])
-      .map((slot) => [Number(slot?.seatIndex), slot])
-      .filter(([seatIndex]) => Number.isInteger(seatIndex) && seatIndex >= 0)
-  );
+  const safeCanonicalSlots = Array.isArray(canonicalSlots) ? canonicalSlots : [];
+  const heroSeatIndex = (() => {
+    const currentPlayer = safePlayers.find((player) => player?.id === currentPlayerId) || null;
+    const seatIndex = Number(currentPlayer?.seat);
+
+    return Number.isInteger(seatIndex) && seatIndex >= 0 ? seatIndex : 0;
+  })();
 
   return Array.from({ length: safeMaxPlayers }, (_, seatIndex) => {
     const player = safePlayers.find((candidate) => Number(candidate?.seat) === seatIndex);
-    const canonicalSlot = canonicalSlotMap.get(seatIndex) || null;
+    const relativeSlotIndex = ((seatIndex - heroSeatIndex + safeMaxPlayers) % safeMaxPlayers);
+    const canonicalSlot = safeCanonicalSlots[relativeSlotIndex] || null;
 
     if (!player) {
       return {
