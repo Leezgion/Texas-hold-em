@@ -169,3 +169,36 @@ test('uses a split room shell on mid desktop widths and reserves full three-colu
   assert.equal(resolveRoomShellLayout(1440), 'split-stage');
   assert.equal(resolveRoomShellLayout(1536), 'three-column');
 });
+
+test('exposes tactical motion tokens that differ by display mode', () => {
+  const clubTheme = getDisplayModeTheme('club');
+  const proTheme = getDisplayModeTheme('pro');
+  const studyTheme = getDisplayModeTheme('study');
+
+  assert.deepEqual(proTheme.motion, {
+    enterMs: 180,
+    emphasisMs: 260,
+    ambientSeconds: 12,
+    spotlightSeconds: 2.4,
+    floatSeconds: 7,
+    ambientOpacity: 0.9,
+  });
+
+  assert.deepEqual(clubTheme.motion, {
+    enterMs: 220,
+    emphasisMs: 320,
+    ambientSeconds: 16,
+    spotlightSeconds: 3.2,
+    floatSeconds: 9,
+    ambientOpacity: 0.78,
+  });
+
+  assert.deepEqual(studyTheme.motion, {
+    enterMs: 240,
+    emphasisMs: 340,
+    ambientSeconds: 18,
+    spotlightSeconds: 3.4,
+    floatSeconds: 10,
+    ambientOpacity: 0.82,
+  });
+});

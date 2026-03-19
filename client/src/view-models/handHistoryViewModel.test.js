@@ -75,6 +75,46 @@ test('summarizes split side pots with per-player shares', () => {
   assert.match(summary.lines[2], /Carol/);
 });
 
+test('builds winner-first scoreboard fields for tactical settlement surfaces', () => {
+  const summary = buildHandSummary({
+    handNumber: 12,
+    totalPot: 5000,
+    chipDeltas: {
+      p1: 3000,
+      p2: -2000,
+    },
+    players: [
+      { id: 'p1', nickname: 'Alice' },
+      { id: 'p2', nickname: 'Bob' },
+    ],
+    potResults: [
+      {
+        potId: 0,
+        potType: 'main',
+        amount: 3000,
+        winners: [{ playerId: 'p1', nickname: 'Alice', amount: 3000 }],
+      },
+      {
+        potId: 1,
+        potType: 'side',
+        amount: 2000,
+        winners: [{ playerId: 'p2', nickname: 'Bob', amount: 2000 }],
+      },
+    ],
+    reveals: [{ playerId: 'p1', nickname: 'Alice', reveal: 'show_all', cards: ['A♠', 'K♠'] }],
+  });
+
+  assert.equal(summary.headlineLine, '主池 +3,000: Alice +3,000');
+  assert.equal(summary.totalLine, '总池 +5,000');
+  assert.deepEqual(summary.scoreboardLines, [
+    '主池 +3,000: Alice +3,000',
+    '边池 1 +2,000: Bob +2,000',
+    'Alice 净赢亏 +3,000',
+    'Bob 净赢亏 -2,000',
+  ]);
+  assert.deepEqual(summary.detailLines, ['Alice 全亮 A♠ K♠']);
+});
+
 test('builds drawer items in reverse hand order with chip delta lines', () => {
   const history = buildHandHistoryView([
     {
@@ -187,4 +227,6 @@ test('derives an event-rail summary from the latest hand history and live table 
   assert.equal(eventRail.historyCount, 1);
   assert.equal(eventRail.spotlightLine, '总池 +5,000');
   assert.equal(eventRail.boardLabel, 'A♠ K♥ 7♦ 2♣ 2♠');
+  assert.equal(eventRail.headlineLine, '主池 +3,000: Alice +3,000');
+  assert.deepEqual(eventRail.scoreboardLines, ['主池 +3,000: Alice +3,000']);
 });

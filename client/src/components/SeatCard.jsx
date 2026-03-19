@@ -28,7 +28,7 @@ const SeatCard = ({
 
   return (
     <div
-      className="arena-seat-anchor"
+      className={`arena-seat-anchor ${seat.isCurrentTurn ? 'arena-seat-anchor--current-turn' : ''}`}
       style={{
         left: `calc(50% + ${seat.position.x}px)`,
         top: `calc(50% + ${seat.position.y}px)`,

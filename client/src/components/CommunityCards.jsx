@@ -2,10 +2,24 @@ import Card from './Card';
 import { useState, useEffect } from 'react';
 import { useGame } from '../contexts/GameContext';
 
-const CommunityCards = () => {
+const CommunityCards = ({ boardLayout = null }) => {
   const { gameState } = useGame();
   const [animatingCards, setAnimatingCards] = useState(new Set());
   const [previousPhase, setPreviousPhase] = useState('preflop');
+  const resolvedBoardLayout = boardLayout || {
+    trayWidth: null,
+    trayHeight: null,
+    cardWidth: 52,
+    cardHeight: 72,
+    gap: 8,
+    cardDensity: 'regular',
+    phaseVisible: true,
+  };
+  const compactBoardLayout = !resolvedBoardLayout.phaseVisible;
+  const cardStyle = {
+    width: `${resolvedBoardLayout.cardWidth}px`,
+    height: `${resolvedBoardLayout.cardHeight}px`,
+  };
 
   // 监听游戏阶段变化，触发翻牌动画
   useEffect(() => {
@@ -57,11 +71,15 @@ const CommunityCards = () => {
 
   if (!gameState || !gameState.communityCards) {
     return (
-      <div className="flex justify-center space-x-3">
+      <div
+        className="flex justify-center"
+        style={{ gap: `${resolvedBoardLayout.gap}px` }}
+      >
         {[1, 2, 3, 4, 5].map((index) => (
           <div
             key={index}
             className="poker-card community back"
+            style={cardStyle}
           ></div>
         ))}
       </div>
@@ -108,14 +126,29 @@ const CommunityCards = () => {
   return (
     <div className="text-center">
       {/* 阶段标题 */}
-      <div className="mb-4">
-        <div className="text-lg font-bold text-yellow-400 mb-1">{getPhaseText()}</div>
-        <div className="w-16 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 mx-auto rounded-full"></div>
-      </div>
+      {resolvedBoardLayout.phaseVisible && (
+        <div className="mb-3">
+          <div className="mb-1 text-sm font-bold text-yellow-400 sm:text-lg">{getPhaseText()}</div>
+          <div className="mx-auto h-1 w-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 sm:w-16"></div>
+        </div>
+      )}
 
       {/* 公共牌区域 */}
-      <div className="community-cards-area">
-        <div className="flex justify-center space-x-3 mb-4">
+      <div
+        className="community-cards-area"
+        style={
+          compactBoardLayout
+            ? {
+                padding: 0,
+                background: 'transparent',
+              }
+            : undefined
+        }
+      >
+        <div
+          className={`flex justify-center ${resolvedBoardLayout.phaseVisible ? 'mb-4' : 'mb-0'}`}
+          style={{ gap: `${resolvedBoardLayout.gap}px` }}
+        >
           {[0, 1, 2, 3, 4].map((cardIndex) => {
             const card = communityCards[cardIndex];
             const isVisible = cardIndex < visibleCards.length;
@@ -132,7 +165,10 @@ const CommunityCards = () => {
                 <div className={`card-flipper ${isVisible && !isAnimating ? 'flipped' : ''}`}>
                   {/* 背面 */}
                   <div className="card-face card-back">
-                    <div className="poker-card community back"></div>
+                    <div
+                      className="poker-card community back"
+                      style={cardStyle}
+                    ></div>
                   </div>
 
                   {/* 正面 */}
@@ -141,9 +177,14 @@ const CommunityCards = () => {
                       <Card
                         card={card}
                         size="community"
+                        density={resolvedBoardLayout.cardDensity}
+                        style={cardStyle}
                       />
                     ) : (
-                      <div className="poker-card community back"></div>
+                      <div
+                        className="poker-card community back"
+                        style={cardStyle}
+                      ></div>
                     )}
                   </div>
                 </div>
@@ -153,7 +194,7 @@ const CommunityCards = () => {
         </div>
 
         {/* 底池信息 */}
-        {gameState.pot > 0 && (
+        {gameState.pot > 0 && resolvedBoardLayout.phaseVisible && (
           <div className="bg-gray-800/80 backdrop-blur-xs px-4 py-2 rounded-lg border border-gray-600 inline-block">
             <div className="text-sm text-gray-300">底池</div>
             <div className="text-lg font-bold text-green-400">{gameState.pot}</div>

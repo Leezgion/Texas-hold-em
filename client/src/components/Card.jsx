@@ -1,5 +1,7 @@
-const Card = ({ card, size = 'normal', className = '' }) => {
+const Card = ({ card, size = 'normal', density = 'regular', className = '', style }) => {
   if (!card) return null;
+
+  const isCompactCommunity = size === 'community' && density === 'compact';
 
   const getSuitColor = () => {
     return card.isRed ? 'text-red-600' : 'text-black';
@@ -62,14 +64,45 @@ const Card = ({ card, size = 'normal', className = '' }) => {
   const textSizes = getTextSizes();
 
   return (
-    <div className={`poker-card ${getSizeClass()} ${getSuitColor()} ${className} relative`}>
+    <div
+      className={`poker-card ${getSizeClass()} ${isCompactCommunity ? 'poker-card--compact' : ''} ${getSuitColor()} ${className} relative`}
+      style={style}
+    >
       {/* 简化设计：只显示中央的点数和花色 */}
       <div className="flex flex-col items-center justify-center h-full">
         {/* 点数 - 大而清晰 */}
-        <div className={`font-bold ${size === 'small' ? 'text-lg' : size === 'community' ? 'text-4xl' : size === 'large' ? 'text-3xl' : 'text-2xl'}`}>{getRankDisplay()}</div>
+        <div
+          className={`font-bold ${
+            size === 'small'
+              ? 'text-lg'
+              : size === 'community'
+              ? isCompactCommunity
+                ? 'text-2xl'
+                : 'text-4xl'
+              : size === 'large'
+              ? 'text-3xl'
+              : 'text-2xl'
+          }`}
+        >
+          {getRankDisplay()}
+        </div>
 
         {/* 花色 - 适中大小，清晰可见 */}
-        <div className={`${size === 'small' ? 'text-base' : size === 'community' ? 'text-3xl' : size === 'large' ? 'text-2xl' : 'text-xl'} -mt-1`}>{getSuitSymbol()}</div>
+        <div
+          className={`${
+            size === 'small'
+              ? 'text-base'
+              : size === 'community'
+              ? isCompactCommunity
+                ? 'text-xl'
+                : 'text-3xl'
+              : size === 'large'
+              ? 'text-2xl'
+              : 'text-xl'
+          } -mt-1`}
+        >
+          {getSuitSymbol()}
+        </div>
       </div>
     </div>
   );

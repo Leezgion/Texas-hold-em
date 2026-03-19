@@ -28,6 +28,12 @@
     --mode-shell-page-padding-bottom: clamp(1.25rem, 3vh, 2rem);
     --mode-shell-content-max: 1640px;
     --mode-shell-content-gutter: clamp(0.9rem, 2vw, 1.5rem);
+    --arena-motion-enter: 180ms;
+    --arena-motion-emphasis: 260ms;
+    --arena-motion-ambient: 12s;
+    --arena-motion-spotlight: 2.4s;
+    --arena-motion-float: 7s;
+    --arena-motion-ambient-opacity: 0.85;
   }
 
   body {
@@ -66,6 +72,9 @@
   .mode-shell__ambient {
     @apply pointer-events-none absolute inset-0;
     filter: blur(56px);
+    opacity: var(--arena-motion-ambient-opacity);
+    transform-origin: center;
+    animation: arenaAmbientDrift var(--arena-motion-ambient) ease-in-out infinite alternate;
   }
 
   .mode-shell__ambient--primary {
@@ -75,7 +84,8 @@
 
   .mode-shell__ambient--secondary {
     background: radial-gradient(circle at 82% 10%, var(--mode-shell-accent-ring), transparent 20rem);
-    opacity: 0.55;
+    animation-direction: alternate-reverse;
+    animation-duration: var(--arena-motion-float);
   }
 
   .mode-shell__vignette {
@@ -102,6 +112,7 @@
       linear-gradient(to bottom, var(--mode-shell-grid) 1px, transparent 1px);
     background-size: 64px 64px;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 85%);
+    animation: arenaGridDrift var(--arena-motion-ambient) linear infinite;
   }
 
   .mode-shell-club {
@@ -237,6 +248,24 @@
     position: relative;
   }
 
+  .mode-gateway-panel--hero::before {
+    content: "";
+    position: absolute;
+    inset: auto auto 8% -6%;
+    width: min(42rem, 72vw);
+    aspect-ratio: 1 / 1;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background:
+      radial-gradient(circle at center, rgba(255, 255, 255, 0.04), transparent 54%),
+      radial-gradient(circle at center, var(--mode-shell-accent-soft), transparent 62%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+      0 0 120px rgba(0, 0, 0, 0.24);
+    opacity: 0.72;
+    pointer-events: none;
+  }
+
   .mode-gateway-panel--hero::after {
     content: "";
     position: absolute;
@@ -253,16 +282,20 @@
 
   .mode-gateway-title {
     font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
-    @apply text-4xl font-semibold leading-tight text-white sm:text-5xl xl:text-6xl;
+    @apply text-4xl font-semibold text-white sm:text-[3.35rem] xl:text-[4.55rem];
     letter-spacing: -0.04em;
+    line-height: 0.96;
+    max-width: 10.5ch;
+    text-wrap: balance;
   }
 
   .mode-gateway-hero {
-    @apply grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end;
+    @apply grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_360px] xl:items-center;
   }
 
   .mode-gateway-stage {
-    @apply rounded-[1.75rem] border p-5;
+    @apply relative overflow-hidden rounded-[1.75rem] border p-5;
+    min-height: 18rem;
     border-color: var(--mode-shell-accent-border);
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(9, 14, 24, 0.74)),
@@ -270,6 +303,18 @@
     box-shadow:
       0 24px 54px rgba(0, 0, 0, 0.32),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    animation: arenaStageFloat var(--arena-motion-float) ease-in-out infinite;
+  }
+
+  .mode-gateway-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 12%, rgba(255, 255, 255, 0.08) 32%, transparent 52%);
+    opacity: 0.32;
+    transform: translateX(-42%);
+    animation: arenaSheenSweep var(--arena-motion-ambient) linear infinite;
+    pointer-events: none;
   }
 
   .mode-gateway-stage__eyebrow,
@@ -291,6 +336,10 @@
 
   .mode-status-pill {
     @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/15 px-4 py-2 text-sm text-slate-200;
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      background-color var(--arena-motion-enter) ease;
   }
 
   .mode-status-pill--online::before,
@@ -302,15 +351,17 @@
   .mode-status-pill--online::before {
     background: #34d399;
     box-shadow: 0 0 18px rgba(52, 211, 153, 0.6);
+    animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
   }
 
   .mode-status-pill--offline::before {
     background: #fb7185;
     box-shadow: 0 0 18px rgba(251, 113, 133, 0.55);
+    animation: arenaSpotlightPulse calc(var(--arena-motion-spotlight) * 1.12) ease-in-out infinite;
   }
 
   .mode-preview-card {
-    @apply w-full rounded-[1.5rem] border px-5 py-5 text-left transition duration-300;
+    @apply relative w-full overflow-hidden rounded-[1.5rem] border px-5 py-5 text-left;
     border-color: var(--mode-shell-border);
     background:
       linear-gradient(180deg, var(--mode-shell-surface), rgba(8, 15, 25, 0.55)),
@@ -318,6 +369,21 @@
     box-shadow:
       0 16px 50px rgba(0, 0, 0, 0.28),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      box-shadow var(--arena-motion-emphasis) ease;
+  }
+
+  .mode-preview-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 14%, rgba(255, 255, 255, 0.08) 34%, transparent 54%);
+    opacity: 0;
+    transform: translateX(-50%);
+    transition: opacity var(--arena-motion-enter) ease;
+    pointer-events: none;
   }
 
   .mode-preview-card:hover {
@@ -326,6 +392,12 @@
     box-shadow:
       0 20px 60px rgba(0, 0, 0, 0.32),
       0 0 0 1px var(--mode-shell-accent-ring);
+  }
+
+  .mode-preview-card:hover::after,
+  .mode-preview-card--selected::after {
+    opacity: 0.9;
+    animation: arenaSheenSweep var(--arena-motion-float) linear 1;
   }
 
   .mode-preview-card--selected {
@@ -394,7 +466,12 @@
 
   .mode-primary-button,
   .mode-secondary-button {
-    @apply w-full rounded-2xl px-5 py-4 text-base font-semibold transition duration-300 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply w-full rounded-2xl px-5 py-4 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50;
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      background-color var(--arena-motion-enter) ease,
+      box-shadow var(--arena-motion-emphasis) ease;
   }
 
   .mode-primary-button {
@@ -419,10 +496,14 @@
   }
 
   .mode-room-input {
-    @apply w-full rounded-2xl border px-4 py-4 text-center text-xl tracking-[0.32em] text-white outline-none transition duration-300;
+    @apply w-full rounded-2xl border px-4 py-4 text-center text-xl tracking-[0.32em] text-white outline-none;
     font-family: "IBM Plex Mono", "Consolas", monospace;
     border-color: var(--mode-shell-border);
     background: rgba(2, 6, 23, 0.5);
+    transition:
+      border-color var(--arena-motion-enter) ease,
+      box-shadow var(--arena-motion-enter) ease,
+      transform var(--arena-motion-enter) ease;
   }
 
   .mode-room-input:focus {
@@ -435,8 +516,14 @@
       grid-template-columns: 1fr;
     }
 
+    .mode-gateway-title {
+      max-width: none;
+      line-height: 1.02;
+    }
+
     .mode-gateway-stage {
       padding: 1rem;
+      min-height: auto;
     }
 
     .mode-gateway-preview-grid {
@@ -445,6 +532,8 @@
   }
 
   .poker-shell-panel {
+    position: relative;
+    overflow: hidden;
     border: 1px solid var(--mode-shell-border);
     background:
       linear-gradient(180deg, var(--mode-shell-surface), rgba(4, 8, 18, 0.55)),
@@ -453,6 +542,10 @@
       0 24px 72px rgba(0, 0, 0, 0.34),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(18px);
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      box-shadow var(--arena-motion-emphasis) ease;
   }
 
   .poker-shell-panel--accent {
@@ -499,13 +592,52 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(15, 23, 42, 0.18));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      background-color var(--arena-motion-enter) ease;
   }
 
   .table-stage-surface {
+    position: relative;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.03),
       inset 0 0 50px rgba(255, 255, 255, 0.03);
+    transition: box-shadow var(--arena-motion-emphasis) ease, border-color var(--arena-motion-enter) ease;
+  }
+
+  .table-stage-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--arena-motion-enter) ease, box-shadow var(--arena-motion-emphasis) ease;
+  }
+
+  .table-stage-surface--live-turn::after {
+    opacity: 1;
+    box-shadow:
+      inset 0 0 0 1px rgba(251, 113, 133, 0.12),
+      inset 0 0 86px rgba(251, 113, 133, 0.08),
+      0 0 0 1px rgba(251, 113, 133, 0.12);
+    animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
+  }
+
+  .table-stage-surface--settling::after {
+    opacity: 1;
+    box-shadow:
+      inset 0 0 0 1px rgba(251, 191, 36, 0.14),
+      inset 0 0 72px rgba(251, 191, 36, 0.08);
+  }
+
+  .table-stage-surface--alert::after {
+    opacity: 1;
+    box-shadow:
+      inset 0 0 0 1px rgba(248, 113, 113, 0.18),
+      inset 0 0 82px rgba(248, 113, 113, 0.12);
   }
 
   .table-stage-surface--split-stage {
@@ -522,11 +654,87 @@
     background:
       radial-gradient(circle at center, rgba(255, 255, 255, 0.05), transparent 40%),
       radial-gradient(circle at 50% 70%, var(--mode-shell-accent-soft), transparent 24rem);
+    animation: arenaStageFloat var(--arena-motion-float) ease-in-out infinite;
   }
 
   .table-stage-core {
     @apply relative z-10 flex w-full items-center justify-center;
     min-height: 26rem;
+  }
+
+  .table-stage-chrome {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 0;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .table-stage-chrome__halo {
+    fill: rgba(125, 211, 252, 0.04);
+    stroke: rgba(191, 219, 254, 0.06);
+    stroke-width: 1.5;
+  }
+
+  .table-stage-chrome__outer {
+    fill: rgba(2, 6, 23, 0.06);
+    stroke: rgba(191, 219, 254, 0.12);
+    stroke-width: 2;
+  }
+
+  .table-stage-chrome__inner {
+    fill: rgba(15, 23, 42, 0.08);
+    stroke: rgba(255, 255, 255, 0.05);
+    stroke-width: 1.5;
+  }
+
+  .table-stage-chrome__tray-line {
+    stroke: rgba(191, 219, 254, 0.16);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+
+  .table-stage-chrome__guide-line {
+    stroke: rgba(191, 219, 254, 0.09);
+    stroke-width: 1;
+    stroke-dasharray: 5 8;
+  }
+
+  .table-stage-chrome__guide-ring {
+    fill: rgba(2, 6, 23, 0.1);
+    stroke: rgba(191, 219, 254, 0.14);
+    stroke-width: 1.5;
+  }
+
+  .table-stage-chrome__guide-core {
+    fill: rgba(15, 23, 42, 0.3);
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 1;
+  }
+
+  .table-stage-chrome__guide--occupied .table-stage-chrome__guide-ring {
+    stroke: rgba(125, 211, 252, 0.22);
+  }
+
+  .table-stage-chrome__guide--current-turn .table-stage-chrome__guide-ring,
+  .table-stage-chrome__guide--current-turn .table-stage-chrome__guide-core {
+    stroke: var(--mode-shell-accent-strong);
+    filter: drop-shadow(0 0 8px rgba(125, 211, 252, 0.18));
+  }
+
+  .table-stage-chrome__guide--open .table-stage-chrome__guide-ring {
+    stroke: rgba(148, 163, 184, 0.1);
+  }
+
+  .table-stage-chrome__marker {
+    fill: rgb(226 232 240 / 0.92);
+    font-family: "IBM Plex Mono", "Consolas", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-anchor: middle;
   }
 
   .table-stage-table-shell {
@@ -536,6 +744,9 @@
       0 24px 64px rgba(0, 0, 0, 0.42),
       inset 0 0 0 1px rgba(255, 255, 255, 0.05),
       inset 0 24px 40px rgba(255, 255, 255, 0.03);
+    transition:
+      transform var(--arena-motion-emphasis) ease,
+      box-shadow var(--arena-motion-emphasis) ease;
   }
 
   .table-stage-table-shell::before {
@@ -573,6 +784,9 @@
       0 0 0 1px rgba(255, 255, 255, 0.03),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(18px);
+    animation:
+      arenaStageFloat var(--arena-motion-float) ease-in-out infinite,
+      arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
   }
 
   .table-stage-pot-capsule__kicker {
@@ -593,14 +807,17 @@
   }
 
   .table-stage-beacon {
-    @apply absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full px-3 py-2;
+    @apply absolute bottom-5 left-1/2 z-20 flex max-w-[min(92%,34rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-[1.2rem] px-3 py-2;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(3, 7, 18, 0.52);
     backdrop-filter: blur(14px);
+    animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
   }
 
   .table-stage-beacon__mode,
-  .table-stage-beacon__state {
+  .table-stage-beacon__state,
+  .table-stage-beacon__phase,
+  .table-stage-beacon__turn-seat {
     @apply text-[11px] uppercase tracking-[0.22em];
   }
 
@@ -612,13 +829,53 @@
     @apply text-slate-200;
   }
 
+  .table-stage-beacon__phase {
+    color: rgb(191 219 254 / 0.96);
+  }
+
+  .table-stage-beacon__turn-seat {
+    color: var(--mode-shell-accent-strong);
+  }
+
+  .table-stage-beacon__cue,
+  .table-stage-beacon__last-action {
+    width: 100%;
+    text-align: center;
+    font-family: "IBM Plex Mono", "Consolas", monospace;
+  }
+
+  .table-stage-beacon__cue {
+    @apply text-[10px] uppercase tracking-[0.18em];
+    color: rgb(226 232 240 / 0.92);
+  }
+
+  .table-stage-beacon__last-action {
+    @apply text-[10px] uppercase tracking-[0.16em];
+    color: rgb(148 163 184 / 0.86);
+  }
+
   .arena-seat-anchor {
     @apply absolute z-20;
   }
 
+  .arena-seat-anchor--current-turn::before {
+    content: "";
+    position: absolute;
+    inset: -0.75rem;
+    border-radius: 1.5rem;
+    background:
+      radial-gradient(circle at center, rgba(251, 113, 133, 0.22), transparent 58%),
+      radial-gradient(circle at center, rgba(125, 211, 252, 0.14), transparent 72%);
+    filter: blur(16px);
+    opacity: 0.9;
+    animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+
   .arena-seat-card {
-    width: clamp(6.4rem, 14vw, 9.5rem);
-    min-height: 5.6rem;
+    width: clamp(5.75rem, 11vw, 8.25rem);
+    min-height: 5rem;
     border-radius: 1.1rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0.65rem 0.7rem;
@@ -631,6 +888,11 @@
     backdrop-filter: blur(16px);
     position: relative;
     overflow: hidden;
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      box-shadow var(--arena-motion-emphasis) ease,
+      opacity var(--arena-motion-enter) ease;
   }
 
   .arena-seat-card__header,
@@ -684,10 +946,11 @@
     border: 1px solid rgba(125, 211, 252, 0.45);
     box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.1), 0 0 24px rgba(125, 211, 252, 0.18);
     pointer-events: none;
+    animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
   }
 
   .arena-seat-card--current-turn {
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.02);
   }
 
   .arena-seat-card--active-timer {
@@ -840,10 +1103,15 @@
       justify-content: center;
     }
 
+    .table-stage-beacon__cue,
+    .table-stage-beacon__last-action {
+      letter-spacing: 0.1em;
+    }
+
     .arena-seat-card {
-      width: clamp(5.1rem, 23vw, 6.25rem);
-      min-height: 4.8rem;
-      padding: 0.5rem 0.55rem;
+      width: clamp(4.25rem, 18vw, 5.5rem);
+      min-height: 4.35rem;
+      padding: 0.45rem 0.5rem;
       border-radius: 0.95rem;
     }
 
@@ -862,6 +1130,7 @@
   .tactical-dock {
     position: relative;
     overflow: hidden;
+    animation: arenaStageFloat var(--arena-motion-float) ease-in-out infinite;
   }
 
   .tactical-dock::after {
@@ -872,6 +1141,8 @@
       radial-gradient(circle at 80% 20%, var(--mode-shell-accent-soft-strong), transparent 18rem),
       linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 48%);
     pointer-events: none;
+    opacity: 0.7;
+    animation: arenaSheenSweep var(--arena-motion-ambient) linear infinite;
   }
 
   .tactical-dock__grid {
@@ -897,12 +1168,18 @@
     box-shadow:
       0 18px 40px rgba(0, 0, 0, 0.24),
       inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      box-shadow var(--arena-motion-emphasis) ease,
+      background-color var(--arena-motion-enter) ease;
   }
 
   .tactical-dock__hero-panel {
     margin-top: 1rem;
     border-radius: 1.5rem;
     padding: 1rem;
+    animation: arenaPanelRise var(--arena-motion-enter) ease-out both;
   }
 
   .tactical-dock__hero-header,
@@ -1060,6 +1337,7 @@
       radial-gradient(circle at top, var(--mode-shell-accent-soft), transparent 12rem);
     padding: 1rem;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    animation: arenaPanelRise var(--arena-motion-emphasis) ease-out both;
   }
 
   .tactical-rail {
@@ -1131,6 +1409,20 @@
     color: var(--mode-shell-accent-strong);
   }
 
+  .tactical-event-card__total,
+  .settlement-sheet__total,
+  .tactical-history-card__headline {
+    margin-top: 0.75rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.68rem 0.82rem;
+    font-family: "IBM Plex Mono", "Consolas", monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: rgb(226 232 240 / 0.9);
+  }
+
   .tactical-event-card__board,
   .settlement-sheet__board {
     margin-top: 0.8rem;
@@ -1169,6 +1461,15 @@
     color: rgb(241 245 249 / 0.98);
   }
 
+  .tactical-event-card__detail-line {
+    border-radius: 0.95rem;
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.68rem 0.8rem;
+    font-size: 0.82rem;
+    color: rgb(191 219 254 / 0.88);
+  }
+
   .tactical-history-tape {
     max-height: 22rem;
     overflow-y: auto;
@@ -1204,6 +1505,7 @@
     border-radius: 1.6rem;
     padding: 1rem;
     backdrop-filter: blur(18px);
+    animation: arenaSettlementEnter var(--arena-motion-emphasis) ease-out both;
   }
 
   .settlement-sheet__countdown {
@@ -1212,6 +1514,7 @@
     background: rgba(255, 255, 255, 0.06);
     padding: 0.35rem 0.8rem;
     color: rgb(226 232 240 / 0.98);
+    animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
   }
 
   .settlement-sheet__actions {
@@ -1227,7 +1530,11 @@
     padding: 0.7rem 1rem;
     font-size: 0.88rem;
     color: white;
-    transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+    transition:
+      transform var(--arena-motion-enter) ease,
+      border-color var(--arena-motion-enter) ease,
+      background-color var(--arena-motion-enter) ease,
+      box-shadow var(--arena-motion-enter) ease;
   }
 
   .settlement-sheet__button:hover {
@@ -1248,6 +1555,77 @@
     background: rgba(34, 197, 94, 0.16);
   }
 
+  @keyframes arenaAmbientDrift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    100% {
+      transform: translate3d(1.5%, -1.5%, 0) scale(1.05);
+    }
+  }
+
+  @keyframes arenaGridDrift {
+    0% {
+      background-position: 0 0, 0 0;
+    }
+    100% {
+      background-position: 64px 32px, -32px 64px;
+    }
+  }
+
+  @keyframes arenaStageFloat {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -4px, 0);
+    }
+  }
+
+  @keyframes arenaSpotlightPulse {
+    0%,
+    100% {
+      opacity: 0.72;
+      filter: saturate(1);
+    }
+    50% {
+      opacity: 1;
+      filter: saturate(1.12);
+    }
+  }
+
+  @keyframes arenaSheenSweep {
+    0% {
+      transform: translateX(-58%);
+    }
+    100% {
+      transform: translateX(62%);
+    }
+  }
+
+  @keyframes arenaPanelRise {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, 12px, 0);
+    }
+    100% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes arenaSettlementEnter {
+    0% {
+      opacity: 0;
+      transform: translate3d(-50%, 18px, 0) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translate3d(-50%, 0, 0) scale(1);
+    }
+  }
+
   .tactical-roster {
     position: relative;
     margin-top: 1rem;
@@ -1260,7 +1638,7 @@
     background: rgba(0, 0, 0, 0.22);
     padding: 0.85rem 1rem;
     color: rgb(226 232 240 / 0.98);
-    transition: border-color 0.18s ease, transform 0.18s ease;
+    transition: border-color var(--arena-motion-enter) ease, transform var(--arena-motion-enter) ease, box-shadow var(--arena-motion-emphasis) ease;
   }
 
   .tactical-roster__trigger:hover,
@@ -1570,6 +1948,44 @@
     .tactical-roster__ledger,
     .tactical-ledger__stack {
       text-align: left;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mode-shell__ambient,
+    .mode-shell__grid,
+    .mode-gateway-stage,
+    .mode-gateway-stage::after,
+    .mode-preview-card::after,
+    .table-stage-atmosphere,
+    .table-stage-pot-capsule,
+    .table-stage-beacon,
+    .arena-seat-card__turn-marker,
+    .tactical-dock,
+    .tactical-dock::after,
+    .tactical-dock__hero-panel,
+    .tactical-dock__action-frame,
+    .settlement-sheet,
+    .settlement-sheet__countdown,
+    .mode-status-pill--online::before,
+    .mode-status-pill--offline::before {
+      animation: none !important;
+    }
+
+    .mode-preview-card,
+    .mode-primary-button,
+    .mode-secondary-button,
+    .mode-room-input,
+    .poker-shell-panel,
+    .poker-shell-stat-card,
+    .table-stage-surface,
+    .table-stage-table-shell,
+    .arena-seat-card,
+    .tactical-dock__hero-panel,
+    .tactical-dock__action-frame,
+    .settlement-sheet__button,
+    .tactical-roster__trigger {
+      transition: none !important;
     }
   }
 

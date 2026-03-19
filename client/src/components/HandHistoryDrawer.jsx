@@ -1,10 +1,14 @@
 import { ChevronLeft, ChevronRight, ScrollText } from 'lucide-react';
 import React, { useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 
+import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
 import { buildHandHistoryView } from '../view-models/handHistoryViewModel';
 
 const HandHistoryDrawer = ({ records = [], effectiveDisplayMode = 'pro' }) => {
   const [open, setOpen] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
   const summaries = buildHandHistoryView(records);
   const lineLimit = effectiveDisplayMode === 'study' ? 6 : 4;
 
@@ -35,8 +39,17 @@ const HandHistoryDrawer = ({ records = [], effectiveDisplayMode = 'pro' }) => {
           <div className="tactical-history-card tactical-history-card--empty">暂无牌局记录</div>
         ) : (
           <div className="tactical-history-tape">
-            {summaries.map((summary) => (
-              <div key={summary.handNumber} className="tactical-history-card">
+            {summaries.map((summary, summaryIndex) => (
+              <motion.div
+                key={summary.handNumber}
+                className="tactical-history-card"
+                initial={motionProfile.eventCard.initial}
+                animate={motionProfile.eventCard.animate}
+                transition={{
+                  ...motionProfile.eventCard.transition,
+                  delay: motionProfile.handTape.staggerChildren * summaryIndex,
+                }}
+              >
                 <div className="tactical-history-card__header">
                   <div className="tactical-history-card__title">{summary.title}</div>
                   {summary.reason && <div className="tactical-history-card__reason">{summary.reason}</div>}
@@ -45,15 +58,24 @@ const HandHistoryDrawer = ({ records = [], effectiveDisplayMode = 'pro' }) => {
                 <div className="tactical-history-card__lines">
                   {summary.lines.length > 0 ? (
                     summary.lines.slice(0, lineLimit).map((line, index) => (
-                      <div key={`${summary.handNumber}-${index}`} className="tactical-history-card__line">
+                      <motion.div
+                        key={`${summary.handNumber}-${index}`}
+                        className="tactical-history-card__line"
+                        initial={motionProfile.handTape.initial}
+                        animate={motionProfile.handTape.animate}
+                        transition={{
+                          ...motionProfile.handTape.transition,
+                          delay: motionProfile.handTape.staggerChildren * (index + 1),
+                        }}
+                      >
                         {line}
-                      </div>
+                      </motion.div>
                     ))
                   ) : (
                     <div className="tactical-history-card__line">无结算摘要</div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

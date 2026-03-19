@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 import { getDisplayModeTheme } from '../utils/productMode';
+import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
 import { getLatestHandSummary } from '../view-models/handHistoryViewModel';
 
 const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerId, onReveal, effectiveDisplayMode = 'pro' }) => {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const reducedMotion = useReducedMotion();
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
 
   useEffect(() => {
     if (roomState !== 'settling' || !gameState?.settlementWindowEndsAt) {
@@ -22,10 +26,6 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
     return () => window.clearInterval(timer);
   }, [roomState, gameState?.settlementWindowEndsAt]);
 
-  if (roomState !== 'settling') {
-    return null;
-  }
-
   const latestSummary = getLatestHandSummary(gameState?.handHistory || []);
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const roomCopy = theme.room;
@@ -36,71 +36,121 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
       : gameState?.eligibleRevealPlayerIds?.includes(currentPlayerId);
 
   return (
-    <div className="settlement-sheet">
-      <div className="settlement-sheet__header">
-        <div>
-          <div className="settlement-sheet__kicker">{roomCopy.latestHandLabel}</div>
-          <div className="settlement-sheet__title">{latestSummary?.title || '本手已结束'}</div>
-        </div>
-        <div className="settlement-sheet__countdown">{remainingSeconds}s</div>
-      </div>
-
-      {latestSummary?.lines?.[0] && (
-        <div className="settlement-sheet__spotlight">
-          {latestSummary.lines[0]}
-        </div>
-      )}
-
-      {(isProMode || effectiveDisplayMode === 'study') && latestSummary?.boardLabel && (
-        <div className="settlement-sheet__board">
-          <span className="settlement-sheet__board-label">Board</span>
-          <span>{latestSummary.boardLabel}</span>
-        </div>
-      )}
-
-      {latestSummary?.lines?.length > 0 && (
-        <div className="settlement-sheet__lines">
-          {latestSummary.lines.slice(1, 5).map((line, index) => (
-            <div key={`${latestSummary.handNumber}-${index}`} className="settlement-sheet__line">
-              {line}
+    <AnimatePresence initial={false}>
+      {roomState === 'settling' ? (
+        <motion.div
+          key={`settlement-${latestSummary?.handNumber || 'latest'}`}
+          className="settlement-sheet"
+          initial={motionProfile.settlement.initial}
+          animate={motionProfile.settlement.animate}
+          exit={motionProfile.settlement.exit}
+          transition={motionProfile.settlement.transition}
+        >
+          <div className="settlement-sheet__header">
+            <div>
+              <div className="settlement-sheet__kicker">{roomCopy.latestHandLabel}</div>
+              <div className="settlement-sheet__title">{latestSummary?.title || '本手已结束'}</div>
             </div>
-          ))}
-        </div>
-      )}
+            <motion.div
+              className="settlement-sheet__countdown"
+              key={`countdown-${remainingSeconds}`}
+              initial={motionProfile.cue.initial}
+              animate={motionProfile.cue.animate}
+              exit={motionProfile.cue.exit}
+              transition={motionProfile.cue.transition}
+            >
+              {remainingSeconds}s
+            </motion.div>
+          </div>
 
-      {canReveal && (
-        <div className="settlement-sheet__actions">
-          <button
-            type="button"
-            onClick={() => onReveal('hide')}
-            className="settlement-sheet__button settlement-sheet__button--ghost"
-          >
-            不亮牌
-          </button>
-          <button
-            type="button"
-            onClick={() => onReveal('show_one', 0)}
-            className="settlement-sheet__button settlement-sheet__button--info"
-          >
-            亮左牌
-          </button>
-          <button
-            type="button"
-            onClick={() => onReveal('show_one', 1)}
-            className="settlement-sheet__button settlement-sheet__button--info"
-          >
-            亮右牌
-          </button>
-          <button
-            type="button"
-            onClick={() => onReveal('show_all')}
-            className="settlement-sheet__button settlement-sheet__button--success"
-          >
-            全亮
-          </button>
-        </div>
-      )}
-    </div>
+          {latestSummary?.headlineLine && (
+            <motion.div
+              className="settlement-sheet__spotlight"
+              initial={motionProfile.cue.initial}
+              animate={motionProfile.cue.animate}
+              transition={motionProfile.cue.transition}
+            >
+              {latestSummary.headlineLine}
+            </motion.div>
+          )}
+
+          {latestSummary?.totalLine && (
+            <motion.div
+              className="settlement-sheet__total"
+              initial={motionProfile.cue.initial}
+              animate={motionProfile.cue.animate}
+              transition={{ ...motionProfile.cue.transition, delay: motionProfile.settlement.staggerChildren }}
+            >
+              {latestSummary.totalLine}
+            </motion.div>
+          )}
+
+          {(isProMode || effectiveDisplayMode === 'study') && latestSummary?.boardLabel && (
+            <motion.div
+              className="settlement-sheet__board"
+              initial={motionProfile.cue.initial}
+              animate={motionProfile.cue.animate}
+              transition={{ ...motionProfile.cue.transition, delay: motionProfile.settlement.staggerChildren * 2 }}
+            >
+              <span className="settlement-sheet__board-label">Board</span>
+              <span>{latestSummary.boardLabel}</span>
+            </motion.div>
+          )}
+
+          {latestSummary?.lines?.length > 0 && (
+            <div className="settlement-sheet__lines">
+              {[...latestSummary.scoreboardLines.slice(1, 5), ...latestSummary.detailLines.slice(0, 2)].map((line, index) => (
+                <motion.div
+                  key={`${latestSummary.handNumber}-${index}`}
+                  className="settlement-sheet__line"
+                  initial={motionProfile.cue.initial}
+                  animate={motionProfile.cue.animate}
+                  transition={{
+                    ...motionProfile.settlement.lineTransition,
+                    delay: motionProfile.settlement.staggerChildren * (index + 2),
+                  }}
+                >
+                  {line}
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {canReveal && (
+            <div className="settlement-sheet__actions">
+              <button
+                type="button"
+                onClick={() => onReveal('hide')}
+                className="settlement-sheet__button settlement-sheet__button--ghost"
+              >
+                不亮牌
+              </button>
+              <button
+                type="button"
+                onClick={() => onReveal('show_one', 0)}
+                className="settlement-sheet__button settlement-sheet__button--info"
+              >
+                亮左牌
+              </button>
+              <button
+                type="button"
+                onClick={() => onReveal('show_one', 1)}
+                className="settlement-sheet__button settlement-sheet__button--info"
+              >
+                亮右牌
+              </button>
+              <button
+                type="button"
+                onClick={() => onReveal('show_all')}
+                className="settlement-sheet__button settlement-sheet__button--success"
+              >
+                全亮
+              </button>
+            </div>
+          )}
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 };
 

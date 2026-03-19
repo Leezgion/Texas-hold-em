@@ -16,6 +16,7 @@ import TableHeader from './TableHeader';
 import TableStage from './TableStage';
 import { useGame } from '../contexts/GameContext';
 import { resolveRoomShellLayout } from '../utils/productMode';
+import { buildSeatRingPositions, resolveTableDiameter } from '../utils/seatRingLayout';
 import {
   deriveCanStartGame,
   deriveIntelRailView,
@@ -228,6 +229,8 @@ const GameRoom = () => {
     connected,
     effectiveDisplayMode,
     currentPlayer,
+    players: playersList,
+    gameState: safeGameState,
   });
   const intelRailView = deriveIntelRailView({
     roomState: activeRoomState,
@@ -437,92 +440,14 @@ const GameRoom = () => {
     const totalPlayers = allPlayers.length;
     const relativeSeat = (player.seat - currentPlayerSeat + totalPlayers) % totalPlayers;
 
-    // 根据玩家数量定义不同的布局
-    const positions = getLayoutPositions(totalPlayers);
+    const positions = buildSeatRingPositions({
+      playerCount: totalPlayers,
+      viewportWidth: windowSize.width,
+      roomShellLayout,
+      tableDiameter,
+    });
 
     return positions[relativeSeat] || { x: 0, y: 0 };
-  };
-
-  // 根据玩家数量获取座位布局
-  const getLayoutPositions = (playerCount) => {
-    // 响应式半径 - 根据屏幕尺寸调整
-    const isMobile = windowSize.width < 768; // Tailwind的md断点
-    const isSmallMobile = windowSize.width < 480; // 小屏手机
-
-    // 根据屏幕尺寸选择半径和缩放比例
-    // 增加半径以避免座位遮盖牌桌
-    let radius, scale;
-    if (isSmallMobile) {
-      radius = 230; // 增加最小半径：从140->170
-      scale = 0.42; // 手机纵向壳层更窄，需要更小的环桌半径
-    } else if (isMobile) {
-      radius = 220; // 增加中等半径：从180->220
-      scale = 0.5; // 平板/横向手机仍需收窄左右座位间距
-    } else {
-      radius = 320; // 增加桌面半径：从280->320
-      scale = roomShellLayout === 'three-column' ? 0.9 : 0.98; // 中等桌面优先拉开桌边 plaque，避免压进桌心
-    }
-
-    // 为不同玩家数量定义最佳布局，根据设备尺寸调整
-
-    switch (playerCount) {
-      case 2:
-        return [
-          { x: 0, y: Math.round(260 * scale) }, // 当前玩家 - 底部 (220->260)
-          { x: 0, y: Math.round(-260 * scale) }, // 对手 - 顶部 (220->260)
-        ];
-      case 3:
-        return [
-          { x: 0, y: Math.round(260 * scale) }, // 当前玩家 - 底部 (220->260)
-          { x: Math.round(-240 * scale), y: Math.round(-130 * scale) }, // 左上 (200->240, 110->130)
-          { x: Math.round(240 * scale), y: Math.round(-130 * scale) }, // 右上 (200->240, 110->130)
-        ];
-      case 4:
-        return [
-          { x: 0, y: Math.round(260 * scale) }, // 当前玩家 - 底部 (220->260)
-          { x: Math.round(-280 * scale), y: 0 }, // 左边 (240->280)
-          { x: 0, y: Math.round(-260 * scale) }, // 顶部 (220->260)
-          { x: Math.round(280 * scale), y: 0 }, // 右边 (240->280)
-        ];
-      case 5:
-        return [
-          { x: 0, y: Math.round(260 * scale) }, // 当前玩家 - 底部 (220->260)
-          { x: Math.round(-270 * scale), y: Math.round(95 * scale) }, // 左下 (230->270, 80->95)
-          { x: Math.round(-180 * scale), y: Math.round(-210 * scale) }, // 左上 (150->180, 180->210)
-          { x: Math.round(180 * scale), y: Math.round(-210 * scale) }, // 右上 (150->180, 180->210)
-          { x: Math.round(270 * scale), y: Math.round(95 * scale) }, // 右下 (230->270, 80->95)
-        ];
-      case 6:
-        return [
-          { x: 0, y: Math.round(260 * scale) }, // 当前玩家 - 底部 (220->260)
-          { x: Math.round(-250 * scale), y: Math.round(130 * scale) }, // 左下 (210->250, 110->130)
-          { x: Math.round(-250 * scale), y: Math.round(-130 * scale) }, // 左上 (210->250, 110->130)
-          { x: 0, y: Math.round(-260 * scale) }, // 顶部 (220->260)
-          { x: Math.round(250 * scale), y: Math.round(-130 * scale) }, // 右上 (210->250, 110->130)
-          { x: Math.round(250 * scale), y: Math.round(130 * scale) }, // 右下 (210->250, 110->130)
-        ];
-      case 7:
-      case 8:
-      case 9:
-      case 10:
-      default:
-        // 椭圆形布局算法：主要分布在上下方，避免正左右两侧
-        const positions = [];
-
-        // 椭圆参数：水平半径较小，垂直半径较大，形成胶囊形状
-        const horizontalRadius = radius * 0.7; // 水平压缩到70%
-        const verticalRadius = radius * 1.1; // 垂直拉伸到110%
-
-        for (let i = 0; i < playerCount; i++) {
-          // 从底部开始，顺时针分布
-          // 底部是90度，所以起始角度是90度（π/2）
-          const angle = Math.PI / 2 + (i * 2 * Math.PI) / playerCount;
-          const x = Math.round(horizontalRadius * Math.cos(angle));
-          const y = Math.round(verticalRadius * Math.sin(angle));
-          positions.push({ x, y });
-        }
-        return positions;
-    }
   };
 
   // 简化设备ID显示
@@ -604,12 +529,16 @@ const GameRoom = () => {
     return `座位 ${seatIndex + 1}`;
   };
 
+  const tableDiameter = resolveTableDiameter({
+    viewportWidth: windowSize.width,
+    roomShellLayout,
+  });
   const tableSizeClassName =
-    windowSize.width < 480
+    tableDiameter === 208
       ? 'w-52 h-52'
-      : windowSize.width < 768
+      : tableDiameter === 256
       ? 'w-64 h-64'
-      : roomShellLayout === 'split-stage'
+      : tableDiameter === 352
       ? 'w-[22rem] h-[22rem]'
       : 'w-80 h-80';
 
@@ -679,8 +608,11 @@ const GameRoom = () => {
               shellView={shellView}
               tablePotSummary={tablePotSummary}
               tableSizeClassName={tableSizeClassName}
+              viewportWidth={windowSize.width}
+              tableDiameter={tableDiameter}
               effectiveDisplayMode={effectiveDisplayMode}
               roomShellLayout={roomShellLayout}
+              seatGuides={seatRingEntries}
               settlementOverlay={
                 <SettlementOverlay
                   roomState={activeRoomState}

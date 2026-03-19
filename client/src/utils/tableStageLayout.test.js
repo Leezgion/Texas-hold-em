@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import { buildStageChromeLayout, resolveCommunityCardLayout } from './tableStageLayout.js';
+
+function getCommunityRowWidth({ cardWidth, gap, cardCount = 5 }) {
+  return cardWidth * cardCount + gap * Math.max(0, cardCount - 1);
+}
+
+test('keeps five community cards inside the phone table safe width', () => {
+  const layout = resolveCommunityCardLayout({
+    viewportWidth: 390,
+    tableDiameter: 208,
+  });
+
+  assert.ok(
+    getCommunityRowWidth(layout) <= layout.safeWidth,
+    `expected row width ${getCommunityRowWidth(layout)} to fit within ${layout.safeWidth}`
+  );
+  assert.equal(layout.phaseVisible, false);
+});
+
+test('keeps five community cards inside the desktop table safe width', () => {
+  const layout = resolveCommunityCardLayout({
+    viewportWidth: 1280,
+    tableDiameter: 352,
+  });
+
+  assert.ok(
+    getCommunityRowWidth(layout) <= layout.safeWidth,
+    `expected row width ${getCommunityRowWidth(layout)} to fit within ${layout.safeWidth}`
+  );
+  assert.equal(layout.phaseVisible, true);
+});
+
+test('maps seat guides and board tray into desktop stage chrome bounds', () => {
+  const layout = buildStageChromeLayout({
+    viewportWidth: 1280,
+    tableDiameter: 352,
+    seatGuides: [
+      { seatIndex: 0, seatLabel: '座1', positionLabel: 'SB/BTN', position: { x: 0, y: 210 } },
+      { seatIndex: 1, seatLabel: '座2', positionLabel: 'BB', position: { x: 188, y: 112 } },
+      { seatIndex: 2, seatLabel: '座3', positionLabel: null, position: { x: 188, y: -112 } },
+      { seatIndex: 3, seatLabel: '座4', positionLabel: null, position: { x: 0, y: -210 } },
+      { seatIndex: 4, seatLabel: '座5', positionLabel: null, position: { x: -188, y: -112 } },
+      { seatIndex: 5, seatLabel: '座6', positionLabel: null, position: { x: -188, y: 112 } },
+    ],
+  });
+
+  assert.equal(layout.seatGuides.length, 6);
+  assert.ok(layout.boardTray.width < layout.table.outerRx * 2);
+  assert.ok(layout.boardTray.height < layout.table.outerRy * 2);
+  layout.seatGuides.forEach((guide) => {
+    assert.ok(guide.cx >= 0 && guide.cx <= layout.width, `seat ${guide.seatLabel} cx ${guide.cx} outside ${layout.width}`);
+    assert.ok(guide.cy >= 0 && guide.cy <= layout.height, `seat ${guide.seatLabel} cy ${guide.cy} outside ${layout.height}`);
+  });
+});
+
+test('keeps phone portrait stage chrome compact while preserving marker metadata', () => {
+  const layout = buildStageChromeLayout({
+    viewportWidth: 390,
+    tableDiameter: 208,
+    seatGuides: [
+      { seatIndex: 0, seatLabel: '座1', positionLabel: 'BB', position: { x: 0, y: 132 } },
+      { seatIndex: 1, seatLabel: '座2', positionLabel: 'SB/BTN', position: { x: 120, y: 70 } },
+      { seatIndex: 2, seatLabel: '座3', positionLabel: null, position: { x: 120, y: -70 } },
+      { seatIndex: 3, seatLabel: '座4', positionLabel: null, position: { x: 0, y: -132 } },
+      { seatIndex: 4, seatLabel: '座5', positionLabel: null, position: { x: -120, y: -70 } },
+      { seatIndex: 5, seatLabel: '座6', positionLabel: null, position: { x: -120, y: 70 } },
+    ],
+  });
+
+  assert.equal(layout.viewMode, 'compact');
+  assert.ok(layout.width < 520);
+  assert.equal(layout.seatGuides[0].markerLabel, 'BB');
+  assert.equal(layout.seatGuides[1].markerLabel, 'SB/BTN');
+});

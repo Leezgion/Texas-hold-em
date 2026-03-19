@@ -1,7 +1,9 @@
 import React from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 import Leaderboard from './Leaderboard';
 import { getDisplayModeTheme } from '../utils/productMode';
+import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
 import { buildHandHistoryView } from '../view-models/handHistoryViewModel';
 
 const EventRail = ({
@@ -14,6 +16,8 @@ const EventRail = ({
   effectiveDisplayMode,
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
+  const reducedMotion = useReducedMotion();
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
   const roomCopy = theme.room;
   const historyItems = buildHandHistoryView(records).slice(0, roomCopy.historyPreviewCount);
   const summaryLineLimit = effectiveDisplayMode === 'study' ? 6 : effectiveDisplayMode === 'club' ? 2 : 4;
@@ -31,8 +35,16 @@ const EventRail = ({
         </div>
         <div className="tactical-rail__lead">{roomCopy.eventCaption}</div>
 
-        {eventRailView.latestSummary && (
-          <div className="tactical-event-card">
+        <AnimatePresence initial={false} mode="wait">
+          {eventRailView.latestSummary && (
+          <motion.div
+            key={`latest-hand-${eventRailView.latestSummary.handNumber}`}
+            className="tactical-event-card"
+            initial={motionProfile.eventCard.initial}
+            animate={motionProfile.eventCard.animate}
+            exit={motionProfile.eventCard.exit}
+            transition={motionProfile.eventCard.transition}
+          >
             <div className="tactical-event-card__header">
               <div>
                 <div className="tactical-event-card__kicker">{roomCopy.latestHandLabel}</div>
@@ -42,8 +54,11 @@ const EventRail = ({
                 <div className="tactical-event-card__reason">{eventRailView.latestSummary.reason}</div>
               )}
             </div>
-            {eventRailView.spotlightLine && (
-              <div className="tactical-event-card__spotlight">{eventRailView.spotlightLine}</div>
+            {eventRailView.headlineLine && (
+              <div className="tactical-event-card__spotlight">{eventRailView.headlineLine}</div>
+            )}
+            {eventRailView.latestSummary.totalLine && (
+              <div className="tactical-event-card__total">{eventRailView.latestSummary.totalLine}</div>
             )}
             {eventRailView.boardLabel && (
               <div className="tactical-event-card__board">
@@ -52,16 +67,42 @@ const EventRail = ({
               </div>
             )}
             <div className="tactical-event-card__tape">
-              {eventRailView.latestSummary.lines
-                .slice(eventRailView.spotlightLine ? 1 : 0, summaryLineLimit + (eventRailView.spotlightLine ? 1 : 0))
+              {eventRailView.scoreboardLines
+                .slice(1, summaryLineLimit + 1)
                 .map((line, index) => (
-                <div key={`latest-${index}`} className="tactical-event-card__tape-line">
-                  {line}
-                </div>
-              ))}
+                  <motion.div
+                    key={`latest-${index}`}
+                    className="tactical-event-card__tape-line"
+                    initial={motionProfile.handTape.initial}
+                    animate={motionProfile.handTape.animate}
+                    transition={{
+                      ...motionProfile.handTape.transition,
+                      delay: motionProfile.handTape.staggerChildren * (index + 1),
+                    }}
+                  >
+                    {line}
+                  </motion.div>
+                ))}
+              {eventRailView.latestSummary.detailLines
+                .slice(0, Math.max(0, summaryLineLimit - 1))
+                .map((line, index) => (
+                  <motion.div
+                    key={`latest-detail-${index}`}
+                    className="tactical-event-card__detail-line"
+                    initial={motionProfile.handTape.initial}
+                    animate={motionProfile.handTape.animate}
+                    transition={{
+                      ...motionProfile.handTape.transition,
+                      delay: motionProfile.handTape.staggerChildren * (index + summaryLineLimit + 1),
+                    }}
+                  >
+                    {line}
+                  </motion.div>
+                ))}
             </div>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         <div className="tactical-rail__metric-grid">
           {eventRailView.livePotSummary.items.map((item) => (
@@ -105,8 +146,17 @@ const EventRail = ({
           {historyItems.length === 0 ? (
             <div className="tactical-history-card tactical-history-card--empty">暂无牌局记录</div>
           ) : (
-            historyItems.map((summary) => (
-              <div key={summary.handNumber} className="tactical-history-card">
+            historyItems.map((summary, summaryIndex) => (
+              <motion.div
+                key={summary.handNumber}
+                className="tactical-history-card"
+                initial={motionProfile.eventCard.initial}
+                animate={motionProfile.eventCard.animate}
+                transition={{
+                  ...motionProfile.eventCard.transition,
+                  delay: motionProfile.handTape.staggerChildren * summaryIndex,
+                }}
+              >
                 <div className="tactical-history-card__header">
                   <div className="tactical-history-card__title">{summary.title}</div>
                   {summary.reason && <div className="tactical-history-card__reason">{summary.reason}</div>}
@@ -114,14 +164,29 @@ const EventRail = ({
                 {summary.boardLabel && (
                   <div className="tactical-history-card__board">Board {summary.boardLabel}</div>
                 )}
+                {summary.headlineLine && (
+                  <div className="tactical-history-card__headline">{summary.headlineLine}</div>
+                )}
                 <div className="tactical-history-card__lines">
-                  {summary.lines.slice(0, historyLineLimit).map((line, index) => (
-                    <div key={`${summary.handNumber}-${index}`} className="tactical-history-card__line">
-                      {line}
-                    </div>
-                  ))}
+                  {[summary.totalLine, ...summary.scoreboardLines.slice(1), ...summary.detailLines]
+                    .filter(Boolean)
+                    .slice(0, historyLineLimit)
+                    .map((line, index) => (
+                      <motion.div
+                        key={`${summary.handNumber}-${index}`}
+                        className="tactical-history-card__line"
+                        initial={motionProfile.handTape.initial}
+                        animate={motionProfile.handTape.animate}
+                        transition={{
+                          ...motionProfile.handTape.transition,
+                          delay: motionProfile.handTape.staggerChildren * (index + 1),
+                        }}
+                      >
+                        {line}
+                      </motion.div>
+                    ))}
                 </div>
-              </div>
+              </motion.div>
             ))
           )}
         </div>

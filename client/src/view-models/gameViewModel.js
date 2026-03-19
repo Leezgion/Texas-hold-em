@@ -27,6 +27,74 @@ function mapRoomStateToLabel(roomState = 'idle') {
   }
 }
 
+function mapPhaseToStageLabel(phase = null) {
+  switch (phase) {
+    case 'preflop':
+      return 'PREFLOP';
+    case 'flop':
+      return 'FLOP';
+    case 'turn':
+      return 'TURN';
+    case 'river':
+      return 'RIVER';
+    case 'showdown':
+      return 'SHOWDOWN';
+    default:
+      return null;
+  }
+}
+
+function formatStageSeatLabel(seat = null) {
+  return Number.isInteger(seat) && seat >= 0 ? `座${seat + 1}` : null;
+}
+
+function formatLastActionLabel(lastAction = null, players = []) {
+  if (!lastAction || !lastAction.playerId) {
+    return null;
+  }
+
+  const actor = (Array.isArray(players) ? players : []).find((player) => player?.id === lastAction.playerId) || null;
+  const seatLabel = formatStageSeatLabel(Number(actor?.seat));
+
+  if (!seatLabel) {
+    return null;
+  }
+
+  switch (lastAction.action) {
+    case 'raise':
+      return `上一动作 ${seatLabel} 加注到 ${(Number(lastAction.totalBet) || 0).toLocaleString()}`;
+    case 'call':
+      return `上一动作 ${seatLabel} 跟注 ${(Number(lastAction.amount) || 0).toLocaleString()}`;
+    case 'check':
+      return `上一动作 ${seatLabel} 过牌`;
+    case 'fold':
+      return `上一动作 ${seatLabel} 弃牌`;
+    case 'all_in':
+    case 'all-in':
+      return `上一动作 ${seatLabel} All-in ${(Number(lastAction.totalBet ?? lastAction.amount) || 0).toLocaleString()}`;
+    case 'small_blind':
+      return `上一动作 ${seatLabel} 下小盲 ${(Number(lastAction.amount) || 0).toLocaleString()}`;
+    case 'big_blind':
+      return `上一动作 ${seatLabel} 下大盲 ${(Number(lastAction.amount) || 0).toLocaleString()}`;
+    default:
+      return null;
+  }
+}
+
+function buildStageActionLabel({ roomState = 'idle', gameState = null, currentTurnPlayer = null } = {}) {
+  if (roomState !== 'in_hand' || !currentTurnPlayer) {
+    return null;
+  }
+
+  const seatLabel = formatStageSeatLabel(Number(currentTurnPlayer.seat));
+  if (!seatLabel) {
+    return null;
+  }
+
+  const toCall = Math.max(0, (Number(gameState?.currentBet) || 0) - (Number(currentTurnPlayer.currentBet) || 0));
+  return `轮到 ${seatLabel} · TO CALL ${toCall.toLocaleString()}`;
+}
+
 export function formatSignedChips(value = 0) {
   const normalized = Number(value) || 0;
   if (normalized === 0) {
@@ -153,6 +221,24 @@ export function buildProActionStatRows(summary = null) {
   ];
 }
 
+function buildActionDockTurnContextLabel({ currentPlayer = null, players = [], gameState = null, roomState = 'idle' } = {}) {
+  if (roomState !== 'in_hand' || !currentPlayer || !Number.isInteger(gameState?.currentPlayerIndex)) {
+    return null;
+  }
+
+  const actingPlayer = (Array.isArray(players) ? players : [])[gameState.currentPlayerIndex] || null;
+  if (!actingPlayer) {
+    return null;
+  }
+
+  if (actingPlayer.id === currentPlayer.id) {
+    return '您的回合';
+  }
+
+  const actingSeatLabel = formatStageSeatLabel(Number(actingPlayer.seat));
+  return actingSeatLabel ? `等待 ${actingSeatLabel} 行动` : '等待其他玩家行动';
+}
+
 export function deriveActionDockView({
   currentPlayer = null,
   currentPlayerView = null,
@@ -190,6 +276,12 @@ export function deriveActionDockView({
     netLabel: heroSummary.netLabel,
     handCards: Array.isArray(currentPlayer.hand) ? currentPlayer.hand : [],
     actionSummary,
+    turnContextLabel: buildActionDockTurnContextLabel({
+      currentPlayer,
+      players,
+      gameState,
+      roomState,
+    }),
     startButtonLabel: !gameStarted && canStartGame ? '开始游戏' : null,
   };
 }
@@ -283,9 +375,34 @@ export function deriveTableShellView({
   connected = false,
   effectiveDisplayMode = 'pro',
   currentPlayer = null,
+  players = [],
+  gameState = null,
 } = {}) {
   const roomMode = roomSettings?.roomMode || 'pro';
   const modeMeta = ROOM_MODE_META[roomMode] || ROOM_MODE_META.pro;
+  const safePlayers = Array.isArray(players) ? players : [];
+  const currentTurnPlayer =
+    roomState === 'in_hand' && Number.isInteger(gameState?.currentPlayerIndex)
+      ? safePlayers[gameState.currentPlayerIndex] || null
+      : null;
+  const currentTurnSeatLabel = formatStageSeatLabel(Number(currentTurnPlayer?.seat));
+  const phaseLabel = mapPhaseToStageLabel(gameState?.phase);
+  const stagePulseTone =
+    roomState === 'in_hand'
+      ? currentTurnSeatLabel
+        ? 'live-turn'
+        : 'live'
+      : roomState === 'settling'
+      ? 'settling'
+      : roomState === 'recovery_required'
+      ? 'alert'
+      : 'idle';
+  const stageActionLabel = buildStageActionLabel({
+    roomState,
+    gameState,
+    currentTurnPlayer,
+  });
+  const lastActionLabel = formatLastActionLabel(gameState?.lastAction, safePlayers);
 
   return {
     roomCode: roomId || '------',
@@ -297,6 +414,11 @@ export function deriveTableShellView({
     effectiveDisplayMode,
     pendingJoinBanner: derivePendingJoinBanner(currentPlayer, roomState),
     recoveryBanner: deriveRecoveryBanner(currentPlayer, roomState),
+    phaseLabel,
+    currentTurnSeatLabel,
+    stagePulseTone,
+    stageActionLabel,
+    lastActionLabel,
   };
 }
 

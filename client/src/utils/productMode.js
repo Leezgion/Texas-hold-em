@@ -49,6 +49,14 @@ const DISPLAY_MODE_THEME_META = Object.freeze({
     chromeTone: 'brass-rig',
     layoutDensity: 'medium',
     motionStyle: 'measured',
+    motion: Object.freeze({
+      enterMs: 220,
+      emphasisMs: 320,
+      ambientSeconds: 16,
+      spotlightSeconds: 3.2,
+      floatSeconds: 9,
+      ambientOpacity: 0.78,
+    }),
     responsiveProfile: Object.freeze({
       phone: 'stacked-drawers',
       tablet: 'host-rail-persistent',
@@ -92,6 +100,14 @@ const DISPLAY_MODE_THEME_META = Object.freeze({
     chromeTone: 'broadcast-rig',
     layoutDensity: 'high',
     motionStyle: 'sharp',
+    motion: Object.freeze({
+      enterMs: 180,
+      emphasisMs: 260,
+      ambientSeconds: 12,
+      spotlightSeconds: 2.4,
+      floatSeconds: 7,
+      ambientOpacity: 0.9,
+    }),
     responsiveProfile: Object.freeze({
       phone: 'hero-dock-first',
       tablet: 'dual-rail-adaptive',
@@ -135,6 +151,14 @@ const DISPLAY_MODE_THEME_META = Object.freeze({
     chromeTone: 'analysis-rig',
     layoutDensity: 'medium',
     motionStyle: 'annotated',
+    motion: Object.freeze({
+      enterMs: 240,
+      emphasisMs: 340,
+      ambientSeconds: 18,
+      spotlightSeconds: 3.4,
+      floatSeconds: 10,
+      ambientOpacity: 0.82,
+    }),
     responsiveProfile: Object.freeze({
       phone: 'tabbed-analysis',
       tablet: 'timeline-persistent',

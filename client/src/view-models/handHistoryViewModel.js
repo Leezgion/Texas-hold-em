@@ -101,6 +101,8 @@ export function buildHandSummary(record) {
     .map(formatRevealLine);
   const chipDeltaLines = buildChipDeltaLines(record);
   const totalLine = Number.isFinite(record.totalPot) && record.totalPot > 0 ? `总池 ${formatSignedChips(record.totalPot)}` : null;
+  const scoreboardLines = [...winnerLines, ...chipDeltaLines].filter(Boolean);
+  const detailLines = revealLines.filter(Boolean);
 
   return {
     handNumber: record.handNumber,
@@ -108,6 +110,10 @@ export function buildHandSummary(record) {
     communityCards: record.communityCards || [],
     boardLabel: formatBoardLabel(record.communityCards || []),
     reason: record.reason || null,
+    totalLine,
+    headlineLine: scoreboardLines[0] || totalLine || record.reason || null,
+    scoreboardLines,
+    detailLines,
     lines: [totalLine, ...winnerLines, ...chipDeltaLines, ...revealLines].filter(Boolean),
   };
 }
@@ -168,6 +174,8 @@ export function deriveEventRailView({ roomState = 'idle', gameState = null } = {
     roomState,
     historyCount: handHistory.length,
     latestSummary,
+    headlineLine: latestSummary?.headlineLine || null,
+    scoreboardLines: latestSummary?.scoreboardLines || [],
     spotlightLine: latestSummary?.lines?.[0] || null,
     boardLabel: latestSummary?.boardLabel || null,
     livePotSummary: buildTablePotSummary(gameState),

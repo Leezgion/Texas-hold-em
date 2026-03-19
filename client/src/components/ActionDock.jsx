@@ -1,8 +1,10 @@
 import React from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 import ActionButtons from './ActionButtons';
 import Card from './Card';
 import { getDisplayModeTheme } from '../utils/productMode';
+import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
 import { deriveActionDockView } from '../view-models/gameViewModel';
 
 const ActionDock = ({
@@ -22,6 +24,8 @@ const ActionDock = ({
   }
 
   const theme = getDisplayModeTheme(effectiveDisplayMode);
+  const reducedMotion = useReducedMotion();
+  const motionProfile = buildTacticalMotionProfile(effectiveDisplayMode, { reducedMotion });
   const roomCopy = theme.room;
   const dockView = deriveActionDockView({
     currentPlayer,
@@ -41,7 +45,12 @@ const ActionDock = ({
           <div className="poker-shell-kicker">{roomCopy.actionTitle}</div>
           <div className="mt-2 text-sm leading-6 text-slate-300">{roomCopy.actionCaption}</div>
 
-          <div className="tactical-dock__hero-panel">
+          <motion.div
+            className="tactical-dock__hero-panel"
+            initial={motionProfile.stage.initial}
+            animate={motionProfile.stage.animate}
+            transition={motionProfile.stage.transition}
+          >
             <div className="tactical-dock__hero-header">
               <div className="min-w-0">
                 <div className="tactical-dock__hero-kicker">Hero Seat</div>
@@ -76,13 +85,27 @@ const ActionDock = ({
 
             <div className="tactical-dock__status-row">
               <span className="tactical-dock__status">{dockView.statusLabel}</span>
+              <AnimatePresence initial={false} mode="wait">
+                {dockView.turnContextLabel && (
+                  <motion.span
+                    key={dockView.turnContextLabel}
+                    className="tactical-dock__chip"
+                    initial={motionProfile.turnChip.initial}
+                    animate={motionProfile.turnChip.animate}
+                    exit={motionProfile.turnChip.exit}
+                    transition={motionProfile.turnChip.transition}
+                  >
+                    {dockView.turnContextLabel}
+                  </motion.span>
+                )}
+              </AnimatePresence>
               {dockView.actionSummary && (
                 <span className="tactical-dock__status-meta">
                   TO CALL {dockView.actionSummary.toCall} · POT {dockView.actionSummary.pot}
                 </span>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
 
         <div className="tactical-dock__center">
@@ -105,7 +128,12 @@ const ActionDock = ({
           )}
 
           {gameStarted && (
-            <div className="tactical-dock__action-frame">
+            <motion.div
+              className="tactical-dock__action-frame"
+              initial={motionProfile.stage.initial}
+              animate={motionProfile.stage.animate}
+              transition={motionProfile.stage.transition}
+            >
               <ActionButtons
                 player={currentPlayer}
                 gameState={gameState}
@@ -113,7 +141,7 @@ const ActionDock = ({
                 players={players}
                 effectiveDisplayMode={effectiveDisplayMode}
               />
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

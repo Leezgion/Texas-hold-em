@@ -292,6 +292,7 @@ test('derives a tactical action-dock summary from hero state and current hand nu
       currentBet: 40,
       minRaise: 40,
       pot: 120,
+      currentPlayerIndex: 1,
     },
     players: [
       { id: 'p1', chips: 980, currentBet: 20, folded: false, allIn: false, seat: 0, tableState: 'active_in_hand' },
@@ -307,6 +308,7 @@ test('derives a tactical action-dock summary from hero state and current hand nu
   assert.equal(dockView.startButtonLabel, null);
   assert.equal(dockView.actionSummary.toCall, 20);
   assert.equal(dockView.actionSummary.effectiveStack, 980);
+  assert.equal(dockView.turnContextLabel, '等待 座2 行动');
 });
 
 test('derives pro-mode action summary from authoritative current-hand numbers', () => {
@@ -434,7 +436,44 @@ test('derives a poker-os shell summary for the room header and shared banners', 
       detail: '本手正在结算，你会在下一手开始时自动收到手牌并参与行动。',
     },
     recoveryBanner: null,
+    phaseLabel: null,
+    currentTurnSeatLabel: null,
+    stagePulseTone: 'settling',
+    stageActionLabel: null,
+    lastActionLabel: null,
   });
+});
+
+test('derives current-turn stage emphasis for in-hand rooms', () => {
+  const shell = deriveTableShellView({
+    roomId: 'TURN01',
+    roomState: 'in_hand',
+    roomSettings: { roomMode: 'pro' },
+    connected: true,
+    effectiveDisplayMode: 'pro',
+    currentPlayer: { isHost: true, tableState: 'active_in_hand' },
+    players: [
+      { id: 'p1', seat: 0, tableState: 'active_in_hand', currentBet: 20 },
+      { id: 'p2', seat: 1, tableState: 'active_in_hand', currentBet: 10 },
+      { id: 'p3', seat: 2, tableState: 'folded_this_hand', folded: true },
+    ],
+    gameState: {
+      currentPlayerIndex: 1,
+      phase: 'turn',
+      currentBet: 20,
+      lastAction: {
+        playerId: 'p1',
+        action: 'raise',
+        totalBet: 20,
+      },
+    },
+  });
+
+  assert.equal(shell.phaseLabel, 'TURN');
+  assert.equal(shell.currentTurnSeatLabel, '座2');
+  assert.equal(shell.stagePulseTone, 'live-turn');
+  assert.equal(shell.stageActionLabel, '轮到 座2 · TO CALL 10');
+  assert.equal(shell.lastActionLabel, '上一动作 座1 加注到 20');
 });
 
 test('builds ordered seat-ring entries with current-player and empty-seat markers', () => {
