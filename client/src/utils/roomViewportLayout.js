@@ -7,6 +7,7 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
       pageScroll: 'locked',
       heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'rails-and-overlays',
+      supportSurfacePolicy: 'rails-and-overlays',
       contentMaxWidth: '1600px',
     };
   }
@@ -17,6 +18,7 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
       pageScroll: 'locked',
       heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'slide-panels',
+      supportSurfacePolicy: 'slide-panels',
       contentMaxWidth: '1440px',
     };
   }
@@ -27,6 +29,7 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
       pageScroll: 'locked',
       heroDockPlacement: 'fixed-bottom',
       supportSurfaceModel: 'slide-panels',
+      supportSurfacePolicy: 'slide-panels',
       contentMaxWidth: '100%',
     };
   }
@@ -36,6 +39,7 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
     pageScroll: 'locked',
     heroDockPlacement: 'fixed-bottom',
     supportSurfaceModel: 'bottom-sheets',
+    supportSurfacePolicy: 'bottom-sheets',
     contentMaxWidth: '100%',
   };
 }

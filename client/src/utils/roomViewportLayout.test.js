@@ -10,6 +10,7 @@ test('phone portrait keeps the hero dock fixed and moves support surfaces into s
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'bottom-sheets');
+  assert.equal(layout.supportSurfacePolicy, 'bottom-sheets');
   assert.equal(layout.contentMaxWidth, '100%');
 });
 
@@ -30,6 +31,7 @@ test('desktop keeps the room terminal centered with secondary rails', () => {
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
+  assert.equal(layout.supportSurfacePolicy, 'slide-panels');
   assert.equal(layout.contentMaxWidth, '1440px');
 });
 
@@ -40,6 +42,7 @@ test('ultrawide expands the same terminal without turning it into a page layout'
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'rails-and-overlays');
+  assert.equal(layout.supportSurfacePolicy, 'rails-and-overlays');
   assert.equal(layout.contentMaxWidth, '1600px');
 });
 
@@ -59,5 +62,6 @@ test('compact desktop keeps support surfaces out of the main page flow', () => {
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
+  assert.equal(layout.supportSurfacePolicy, 'slide-panels');
   assert.equal(layout.contentMaxWidth, '1440px');
 });

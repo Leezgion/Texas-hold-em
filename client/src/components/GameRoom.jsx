@@ -606,10 +606,9 @@ const GameRoom = () => {
       data-page-scroll={roomViewportLayout.pageScroll}
       data-hero-dock-placement={roomViewportLayout.heroDockPlacement}
       data-support-surface-model={roomViewportLayout.supportSurfaceModel}
+      data-support-surface-policy={roomViewportLayout.supportSurfacePolicy}
       data-shell-layout={shellView.shellLayout}
       data-hero-dock-priority={shellView.heroDockPriority}
-      data-support-surface-phone={shellView.supportSurfacePolicy.phone}
-      data-support-surface-desktop={shellView.supportSurfacePolicy.desktop}
     >
       <div
         className="room-terminal-frame mx-auto w-full"
