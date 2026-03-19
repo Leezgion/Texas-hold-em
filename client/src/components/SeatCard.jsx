@@ -1,7 +1,6 @@
 import React from 'react';
 
 import EmptySeat from './EmptySeat';
-import Player from './Player';
 
 const SeatCard = ({
   seat,
@@ -15,48 +14,57 @@ const SeatCard = ({
         seatIndex={seat.seatIndex}
         position={seat.position}
         seatLabel={seat.seatLabel}
+        seatTone={seat.seatTone}
         roomState={roomState}
       />
     );
   }
 
-  if (seat.isCurrentPlayer) {
-    return (
-      <div
-        className={`player-seat player-seat--compact ${seat.isActiveTimer ? 'current-turn-timer' : ''}`}
-        style={{
-          left: `calc(50% + ${seat.position.x}px)`,
-          top: `calc(50% + ${seat.position.y}px)`,
-          transform: 'translate(-50%, -50%)',
-        }}
-      >
-        <div className="min-w-[92px] rounded-xl border border-sky-400/50 bg-sky-500/12 px-3 py-2 text-center backdrop-blur-sm">
-          <div className="text-[11px] uppercase tracking-[0.22em] text-sky-200">{seat.seatLabel}</div>
-          <div className="mt-1 text-sm font-semibold text-white">Hero</div>
-          <div className="mt-1 text-xs text-sky-100">{seat.positionLabel || seat.statusLabel}</div>
-        </div>
-      </div>
-    );
-  }
+  const player = seat.player || {};
+  const displayName = player.nickname || player.id || (seat.isCurrentPlayer ? 'Hero' : '玩家');
+  const currentBet = Number(player.currentBet) || 0;
+  const hasNet = typeof seat.netLabel === 'string' && seat.netLabel !== '0';
+  const seatToneClassName = `arena-seat-card--${seat.seatTone || 'occupied-live'}`;
 
   return (
     <div
-      className={`player-seat player-seat--compact ${seat.player?.isActive ? 'active' : ''} ${seat.isCurrentTurn ? 'current-turn' : ''} ${seat.isActiveTimer ? 'current-turn-timer' : ''}`}
+      className="arena-seat-anchor"
       style={{
         left: `calc(50% + ${seat.position.x}px)`,
         top: `calc(50% + ${seat.position.y}px)`,
         transform: 'translate(-50%, -50%)',
       }}
     >
-      <Player
-        player={seat.player}
-        isCurrentPlayer={false}
-        isCurrentTurn={seat.isCurrentTurn}
-        gameState={gameState}
-        gameStarted={gameStarted}
-        isActiveTimer={seat.isActiveTimer}
-        getPositionLabel={() => seat.positionLabel || seat.seatLabel}
-      />
+      <div
+        className={`arena-seat-card ${seatToneClassName} ${seat.isCurrentTurn ? 'arena-seat-card--current-turn' : ''} ${
+          seat.isActiveTimer ? 'arena-seat-card--active-timer' : ''
+        } ${player.folded ? 'arena-seat-card--folded' : ''}`}
+      >
+        <div className="arena-seat-card__header">
+          <div className="min-w-0">
+            <div className="arena-seat-card__seat-label">{seat.seatLabel}</div>
+            <div className="arena-seat-card__name" title={displayName}>
+              {seat.isCurrentPlayer ? 'Hero' : displayName}
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {player.isHost && <span className="arena-seat-card__badge">HOST</span>}
+            {seat.positionLabel && <span className="arena-seat-card__badge arena-seat-card__badge--ghost">{seat.positionLabel}</span>}
+          </div>
+        </div>
+
+        <div className="arena-seat-card__stack-row">
+          <span className="arena-seat-card__stack">{seat.chipsLabel || '0'}</span>
+          {currentBet > 0 && <span className="arena-seat-card__bet">BET {currentBet}</span>}
+        </div>
+
+        <div className="arena-seat-card__footer">
+          <span className="arena-seat-card__status">{seat.statusLabel}</span>
+          {hasNet && <span className="arena-seat-card__net">{seat.netLabel}</span>}
+        </div>
+
+        {seat.isCurrentTurn && <span className="arena-seat-card__turn-marker" aria-hidden="true" />}
+      </div>
     </div>
   );
 };

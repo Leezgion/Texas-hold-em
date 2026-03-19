@@ -259,6 +259,52 @@ export function deriveTableShellView({
   };
 }
 
+function deriveSeatTone(player = null, { isCurrentPlayer = false, roomState = 'idle' } = {}) {
+  if (!player) {
+    return 'open-seat';
+  }
+
+  const tableState = player.tableState || 'spectating';
+
+  if (isCurrentPlayer) {
+    if (tableState === 'seated_wait_next_hand') {
+      return 'hero-pending';
+    }
+
+    if (tableState === 'busted_wait_rebuy') {
+      return 'hero-busted';
+    }
+
+    if (tableState === 'all_in_this_hand' || player.allIn) {
+      return 'hero-allin';
+    }
+
+    if (roomState === 'recovery_required') {
+      return 'hero-alert';
+    }
+
+    return 'hero-live';
+  }
+
+  if (tableState === 'seated_wait_next_hand') {
+    return 'occupied-pending';
+  }
+
+  if (tableState === 'folded_this_hand' || player.folded) {
+    return 'occupied-folded';
+  }
+
+  if (tableState === 'all_in_this_hand' || player.allIn) {
+    return 'occupied-allin';
+  }
+
+  if (roomState === 'recovery_required') {
+    return 'occupied-alert';
+  }
+
+  return 'occupied-live';
+}
+
 export function deriveSeatRingView({
   players = [],
   maxPlayers = 6,
@@ -279,10 +325,13 @@ export function deriveSeatRingView({
         occupied: false,
         isCurrentPlayer: false,
         statusLabel: '空座',
+        seatTone: 'open-seat',
         positionLabel: null,
         player: null,
       };
     }
+
+    const isCurrentPlayer = player.id === currentPlayerId;
 
     const summary = deriveProPlayerSummary(player, {
       roomState,
@@ -294,8 +343,9 @@ export function deriveSeatRingView({
       seatIndex,
       seatLabel: summary.seatLabel || `座${seatIndex + 1}`,
       occupied: true,
-      isCurrentPlayer: player.id === currentPlayerId,
+      isCurrentPlayer,
       statusLabel: summary.statusLabel,
+      seatTone: deriveSeatTone(player, { isCurrentPlayer, roomState }),
       positionLabel: summary.positionLabel,
       chipsLabel: summary.chipsLabel,
       netLabel: summary.netLabel,

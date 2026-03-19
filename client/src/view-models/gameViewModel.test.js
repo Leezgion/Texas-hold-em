@@ -432,6 +432,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
       occupied: seat.occupied,
       isCurrentPlayer: seat.isCurrentPlayer,
       statusLabel: seat.statusLabel,
+      seatTone: seat.seatTone,
       positionLabel: seat.positionLabel,
     })),
     [
@@ -441,6 +442,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
         occupied: true,
         isCurrentPlayer: true,
         statusLabel: '下一手加入',
+        seatTone: 'hero-pending',
         positionLabel: null,
       },
       {
@@ -449,6 +451,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
         occupied: false,
         isCurrentPlayer: false,
         statusLabel: '空座',
+        seatTone: 'open-seat',
         positionLabel: null,
       },
       {
@@ -457,6 +460,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
         occupied: true,
         isCurrentPlayer: false,
         statusLabel: '游戏中',
+        seatTone: 'occupied-live',
         positionLabel: null,
       },
       {
@@ -465,6 +469,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
         occupied: false,
         isCurrentPlayer: false,
         statusLabel: '空座',
+        seatTone: 'open-seat',
         positionLabel: null,
       },
     ]

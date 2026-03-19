@@ -13,6 +13,8 @@ const TableStage = ({
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const roomCopy = theme.room;
+  const primaryPotItem = tablePotSummary.items[0] || null;
+  const secondaryPotItems = tablePotSummary.items.slice(1, 3);
 
   return (
     <section className="poker-shell-panel poker-shell-panel--accent relative rounded-[2rem] px-4 py-5 sm:px-6">
@@ -36,10 +38,34 @@ const TableStage = ({
       </div>
 
       <div className={`table-stage-surface table-stage-surface--${theme.mode} relative flex min-h-[34rem] items-center justify-center overflow-visible rounded-[2rem] px-4 py-6`}>
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05),transparent_55%)]" />
-        <div className={`poker-table relative z-10 ${tableSizeClassName}`}>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <CommunityCards />
+        <div className="table-stage-atmosphere" aria-hidden="true" />
+
+        {primaryPotItem && (
+          <div className="table-stage-pot-capsule">
+            <div className="table-stage-pot-capsule__kicker">{primaryPotItem.label}</div>
+            <div className="table-stage-pot-capsule__amount">{primaryPotItem.amount}</div>
+            {secondaryPotItems.length > 0 && (
+              <div className="table-stage-pot-capsule__rail">
+                {secondaryPotItems.map((item) => (
+                  <span key={item.label} className="table-stage-pot-capsule__rail-item">
+                    {item.label} {item.amount}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="table-stage-beacon">
+          <span className="table-stage-beacon__mode">{shellView.modeLabel}</span>
+          <span className="table-stage-beacon__state">{shellView.roomStateLabel}</span>
+        </div>
+
+        <div className="table-stage-core">
+          <div className={`poker-table table-stage-table-shell relative z-10 ${tableSizeClassName}`}>
+            <div className="table-stage-board-tray absolute inset-0 flex items-center justify-center">
+              <CommunityCards />
+            </div>
           </div>
         </div>
 
