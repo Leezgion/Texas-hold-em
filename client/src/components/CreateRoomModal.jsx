@@ -151,7 +151,7 @@ const CreateRoomModal = () => {
                 <label className="form-label mb-0">允许Straddle</label>
                 <p className="text-xs text-gray-500 mt-1">允许在大盲注后额外下注</p>
               </div>
-              <div className="relative flex-shrink-0">
+              <div className="relative shrink-0">
                 <input
                   type="checkbox"
                   checked={settings.allowStraddle}

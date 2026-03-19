@@ -15,6 +15,7 @@ import TableBanner from './TableBanner';
 import TableHeader from './TableHeader';
 import TableStage from './TableStage';
 import { useGame } from '../contexts/GameContext';
+import { resolveRoomShellLayout } from '../utils/productMode';
 import {
   deriveCanStartGame,
   deriveIntelRailView,
@@ -100,6 +101,13 @@ const GameRoom = () => {
   const activeRoomState = roomState || 'idle';
   const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
   const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
+  const roomShellLayout = resolveRoomShellLayout(windowSize.width);
+  const roomShellGridClassName =
+    roomShellLayout === 'three-column'
+      ? 'room-shell-grid room-shell-grid--three-column'
+      : roomShellLayout === 'split-stage'
+      ? 'room-shell-grid room-shell-grid--split-stage'
+      : 'room-shell-grid';
 
   useEffect(() => {
     const verifyRoom = async () => {
@@ -452,7 +460,7 @@ const GameRoom = () => {
       scale = 0.5; // 平板/横向手机仍需收窄左右座位间距
     } else {
       radius = 320; // 增加桌面半径：从280->320
-      scale = 0.82; // 旧布局按全屏设计，这里改成面板内缩放
+      scale = roomShellLayout === 'three-column' ? 0.9 : 0.98; // 中等桌面优先拉开桌边 plaque，避免压进桌心
     }
 
     // 为不同玩家数量定义最佳布局，根据设备尺寸调整
@@ -601,6 +609,8 @@ const GameRoom = () => {
       ? 'w-52 h-52'
       : windowSize.width < 768
       ? 'w-64 h-64'
+      : roomShellLayout === 'split-stage'
+      ? 'w-[22rem] h-[22rem]'
       : 'w-80 h-80';
 
   const seatRingEntries = deriveSeatRingView({
@@ -649,8 +659,8 @@ const GameRoom = () => {
           </div>
         )}
 
-        <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_340px]">
-          <div className="order-2 xl:order-1">
+        <div className={roomShellGridClassName}>
+          <div className="room-shell-grid__intel">
             <IntelRail
               intelRailView={intelRailView}
               players={playersList}
@@ -664,12 +674,13 @@ const GameRoom = () => {
             />
           </div>
 
-          <div className="order-1 xl:order-2">
+          <div className="room-shell-grid__stage">
             <TableStage
               shellView={shellView}
               tablePotSummary={tablePotSummary}
               tableSizeClassName={tableSizeClassName}
               effectiveDisplayMode={effectiveDisplayMode}
+              roomShellLayout={roomShellLayout}
               settlementOverlay={
                 <SettlementOverlay
                   roomState={activeRoomState}
@@ -691,7 +702,7 @@ const GameRoom = () => {
             />
           </div>
 
-          <div className="order-3">
+          <div className="room-shell-grid__event">
             <EventRail
               eventRailView={eventRailView}
               records={handHistoryRecords}

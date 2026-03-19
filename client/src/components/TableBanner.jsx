@@ -14,7 +14,7 @@ const TableBanner = ({ banner = null, tone = 'slate', onAction = null }) => {
   const toneClassName = TONE_CLASS_MAP[tone] || TONE_CLASS_MAP.slate;
 
   return (
-    <div className={`rounded-2xl border px-4 py-3 backdrop-blur-sm ${toneClassName}`}>
+    <div className={`rounded-2xl border px-4 py-3 backdrop-blur-xs ${toneClassName}`}>
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-semibold">{banner.title}</p>

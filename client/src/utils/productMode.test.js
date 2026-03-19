@@ -6,6 +6,7 @@ import {
   getDisplayModeTheme,
   normalizeDisplayModePreference,
   normalizeRoomMode,
+  resolveRoomShellLayout,
   resolveDisplayMode,
 } from './productMode.js';
 
@@ -159,4 +160,12 @@ test('exposes shell chrome tokens for the responsive tactical arena layout', () 
 
   assert.equal(studyTheme.chromeTone, 'analysis-rig');
   assert.equal(studyTheme.shellLayout.tablet, 'split-review');
+});
+
+test('uses a split room shell on mid desktop widths and reserves full three-column layout for wider screens', () => {
+  assert.equal(resolveRoomShellLayout(390), 'stacked');
+  assert.equal(resolveRoomShellLayout(1024), 'stacked');
+  assert.equal(resolveRoomShellLayout(1280), 'split-stage');
+  assert.equal(resolveRoomShellLayout(1440), 'split-stage');
+  assert.equal(resolveRoomShellLayout(1536), 'three-column');
 });

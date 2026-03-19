@@ -154,7 +154,7 @@ const CommunityCards = () => {
 
         {/* 底池信息 */}
         {gameState.pot > 0 && (
-          <div className="bg-gray-800/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-gray-600 inline-block">
+          <div className="bg-gray-800/80 backdrop-blur-xs px-4 py-2 rounded-lg border border-gray-600 inline-block">
             <div className="text-sm text-gray-300">底池</div>
             <div className="text-lg font-bold text-green-400">{gameState.pot}</div>
           </div>

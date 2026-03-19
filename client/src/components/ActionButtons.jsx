@@ -191,7 +191,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
   if (!canAct) {
     return (
-      <div className="flex items-center justify-center h-12 px-4 bg-gray-800/90 backdrop-blur-sm rounded-xl border border-gray-600">
+      <div className="flex items-center justify-center h-12 px-4 bg-gray-800/90 backdrop-blur-xs rounded-xl border border-gray-600">
         <div className="text-center text-gray-400 text-sm">{player.folded ? '已弃牌' : player.allIn ? 'All-in' : '等待其他玩家'}</div>
       </div>
     );
@@ -258,7 +258,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       />
 
       {/* 主要操作按钮 - 横向排列 */}
-      <div className="flex items-center gap-2 bg-gray-900/95 backdrop-blur-sm px-3 py-2 rounded-2xl border border-gray-700/50 shadow-xl">
+      <div className="flex items-center gap-2 bg-gray-900/95 backdrop-blur-xs px-3 py-2 rounded-2xl border border-gray-700/50 shadow-xl">
         {/* 弃牌 */}
         <button
           onClick={() => handleAction('fold')}
@@ -314,7 +314,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
       {/* 自定义加注滑块和输入 */}
       {showRaiseInput && canRaise && (
-        <div className="w-full bg-gray-800/95 backdrop-blur-sm p-4 rounded-xl border border-gray-600 shadow-lg">
+        <div className="w-full bg-gray-800/95 backdrop-blur-xs p-4 rounded-xl border border-gray-600 shadow-lg">
           <div className="text-sm text-gray-300 text-center mb-3 font-medium">自定义加注</div>
 
           {/* 快捷加注按钮组 */}

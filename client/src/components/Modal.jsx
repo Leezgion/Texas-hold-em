@@ -34,14 +34,14 @@ const Modal = ({
         >
           {/* 固定头部 */}
           {(title || showCloseButton) && (
-            <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-700 bg-gray-800 rounded-t-lg flex-shrink-0">
+            <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-700 bg-gray-800 rounded-t-lg shrink-0">
               {title && (
                 <h2 className="text-xl sm:text-2xl font-bold text-poker-gold">{title}</h2>
               )}
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-white text-2xl flex-shrink-0 p-1 hover:bg-gray-700 rounded ml-auto"
+                  className="text-gray-400 hover:text-white text-2xl shrink-0 p-1 hover:bg-gray-700 rounded ml-auto"
                   type="button"
                 >
                   ×
@@ -57,7 +57,7 @@ const Modal = ({
 
           {/* 固定底部 */}
           {footer && (
-            <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-t border-gray-700 bg-gray-800 rounded-b-lg">
+            <div className="shrink-0 px-4 sm:px-6 py-4 border-t border-gray-700 bg-gray-800 rounded-b-lg">
               {footer}
             </div>
           )}

@@ -86,7 +86,7 @@ const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted
       <div className="text-center relative ">
         {/* 紧凑的玩家信息卡片 */}
         <div
-          className={`bg-gray-800/90 backdrop-blur-sm rounded-lg p-2 border ${
+          className={`bg-gray-800/90 backdrop-blur-xs rounded-lg p-2 border ${
             player.allIn
               ? 'border-purple-500 shadow-lg shadow-purple-500/40'
               : isActiveTimer

@@ -10,11 +10,18 @@ const TableStage = ({
   settlementOverlay = null,
   tableSizeClassName = 'w-[22rem] h-[22rem]',
   effectiveDisplayMode = 'pro',
+  roomShellLayout = 'stacked',
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const roomCopy = theme.room;
   const primaryPotItem = tablePotSummary.items[0] || null;
   const secondaryPotItems = tablePotSummary.items.slice(1, 3);
+  const stageLayoutClassName =
+    roomShellLayout === 'three-column'
+      ? 'table-stage-surface table-stage-surface--three-column'
+      : roomShellLayout === 'split-stage'
+      ? 'table-stage-surface table-stage-surface--split-stage'
+      : 'table-stage-surface';
 
   return (
     <section className="poker-shell-panel poker-shell-panel--accent relative rounded-[2rem] px-4 py-5 sm:px-6">
@@ -37,7 +44,9 @@ const TableStage = ({
         </div>
       </div>
 
-      <div className={`table-stage-surface table-stage-surface--${theme.mode} relative flex min-h-[34rem] items-center justify-center overflow-visible rounded-[2rem] px-4 py-6`}>
+      <div
+        className={`${stageLayoutClassName} table-stage-surface--${theme.mode} relative flex min-h-[34rem] items-center justify-center overflow-visible rounded-[2rem] px-4 py-6`}
+      >
         <div className="table-stage-atmosphere" aria-hidden="true" />
 
         {primaryPotItem && (

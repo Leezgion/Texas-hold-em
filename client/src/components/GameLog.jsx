@@ -61,7 +61,7 @@ const GameLog = ({ logs = [], title = '游戏日志', emptyText = '暂无操作�
 
   if (logs.length === 0) {
     return (
-      <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
+      <div className="bg-gray-800/90 backdrop-blur-xs rounded-lg p-4 border border-gray-700">
         <div className="flex items-center space-x-2 mb-3">
           <ScrollText size={18} className="text-poker-gold" />
           <h3 className="text-sm font-semibold text-white">{title}</h3>
@@ -74,7 +74,7 @@ const GameLog = ({ logs = [], title = '游戏日志', emptyText = '暂无操作�
   }
 
   return (
-    <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
+    <div className="bg-gray-800/90 backdrop-blur-xs rounded-lg p-4 border border-gray-700">
       <div className="flex items-center space-x-2 mb-3">
         <ScrollText size={18} className="text-poker-gold" />
         <h3 className="text-sm font-semibold text-white">{title}</h3>

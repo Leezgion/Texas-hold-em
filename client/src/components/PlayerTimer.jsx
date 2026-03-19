@@ -32,7 +32,7 @@ const PlayerTimer = ({ timeRemaining, isCurrentTurn }) => {
   return (
     <div className="flex flex-col items-center space-y-2">
       {/* 倒计时圆圈 */}
-      <div className={`relative w-20 h-20 rounded-full border-4 ${getTimerColor()} bg-gray-800/90 backdrop-blur-sm flex items-center justify-center`}>
+      <div className={`relative w-20 h-20 rounded-full border-4 ${getTimerColor()} bg-gray-800/90 backdrop-blur-xs flex items-center justify-center`}>
         {/* 进度圆圈 */}
         <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 80 80">
           <circle
@@ -67,7 +67,7 @@ const PlayerTimer = ({ timeRemaining, isCurrentTurn }) => {
       </div>
       
       {/* 提示文字 */}
-      <div className="text-xs text-center bg-gray-800/90 backdrop-blur-sm px-3 py-1 rounded-lg border border-gray-600">
+      <div className="text-xs text-center bg-gray-800/90 backdrop-blur-xs px-3 py-1 rounded-lg border border-gray-600">
         <div className="text-white font-semibold">您的回合</div>
         <div className="text-gray-400">请选择行动</div>
       </div>

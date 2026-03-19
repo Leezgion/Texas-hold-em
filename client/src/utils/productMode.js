@@ -195,6 +195,20 @@ export function getDisplayModeTheme(mode) {
   return DISPLAY_MODE_THEME_META[normalizedMode];
 }
 
+export function resolveRoomShellLayout(width = 0) {
+  const safeWidth = Number(width) || 0;
+
+  if (safeWidth >= 1536) {
+    return 'three-column';
+  }
+
+  if (safeWidth >= 1280) {
+    return 'split-stage';
+  }
+
+  return 'stacked';
+}
+
 export function buildModePreviewCards() {
   return ['club', 'pro', 'study'].map((mode) => ({
     ...ROOM_MODE_META[mode],

@@ -52,13 +52,13 @@ const Toast = ({ id, message, type = 'info', onClose }) => {
 
   return (
     <div
-      className={`${styles.bg} ${styles.border} backdrop-blur-sm border rounded-lg p-4 shadow-xl transform transition-all duration-300 ease-out animate-toast-in flex items-start space-x-3 min-w-[300px] max-w-md`}
+      className={`${styles.bg} ${styles.border} backdrop-blur-xs border rounded-lg p-4 shadow-xl transform transition-all duration-300 ease-out animate-toast-in flex items-start space-x-3 min-w-[300px] max-w-md`}
     >
-      <Icon className={`${styles.iconColor} flex-shrink-0`} size={20} />
+      <Icon className={`${styles.iconColor} shrink-0`} size={20} />
       <p className="text-white text-sm flex-1 leading-relaxed">{message}</p>
       <button
         onClick={() => onClose(id)}
-        className="text-white/80 hover:text-white transition-colors flex-shrink-0"
+        className="text-white/80 hover:text-white transition-colors shrink-0"
         aria-label="关闭通知"
       >
         <X size={18} />
