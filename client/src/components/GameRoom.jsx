@@ -73,6 +73,35 @@ const mapViewportModelToStageShellLayout = (viewportModel) => {
   }
 };
 
+const buildCanonicalSeatSlots = ({
+  maxPlayers = 6,
+  currentPlayerSeat = null,
+  seatRingLayout = null,
+} = {}) => {
+  const safeMaxPlayers = Math.max(2, Number(maxPlayers) || 6);
+  const heroSeat = resolveSeatRingRotationSeatIndex({ seat: currentPlayerSeat });
+  const positions = buildSeatRingPositions({
+    playerCount: safeMaxPlayers,
+    ...(seatRingLayout || {}),
+  });
+
+  return Array.from({ length: safeMaxPlayers }, (_, seatIndex) => {
+    const relativeSeat = (seatIndex - heroSeat + safeMaxPlayers) % safeMaxPlayers;
+    const position = positions[relativeSeat] || null;
+    const anchorRole = position?.anchorRole || 'ring';
+    const anchorZone = position?.anchorZone || (anchorRole === 'hero' ? 'dock-edge' : 'table-flank');
+    const profile = position?.profile || seatRingLayout?.profile || 'desktop-oval';
+
+    return {
+      seatIndex,
+      anchorSlotId: `${profile}:${safeMaxPlayers}:${anchorRole}:${relativeSeat}`,
+      anchorRole,
+      anchorZone,
+      position,
+    };
+  });
+};
+
 const GameRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -552,9 +581,10 @@ const GameRoom = () => {
     roomShellLayout: stageShellLayout,
     tableDiameter,
   });
-  const seatRingPositions = buildSeatRingPositions({
-    playerCount: maxPlayers,
-    ...roomGeometryContract.seatRingLayout,
+  const canonicalSeatSlots = buildCanonicalSeatSlots({
+    maxPlayers,
+    currentPlayerSeat: currentPlayer?.seat,
+    seatRingLayout: roomGeometryContract.seatRingLayout,
   });
   const toggleSupportPanel = (panelId) => {
     if (!usesSupportPanels) {
@@ -573,27 +603,19 @@ const GameRoom = () => {
       ? 'w-[22rem] h-[22rem]'
       : 'w-80 h-80';
 
-  const getPlayerPosition = (player, allPlayers) => {
-    const currentPlayerSeat = resolveSeatRingRotationSeatIndex(currentPlayer);
-    const totalPlayers = allPlayers.length;
-    const relativeSeat = (player.seat - currentPlayerSeat + totalPlayers) % totalPlayers;
-    return seatRingPositions[relativeSeat] || { x: 0, y: 0 };
-  };
-
   const seatRingEntries = deriveSeatRingView({
     players: playersList,
     maxPlayers,
     currentPlayerId,
     roomState: activeRoomState,
     gameState: safeGameState,
+    canonicalSlots: canonicalSeatSlots,
   }).map((seat) => {
-    const position = getPlayerPosition({ seat: seat.seatIndex }, Array.from({ length: maxPlayers }, (_, index) => ({ seat: index })));
     const isCurrentTurn =
       seat.player && safeGameState ? safeGameState.currentPlayerIndex === playersList.indexOf(seat.player) : false;
 
     return {
       ...seat,
-      position,
       isCurrentTurn,
       isActiveTimer: Boolean(safeGameState && safeGameState.timeRemaining > 0 && isCurrentTurn),
     };
