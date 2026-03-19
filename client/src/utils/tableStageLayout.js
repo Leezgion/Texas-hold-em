@@ -1,3 +1,5 @@
+const TABLE_FAMILY = 'tournament-capsule-9max';
+
 function clampNumber(value, fallback = 0) {
   const normalized = Number(value);
   return Number.isFinite(normalized) ? normalized : fallback;
@@ -21,6 +23,7 @@ export function resolveTableSurfaceLayout({
 
   if (profile === 'phone-oval') {
     return {
+      family: TABLE_FAMILY,
       profile,
       tableWidth: Math.round(safeTableDiameter * 1.02),
       tableHeight: Math.round(safeTableDiameter * 1.46),
@@ -31,6 +34,7 @@ export function resolveTableSurfaceLayout({
   }
 
   return {
+    family: TABLE_FAMILY,
     profile,
     tableWidth: Math.round(safeTableDiameter * 1.72),
     tableHeight: Math.round(safeTableDiameter * 0.9),
@@ -54,6 +58,7 @@ export function resolveCommunityCardLayout({
   if (surface.profile === 'phone-oval') {
     const safeWidth = Math.max(surface.tableWidth - surface.boardTrayInsetX - 2, 190);
     return {
+      family: surface.family,
       tableProfile: surface.profile,
       trayWidth: safeWidth,
       trayHeight: 74,
@@ -67,6 +72,7 @@ export function resolveCommunityCardLayout({
   }
 
   return {
+    family: surface.family,
     tableProfile: surface.profile,
     trayWidth: Math.min(surface.tableWidth - surface.boardTrayInsetX * 2, 332),
     trayHeight: 96,
@@ -112,8 +118,24 @@ export function buildStageChromeLayout({
   const stageBandWidth = Math.min(surface.tableWidth * 0.74, compact ? 182 : 316);
   const stageBandHeight = surface.stageBandHeight;
   const stageBandY = centerY - outerRy - stageBandHeight - (compact ? 18 : 24);
+  const orbitMarkerCount = 9;
+  const orbitRx = outerRx + (compact ? 16 : 18);
+  const orbitRy = outerRy + (compact ? 12 : 14);
+  const orbitMarkers = Array.from({ length: orbitMarkerCount }, (_, index) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / orbitMarkerCount;
+    const isHeadMarker = index === 0;
+
+    return {
+      index,
+      cx: centerX + Math.cos(angle) * orbitRx,
+      cy: centerY + Math.sin(angle) * orbitRy,
+      r: isHeadMarker ? (compact ? 3.4 : 3.8) : compact ? 2.2 : 2.6,
+      isHeadMarker,
+    };
+  });
 
   return {
+    family: surface.family,
     profile: surface.profile,
     viewMode: compact ? 'compact' : 'wide',
     width,
@@ -135,6 +157,12 @@ export function buildStageChromeLayout({
       y: stageBandY,
       rx: compact ? 20 : 26,
     },
+    orbit: {
+      rx: orbitRx,
+      ry: orbitRy,
+      markerCount: orbitMarkerCount,
+    },
+    orbitMarkers,
     boardTray: {
       width: boardTrayWidth,
       height: boardTrayHeight,

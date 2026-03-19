@@ -13,6 +13,7 @@ const TableStageChrome = ({ viewportWidth = 1280, tableDiameter = 320, seatGuide
   return (
     <svg
       className="table-stage-chrome"
+      data-table-family={chrome.family}
       data-table-profile={chrome.profile}
       viewBox={`0 0 ${chrome.width} ${chrome.height}`}
       style={{ width: `${chrome.width}px`, height: `${chrome.height}px` }}
@@ -30,35 +31,58 @@ const TableStageChrome = ({ viewportWidth = 1280, tableDiameter = 320, seatGuide
         </linearGradient>
       </defs>
 
-      <ellipse
-        className="table-stage-chrome__halo"
-        cx={chrome.centerX}
-        cy={chrome.centerY}
-        rx={chrome.table.outerRx + 28}
-        ry={chrome.table.outerRy + 22}
-      />
-      <ellipse
-        className="table-stage-chrome__outer"
-        cx={chrome.centerX}
-        cy={chrome.centerY}
-        rx={chrome.table.outerRx}
-        ry={chrome.table.outerRy}
-      />
-      <ellipse
-        className="table-stage-chrome__inner"
-        cx={chrome.centerX}
-        cy={chrome.centerY}
-        rx={chrome.table.innerRx}
-        ry={chrome.table.innerRy}
-      />
-      <ellipse
-        className="table-stage-chrome__glow"
-        cx={chrome.centerX}
-        cy={chrome.centerY}
-        rx={chrome.table.innerRx - 12}
-        ry={chrome.table.innerRy - 10}
-        fill="url(#stage-felt-glow)"
-      />
+      <g className="table-stage-chrome__shell">
+        <ellipse
+          className="table-stage-chrome__halo"
+          cx={chrome.centerX}
+          cy={chrome.centerY}
+          rx={chrome.table.outerRx + 28}
+          ry={chrome.table.outerRy + 22}
+        />
+        <ellipse
+          className="table-stage-chrome__outer"
+          cx={chrome.centerX}
+          cy={chrome.centerY}
+          rx={chrome.table.outerRx}
+          ry={chrome.table.outerRy}
+        />
+        <ellipse
+          className="table-stage-chrome__inner"
+          cx={chrome.centerX}
+          cy={chrome.centerY}
+          rx={chrome.table.innerRx}
+          ry={chrome.table.innerRy}
+        />
+        <ellipse
+          className="table-stage-chrome__glow"
+          cx={chrome.centerX}
+          cy={chrome.centerY}
+          rx={chrome.table.innerRx - 12}
+          ry={chrome.table.innerRy - 10}
+          fill="url(#stage-felt-glow)"
+        />
+      </g>
+
+      <g className="table-stage-chrome__orbit">
+        <ellipse
+          className="table-stage-chrome__orbit-ring"
+          cx={chrome.centerX}
+          cy={chrome.centerY}
+          rx={chrome.orbit.rx}
+          ry={chrome.orbit.ry}
+        />
+        {chrome.orbitMarkers.map((marker) => (
+          <circle
+            key={`orbit-${marker.index}`}
+            className={`table-stage-chrome__orbit-marker ${
+              marker.isHeadMarker ? 'table-stage-chrome__orbit-marker--head' : ''
+            }`}
+            cx={marker.cx}
+            cy={marker.cy}
+            r={marker.r}
+          />
+        ))}
+      </g>
 
       <g className="table-stage-chrome__tray">
         <rect

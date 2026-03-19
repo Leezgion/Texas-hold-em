@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildStageChromeLayout, resolveCommunityCardLayout } from './tableStageLayout.js';
+import {
+  buildStageChromeLayout,
+  resolveCommunityCardLayout,
+  resolveTableSurfaceLayout,
+} from './tableStageLayout.js';
 
 function getCommunityRowWidth({ cardWidth, gap, cardCount = 5 }) {
   return cardWidth * cardCount + gap * Math.max(0, cardCount - 1);
@@ -31,6 +35,16 @@ test('keeps five community cards inside the desktop table safe width', () => {
     `expected row width ${getCommunityRowWidth(layout)} to fit within ${layout.safeWidth}`
   );
   assert.equal(layout.phaseVisible, true);
+});
+
+test('builds the same tournament table family for desktop and phone portrait', () => {
+  const desktop = resolveTableSurfaceLayout({ viewportWidth: 1440, tableDiameter: 352 });
+  const phone = resolveTableSurfaceLayout({ viewportWidth: 390, tableDiameter: 208 });
+
+  assert.equal(desktop.family, 'tournament-capsule-9max');
+  assert.equal(phone.family, 'tournament-capsule-9max');
+  assert.equal(desktop.profile, 'desktop-oval');
+  assert.equal(phone.profile, 'phone-oval');
 });
 
 test('maps seat guides and board tray into desktop stage chrome bounds', () => {

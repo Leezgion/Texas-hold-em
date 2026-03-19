@@ -70,6 +70,7 @@ const TableStage = ({
       <div
         className={`${stageLayoutClassName} ${stagePulseClassName} table-stage-surface--${theme.mode} relative flex min-h-[34rem] items-center justify-center overflow-visible rounded-[2rem] px-4 py-6`}
         data-table-profile={tableSurfaceLayout.profile}
+        data-table-family={tableSurfaceLayout.family}
       >
         <div className="table-stage-atmosphere" aria-hidden="true" />
 
@@ -139,7 +140,11 @@ const TableStage = ({
           </AnimatePresence>
         </motion.div>
 
-        <div className="table-stage-core" data-table-profile={tableSurfaceLayout.profile}>
+        <div
+          className="table-stage-core"
+          data-table-profile={tableSurfaceLayout.profile}
+          data-table-family={tableSurfaceLayout.family}
+        >
           <TableStageChrome
             viewportWidth={viewportWidth}
             tableDiameter={tableDiameter}
@@ -149,6 +154,7 @@ const TableStage = ({
           <div
             className="poker-table table-stage-table-shell relative z-10"
             data-table-profile={tableSurfaceLayout.profile}
+            data-table-family={tableSurfaceLayout.family}
             style={{
               width: `${tableSurfaceLayout.tableWidth}px`,
               height: `${tableSurfaceLayout.tableHeight}px`,
@@ -157,6 +163,7 @@ const TableStage = ({
             <div
               className="table-stage-board-tray absolute inset-0 flex items-center justify-center"
               data-table-profile={tableSurfaceLayout.profile}
+              data-table-family={tableSurfaceLayout.family}
               style={{
                 width: `${boardLayout.trayWidth}px`,
                 height: `${boardLayout.trayHeight}px`,

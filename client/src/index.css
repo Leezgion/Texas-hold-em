@@ -1018,6 +1018,65 @@
     transform: translate(-50%, -50%) scale(0.98);
   }
 
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__halo {
+    fill: rgba(245, 158, 11, 0.045);
+    stroke: rgba(251, 191, 36, 0.08);
+  }
+
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__outer {
+    fill: rgba(3, 7, 17, 0.1);
+    stroke: rgba(148, 163, 184, 0.12);
+  }
+
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__inner {
+    fill: rgba(10, 17, 27, 0.16);
+    stroke: rgba(255, 255, 255, 0.05);
+  }
+
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__stage-band {
+    fill: rgba(4, 11, 19, 0.82);
+    stroke: rgba(245, 158, 11, 0.18);
+  }
+
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__tray-line {
+    stroke: rgba(251, 191, 36, 0.2);
+  }
+
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__guide-line {
+    stroke: rgba(251, 191, 36, 0.1);
+  }
+
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__guide-ring {
+    fill: rgba(2, 6, 23, 0.16);
+    stroke: rgba(191, 219, 254, 0.14);
+  }
+
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__guide-core {
+    fill: rgba(11, 18, 28, 0.35);
+  }
+
+  .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__guide-dock {
+    stroke: rgba(245, 158, 11, 0.28);
+  }
+
+  .table-stage-chrome__orbit-ring {
+    fill: transparent;
+    stroke: rgba(251, 191, 36, 0.16);
+    stroke-width: 1.2;
+    stroke-dasharray: 6 10;
+  }
+
+  .table-stage-chrome__orbit-marker {
+    fill: rgba(226, 232, 240, 0.78);
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-width: 1;
+  }
+
+  .table-stage-chrome__orbit-marker--head {
+    fill: rgba(251, 191, 36, 0.96);
+    stroke: rgba(255, 255, 255, 0.16);
+  }
+
   .table-stage-chrome__halo {
     fill: rgba(125, 211, 252, 0.04);
     stroke: rgba(191, 219, 254, 0.06);
@@ -1111,6 +1170,11 @@
       box-shadow var(--arena-motion-emphasis) ease;
   }
 
+  .table-stage-table-shell[data-table-family="tournament-capsule-9max"] {
+    border-color: rgba(8, 19, 15, 0.96);
+    background: radial-gradient(circle at 50% 32%, #126d43 0%, #0d5735 56%, #072e1f 100%);
+  }
+
   .table-stage-table-shell::before {
     content: "";
     position: absolute;
@@ -1137,6 +1201,13 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.05),
       0 10px 28px rgba(0, 0, 0, 0.25);
+  }
+
+  .table-stage-board-tray[data-table-family="tournament-capsule-9max"] {
+    border-color: rgba(251, 191, 36, 0.18);
+    background:
+      linear-gradient(180deg, rgba(4, 10, 18, 0.76), rgba(8, 15, 22, 0.5)),
+      radial-gradient(circle at center, rgba(245, 158, 11, 0.08), transparent 72%);
   }
 
   .table-stage-board-tray[data-table-profile="phone-oval"] {
