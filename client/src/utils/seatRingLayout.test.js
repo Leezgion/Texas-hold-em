@@ -25,6 +25,15 @@ function countTableRectOverlaps({
   }).length;
 }
 
+function assertUsesExplicitAnchorPath(layout, playerCount) {
+  assert.equal(layout.length, playerCount);
+  assert.equal(
+    layout.some(({ anchorRole }) => anchorRole === 'ring'),
+    false,
+    'generic fallback uses ring roles'
+  );
+}
+
 test('keeps six-player split-stage seats outside the table bounds on desktop', () => {
   const profile = getSeatRingLayoutProfile({
     viewportWidth: 1280,
@@ -155,6 +164,7 @@ test('keeps supported desktop 7-9 player rooms outside the table body and stage 
       profile: 'desktop-oval',
     });
 
+    assertUsesExplicitAnchorPath(layout, playerCount);
     assert.equal(layout.overlaps.tableBody, 0, `table overlap for ${playerCount} players`);
     assert.equal(layout.overlaps.stageBand, 0, `stage overlap for ${playerCount} players`);
   }
@@ -170,7 +180,10 @@ test('keeps supported phone 7-9 player rooms anchored to the dock edge', () => {
       profile: 'phone-oval',
     });
 
+    assertUsesExplicitAnchorPath(layout, playerCount);
     assert.equal(layout.heroAnchor.zone, 'dock-edge', `hero anchor for ${playerCount} players`);
+    assert.equal(layout[0].anchorZone, 'dock-edge', `hero seat zone for ${playerCount} players`);
+    assert.equal(layout[0].anchorRole, 'hero', `hero seat role for ${playerCount} players`);
     assert.equal(layout.overlaps.tableBody, 0, `table overlap for ${playerCount} players`);
     assert.equal(layout.overlaps.stageBand, 0, `stage overlap for ${playerCount} players`);
   }
