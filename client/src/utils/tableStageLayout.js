@@ -1,36 +1,76 @@
-export function resolveCommunityCardLayout({ viewportWidth = 0, tableDiameter = 0 } = {}) {
-  const safeTableDiameter = Number(tableDiameter) || 208;
+function clampNumber(value, fallback = 0) {
+  const normalized = Number(value);
+  return Number.isFinite(normalized) ? normalized : fallback;
+}
 
-  if (viewportWidth < 480) {
+function resolveTableProfile({ viewportWidth = 0, tableProfile = null } = {}) {
+  if (tableProfile === 'desktop-oval' || tableProfile === 'phone-oval') {
+    return tableProfile;
+  }
+
+  return viewportWidth < 768 ? 'phone-oval' : 'desktop-oval';
+}
+
+export function resolveTableSurfaceLayout({
+  viewportWidth = 0,
+  tableDiameter = 0,
+  tableProfile = null,
+} = {}) {
+  const profile = resolveTableProfile({ viewportWidth, tableProfile });
+  const safeTableDiameter = clampNumber(tableDiameter, viewportWidth < 768 ? 208 : 320);
+
+  if (profile === 'phone-oval') {
     return {
-      trayWidth: safeTableDiameter - 12,
-      trayHeight: 60,
-      safeWidth: safeTableDiameter - 12,
-      cardWidth: 32,
-      cardHeight: 48,
+      profile,
+      tableWidth: Math.round(safeTableDiameter * 1.02),
+      tableHeight: Math.round(safeTableDiameter * 1.46),
+      boardTrayInsetX: 20,
+      boardTrayInsetY: 18,
+      stageBandHeight: 40,
+    };
+  }
+
+  return {
+    profile,
+    tableWidth: Math.round(safeTableDiameter * 1.72),
+    tableHeight: Math.round(safeTableDiameter * 0.9),
+    boardTrayInsetX: 26,
+    boardTrayInsetY: 20,
+    stageBandHeight: 46,
+  };
+}
+
+export function resolveCommunityCardLayout({
+  viewportWidth = 0,
+  tableDiameter = 0,
+  tableProfile = null,
+} = {}) {
+  const surface = resolveTableSurfaceLayout({
+    viewportWidth,
+    tableDiameter,
+    tableProfile,
+  });
+
+  if (surface.profile === 'phone-oval') {
+    const safeWidth = Math.max(surface.tableWidth - surface.boardTrayInsetX - 2, 190);
+    return {
+      tableProfile: surface.profile,
+      trayWidth: safeWidth,
+      trayHeight: 74,
+      safeWidth,
+      cardWidth: 34,
+      cardHeight: 50,
       gap: 4,
       cardDensity: 'compact',
       phaseVisible: false,
     };
   }
 
-  if (viewportWidth < 768) {
-    return {
-      trayWidth: safeTableDiameter - 20,
-      trayHeight: 68,
-      safeWidth: safeTableDiameter - 20,
-      cardWidth: 40,
-      cardHeight: 58,
-      gap: 6,
-      cardDensity: 'compact',
-      phaseVisible: true,
-    };
-  }
-
   return {
-    trayWidth: Math.min(safeTableDiameter - 28, 308),
-    trayHeight: 92,
-    safeWidth: Math.min(safeTableDiameter - 40, 312),
+    tableProfile: surface.profile,
+    trayWidth: Math.min(surface.tableWidth - surface.boardTrayInsetX * 2, 332),
+    trayHeight: 96,
+    safeWidth: Math.min(surface.tableWidth - surface.boardTrayInsetX * 2, 336),
     cardWidth: 52,
     cardHeight: 72,
     gap: 8,
@@ -39,24 +79,42 @@ export function resolveCommunityCardLayout({ viewportWidth = 0, tableDiameter = 
   };
 }
 
-export function buildStageChromeLayout({ viewportWidth = 0, tableDiameter = 0, seatGuides = [] } = {}) {
-  const safeTableDiameter = Number(tableDiameter) || 208;
-  const communityLayout = resolveCommunityCardLayout({ viewportWidth, tableDiameter: safeTableDiameter });
-  const compact = viewportWidth < 768;
-  const padding = compact ? 96 : 132;
-  const width = safeTableDiameter + padding * 2;
-  const height = safeTableDiameter + padding * 2;
+export function buildStageChromeLayout({
+  viewportWidth = 0,
+  tableDiameter = 0,
+  seatGuides = [],
+  tableProfile = null,
+} = {}) {
+  const surface = resolveTableSurfaceLayout({
+    viewportWidth,
+    tableDiameter,
+    tableProfile,
+  });
+  const communityLayout = resolveCommunityCardLayout({
+    viewportWidth,
+    tableDiameter,
+    tableProfile: surface.profile,
+  });
+  const compact = surface.profile === 'phone-oval';
+  const paddingX = compact ? 118 : 132;
+  const paddingY = compact ? 108 : 112;
+  const width = surface.tableWidth + paddingX * 2;
+  const height = surface.tableHeight + paddingY * 2;
   const centerX = width / 2;
   const centerY = height / 2;
-  const outerRx = safeTableDiameter / 2 + (compact ? 18 : 28);
-  const outerRy = safeTableDiameter / 2 - (compact ? 6 : 10);
+  const outerRx = surface.tableWidth / 2 + (compact ? 22 : 28);
+  const outerRy = surface.tableHeight / 2 + (compact ? 22 : 26);
   const innerRx = outerRx - (compact ? 16 : 22);
-  const innerRy = outerRy - (compact ? 12 : 16);
-  const boardTrayWidth = Math.min(communityLayout.trayWidth + (compact ? 18 : 26), innerRx * 1.7);
-  const boardTrayHeight = communityLayout.trayHeight + (compact ? 14 : 18);
+  const innerRy = outerRy - (compact ? 18 : 20);
+  const boardTrayWidth = Math.min(communityLayout.trayWidth + (compact ? 20 : 26), innerRx * 1.84);
+  const boardTrayHeight = communityLayout.trayHeight + (compact ? 14 : 20);
   const guideRadius = compact ? 11 : 13;
+  const stageBandWidth = Math.min(surface.tableWidth * 0.74, compact ? 182 : 316);
+  const stageBandHeight = surface.stageBandHeight;
+  const stageBandY = centerY - outerRy - stageBandHeight - (compact ? 18 : 24);
 
   return {
+    profile: surface.profile,
     viewMode: compact ? 'compact' : 'wide',
     width,
     height,
@@ -67,6 +125,15 @@ export function buildStageChromeLayout({ viewportWidth = 0, tableDiameter = 0, s
       outerRy,
       innerRx,
       innerRy,
+      width: surface.tableWidth,
+      height: surface.tableHeight,
+    },
+    stageBand: {
+      width: stageBandWidth,
+      height: stageBandHeight,
+      x: centerX - stageBandWidth / 2,
+      y: stageBandY,
+      rx: compact ? 20 : 26,
     },
     boardTray: {
       width: boardTrayWidth,
@@ -83,6 +150,7 @@ export function buildStageChromeLayout({ viewportWidth = 0, tableDiameter = 0, s
       occupied: Boolean(seat.occupied),
       isCurrentTurn: Boolean(seat.isCurrentTurn),
       isHero: Boolean(seat.isCurrentPlayer),
+      anchorZone: seat.position?.anchorZone || null,
       cx: centerX + (Number(seat.position?.x) || 0),
       cy: centerY + (Number(seat.position?.y) || 0),
     })),

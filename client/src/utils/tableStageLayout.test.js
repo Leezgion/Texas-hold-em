@@ -75,3 +75,29 @@ test('keeps phone portrait stage chrome compact while preserving marker metadata
   assert.equal(layout.seatGuides[0].markerLabel, 'BB');
   assert.equal(layout.seatGuides[1].markerLabel, 'SB/BTN');
 });
+
+test('uses a desktop oval table profile for wide stages', () => {
+  const layout = buildStageChromeLayout({
+    viewportWidth: 1280,
+    tableDiameter: 352,
+    seatGuides: [],
+    tableProfile: 'desktop-oval',
+  });
+
+  assert.equal(layout.profile, 'desktop-oval');
+  assert.ok(layout.table.outerRx > layout.table.outerRy);
+  assert.ok(layout.stageBand.height > 0);
+});
+
+test('uses a phone oval table profile for portrait stages', () => {
+  const layout = buildStageChromeLayout({
+    viewportWidth: 390,
+    tableDiameter: 208,
+    seatGuides: [],
+    tableProfile: 'phone-oval',
+  });
+
+  assert.equal(layout.profile, 'phone-oval');
+  assert.ok(layout.table.outerRy > layout.table.outerRx);
+  assert.ok(layout.boardTray.height < layout.table.outerRy * 2);
+});

@@ -94,3 +94,35 @@ test('keeps six-player phone portrait seats outside the table bounds', () => {
     0
   );
 });
+
+test('desktop profile uses an oval table and keeps the top seat clear of the stage band', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 6,
+    viewportWidth: 1280,
+    viewportHeight: 900,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+
+  assert.equal(layout.profile, 'desktop-oval');
+  assert.equal(layout.overlaps.stageBand, 0);
+  assert.equal(layout.overlaps.tableBody, 0);
+  assert.equal(layout.heroAnchor.zone, 'table-edge');
+});
+
+test('phone portrait profile uses a vertical oval and keeps hero tied to the dock edge', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 6,
+    viewportWidth: 390,
+    viewportHeight: 844,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+
+  assert.equal(layout.profile, 'phone-oval');
+  assert.equal(layout.heroAnchor.zone, 'dock-edge');
+  assert.equal(layout.overlaps.stageBand, 0);
+  assert.equal(layout.overlaps.tableBody, 0);
+});

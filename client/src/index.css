@@ -735,6 +735,10 @@
     min-height: 26rem;
   }
 
+  .table-stage-core[data-table-profile="phone-oval"] {
+    min-height: 30rem;
+  }
+
   .table-stage-chrome {
     position: absolute;
     left: 50%;
@@ -743,6 +747,10 @@
     transform: translate(-50%, -50%);
     pointer-events: none;
     overflow: visible;
+  }
+
+  .table-stage-chrome[data-table-profile="phone-oval"] {
+    transform: translate(-50%, -50%) scale(0.98);
   }
 
   .table-stage-chrome__halo {
@@ -761,6 +769,12 @@
     fill: rgba(15, 23, 42, 0.08);
     stroke: rgba(255, 255, 255, 0.05);
     stroke-width: 1.5;
+  }
+
+  .table-stage-chrome__stage-band {
+    fill: rgba(4, 10, 21, 0.7);
+    stroke: rgba(191, 219, 254, 0.14);
+    stroke-width: 1.2;
   }
 
   .table-stage-chrome__tray-line {
@@ -785,6 +799,13 @@
     fill: rgba(15, 23, 42, 0.3);
     stroke: rgba(255, 255, 255, 0.08);
     stroke-width: 1;
+  }
+
+  .table-stage-chrome__guide-dock {
+    fill: transparent;
+    stroke: rgba(125, 211, 252, 0.22);
+    stroke-width: 1.2;
+    stroke-dasharray: 3 5;
   }
 
   .table-stage-chrome__guide--occupied .table-stage-chrome__guide-ring {
@@ -813,6 +834,9 @@
   .table-stage-table-shell {
     border-width: 10px;
     border-color: rgba(16, 22, 32, 0.88);
+    width: 100%;
+    max-width: min(94vw, 38rem);
+    border-radius: 48% / 36%;
     box-shadow:
       0 24px 64px rgba(0, 0, 0, 0.42),
       inset 0 0 0 1px rgba(255, 255, 255, 0.05),
@@ -827,8 +851,13 @@
     position: absolute;
     inset: 1rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 999px;
+    border-radius: inherit;
     pointer-events: none;
+  }
+
+  .table-stage-table-shell[data-table-profile="phone-oval"] {
+    max-width: min(82vw, 16rem);
+    border-radius: 38% / 48%;
   }
 
   .table-stage-board-tray {
@@ -843,6 +872,11 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.05),
       0 10px 28px rgba(0, 0, 0, 0.25);
+  }
+
+  .table-stage-board-tray[data-table-profile="phone-oval"] {
+    width: calc(100% - 2.25rem);
+    height: 4.65rem;
   }
 
   .table-stage-pot-capsule {
@@ -931,6 +965,10 @@
     @apply absolute z-20;
   }
 
+  .arena-seat-anchor[data-anchor-zone="dock-edge"] {
+    z-index: 24;
+  }
+
   .arena-seat-anchor--current-turn::before {
     content: "";
     position: absolute;
@@ -966,6 +1004,22 @@
       border-color var(--arena-motion-enter) ease,
       box-shadow var(--arena-motion-emphasis) ease,
       opacity var(--arena-motion-enter) ease;
+  }
+
+  .arena-seat-card[data-table-profile="phone-oval"] {
+    width: clamp(4.4rem, 18vw, 5.8rem);
+    min-height: 4.65rem;
+  }
+
+  .arena-seat-card[data-anchor-zone="dock-edge"] {
+    border-color: rgba(125, 211, 252, 0.26);
+  }
+
+  .arena-seat-card[data-anchor-zone="stage-band-clear"] {
+    box-shadow:
+      0 18px 38px rgba(0, 0, 0, 0.28),
+      0 0 0 1px rgba(255, 255, 255, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .arena-seat-card__header,
@@ -1193,6 +1247,10 @@
     .table-stage-board-tray {
       width: calc(100% - 2.75rem);
       height: 4.35rem;
+    }
+
+    .table-stage-table-shell[data-table-profile="phone-oval"] {
+      max-width: min(80vw, 15rem);
     }
 
     .table-stage-pot-capsule {
@@ -2103,6 +2161,14 @@
     background: radial-gradient(circle, #0f5132 0%, #0a3d26 100%);
   }
 
+  .poker-table[data-table-profile="desktop-oval"] {
+    border-radius: 48% / 36%;
+  }
+
+  .poker-table[data-table-profile="phone-oval"] {
+    border-radius: 38% / 48%;
+  }
+
   .poker-card {
     @apply bg-white text-black rounded-lg shadow-lg border-2 border-gray-300;
     @apply w-12 h-16 flex items-center justify-center text-lg font-bold;
@@ -2720,6 +2786,12 @@
     border-radius: 20px;
     padding: 20px;
     position: relative;
+  }
+
+  .community-cards-area[data-table-profile="phone-oval"] {
+    padding: 12px 10px;
+    border-radius: 18px;
+    transform: translateY(-0.1rem);
   }
 
   .community-cards-area::before {

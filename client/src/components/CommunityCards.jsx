@@ -124,7 +124,7 @@ const CommunityCards = ({ boardLayout = null }) => {
   const visibleCards = getVisibleCards();
 
   return (
-    <div className="text-center">
+    <div className="text-center" data-table-profile={resolvedBoardLayout.tableProfile || 'desktop-oval'}>
       {/* 阶段标题 */}
       {resolvedBoardLayout.phaseVisible && (
         <div className="mb-3">
@@ -136,6 +136,7 @@ const CommunityCards = ({ boardLayout = null }) => {
       {/* 公共牌区域 */}
       <div
         className="community-cards-area"
+        data-table-profile={resolvedBoardLayout.tableProfile || 'desktop-oval'}
         style={
           compactBoardLayout
             ? {

@@ -5,7 +5,7 @@ import CommunityCards from './CommunityCards';
 import TableStageChrome from './TableStageChrome';
 import { getDisplayModeTheme } from '../utils/productMode';
 import { buildTacticalMotionProfile } from '../utils/tacticalMotion';
-import { resolveCommunityCardLayout } from '../utils/tableStageLayout';
+import { resolveCommunityCardLayout, resolveTableSurfaceLayout } from '../utils/tableStageLayout';
 
 const TableStage = ({
   shellView,
@@ -25,9 +25,14 @@ const TableStage = ({
   const roomCopy = theme.room;
   const primaryPotItem = tablePotSummary.items[0] || null;
   const secondaryPotItems = tablePotSummary.items.slice(1, 3);
+  const tableSurfaceLayout = resolveTableSurfaceLayout({
+    viewportWidth,
+    tableDiameter,
+  });
   const boardLayout = resolveCommunityCardLayout({
     viewportWidth,
     tableDiameter,
+    tableProfile: tableSurfaceLayout.profile,
   });
   const stageLayoutClassName =
     roomShellLayout === 'three-column'
@@ -62,6 +67,7 @@ const TableStage = ({
 
       <div
         className={`${stageLayoutClassName} ${stagePulseClassName} table-stage-surface--${theme.mode} relative flex min-h-[34rem] items-center justify-center overflow-visible rounded-[2rem] px-4 py-6`}
+        data-table-profile={tableSurfaceLayout.profile}
       >
         <div className="table-stage-atmosphere" aria-hidden="true" />
 
@@ -131,18 +137,28 @@ const TableStage = ({
           </AnimatePresence>
         </motion.div>
 
-        <div className="table-stage-core">
+        <div className="table-stage-core" data-table-profile={tableSurfaceLayout.profile}>
           <TableStageChrome
             viewportWidth={viewportWidth}
             tableDiameter={tableDiameter}
             seatGuides={seatGuides}
+            tableProfile={tableSurfaceLayout.profile}
           />
-          <div className={`poker-table table-stage-table-shell relative z-10 ${tableSizeClassName}`}>
+          <div
+            className={`poker-table table-stage-table-shell relative z-10 ${tableSizeClassName}`}
+            data-table-profile={tableSurfaceLayout.profile}
+            style={{
+              width: `${tableSurfaceLayout.tableWidth}px`,
+              height: `${tableSurfaceLayout.tableHeight}px`,
+            }}
+          >
             <div
               className="table-stage-board-tray absolute inset-0 flex items-center justify-center"
+              data-table-profile={tableSurfaceLayout.profile}
               style={{
                 width: `${boardLayout.trayWidth}px`,
                 height: `${boardLayout.trayHeight}px`,
+                borderRadius: tableSurfaceLayout.profile === 'phone-oval' ? '1.5rem' : '999px',
               }}
             >
               <CommunityCards boardLayout={boardLayout} />

@@ -25,10 +25,14 @@ const SeatCard = ({
   const currentBet = Number(player.currentBet) || 0;
   const hasNet = typeof seat.netLabel === 'string' && seat.netLabel !== '0';
   const seatToneClassName = `arena-seat-card--${seat.seatTone || 'occupied-live'}`;
+  const tableProfile = seat.position?.profile || 'desktop-oval';
+  const anchorZone = seat.position?.anchorZone || 'table-flank';
 
   return (
     <div
       className={`arena-seat-anchor ${seat.isCurrentTurn ? 'arena-seat-anchor--current-turn' : ''}`}
+      data-table-profile={tableProfile}
+      data-anchor-zone={anchorZone}
       style={{
         left: `calc(50% + ${seat.position.x}px)`,
         top: `calc(50% + ${seat.position.y}px)`,
@@ -39,6 +43,8 @@ const SeatCard = ({
         className={`arena-seat-card ${seatToneClassName} ${seat.isCurrentTurn ? 'arena-seat-card--current-turn' : ''} ${
           seat.isActiveTimer ? 'arena-seat-card--active-timer' : ''
         } ${player.folded ? 'arena-seat-card--folded' : ''}`}
+        data-table-profile={tableProfile}
+        data-anchor-zone={anchorZone}
       >
         <div className="arena-seat-card__header">
           <div className="min-w-0">

@@ -2,16 +2,18 @@ import React from 'react';
 
 import { buildStageChromeLayout } from '../utils/tableStageLayout';
 
-const TableStageChrome = ({ viewportWidth = 1280, tableDiameter = 320, seatGuides = [] }) => {
+const TableStageChrome = ({ viewportWidth = 1280, tableDiameter = 320, seatGuides = [], tableProfile = null }) => {
   const chrome = buildStageChromeLayout({
     viewportWidth,
     tableDiameter,
     seatGuides,
+    tableProfile,
   });
 
   return (
     <svg
       className="table-stage-chrome"
+      data-table-profile={chrome.profile}
       viewBox={`0 0 ${chrome.width} ${chrome.height}`}
       style={{ width: `${chrome.width}px`, height: `${chrome.height}px` }}
       aria-hidden="true"
@@ -60,6 +62,14 @@ const TableStageChrome = ({ viewportWidth = 1280, tableDiameter = 320, seatGuide
 
       <g className="table-stage-chrome__tray">
         <rect
+          className="table-stage-chrome__stage-band"
+          x={chrome.stageBand.x}
+          y={chrome.stageBand.y}
+          width={chrome.stageBand.width}
+          height={chrome.stageBand.height}
+          rx={chrome.stageBand.rx}
+        />
+        <rect
           className="table-stage-chrome__tray-shell"
           x={chrome.boardTray.x}
           y={chrome.boardTray.y}
@@ -97,6 +107,9 @@ const TableStageChrome = ({ viewportWidth = 1280, tableDiameter = 320, seatGuide
               />
               <circle className="table-stage-chrome__guide-ring" cx={guide.cx} cy={guide.cy} r={chrome.guideRadius + 6} />
               <circle className="table-stage-chrome__guide-core" cx={guide.cx} cy={guide.cy} r={chrome.guideRadius} />
+              {guide.anchorZone === 'dock-edge' && (
+                <circle className="table-stage-chrome__guide-dock" cx={guide.cx} cy={guide.cy} r={chrome.guideRadius + 10} />
+              )}
               {guide.markerLabel && (
                 <text className="table-stage-chrome__marker" x={guide.cx} y={guide.cy - chrome.guideRadius - 10}>
                   {guide.markerLabel}
