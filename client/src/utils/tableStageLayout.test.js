@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   buildStageChromeLayout,
   resolveCommunityCardLayout,
+  resolveRoomGeometryContract,
   resolveTableSurfaceLayout,
 } from './tableStageLayout.js';
 import { resolveStageViewportContract } from './roomViewportLayout.js';
@@ -69,6 +70,51 @@ test('compresses short-height landscape stage layout without changing the family
   assert.ok(shortLandscape.stageScale < 1);
   assert.ok(shortLandscape.tableHeight < regularLandscape.tableHeight);
   assert.ok(shortLandscape.stageMinHeightPx < regularLandscape.stageMinHeightPx);
+});
+
+test('builds one shared runtime geometry contract for short-height landscape rooms', () => {
+  const contract = resolveRoomGeometryContract({
+    viewportWidth: 844,
+    viewportHeight: 390,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+  });
+  const seatGuides = Array.from({ length: 9 }, (_, seatIndex) => ({
+    seatIndex,
+    seatLabel: `Seat ${seatIndex + 1}`,
+    positionLabel: null,
+    isCurrentPlayer: seatIndex === 5,
+    position: { x: 900 - seatIndex * 90, y: -900 + seatIndex * 80 },
+  }));
+  const chrome = buildStageChromeLayout({
+    geometryContract: contract,
+    seatGuides,
+    roomShellLayout: 'split-stage',
+  });
+  const canonical = buildSeatRingPositions({
+    playerCount: 9,
+    ...contract.seatRingLayout,
+  });
+  const heroGuide = chrome.seatGuides.find((guide) => guide.isHero);
+
+  assert.equal(contract.viewportLayout.heightClass, 'short-height');
+  assert.equal(contract.viewportLayout.stageDensity, 'compressed');
+  assert.equal(contract.viewportLayout.minStageBudgetPx, 180);
+  assert.equal(contract.tableSurfaceLayout.heightClass, contract.viewportLayout.heightClass);
+  assert.equal(contract.tableSurfaceLayout.stageBudget.minStageBudgetPx, contract.viewportLayout.minStageBudgetPx);
+  assert.equal(contract.tableSurfaceLayout.stageMinHeightPx, contract.viewportLayout.minStageBudgetPx);
+  assert.equal(contract.tableSurfaceLayout.profile, 'phone-oval');
+  assert.equal(contract.seatRingLayout.profile, contract.tableSurfaceLayout.profile);
+  assert.equal(contract.seatRingLayout.tableDiameter, contract.tableSurfaceLayout.effectiveTableDiameter);
+  assert.equal(contract.seatRingLayout.roomShellLayout, 'split-stage');
+  assert.equal(chrome.heightClass, contract.viewportLayout.heightClass);
+  assert.equal(chrome.profile, contract.tableSurfaceLayout.profile);
+  assert.ok(heroGuide);
+  assert.equal(heroGuide.seatIndex, 5);
+  assert.equal(heroGuide.anchorRole, 'hero');
+  assert.equal(heroGuide.anchorZone, 'dock-edge');
+  assert.equal(heroGuide.cx, chrome.centerX + canonical[0].x);
+  assert.equal(heroGuide.cy, chrome.centerY + canonical[0].y);
 });
 
 test('pins the stage chrome orbit to nine markers with a single head marker', () => {

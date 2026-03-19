@@ -5,7 +5,7 @@ import CommunityCards from './CommunityCards';
 import TableStageChrome from './TableStageChrome';
 import { getDisplayModeTheme } from '../utils/productMode';
 import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
-import { resolveCommunityCardLayout, resolveTableSurfaceLayout } from '../utils/tableStageLayout';
+import { resolveRoomGeometryContract } from '../utils/tableStageLayout';
 
 const TableStage = ({
   shellView,
@@ -18,6 +18,7 @@ const TableStage = ({
   viewportHeight = 0,
   tableDiameter = 320,
   seatGuides = [],
+  geometryContract = null,
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const reducedMotion = useReducedMotion();
@@ -28,22 +29,22 @@ const TableStage = ({
   const roomCopy = theme.room;
   const primaryPotItem = tablePotSummary.items[0] || null;
   const secondaryPotItems = tablePotSummary.items.slice(1, 3);
-  const tableSurfaceLayout = resolveTableSurfaceLayout({
-    viewportWidth,
-    viewportHeight,
-    tableDiameter,
-  });
-  const boardLayout = resolveCommunityCardLayout({
-    viewportWidth,
-    viewportHeight,
-    tableDiameter,
-    tableProfile: tableSurfaceLayout.profile,
-  });
+  const runtimeGeometry =
+    geometryContract ||
+    resolveRoomGeometryContract({
+      viewportWidth,
+      viewportHeight,
+      roomShellLayout,
+      tableDiameter,
+    });
+  const tableSurfaceLayout = runtimeGeometry.tableSurfaceLayout;
+  const boardLayout = runtimeGeometry.communityCardLayout;
+  const resolvedRoomShellLayout = runtimeGeometry.roomShellLayout || roomShellLayout;
   const isCompressedStage = tableSurfaceLayout.heightClass === 'short-height';
   const stageLayoutClassName =
-    roomShellLayout === 'three-column'
+    resolvedRoomShellLayout === 'three-column'
       ? 'table-stage-surface table-stage-surface--three-column'
-      : roomShellLayout === 'split-stage'
+      : resolvedRoomShellLayout === 'split-stage'
       ? 'table-stage-surface table-stage-surface--split-stage'
       : 'table-stage-surface';
   const stagePulseClassName = shellView.stagePulseTone
@@ -155,12 +156,9 @@ const TableStage = ({
           data-table-family={tableSurfaceLayout.family}
         >
           <TableStageChrome
-            viewportWidth={viewportWidth}
-            viewportHeight={viewportHeight}
-            tableDiameter={tableDiameter}
             seatGuides={seatGuides}
-            roomShellLayout={roomShellLayout}
-            tableProfile={tableSurfaceLayout.profile}
+            geometryContract={runtimeGeometry}
+            roomShellLayout={resolvedRoomShellLayout}
           />
           <div
             className="poker-table table-stage-table-shell relative z-10"

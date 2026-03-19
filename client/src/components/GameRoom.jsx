@@ -19,6 +19,7 @@ import { useGame } from '../contexts/GameContext';
 import { getDisplayModeTheme } from '../utils/productMode';
 import { resolveRoomViewportLayout } from '../utils/roomViewportLayout';
 import { buildSeatRingPositions, resolveTableDiameter } from '../utils/seatRingLayout';
+import { resolveRoomGeometryContract } from '../utils/tableStageLayout';
 import {
   deriveCanStartGame,
   deriveIntelRailView,
@@ -544,6 +545,17 @@ const GameRoom = () => {
     viewportWidth: windowSize.width,
     roomShellLayout: stageShellLayout,
   });
+  const roomGeometryContract = resolveRoomGeometryContract({
+    viewportLayout: roomViewportLayout,
+    viewportWidth: windowSize.width,
+    viewportHeight: windowSize.height,
+    roomShellLayout: stageShellLayout,
+    tableDiameter,
+  });
+  const seatRingPositions = buildSeatRingPositions({
+    playerCount: maxPlayers,
+    ...roomGeometryContract.seatRingLayout,
+  });
   const toggleSupportPanel = (panelId) => {
     if (!usesSupportPanels) {
       return;
@@ -565,15 +577,7 @@ const GameRoom = () => {
     const currentPlayerSeat = currentPlayer ? currentPlayer.seat : 0;
     const totalPlayers = allPlayers.length;
     const relativeSeat = (player.seat - currentPlayerSeat + totalPlayers) % totalPlayers;
-
-    const positions = buildSeatRingPositions({
-      playerCount: totalPlayers,
-      viewportWidth: windowSize.width,
-      roomShellLayout: stageShellLayout,
-      tableDiameter,
-    });
-
-    return positions[relativeSeat] || { x: 0, y: 0 };
+    return seatRingPositions[relativeSeat] || { x: 0, y: 0 };
   };
 
   const seatRingEntries = deriveSeatRingView({
@@ -672,6 +676,7 @@ const GameRoom = () => {
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}
                     seatGuides={seatRingEntries}
+                    geometryContract={roomGeometryContract}
                     settlementOverlay={
                       <SettlementOverlay
                         roomState={activeRoomState}
@@ -688,6 +693,7 @@ const GameRoom = () => {
                         roomState={activeRoomState}
                         gameState={safeGameState}
                         gameStarted={gameStarted}
+                        geometryContract={roomGeometryContract}
                       />
                     }
                   />
@@ -719,6 +725,7 @@ const GameRoom = () => {
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}
                     seatGuides={seatRingEntries}
+                    geometryContract={roomGeometryContract}
                     settlementOverlay={
                       <SettlementOverlay
                         roomState={activeRoomState}
@@ -735,6 +742,7 @@ const GameRoom = () => {
                         roomState={activeRoomState}
                         gameState={safeGameState}
                         gameStarted={gameStarted}
+                        geometryContract={roomGeometryContract}
                       />
                     }
                   />

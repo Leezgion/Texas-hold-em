@@ -1,5 +1,5 @@
 import { buildSeatRingPositions } from './seatRingLayout.js';
-import { resolveStageViewportContract } from './roomViewportLayout.js';
+import { resolveRoomViewportLayout, resolveStageViewportContract } from './roomViewportLayout.js';
 
 const TABLE_FAMILY = 'tournament-capsule-9max';
 
@@ -25,14 +25,16 @@ export function resolveTableSurfaceLayout({
   viewportHeight = 0,
   tableDiameter = 0,
   tableProfile = null,
+  stageViewportContract = null,
 } = {}) {
-  const stageViewportContract = resolveStageViewportContract({ width: viewportWidth, height: viewportHeight });
-  const heightClass = stageViewportContract.heightClass;
+  const resolvedStageViewportContract =
+    stageViewportContract || resolveStageViewportContract({ width: viewportWidth, height: viewportHeight });
+  const heightClass = resolvedStageViewportContract.heightClass;
   const profile = resolveTableProfile({ viewportWidth, viewportHeight, tableProfile });
   const safeTableDiameter = clampNumber(tableDiameter, viewportWidth < 768 ? 208 : 320);
   const stageScale = heightClass === 'short-height' ? (profile === 'phone-oval' ? 0.58 : 0.74) : 1;
   const effectiveTableDiameter = Math.max(0, Math.round(safeTableDiameter * stageScale));
-  const stageDensity = stageViewportContract.stageDensity;
+  const stageDensity = resolvedStageViewportContract.stageDensity;
 
   if (profile === 'phone-oval') {
     return {
@@ -47,8 +49,8 @@ export function resolveTableSurfaceLayout({
       boardTrayInsetX: 20,
       boardTrayInsetY: 18,
       stageBandHeight: heightClass === 'short-height' ? 36 : 40,
-      stageBudget: stageViewportContract,
-      stageMinHeightPx: stageViewportContract.minStageBudgetPx,
+      stageBudget: resolvedStageViewportContract,
+      stageMinHeightPx: resolvedStageViewportContract.minStageBudgetPx,
     };
   }
 
@@ -64,8 +66,8 @@ export function resolveTableSurfaceLayout({
     boardTrayInsetX: 26,
     boardTrayInsetY: 20,
     stageBandHeight: heightClass === 'short-height' ? 40 : 46,
-    stageBudget: stageViewportContract,
-    stageMinHeightPx: stageViewportContract.minStageBudgetPx,
+    stageBudget: resolvedStageViewportContract,
+    stageMinHeightPx: resolvedStageViewportContract.minStageBudgetPx,
   };
 }
 
@@ -74,13 +76,16 @@ export function resolveCommunityCardLayout({
   viewportHeight = 0,
   tableDiameter = 0,
   tableProfile = null,
+  tableSurfaceLayout = null,
 } = {}) {
-  const surface = resolveTableSurfaceLayout({
-    viewportWidth,
-    viewportHeight,
-    tableDiameter,
-    tableProfile,
-  });
+  const surface =
+    tableSurfaceLayout ||
+    resolveTableSurfaceLayout({
+      viewportWidth,
+      viewportHeight,
+      tableDiameter,
+      tableProfile,
+    });
 
   if (surface.profile === 'phone-oval') {
     const safeWidth = Math.max(surface.tableWidth - surface.boardTrayInsetX - 2, 190);
@@ -112,7 +117,48 @@ export function resolveCommunityCardLayout({
   };
 }
 
+export function resolveRoomGeometryContract({
+  viewportLayout = null,
+  viewportWidth = 0,
+  viewportHeight = 0,
+  roomShellLayout = 'stacked',
+  tableDiameter = 0,
+  tableProfile = null,
+} = {}) {
+  const resolvedViewportLayout =
+    viewportLayout || resolveRoomViewportLayout({ width: viewportWidth, height: viewportHeight });
+  const tableSurfaceLayout = resolveTableSurfaceLayout({
+    viewportWidth,
+    viewportHeight,
+    tableDiameter,
+    tableProfile,
+    stageViewportContract: resolvedViewportLayout,
+  });
+  const communityCardLayout = resolveCommunityCardLayout({
+    viewportWidth,
+    viewportHeight,
+    tableDiameter,
+    tableProfile: tableSurfaceLayout.profile,
+    tableSurfaceLayout,
+  });
+
+  return {
+    viewportLayout: resolvedViewportLayout,
+    tableSurfaceLayout,
+    communityCardLayout,
+    seatRingLayout: {
+      viewportWidth,
+      viewportHeight,
+      roomShellLayout,
+      tableDiameter: tableSurfaceLayout.effectiveTableDiameter,
+      profile: tableSurfaceLayout.profile,
+    },
+    roomShellLayout,
+  };
+}
+
 export function buildStageChromeLayout({
+  geometryContract = null,
   viewportWidth = 0,
   viewportHeight = 0,
   tableDiameter = 0,
@@ -120,18 +166,32 @@ export function buildStageChromeLayout({
   roomShellLayout = 'stacked',
   tableProfile = null,
 } = {}) {
-  const surface = resolveTableSurfaceLayout({
-    viewportWidth,
-    viewportHeight,
-    tableDiameter,
-    tableProfile,
-  });
-  const communityLayout = resolveCommunityCardLayout({
-    viewportWidth,
-    viewportHeight,
-    tableDiameter,
-    tableProfile: surface.profile,
-  });
+  const surface =
+    geometryContract?.tableSurfaceLayout ||
+    resolveTableSurfaceLayout({
+      viewportWidth,
+      viewportHeight,
+      tableDiameter,
+      tableProfile,
+      stageViewportContract: geometryContract?.viewportLayout || null,
+    });
+  const communityLayout =
+    geometryContract?.communityCardLayout ||
+    resolveCommunityCardLayout({
+      viewportWidth,
+      viewportHeight,
+      tableDiameter,
+      tableProfile: surface.profile,
+      tableSurfaceLayout: surface,
+    });
+  const seatRingLayout =
+    geometryContract?.seatRingLayout || {
+      viewportWidth,
+      viewportHeight,
+      roomShellLayout,
+      tableDiameter: surface.effectiveTableDiameter,
+      profile: surface.profile,
+    };
   const compact = surface.stageDensity === 'compressed' || surface.profile === 'phone-oval';
   const paddingX = compact ? 112 : 132;
   const paddingY = compact ? 96 : 112;
@@ -172,10 +232,7 @@ export function buildStageChromeLayout({
     seatCount > 0
       ? buildSeatRingPositions({
           playerCount: seatCount,
-          viewportWidth,
-          roomShellLayout,
-          tableDiameter: surface.effectiveTableDiameter,
-          profile: surface.profile,
+          ...seatRingLayout,
         })
       : [];
   const normalizedSeatGuides = safeSeatGuides.map((sourceSeat, inputIndex) => {
