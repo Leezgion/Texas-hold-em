@@ -34,6 +34,47 @@ function assertUsesExplicitAnchorPath(layout, playerCount) {
   );
 }
 
+function getSeatCardCollisionPairs({
+  positions,
+  cardWidth,
+  cardHeight,
+}) {
+  const collisions = [];
+
+  for (let leftIndex = 0; leftIndex < positions.length; leftIndex += 1) {
+    const leftSeat = positions[leftIndex];
+    const leftRect = {
+      left: leftSeat.x - cardWidth / 2,
+      right: leftSeat.x + cardWidth / 2,
+      top: leftSeat.y - cardHeight / 2,
+      bottom: leftSeat.y + cardHeight / 2,
+    };
+
+    for (let rightIndex = leftIndex + 1; rightIndex < positions.length; rightIndex += 1) {
+      const rightSeat = positions[rightIndex];
+      const rightRect = {
+        left: rightSeat.x - cardWidth / 2,
+        right: rightSeat.x + cardWidth / 2,
+        top: rightSeat.y - cardHeight / 2,
+        bottom: rightSeat.y + cardHeight / 2,
+      };
+
+      const overlaps = !(
+        leftRect.right < rightRect.left ||
+        leftRect.left > rightRect.right ||
+        leftRect.bottom < rightRect.top ||
+        leftRect.top > rightRect.bottom
+      );
+
+      if (overlaps) {
+        collisions.push([leftSeat.anchorRole, rightSeat.anchorRole]);
+      }
+    }
+  }
+
+  return collisions;
+}
+
 test('keeps six-player split-stage seats outside the table bounds on desktop', () => {
   const profile = getSeatRingLayoutProfile({
     viewportWidth: 1280,
@@ -193,7 +234,47 @@ test('keeps supported 2-9 player rooms on the explicit anchor templates', () => 
   }
 });
 
-test('keeps supported phone 7-9 player rooms anchored to the dock edge', () => {
+test('keeps supported desktop 6-9 player rooms collision-free and outside the table bounds', () => {
+  const profile = getSeatRingLayoutProfile({
+    viewportWidth: 1440,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+
+  for (const playerCount of [6, 7, 8, 9]) {
+    const layout = buildSeatRingPositions({
+      playerCount,
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      profile: 'desktop-oval',
+    });
+
+    assertUsesExplicitAnchorPath(layout, playerCount);
+    assert.equal(
+      getSeatCardCollisionPairs({
+        positions: layout,
+        cardWidth: profile.cardWidth,
+        cardHeight: profile.cardHeight,
+      }).length,
+      0,
+      `pairwise collisions for ${playerCount} desktop players`
+    );
+
+    assert.equal(layout.overlaps.tableBody, 0, `table overlap for ${playerCount} players`);
+    assert.equal(layout.overlaps.stageBand, 0, `stage overlap for ${playerCount} players`);
+  }
+});
+
+test('keeps supported phone 7-9 player rooms collision-free and anchored to the dock edge', () => {
+  const profile = getSeatRingLayoutProfile({
+    viewportWidth: 390,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+
   for (const playerCount of [7, 8, 9]) {
     const layout = buildSeatRingPositions({
       playerCount,
@@ -204,6 +285,15 @@ test('keeps supported phone 7-9 player rooms anchored to the dock edge', () => {
     });
 
     assertUsesExplicitAnchorPath(layout, playerCount);
+    assert.equal(
+      getSeatCardCollisionPairs({
+        positions: layout,
+        cardWidth: profile.cardWidth,
+        cardHeight: profile.cardHeight,
+      }).length,
+      0,
+      `pairwise collisions for ${playerCount} phone players`
+    );
     assert.equal(layout.heroAnchor.zone, 'dock-edge', `hero anchor for ${playerCount} players`);
     assert.equal(layout[0].anchorZone, 'dock-edge', `hero seat zone for ${playerCount} players`);
     assert.equal(layout[0].anchorRole, 'hero', `hero seat role for ${playerCount} players`);

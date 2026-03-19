@@ -41,10 +41,10 @@ function resolveTableFootprint({ tableDiameter = 0, profile = 'desktop-oval' } =
 
 const SUPPORTS_2_TO_9_OCCUPANCY = {
   2: [0, 4],
-  3: [0, 3, 7],
-  4: [0, 2, 4, 7],
-  5: [0, 1, 3, 5, 7],
-  6: [0, 1, 2, 4, 5, 7],
+  3: [0, 3, 5],
+  4: [0, 3, 4, 5],
+  5: [0, 1, 3, 4, 5],
+  6: [0, 1, 3, 4, 5, 7],
   7: [0, 1, 2, 3, 4, 5, 7],
   8: [0, 1, 2, 3, 4, 5, 6, 7],
   9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -63,10 +63,10 @@ function buildDesktop9MaxAnchors({
   const sideX = halfWidth + cardWidth * 0.5 + horizontalGap;
   const topY = -(halfHeight + cardHeight * 0.82 + verticalGap * 1.2);
   const heroY = halfHeight + cardHeight * 0.52 + verticalGap * 1.05;
-  const lowerY = halfHeight * 0.48;
-  const upperY = -(halfHeight * 0.46);
+  const lowerY = 160;
+  const upperY = -160;
   const middleY = 0;
-  const bottomCornerX = halfWidth * 0.34 + cardWidth * 0.25 + horizontalGap;
+  const bottomCornerX = 160;
 
   return [
     {
@@ -140,10 +140,10 @@ function buildPhonePortrait9MaxAnchors({
   const upperSideX = halfWidth + cardWidth * 0.4 + horizontalGap;
   const topY = -(halfHeight + cardHeight * 0.78 + verticalGap * 1.15);
   const heroY = halfHeight + cardHeight * 0.38 + verticalGap * 1.05;
-  const lowerY = halfHeight * 0.26;
-  const upperY = -(halfHeight * 0.34);
+  const lowerY = 160;
+  const upperY = -160;
   const middleY = 0;
-  const bottomCornerX = halfWidth * 0.4 + cardWidth * 0.22 + horizontalGap;
+  const bottomCornerX = 160;
 
   return [
     {
@@ -196,7 +196,7 @@ function buildPhonePortrait9MaxAnchors({
     },
     {
       x: bottomCornerX,
-      y: heroY,
+      y: 300,
       anchorZone: 'table-flank',
       anchorRole: 'bottom-right',
     },
