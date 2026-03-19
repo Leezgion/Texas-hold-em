@@ -782,6 +782,11 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
+  .room-panel-sheet__surface:focus-visible {
+    outline: 2px solid rgba(251, 191, 36, 0.78);
+    outline-offset: 3px;
+  }
+
   .room-panel-sheet__surface[data-room-panel-presentation="slide-panel"] {
     width: min(100%, 30rem);
     height: calc(100dvh - 2rem);
@@ -830,6 +835,11 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: rgb(226 232 240 / 0.96);
+  }
+
+  .room-panel-sheet__close:focus-visible {
+    outline: 2px solid rgba(125, 211, 252, 0.72);
+    outline-offset: 2px;
   }
 
   .room-panel-sheet__body {
@@ -2788,6 +2798,11 @@
       0 0 0 1px rgba(255, 255, 255, 0.03);
   }
 
+  .modal-content:focus-visible {
+    outline: 2px solid rgba(251, 191, 36, 0.78);
+    outline-offset: 3px;
+  }
+
   .modal-content__header {
     @apply flex items-center gap-4 border-b border-white/10 bg-slate-950/95 px-4 py-4 sm:px-6;
     backdrop-filter: blur(var(--arena-shell-header-blur));
@@ -2815,6 +2830,11 @@
 
   .modal-content__close-button {
     @apply ml-auto inline-flex h-10 w-10 items-center justify-center rounded-2xl text-2xl text-slate-400 transition hover:bg-white/5 hover:text-white;
+  }
+
+  .modal-content__close-button:focus-visible {
+    outline: 2px solid rgba(125, 211, 252, 0.72);
+    outline-offset: 2px;
   }
 
   .modal-content__body[data-modal-scrollbar="themed"] {

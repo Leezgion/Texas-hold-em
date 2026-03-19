@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
 import { ROOM_MODE_META, buildModePreviewCards, deriveCreateRoomAdvancedPanelState, getDisplayModeTheme } from '../utils/productMode';
@@ -13,6 +13,7 @@ const CreateRoomModal = () => {
   const modeCards = buildModePreviewCards();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const wasOpenRef = useRef(showCreateRoom);
+  const advancedPanelId = useId();
 
   const [settings, setSettings] = useState({
     roomMode: 'pro',
@@ -200,6 +201,7 @@ const CreateRoomModal = () => {
             className="create-room-modal__section-toggle"
             onClick={() => setShowAdvanced((value) => !value)}
             aria-expanded={showAdvanced}
+            aria-controls={advancedPanelId}
           >
             <span>
               <span className="create-room-modal__section-kicker">{createRoomCopy.advancedSectionTitle}</span>
@@ -211,7 +213,7 @@ const CreateRoomModal = () => {
           </button>
 
           {showAdvanced && (
-            <div className="create-room-modal__advanced-body">
+            <div id={advancedPanelId} className="create-room-modal__advanced-body">
               <div className="create-room-modal__toggle-row">
                 <div className="flex-1 pr-4">
                   <label className="form-label mb-0">允许Straddle</label>
