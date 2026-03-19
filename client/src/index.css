@@ -17,11 +17,25 @@
     --mode-shell-accent-ring: rgba(245, 158, 11, 0.18);
     --mode-shell-accent-shadow: rgba(245, 158, 11, 0.24);
     --mode-shell-grid: rgba(255, 255, 255, 0.03);
+    --mode-shell-backdrop:
+      radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.05), transparent 18rem),
+      radial-gradient(circle at 84% 8%, rgba(255, 255, 255, 0.04), transparent 22rem),
+      linear-gradient(180deg, rgba(8, 14, 22, 0.96), rgba(4, 8, 16, 1));
+    --mode-shell-stage-glow: rgba(255, 255, 255, 0.06);
+    --mode-shell-vignette: rgba(1, 4, 10, 0.46);
+    --mode-shell-noise-opacity: 0.032;
+    --mode-shell-page-padding-x: clamp(0.85rem, 2vw, 1.5rem);
+    --mode-shell-page-padding-y: clamp(0.8rem, 2vh, 1.35rem);
+    --mode-shell-page-padding-bottom: clamp(1.25rem, 3vh, 2rem);
+    --mode-shell-content-max: 1640px;
+    --mode-shell-content-gutter: clamp(0.9rem, 2vw, 1.5rem);
   }
 
   body {
     @apply text-white font-sans;
-    background: var(--mode-shell-base);
+    background:
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 24rem),
+      linear-gradient(180deg, #09111c, #050912);
   }
 }
 
@@ -29,18 +43,30 @@
   .mode-shell {
     @apply relative min-h-screen overflow-x-hidden text-white;
     background:
+      radial-gradient(circle at 50% 32%, var(--mode-shell-stage-glow), transparent 28rem),
       radial-gradient(circle at top left, var(--mode-shell-glow), transparent 32rem),
       radial-gradient(circle at top right, var(--mode-shell-accent-ring), transparent 28rem),
-      linear-gradient(180deg, var(--mode-shell-surface-strong), var(--mode-shell-base));
+      var(--mode-shell-backdrop);
+    isolation: isolate;
   }
 
   .mode-shell__content {
     @apply relative z-10 min-h-screen;
+    padding:
+      var(--mode-shell-page-padding-y)
+      var(--mode-shell-page-padding-x)
+      var(--mode-shell-page-padding-bottom);
+  }
+
+  .mode-app-shell {
+    min-height: calc(100vh - (var(--mode-shell-page-padding-y) * 2));
+    margin: 0 auto;
+    width: min(100%, var(--mode-shell-content-max));
   }
 
   .mode-shell__ambient {
     @apply pointer-events-none absolute inset-0;
-    filter: blur(40px);
+    filter: blur(56px);
   }
 
   .mode-shell__ambient--primary {
@@ -53,12 +79,29 @@
     opacity: 0.55;
   }
 
+  .mode-shell__vignette {
+    @apply pointer-events-none absolute inset-0 z-[1];
+    background:
+      radial-gradient(circle at center, transparent 28%, var(--mode-shell-vignette) 100%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 16rem);
+  }
+
+  .mode-shell__noise {
+    @apply pointer-events-none absolute inset-0 z-[1];
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+    background-size: 3px 3px, 4px 4px;
+    mix-blend-mode: soft-light;
+    opacity: var(--mode-shell-noise-opacity);
+  }
+
   .mode-shell__grid {
     @apply pointer-events-none absolute inset-0 opacity-70;
     background-image:
       linear-gradient(to right, var(--mode-shell-grid) 1px, transparent 1px),
       linear-gradient(to bottom, var(--mode-shell-grid) 1px, transparent 1px);
-    background-size: 56px 56px;
+    background-size: 64px 64px;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 85%);
   }
 
@@ -76,6 +119,13 @@
     --mode-shell-accent-ring: rgba(241, 201, 121, 0.18);
     --mode-shell-accent-shadow: rgba(214, 163, 74, 0.28);
     --mode-shell-grid: rgba(241, 201, 121, 0.045);
+    --mode-shell-backdrop:
+      radial-gradient(circle at 16% 14%, rgba(241, 201, 121, 0.08), transparent 18rem),
+      radial-gradient(circle at 84% 10%, rgba(214, 163, 74, 0.08), transparent 20rem),
+      linear-gradient(180deg, rgba(24, 15, 8, 0.97), rgba(13, 9, 7, 1));
+    --mode-shell-stage-glow: rgba(228, 188, 118, 0.08);
+    --mode-shell-vignette: rgba(11, 6, 3, 0.42);
+    --mode-shell-noise-opacity: 0.044;
   }
 
   .mode-shell-pro {
@@ -92,6 +142,13 @@
     --mode-shell-accent-ring: rgba(251, 113, 133, 0.16);
     --mode-shell-accent-shadow: rgba(249, 115, 22, 0.22);
     --mode-shell-grid: rgba(148, 163, 184, 0.04);
+    --mode-shell-backdrop:
+      radial-gradient(circle at 14% 12%, rgba(244, 63, 94, 0.09), transparent 17rem),
+      radial-gradient(circle at 82% 8%, rgba(59, 130, 246, 0.08), transparent 18rem),
+      linear-gradient(180deg, rgba(9, 12, 19, 0.98), rgba(5, 8, 14, 1));
+    --mode-shell-stage-glow: rgba(248, 113, 113, 0.07);
+    --mode-shell-vignette: rgba(2, 5, 12, 0.48);
+    --mode-shell-noise-opacity: 0.03;
   }
 
   .mode-shell-study {
@@ -108,6 +165,47 @@
     --mode-shell-accent-ring: rgba(56, 189, 248, 0.16);
     --mode-shell-accent-shadow: rgba(56, 189, 248, 0.22);
     --mode-shell-grid: rgba(125, 211, 252, 0.045);
+    --mode-shell-backdrop:
+      radial-gradient(circle at 16% 14%, rgba(56, 189, 248, 0.08), transparent 18rem),
+      radial-gradient(circle at 82% 10%, rgba(245, 158, 11, 0.08), transparent 18rem),
+      linear-gradient(180deg, rgba(7, 19, 28, 0.98), rgba(5, 11, 20, 1));
+    --mode-shell-stage-glow: rgba(56, 189, 248, 0.08);
+    --mode-shell-vignette: rgba(2, 7, 13, 0.45);
+    --mode-shell-noise-opacity: 0.036;
+  }
+
+  @media (max-width: 767px) {
+    .mode-shell__content {
+      padding:
+        clamp(0.65rem, 2.5vw, 0.85rem)
+        clamp(0.65rem, 2.5vw, 0.85rem)
+        clamp(1rem, 4vw, 1.35rem);
+    }
+
+    .mode-app-shell {
+      min-height: calc(100vh - 1.5rem);
+    }
+
+    .mode-shell__grid {
+      background-size: 44px 44px;
+      opacity: 0.54;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1279px) {
+    .mode-app-shell {
+      width: min(100%, 1440px);
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .mode-shell__content {
+      padding-inline: clamp(1.5rem, 3vw, 2.5rem);
+    }
+
+    .mode-app-shell {
+      width: min(100%, 1760px);
+    }
   }
 
   .mode-accent-club {
@@ -136,14 +234,60 @@
     @apply rounded-[2rem];
   }
 
+  .mode-gateway-panel--hero {
+    position: relative;
+  }
+
+  .mode-gateway-panel--hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 76% 20%, var(--mode-shell-accent-soft-strong), transparent 18rem),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 48%);
+    pointer-events: none;
+  }
+
   .mode-gateway-panel__inner {
-    @apply px-6 py-8 sm:px-8 sm:py-10 lg:px-10;
+    @apply relative z-10 px-6 py-8 sm:px-8 sm:py-10 lg:px-10;
   }
 
   .mode-gateway-title {
     font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
     @apply text-4xl font-semibold leading-tight text-white sm:text-5xl xl:text-6xl;
     letter-spacing: -0.04em;
+  }
+
+  .mode-gateway-hero {
+    @apply grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end;
+  }
+
+  .mode-gateway-stage {
+    @apply rounded-[1.75rem] border p-5;
+    border-color: var(--mode-shell-accent-border);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(9, 14, 24, 0.74)),
+      radial-gradient(circle at top right, var(--mode-shell-accent-soft-strong), transparent 13rem);
+    box-shadow:
+      0 24px 54px rgba(0, 0, 0, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .mode-gateway-stage__eyebrow,
+  .mode-gateway-stage__stat-kicker {
+    @apply text-[10px] uppercase tracking-[0.28em] text-slate-400;
+  }
+
+  .mode-gateway-stage__stat {
+    @apply rounded-2xl border border-white/10 bg-black/20 px-3 py-3;
+  }
+
+  .mode-gateway-stage__stat-value {
+    @apply mt-2 block text-sm font-semibold text-white;
+  }
+
+  .mode-gateway-preview-grid {
+    @apply grid gap-4 lg:grid-cols-3;
   }
 
   .mode-status-pill {
@@ -201,6 +345,22 @@
     @apply text-[11px] font-medium uppercase tracking-[0.24em];
   }
 
+  .mode-preview-card__scene {
+    @apply rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-slate-300;
+  }
+
+  .mode-preview-card__persona {
+    @apply flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-3 py-3;
+  }
+
+  .mode-preview-card__persona-kicker {
+    @apply text-[10px] uppercase tracking-[0.24em] text-slate-400;
+  }
+
+  .mode-preview-card__persona-value {
+    @apply text-xs font-medium text-slate-100;
+  }
+
   .mode-preview-card__badge {
     @apply rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-white;
   }
@@ -219,6 +379,18 @@
 
   .mode-gateway-control__block {
     @apply rounded-[1.75rem] p-6;
+  }
+
+  .mode-gateway-side-note {
+    @apply rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-4;
+  }
+
+  .mode-gateway-side-note__label {
+    @apply block text-[10px] uppercase tracking-[0.24em] text-slate-400;
+  }
+
+  .mode-gateway-side-note__value {
+    @apply mt-2 block text-sm text-slate-200;
   }
 
   .mode-primary-button,
@@ -257,6 +429,20 @@
   .mode-room-input:focus {
     border-color: var(--mode-shell-accent-border);
     box-shadow: 0 0 0 4px var(--mode-shell-accent-ring);
+  }
+
+  @media (max-width: 767px) {
+    .mode-gateway-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .mode-gateway-stage {
+      padding: 1rem;
+    }
+
+    .mode-gateway-preview-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .poker-shell-panel {

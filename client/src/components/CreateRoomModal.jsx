@@ -101,7 +101,12 @@ const CreateRoomModal = () => {
                   />
                 ))}
               </div>
-              <p className="mt-3 text-xs text-gray-400">{ROOM_MODE_META[settings.roomMode].detail}</p>
+              <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-gray-300">
+                <div className="text-[10px] uppercase tracking-[0.24em] text-gray-400">
+                  {ROOM_MODE_META[settings.roomMode].gatewayScene} · {ROOM_MODE_META[settings.roomMode].gatewayPersona}
+                </div>
+                <p className="mt-2">{ROOM_MODE_META[settings.roomMode].detail}</p>
+              </div>
             </div>
             {/* 游戏时长 */}
             <div>

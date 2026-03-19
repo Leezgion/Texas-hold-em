@@ -87,6 +87,19 @@ test('builds mode preview cards in club-pro-study order', () => {
   );
 });
 
+test('builds richer gateway preview metadata for tactical arena mode cards', () => {
+  const [clubCard, proCard, studyCard] = buildModePreviewCards();
+
+  assert.equal(clubCard.gatewayScene, 'Host Table');
+  assert.equal(clubCard.gatewayPersona, '线下私局组织者');
+
+  assert.equal(proCard.gatewayScene, 'Arena Table');
+  assert.equal(proCard.gatewayPersona, '线上职业玩家');
+
+  assert.equal(studyCard.gatewayScene, 'Review Desk');
+  assert.equal(studyCard.gatewayPersona, '复盘与训练者');
+});
+
 test('exposes room-shell choreography tokens for each display mode', () => {
   const clubTheme = getDisplayModeTheme('club');
   const proTheme = getDisplayModeTheme('pro');
@@ -108,4 +121,42 @@ test('exposes room-shell choreography tokens for each display mode', () => {
   assert.equal(studyTheme.room.eventTitle, 'Review Rail');
   assert.equal(studyTheme.room.latestHandLabel, '上一手结算');
   assert.equal(studyTheme.room.historyPreviewCount, 6);
+});
+
+test('exposes tactical arena visual tokens and responsive hints for each display mode', () => {
+  const clubTheme = getDisplayModeTheme('club');
+  const proTheme = getDisplayModeTheme('pro');
+  const studyTheme = getDisplayModeTheme('study');
+
+  assert.equal(proTheme.shellTone, 'broadcast-arena');
+  assert.equal(proTheme.tableTone, 'velocity-felt');
+  assert.equal(proTheme.seatTone, 'combat-plaque');
+  assert.equal(proTheme.responsiveProfile.desktop, 'triple-rail');
+  assert.equal(proTheme.responsiveProfile.phone, 'hero-dock-first');
+
+  assert.equal(clubTheme.shellTone, 'private-lounge');
+  assert.equal(clubTheme.tableTone, 'walnut-felt');
+  assert.equal(clubTheme.seatTone, 'host-console');
+  assert.equal(clubTheme.responsiveProfile.tablet, 'host-rail-persistent');
+
+  assert.equal(studyTheme.shellTone, 'review-studio');
+  assert.equal(studyTheme.tableTone, 'review-grid');
+  assert.equal(studyTheme.seatTone, 'analysis-plaque');
+  assert.equal(studyTheme.responsiveProfile.ultrawide, 'center-stage');
+});
+
+test('exposes shell chrome tokens for the responsive tactical arena layout', () => {
+  const clubTheme = getDisplayModeTheme('club');
+  const proTheme = getDisplayModeTheme('pro');
+  const studyTheme = getDisplayModeTheme('study');
+
+  assert.equal(clubTheme.chromeTone, 'brass-rig');
+  assert.equal(clubTheme.shellLayout.phone, 'stacked');
+
+  assert.equal(proTheme.chromeTone, 'broadcast-rig');
+  assert.equal(proTheme.shellLayout.desktop, 'command-center');
+  assert.equal(proTheme.shellLayout.ultrawide, 'framed-center');
+
+  assert.equal(studyTheme.chromeTone, 'analysis-rig');
+  assert.equal(studyTheme.shellLayout.tablet, 'split-review');
 });

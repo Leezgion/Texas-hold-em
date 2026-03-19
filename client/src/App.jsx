@@ -81,16 +81,18 @@ function AppContent() {
   return (
     <>
       <ModeShell mode={effectiveDisplayMode}>
-        <Routes>
-          <Route
-            path="/"
-            element={<HomePage />}
-          />
-          <Route
-            path="/game/:roomId"
-            element={<GameRoom />}
-          />
-        </Routes>
+        <div className="mode-app-shell">
+          <Routes>
+            <Route
+              path="/"
+              element={<HomePage />}
+            />
+            <Route
+              path="/game/:roomId"
+              element={<GameRoom />}
+            />
+          </Routes>
+        </div>
       </ModeShell>
       <ReconnectingOverlay
         isReconnecting={isReconnecting}
