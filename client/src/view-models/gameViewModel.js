@@ -153,6 +153,47 @@ export function buildProActionStatRows(summary = null) {
   ];
 }
 
+export function deriveActionDockView({
+  currentPlayer = null,
+  currentPlayerView = null,
+  gameStarted = false,
+  canStartGame = false,
+  gameState = null,
+  players = [],
+  roomState = 'idle',
+} = {}) {
+  if (!currentPlayer) {
+    return null;
+  }
+
+  const heroSummary = deriveProPlayerSummary(currentPlayer, {
+    roomState,
+    players,
+    gameState,
+  });
+  const actionSummary = gameStarted
+    ? deriveProActionSummary({
+        currentPlayer,
+        players,
+        gameState,
+      })
+    : null;
+
+  return {
+    heroName: currentPlayer.nickname || currentPlayer.id || '玩家',
+    isHost: Boolean(currentPlayer.isHost),
+    seatLabel: heroSummary.seatLabel,
+    positionLabel: heroSummary.positionLabel,
+    statusLabel: currentPlayerView?.statusLabel || heroSummary.statusLabel,
+    chipsLabel: heroSummary.chipsLabel,
+    betLabel: (Number(currentPlayer.currentBet) || 0).toLocaleString(),
+    netLabel: heroSummary.netLabel,
+    handCards: Array.isArray(currentPlayer.hand) ? currentPlayer.hand : [],
+    actionSummary,
+    startButtonLabel: !gameStarted && canStartGame ? '开始游戏' : null,
+  };
+}
+
 function deriveProPositionLabel(player = {}, players = [], gameState = null) {
   const seat = Number(player?.seat);
   if (!Number.isInteger(seat) || seat < 0) {

@@ -36,34 +36,32 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
       : gameState?.eligibleRevealPlayerIds?.includes(currentPlayerId);
 
   return (
-    <div className="absolute left-1/2 top-24 z-20 w-[min(32rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-poker-gold/40 bg-black/70 px-4 py-3 text-white shadow-2xl backdrop-blur-md">
-      <div className="flex items-start justify-between gap-4">
+    <div className="settlement-sheet">
+      <div className="settlement-sheet__header">
         <div>
-          <div className="text-sm uppercase tracking-[0.2em] text-poker-gold">{roomCopy.latestHandLabel}</div>
-          <div className="mt-1 text-lg font-semibold">{latestSummary?.title || '本手已结束'}</div>
+          <div className="settlement-sheet__kicker">{roomCopy.latestHandLabel}</div>
+          <div className="settlement-sheet__title">{latestSummary?.title || '本手已结束'}</div>
         </div>
-        <div className="rounded-full border border-white/20 px-3 py-1 text-sm text-gray-200">{remainingSeconds}s</div>
+        <div className="settlement-sheet__countdown">{remainingSeconds}s</div>
       </div>
 
       {latestSummary?.lines?.[0] && (
-        <div className="mt-3 rounded-xl border border-poker-gold/30 bg-poker-gold/10 px-3 py-2 text-sm font-semibold text-poker-gold">
+        <div className="settlement-sheet__spotlight">
           {latestSummary.lines[0]}
         </div>
       )}
 
       {(isProMode || effectiveDisplayMode === 'study') && latestSummary?.boardLabel && (
-        <div className="mt-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-300">
-          Board {latestSummary.boardLabel}
+        <div className="settlement-sheet__board">
+          <span className="settlement-sheet__board-label">Board</span>
+          <span>{latestSummary.boardLabel}</span>
         </div>
       )}
 
       {latestSummary?.lines?.length > 0 && (
-        <div className="mt-3 space-y-1 text-sm text-gray-200">
+        <div className="settlement-sheet__lines">
           {latestSummary.lines.slice(1, 5).map((line, index) => (
-            <div
-              key={`${latestSummary.handNumber}-${index}`}
-              className="rounded-lg bg-white/5 px-3 py-2"
-            >
+            <div key={`${latestSummary.handNumber}-${index}`} className="settlement-sheet__line">
               {line}
             </div>
           ))}
@@ -71,28 +69,32 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
       )}
 
       {canReveal && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="settlement-sheet__actions">
           <button
+            type="button"
             onClick={() => onReveal('hide')}
-            className="rounded-lg border border-gray-500 bg-gray-800 px-3 py-2 text-sm text-gray-100 transition-colors hover:bg-gray-700"
+            className="settlement-sheet__button settlement-sheet__button--ghost"
           >
             不亮牌
           </button>
           <button
+            type="button"
             onClick={() => onReveal('show_one', 0)}
-            className="rounded-lg border border-blue-500 bg-blue-600/20 px-3 py-2 text-sm text-blue-100 transition-colors hover:bg-blue-600/30"
+            className="settlement-sheet__button settlement-sheet__button--info"
           >
             亮左牌
           </button>
           <button
+            type="button"
             onClick={() => onReveal('show_one', 1)}
-            className="rounded-lg border border-blue-500 bg-blue-600/20 px-3 py-2 text-sm text-blue-100 transition-colors hover:bg-blue-600/30"
+            className="settlement-sheet__button settlement-sheet__button--info"
           >
             亮右牌
           </button>
           <button
+            type="button"
             onClick={() => onReveal('show_all')}
-            className="rounded-lg border border-green-500 bg-green-600/20 px-3 py-2 text-sm text-green-100 transition-colors hover:bg-green-600/30"
+            className="settlement-sheet__button settlement-sheet__button--success"
           >
             全亮
           </button>

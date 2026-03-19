@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   buildProActionStatRows,
+  deriveActionDockView,
   deriveTableShellView,
   deriveSeatRingView,
   deriveIntelRailView,
@@ -269,6 +270,43 @@ test('derives leave-seat feedback from whether the server had to auto-fold', () 
       detail: '已离开座位，进入观战模式。',
     }
   );
+});
+
+test('derives a tactical action-dock summary from hero state and current hand numbers', () => {
+  const dockView = deriveActionDockView({
+    currentPlayer: {
+      id: 'p1',
+      nickname: 'Hero',
+      chips: 980,
+      currentBet: 20,
+      tableState: 'active_in_hand',
+      isHost: true,
+      hand: [{ rank: 14, suit: 'spades' }, { rank: 13, suit: 'spades' }],
+    },
+    currentPlayerView: {
+      statusLabel: '游戏中',
+    },
+    gameStarted: true,
+    canStartGame: false,
+    gameState: {
+      currentBet: 40,
+      minRaise: 40,
+      pot: 120,
+    },
+    players: [
+      { id: 'p1', chips: 980, currentBet: 20, folded: false, allIn: false, seat: 0, tableState: 'active_in_hand' },
+      { id: 'p2', chips: 1500, currentBet: 40, folded: false, allIn: false, seat: 1, tableState: 'active_in_hand' },
+    ],
+    roomState: 'in_hand',
+  });
+
+  assert.equal(dockView.heroName, 'Hero');
+  assert.equal(dockView.statusLabel, '游戏中');
+  assert.equal(dockView.chipsLabel, '980');
+  assert.equal(dockView.betLabel, '20');
+  assert.equal(dockView.startButtonLabel, null);
+  assert.equal(dockView.actionSummary.toCall, 20);
+  assert.equal(dockView.actionSummary.effectiveStack, 980);
 });
 
 test('derives pro-mode action summary from authoritative current-hand numbers', () => {

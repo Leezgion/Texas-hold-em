@@ -16,6 +16,11 @@ const IntelRail = ({
 }) => {
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const roomCopy = theme.room;
+  const consoleModeCopy = {
+    club: '桌面控制台',
+    pro: 'Tactical Intel',
+    study: '桌况分析台',
+  };
   const summaryCardsByMode = {
     club: [
       {
@@ -71,24 +76,48 @@ const IntelRail = ({
   const summaryCards = summaryCardsByMode[effectiveDisplayMode] || summaryCardsByMode.pro;
 
   return (
-    <aside className="flex flex-col gap-4">
-      <section className="poker-shell-panel rounded-[1.75rem] p-4">
-        <div className="poker-shell-kicker">{roomCopy.intelTitle}</div>
-        <div className="mt-2 text-sm leading-6 text-slate-300">{roomCopy.intelCaption}</div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
+    <aside className="tactical-rail tactical-rail--intel">
+      <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--intel rounded-[1.75rem] p-4 sm:p-5">
+        <div className="tactical-rail__header">
+          <div>
+            <div className="poker-shell-kicker">{roomCopy.intelTitle}</div>
+            <div className="tactical-rail__title">{consoleModeCopy[effectiveDisplayMode] || consoleModeCopy.pro}</div>
+          </div>
+          <span className="tactical-rail__pill">{intelRailView.modeTitle}</span>
+        </div>
+
+        <div className="tactical-rail__lead">{roomCopy.intelCaption}</div>
+
+        <div className="tactical-rail__spotlight">
+          <div>
+            <div className="tactical-rail__spotlight-kicker">TABLE STATE</div>
+            <div className="tactical-rail__spotlight-value">{roomStateLabel}</div>
+          </div>
+          <div className="tactical-rail__spotlight-meta">
+            {intelRailView.hostActionLabel || '等待下一条桌面指令'}
+          </div>
+        </div>
+
+        <div className="tactical-rail__metric-grid">
           {summaryCards.map((card) => (
-            <div key={card.label} className="poker-shell-stat-card rounded-2xl px-3 py-3">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">{card.label}</div>
-              <div className="mt-2 text-lg font-semibold text-white">{card.value}</div>
-              {card.detail && <div className="mt-1 text-xs text-slate-400">{card.detail}</div>}
+            <div key={card.label} className="tactical-rail__metric">
+              <div className="tactical-rail__metric-label">{card.label}</div>
+              <div className="tactical-rail__metric-value">{card.value}</div>
+              {card.detail && <div className="tactical-rail__metric-detail">{card.detail}</div>}
             </div>
           ))}
         </div>
       </section>
 
-      <section className="poker-shell-panel rounded-[1.75rem] p-4">
-        <div className="poker-shell-kicker">{roomCopy.rosterTitle}</div>
-        <div className="mt-2 text-sm leading-6 text-slate-300">{roomCopy.rosterCaption}</div>
+      <section className="poker-shell-panel tactical-rail__panel rounded-[1.75rem] p-4 sm:p-5">
+        <div className="tactical-rail__header">
+          <div>
+            <div className="poker-shell-kicker">{roomCopy.rosterTitle}</div>
+            <div className="tactical-rail__title">Seat Intel</div>
+          </div>
+          <span className="tactical-rail__pill">{intelRailView.occupancyLabel}</span>
+        </div>
+        <div className="tactical-rail__lead">{roomCopy.rosterCaption}</div>
         <PlayerPanel
           players={players}
           roomSettings={roomSettings}

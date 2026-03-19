@@ -162,11 +162,14 @@ export function getLatestHandSummary(records = []) {
 
 export function deriveEventRailView({ roomState = 'idle', gameState = null } = {}) {
   const handHistory = Array.isArray(gameState?.handHistory) ? gameState.handHistory : [];
+  const latestSummary = getLatestHandSummary(handHistory);
 
   return {
     roomState,
     historyCount: handHistory.length,
-    latestSummary: getLatestHandSummary(handHistory),
+    latestSummary,
+    spotlightLine: latestSummary?.lines?.[0] || null,
+    boardLabel: latestSummary?.boardLabel || null,
     livePotSummary: buildTablePotSummary(gameState),
   };
 }

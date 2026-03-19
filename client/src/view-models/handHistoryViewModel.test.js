@@ -185,4 +185,6 @@ test('derives an event-rail summary from the latest hand history and live table 
   assert.equal(eventRail.latestSummary.handNumber, 11);
   assert.equal(eventRail.latestSummary.boardLabel, 'A♠ K♥ 7♦ 2♣ 2♠');
   assert.equal(eventRail.historyCount, 1);
+  assert.equal(eventRail.spotlightLine, '总池 +5,000');
+  assert.equal(eventRail.boardLabel, 'A♠ K♥ 7♦ 2♣ 2♠');
 });
