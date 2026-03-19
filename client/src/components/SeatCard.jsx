@@ -28,6 +28,7 @@ const SeatCard = ({
   const tableProfile = seat.position?.profile || 'desktop-oval';
   const anchorZone = seat.anchorZone || seat.position?.anchorZone || 'table-flank';
   const anchorRole = seat.anchorRole || seat.position?.anchorRole || 'ring';
+  const canonicalSlotIndex = Number.isInteger(Number(seat.canonicalSlotIndex)) ? Number(seat.canonicalSlotIndex) : null;
 
   return (
     <div
@@ -35,6 +36,9 @@ const SeatCard = ({
       data-table-profile={tableProfile}
       data-anchor-zone={anchorZone}
       data-anchor-role={anchorRole}
+      data-anchor-slot-id={seat.anchorSlotId || null}
+      data-canonical-slot-index={canonicalSlotIndex}
+      data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
       style={{
         left: `calc(50% + ${seat.position.x}px)`,
         top: `calc(50% + ${seat.position.y}px)`,
@@ -48,6 +52,9 @@ const SeatCard = ({
         data-table-profile={tableProfile}
         data-anchor-zone={anchorZone}
         data-anchor-role={anchorRole}
+        data-anchor-slot-id={seat.anchorSlotId || null}
+        data-canonical-slot-index={canonicalSlotIndex}
+        data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
       >
         <div className="arena-seat-card__header">
           <div className="min-w-0">
@@ -72,7 +79,16 @@ const SeatCard = ({
           {hasNet && <span className="arena-seat-card__net">{seat.netLabel}</span>}
         </div>
 
-        {seat.isCurrentTurn && <span className="arena-seat-card__turn-marker" aria-hidden="true" />}
+        {seat.isCurrentTurn && (
+          <span
+            className="arena-seat-card__turn-marker"
+            aria-hidden="true"
+            data-anchor-slot-id={seat.anchorSlotId || null}
+            data-canonical-slot-index={canonicalSlotIndex}
+            data-anchor-role={anchorRole}
+            data-anchor-zone={anchorZone}
+          />
+        )}
       </div>
     </div>
   );

@@ -569,6 +569,10 @@ const GameRoom = () => {
       : tableDiameter === 352
       ? 'w-[22rem] h-[22rem]'
       : 'w-80 h-80';
+  const currentTurnPlayer =
+    safeGameState && Number.isInteger(safeGameState.currentPlayerIndex)
+      ? playersList[safeGameState.currentPlayerIndex] || null
+      : null;
   const seatRingEntries = deriveSeatRingView({
     players: playersList,
     maxPlayers,
@@ -577,8 +581,7 @@ const GameRoom = () => {
     gameState: safeGameState,
     canonicalSlots: roomGeometryContract.canonicalSlots,
   }).map((seat) => {
-    const isCurrentTurn =
-      seat.player && safeGameState ? safeGameState.currentPlayerIndex === playersList.indexOf(seat.player) : false;
+    const isCurrentTurn = Boolean(seat.player && currentTurnPlayer && seat.player.id === currentTurnPlayer.id);
 
     return {
       ...seat,

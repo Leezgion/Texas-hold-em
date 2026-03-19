@@ -3,7 +3,7 @@ import React from 'react';
 import SeatCard from './SeatCard';
 
 const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContract = null }) => {
-  const tableProfile = geometryContract?.tableSurfaceLayout?.profile || seats[0]?.position?.profile || 'desktop-oval';
+  const tableProfile = geometryContract?.tableSurfaceLayout?.profile || 'desktop-oval';
 
   return (
     <div className="absolute inset-0 z-20" data-table-profile={tableProfile}>

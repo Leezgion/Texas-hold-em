@@ -235,6 +235,84 @@ test('threads canonical anchor semantics through every seat-ring entry', () => {
   );
 });
 
+test('exposes explicit canonical slot indices on rotated seat-ring entries', () => {
+  const canonicalSlots = [
+    {
+      seatIndex: 0,
+      anchorSlotId: 'desktop-6-hero-0',
+      anchorRole: 'hero',
+      anchorZone: 'dock-edge',
+      position: { x: 0, y: 240, profile: 'desktop-oval', anchorRole: 'hero', anchorZone: 'dock-edge' },
+    },
+    {
+      seatIndex: 1,
+      anchorSlotId: 'desktop-6-lower-left-1',
+      anchorRole: 'lower-left',
+      anchorZone: 'table-flank',
+      position: { x: -210, y: 132, profile: 'desktop-oval', anchorRole: 'lower-left', anchorZone: 'table-flank' },
+    },
+    {
+      seatIndex: 2,
+      anchorSlotId: 'desktop-6-upper-left-2',
+      anchorRole: 'upper-left',
+      anchorZone: 'table-flank',
+      position: { x: -210, y: -132, profile: 'desktop-oval', anchorRole: 'upper-left', anchorZone: 'table-flank' },
+    },
+    {
+      seatIndex: 3,
+      anchorSlotId: 'desktop-6-top-3',
+      anchorRole: 'top',
+      anchorZone: 'stage-band-clear',
+      position: { x: 0, y: -260, profile: 'desktop-oval', anchorRole: 'top', anchorZone: 'stage-band-clear' },
+    },
+    {
+      seatIndex: 4,
+      anchorSlotId: 'desktop-6-upper-right-4',
+      anchorRole: 'upper-right',
+      anchorZone: 'table-flank',
+      position: { x: 210, y: -132, profile: 'desktop-oval', anchorRole: 'upper-right', anchorZone: 'table-flank' },
+    },
+    {
+      seatIndex: 5,
+      anchorSlotId: 'desktop-6-lower-right-5',
+      anchorRole: 'lower-right',
+      anchorZone: 'table-flank',
+      position: { x: 210, y: 132, profile: 'desktop-oval', anchorRole: 'lower-right', anchorZone: 'table-flank' },
+    },
+  ];
+
+  const seatRing = deriveSeatRingView({
+    maxPlayers: 6,
+    currentPlayerId: 'hero',
+    roomState: 'in_hand',
+    players: [
+      {
+        id: 'villain',
+        nickname: 'Villain',
+        seat: 0,
+        chips: 1400,
+        tableState: 'active_in_hand',
+      },
+      {
+        id: 'hero',
+        nickname: 'Hero',
+        seat: 3,
+        chips: 980,
+        tableState: 'active_in_hand',
+      },
+    ],
+    gameState: {
+      dealerPosition: 0,
+    },
+    canonicalSlots,
+  });
+
+  assert.equal(seatRing[3].canonicalSlotIndex, 0);
+  assert.equal(seatRing[3].anchorSlotId, canonicalSlots[0].anchorSlotId);
+  assert.equal(seatRing[0].canonicalSlotIndex, 3);
+  assert.equal(seatRing[0].anchorSlotId, canonicalSlots[3].anchorSlotId);
+});
+
 test('rotates canonical slots so the current player stays on the hero anchor even away from seat 0', () => {
   const canonicalSlots = [
     {
