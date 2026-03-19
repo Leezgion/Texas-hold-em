@@ -12,7 +12,6 @@ const TableStage = ({
   tablePotSummary,
   seatRing,
   settlementOverlay = null,
-  tableSizeClassName = 'w-[22rem] h-[22rem]',
   effectiveDisplayMode = 'pro',
   roomShellLayout = 'stacked',
   viewportWidth = 1280,
@@ -145,7 +144,7 @@ const TableStage = ({
             tableProfile={tableSurfaceLayout.profile}
           />
           <div
-            className={`poker-table table-stage-table-shell relative z-10 ${tableSizeClassName}`}
+            className="poker-table table-stage-table-shell relative z-10"
             data-table-profile={tableSurfaceLayout.profile}
             style={{
               width: `${tableSurfaceLayout.tableWidth}px`,

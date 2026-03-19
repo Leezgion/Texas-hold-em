@@ -132,6 +132,34 @@ function buildSeatRingPositionsForSix({
   ].map(roundPosition);
 }
 
+const OVAL_TEMPLATE_INDEXES = {
+  2: [0, 3],
+  3: [0, 2, 4],
+  4: [0, 1, 3, 5],
+  5: [0, 1, 2, 4, 5],
+  6: [0, 1, 2, 3, 4, 5],
+};
+
+function buildSeatRingPositionsForOvalProfile({
+  playerCount = 0,
+  profile = 'desktop-oval',
+  ...layoutProfile
+} = {}) {
+  const template = buildSeatRingPositionsForSix({
+    ...layoutProfile,
+    profile,
+  });
+  const templateIndexes = OVAL_TEMPLATE_INDEXES[playerCount];
+
+  if (!templateIndexes) {
+    return null;
+  }
+
+  return templateIndexes.map((index) => ({
+    ...template[index],
+  }));
+}
+
 function buildSeatRingPositionsFallback({
   playerCount = 0,
   tableWidth,
@@ -256,9 +284,14 @@ export function buildSeatRingPositions({
   const safePlayerCount = Math.max(2, Number(playerCount) || 0);
 
   let positions;
-  if (safePlayerCount === 6) {
-    positions = buildSeatRingPositionsForSix(layoutProfile);
-  } else {
+  if (layoutProfile.profile === 'desktop-oval' || layoutProfile.profile === 'phone-oval') {
+    positions = buildSeatRingPositionsForOvalProfile({
+      playerCount: safePlayerCount,
+      ...layoutProfile,
+    });
+  }
+
+  if (!positions) {
     positions = buildSeatRingPositionsFallback({
       playerCount: safePlayerCount,
       tableWidth: layoutProfile.tableWidth,

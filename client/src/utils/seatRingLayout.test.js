@@ -126,3 +126,21 @@ test('phone portrait profile uses a vertical oval and keeps hero tied to the doc
   assert.equal(layout.overlaps.stageBand, 0);
   assert.equal(layout.overlaps.tableBody, 0);
 });
+
+test('phone portrait profile keeps short-handed hero seats anchored to the dock edge', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 4,
+    viewportWidth: 390,
+    viewportHeight: 844,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+
+  assert.equal(layout.profile, 'phone-oval');
+  assert.equal(layout.heroAnchor.zone, 'dock-edge');
+  assert.equal(layout[0].anchorZone, 'dock-edge');
+  assert.equal(layout[0].anchorRole, 'hero');
+  assert.equal(layout.overlaps.stageBand, 0);
+  assert.equal(layout.overlaps.tableBody, 0);
+});
