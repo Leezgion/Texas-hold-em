@@ -419,6 +419,7 @@ export function deriveTableShellView({
     modeTitle: modeMeta.title,
     effectiveDisplayMode,
     shellLayout: 'single-screen-terminal',
+    stageLayoutModel: 'viewport-authoritative',
     heroDockPriority: 'always-visible',
     supportSurfacePolicy: TERMINAL_SUPPORT_SURFACE_POLICY,
     pendingJoinBanner: derivePendingJoinBanner(currentPlayer, roomState),

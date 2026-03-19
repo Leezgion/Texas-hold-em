@@ -1136,11 +1136,6 @@
     min-height: min(29rem, calc(100dvh - 24rem));
   }
 
-  .room-terminal-shell[data-viewport-model="phone-terminal"] .room-terminal-dock {
-    position: sticky;
-    bottom: 0;
-  }
-
   .room-terminal-shell[data-viewport-model="phone-terminal"] .room-shell-grid__support {
     grid-auto-columns: minmax(16rem, 86vw);
   }

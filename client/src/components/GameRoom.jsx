@@ -15,7 +15,6 @@ import TableBanner from './TableBanner';
 import TableHeader from './TableHeader';
 import TableStage from './TableStage';
 import { useGame } from '../contexts/GameContext';
-import { resolveRoomShellLayout } from '../utils/productMode';
 import { resolveRoomViewportLayout } from '../utils/roomViewportLayout';
 import { buildSeatRingPositions, resolveTableDiameter } from '../utils/seatRingLayout';
 import {
@@ -56,6 +55,19 @@ const useWindowSize = () => {
   }, []);
 
   return windowSize;
+};
+
+const mapViewportModelToStageShellLayout = (viewportModel) => {
+  switch (viewportModel) {
+    case 'ultrawide-terminal':
+      return 'three-column';
+    case 'desktop-terminal':
+      return 'split-stage';
+    case 'tablet-terminal':
+    case 'phone-terminal':
+    default:
+      return 'stacked';
+  }
 };
 
 const GameRoom = () => {
@@ -103,8 +115,8 @@ const GameRoom = () => {
   const activeRoomState = roomState || 'idle';
   const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
   const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
-  const roomShellLayout = resolveRoomShellLayout(windowSize.width);
   const roomViewportLayout = resolveRoomViewportLayout(windowSize);
+  const stageShellLayout = mapViewportModelToStageShellLayout(roomViewportLayout.viewportModel);
   const usesSideRails = roomViewportLayout.viewportModel === 'ultrawide-terminal';
   const roomShellGridClassName = usesSideRails
     ? 'room-shell-grid room-shell-grid--three-column'
@@ -443,7 +455,7 @@ const GameRoom = () => {
     const positions = buildSeatRingPositions({
       playerCount: totalPlayers,
       viewportWidth: windowSize.width,
-      roomShellLayout,
+      roomShellLayout: stageShellLayout,
       tableDiameter,
     });
 
@@ -531,7 +543,7 @@ const GameRoom = () => {
 
   const tableDiameter = resolveTableDiameter({
     viewportWidth: windowSize.width,
-    roomShellLayout,
+    roomShellLayout: stageShellLayout,
   });
   const tableSizeClassName =
     tableDiameter === 208
@@ -631,7 +643,7 @@ const GameRoom = () => {
                     viewportWidth={windowSize.width}
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
-                    roomShellLayout={roomShellLayout}
+                    roomShellLayout={stageShellLayout}
                     seatGuides={seatRingEntries}
                     settlementOverlay={
                       <SettlementOverlay
@@ -677,7 +689,7 @@ const GameRoom = () => {
                     viewportWidth={windowSize.width}
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
-                    roomShellLayout={roomShellLayout}
+                    roomShellLayout={stageShellLayout}
                     seatGuides={seatRingEntries}
                     settlementOverlay={
                       <SettlementOverlay
