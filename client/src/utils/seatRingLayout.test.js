@@ -191,6 +191,32 @@ test('phone portrait profile keeps short-handed hero seats anchored to the dock 
   assert.equal(layout.overlaps.tableBody, 0);
 });
 
+test('short-height wide phone-oval rooms keep two-player seats outside the table with the real plaque footprint', () => {
+  const effectiveTableDiameter = 186;
+  const layout = buildSeatRingPositions({
+    playerCount: 2,
+    viewportWidth: 844,
+    roomShellLayout: 'stacked',
+    tableDiameter: effectiveTableDiameter,
+    profile: 'phone-oval',
+  });
+
+  assert.equal(layout.profile, 'phone-oval');
+  assert.equal(layout.heroAnchor.zone, 'dock-edge');
+  assert.equal(
+    countTableRectOverlaps({
+      positions: layout,
+      tableWidth: Math.round(effectiveTableDiameter * 1.02),
+      tableHeight: Math.round(effectiveTableDiameter * 1.46),
+      // Browser evidence on 844x390 showed phone-oval plaques stretch
+      // to roughly a 93 x 138 footprint, not the narrow true-phone size.
+      cardWidth: 94,
+      cardHeight: 138,
+    }),
+    0
+  );
+});
+
 test('keeps supported 2-9 player rooms on the explicit anchor templates', () => {
   const cases = [
     {

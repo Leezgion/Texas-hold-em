@@ -293,6 +293,7 @@ export function getSeatRingLayoutProfile({
   );
 
   if (resolvedProfile === 'phone-oval') {
+    const usesWidePhonePlaques = viewportWidth >= 768;
     const footprint = resolveTableFootprint({
       tableDiameter: resolvedTableDiameter,
       profile: resolvedProfile,
@@ -305,10 +306,10 @@ export function getSeatRingLayoutProfile({
       tableHeight: footprint.tableHeight,
       stageBandHeight: footprint.stageBandHeight,
       stageBandOffset: footprint.stageBandOffset,
-      cardWidth: 70,
-      cardHeight: 128,
-      horizontalGap: 8,
-      verticalGap: 18,
+      cardWidth: usesWidePhonePlaques ? 94 : 70,
+      cardHeight: usesWidePhonePlaques ? 138 : 128,
+      horizontalGap: usesWidePhonePlaques ? 10 : 8,
+      verticalGap: usesWidePhonePlaques ? 20 : 18,
     };
   }
 

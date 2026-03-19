@@ -33,6 +33,7 @@ function buildViewportLayout({
   return {
     viewportModel,
     pageScroll: 'locked',
+    roomScrollContract: 'single-screen',
     heroDockPlacement: 'fixed-bottom',
     supportSurfaceModel,
     supportSurfacePolicy,

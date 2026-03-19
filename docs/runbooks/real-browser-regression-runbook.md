@@ -227,3 +227,7 @@ Expected final state:
 - Motion surfaces can look fine in a static screenshot while their entrance choreography is actually dead; inspect inline transforms or opacity on the live element before declaring the animation layer healthy.
 - DevTools window resizing can under-report the real layout width; when you need a true tablet or ultrawide breakpoint, verify `window.innerWidth` before trusting the screenshot.
 - Phone portrait support sheets can look visually correct while the page still has a hidden extra scroll range under them; inspect `document.scrollingElement` after opening a sheet instead of trusting the screenshot alone.
+- Short-height landscape windows can resolve to the `phone-oval` table family even when the viewport is wider than `768px`; verify both:
+  - `document.scrollingElement.scrollHeight === clientHeight`
+  - `.arena-seat-anchor` overlap checks against both the table body and the community-card band
+- Do not budget wide short-height `phone-oval` plaques from the true-phone footprint. The `2026-03-19` rerun only went green after the helper reserved a footprint closer to `94 x 138`, which browser rects exposed before the unit tests did.

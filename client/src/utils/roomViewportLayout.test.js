@@ -20,6 +20,7 @@ test('tablet keeps the room terminal in a split but single-screen form', () => {
 
   assert.equal(layout.viewportModel, 'tablet-terminal');
   assert.equal(layout.pageScroll, 'locked');
+  assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
   assert.equal(layout.contentMaxWidth, '100%');
@@ -30,6 +31,7 @@ test('desktop keeps the room terminal centered with secondary rails', () => {
 
   assert.equal(layout.viewportModel, 'desktop-terminal');
   assert.equal(layout.pageScroll, 'locked');
+  assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
   assert.equal(layout.supportSurfacePolicy, 'slide-panels');
@@ -41,6 +43,7 @@ test('ultrawide expands the same terminal without turning it into a page layout'
 
   assert.equal(layout.viewportModel, 'ultrawide-terminal');
   assert.equal(layout.pageScroll, 'locked');
+  assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'rails-and-overlays');
   assert.equal(layout.supportSurfacePolicy, 'rails-and-overlays');
@@ -52,6 +55,7 @@ test('tablet landscape still keeps the room terminal single-screen', () => {
 
   assert.equal(layout.viewportModel, 'tablet-terminal');
   assert.equal(layout.pageScroll, 'locked');
+  assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.contentMaxWidth, '100%');
 });
@@ -61,6 +65,7 @@ test('compact desktop keeps support surfaces out of the main page flow', () => {
 
   assert.equal(layout.viewportModel, 'desktop-terminal');
   assert.equal(layout.pageScroll, 'locked');
+  assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
   assert.equal(layout.supportSurfacePolicy, 'slide-panels');
@@ -73,6 +78,7 @@ test('short-height landscape windows switch the room terminal into a compressed 
   assert.equal(layout.viewportModel, 'tablet-terminal');
   assert.equal(layout.heightClass, 'short-height');
   assert.equal(layout.stageDensity, 'compressed');
+  assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.minStageBudgetPx, 180);
 });

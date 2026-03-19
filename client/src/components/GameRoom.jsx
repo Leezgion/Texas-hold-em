@@ -603,7 +603,7 @@ const GameRoom = () => {
       data-shell-layout={shellView.shellLayout}
       data-hero-dock-priority={shellView.heroDockPriority}
       data-room-motion-budget={roomViewportLayout.viewportModel === 'phone-terminal' ? 'mobile-tight' : 'standard'}
-      data-room-scroll-contract={roomViewportLayout.viewportModel === 'phone-terminal' ? 'single-screen' : 'default'}
+      data-room-scroll-contract={roomViewportLayout.roomScrollContract}
       style={{ '--room-terminal-stage-budget': `${roomViewportLayout.minStageBudgetPx}px` }}
     >
       <div

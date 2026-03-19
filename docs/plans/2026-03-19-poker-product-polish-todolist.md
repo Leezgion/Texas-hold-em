@@ -682,6 +682,58 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Tactical Arena rail Motion + SVG-backed stage rerun with fresh browser evidence on `2026-03-19`
 - `[done]` Single-screen terminal motion-cost / mobile-scroll rerun with fresh browser evidence on `2026-03-19`
 - `[done]` Unified `9-max` room-shell table contract now advertised through `roomTerminal` metadata
+- unified `9-max` browser rerun on the live local `3001 / 5173` dev pair:
+  - create-room desktop modal stayed readable after the dialog-semantics pass:
+    - `.runlogs/task7-create-room-modal-desktop.png`
+  - `2-player` room `REXNEW` at desktop `1280x900`:
+    - `.runlogs/task7-room-2p-desktop-1280x900.png`
+    - browser metrics:
+      - `anchorCount = 2`
+      - `scrollHeight = clientHeight = 900`
+      - `tableBody overlaps = 0`
+      - `cardBand overlaps = 0`
+    - backend truth:
+      - `.runlogs/task7-room-2p-debug.json`
+      - `settings.maxPlayers = 2`
+      - `settings.roomMode = pro`
+  - the same `2-player` room `REXNEW` rerun at short-height `844x390`:
+    - `.runlogs/task7-room-2p-shortheight-844x390.png`
+    - browser metrics after the scroll-contract + wide-plaque fix:
+      - `scrollHeight = clientHeight = 390`
+      - `anchorCount = 2`
+      - `tableBody overlaps = 0`
+      - `cardBand overlaps = 0`
+  - `6-player` room `GGHERX` at desktop `1280x900`:
+    - `.runlogs/task7-room-6p-desktop-1280x900.png`
+    - browser metrics:
+      - `anchorCount = 6`
+      - `scrollHeight = clientHeight = 900`
+      - `tableBody overlaps = 0`
+      - `cardBand overlaps = 0`
+    - backend truth:
+      - `.runlogs/task7-room-6p-debug.json`
+      - `settings.maxPlayers = 6`
+  - `9-player` room `0LMECG` at desktop `1280x900`:
+    - `.runlogs/task7-room-9p-desktop-1280x900.png`
+    - browser metrics:
+      - `anchorCount = 9`
+      - `scrollHeight = clientHeight = 900`
+      - `tableBody overlaps = 0`
+      - `cardBand overlaps = 0`
+    - backend truth:
+      - `.runlogs/task7-room-9p-debug.json`
+      - `settings.maxPlayers = 9`
+  - the same `9-player` room `0LMECG` rerun at phone portrait `390x844`:
+    - `.runlogs/task7-room-9p-phone-390x844.png`
+    - browser metrics:
+      - `anchorCount = 9`
+      - `scrollHeight = clientHeight = 844`
+      - `tableBody overlaps = 0`
+      - `cardBand overlaps = 0`
+  - the rerun confirmed the unified-table contract with no player-count-specific fallback geometry in the browser:
+    - `2 / 6 / 9` players all stayed on the same tournament-capsule stage language
+    - hero stayed anchored to the canonical hero slot
+    - no scenario reintroduced page-scroll fighting once the room-shell scroll contract was threaded through the tablet / short-height path
 
 ## Next Tactical Arena Backlog
 

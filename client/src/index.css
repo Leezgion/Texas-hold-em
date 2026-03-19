@@ -69,13 +69,13 @@
       var(--mode-shell-page-padding-bottom);
   }
 
-  .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] {
+  .mode-shell[data-shell-route="room"] {
     height: 100dvh;
     overflow: hidden;
   }
 
-  .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] .mode-shell__content,
-  .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] .mode-app-shell {
+  .mode-shell[data-shell-route="room"] .mode-shell__content,
+  .mode-shell[data-shell-route="room"] .mode-app-shell {
     min-height: 100dvh;
     height: 100dvh;
     overflow: hidden;
