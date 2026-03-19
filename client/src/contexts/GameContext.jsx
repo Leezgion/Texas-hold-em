@@ -4,7 +4,40 @@ import { create } from 'zustand';
 import deviceIdManager from '../utils/deviceId';
 import io from 'socket.io-client';
 import { derivePlayerStateView } from '../view-models/gameViewModel';
+import { normalizeDisplayModePreference, resolveDisplayMode } from '../utils/productMode';
+import { shouldApplyIncomingRoomPayload } from '../utils/roomTransition';
+import { emitWithResponse } from '../utils/socketRequest';
 import { resolveServerOrigin } from '../utils/serverOrigin';
+
+const DISPLAY_MODE_STORAGE_KEY = 'texas-holdem-display-mode';
+
+function readStoredDisplayModePreference() {
+  if (typeof window === 'undefined') {
+    return 'inherit';
+  }
+
+  try {
+    return normalizeDisplayModePreference(window.localStorage.getItem(DISPLAY_MODE_STORAGE_KEY));
+  } catch {
+    return 'inherit';
+  }
+}
+
+function persistDisplayModePreference(mode) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(DISPLAY_MODE_STORAGE_KEY, mode);
+  } catch {
+    // Ignore storage failures and keep using in-memory state.
+  }
+}
+
+function deriveEffectiveDisplayMode(roomSettings, displayModePreference) {
+  return resolveDisplayMode(roomSettings?.roomMode, displayModePreference);
+}
 
 // 创建Zustand store
 const useGameStore = create((set, get) => ({
@@ -50,6 +83,8 @@ const useGameStore = create((set, get) => ({
   // 导航状态
   navigationTarget: null,
   intentionalJoin: false, // 标记是否是主动加入房间
+  displayModePreference: readStoredDisplayModePreference(),
+  effectiveDisplayMode: 'pro',
 
   // 连接Socket
   connectSocket: () => {
@@ -129,11 +164,17 @@ const useGameStore = create((set, get) => ({
         return;
       }
 
-      const previousRoomId = get().roomId;
+      const currentState = get();
+      const previousRoomId = currentState.roomId;
       const currentPlayerId = get().currentPlayerId;
 
-      // 如果已经有房间ID且与接收到的不同，忽略此更新（除非是首次连接）
-      if (previousRoomId && previousRoomId !== roomData.id) {
+      if (!shouldApplyIncomingRoomPayload({
+        previousRoomId,
+        incomingRoomId: roomData.id,
+        isCreatingRoom: currentState.isCreatingRoom,
+        intentionalJoin: currentState.intentionalJoin,
+        navigationTarget: currentState.navigationTarget,
+      })) {
         console.log('收到其他房间的更新，忽略:', roomData.id, 'vs', previousRoomId);
         return;
       }
@@ -145,6 +186,10 @@ const useGameStore = create((set, get) => ({
         players: roomData.players,
         gameStarted: roomData.gameStarted,
         roomSettings: roomData.settings,
+        effectiveDisplayMode: deriveEffectiveDisplayMode(
+          roomData.settings,
+          get().displayModePreference
+        ),
       });
 
       // 如果有游戏状态，也更新游戏状态
@@ -176,12 +221,18 @@ const useGameStore = create((set, get) => ({
         return;
       }
 
-      const previousRoomId = get().roomId;
+      const currentState = get();
+      const previousRoomId = currentState.roomId;
       const previousGameState = get().gameState;
       const currentPlayerId = get().currentPlayerId;
 
-      // 如果已经有房间ID且与接收到的不同，忽略此更新（除非是首次连接）
-      if (previousRoomId && previousRoomId !== gameState.id) {
+      if (!shouldApplyIncomingRoomPayload({
+        previousRoomId,
+        incomingRoomId: gameState.id,
+        isCreatingRoom: currentState.isCreatingRoom,
+        intentionalJoin: currentState.intentionalJoin,
+        navigationTarget: currentState.navigationTarget,
+      })) {
         console.log('收到其他房间的状态更新，忽略:', gameState.id, 'vs', previousRoomId);
         return;
       }
@@ -195,6 +246,10 @@ const useGameStore = create((set, get) => ({
         gameStarted: gameState.gameStarted,
         gameState: gameState.gameState,
         roomSettings: gameState.settings,
+        effectiveDisplayMode: deriveEffectiveDisplayMode(
+          gameState.settings,
+          get().displayModePreference
+        ),
       });
 
       // 新一手开始后自动关闭上一手的结果弹窗，避免遮挡后续操作
@@ -309,10 +364,22 @@ const useGameStore = create((set, get) => ({
   // 创建房间
   createRoom: (settings) => {
     const { socket } = get();
-    if (socket) {
-      set({ isCreatingRoom: true });
-      socket.emit('createRoom', settings);
+    if (!socket) {
+      return Promise.reject(new Error('连接未建立'));
     }
+
+    set({ isCreatingRoom: true });
+    return emitWithResponse(socket, {
+      emitEvent: 'createRoom',
+      payload: settings,
+      successEvent: 'roomCreated',
+      errorEvent: 'createRoomError',
+      timeoutMs: 10000,
+      timeoutMessage: '创建房间超时',
+    }).catch((error) => {
+      set({ isCreatingRoom: false });
+      throw error;
+    });
   },
 
   // 验证房间是否存在
@@ -334,184 +401,175 @@ const useGameStore = create((set, get) => ({
 
   // 加入房间
   joinRoom: (roomId) => {
-    return new Promise((resolve, reject) => {
-      const { socket, deviceId } = get();
-      if (!socket || !deviceId) {
-        reject(new Error('连接未建立'));
-        return;
-      }
+    const { socket, deviceId } = get();
+    if (!socket || !deviceId) {
+      return Promise.reject(new Error('连接未建立'));
+    }
 
-      // 设置主动加入标志
-      set({ intentionalJoin: true });
+    set({ intentionalJoin: true });
 
-      let timeoutId;
-      let resolved = false;
-
-      // 创建一次性监听器来处理响应
-      const successHandler = ({ roomId: joinedRoomId }) => {
-        if (resolved) return;
-        if (joinedRoomId === roomId) {
-          resolved = true;
-          socket.off('error', errorHandler);
-          clearTimeout(timeoutId);
-          const targetPath = `/game/${joinedRoomId}`;
-          const currentPath = window.location.pathname;
-
-          set({
-            roomId,
-            showJoinRoom: false,
-            intentionalJoin: false,
-            navigationTarget: currentPath === targetPath ? null : targetPath,
-          });
-          resolve({ roomId: joinedRoomId });
+    return emitWithResponse(socket, {
+      emitEvent: 'joinRoom',
+      payload: { roomId, deviceId, playerName: null },
+      successEvent: 'joinedRoom',
+      errorEvent: 'joinRoomError',
+      timeoutMs: 10000,
+      timeoutMessage: '加入房间超时',
+    })
+      .then(({ roomId: joinedRoomId }) => {
+        if (joinedRoomId !== roomId) {
+          throw new Error('加入房间返回了意外的房间ID');
         }
-      };
 
-      const errorHandler = (message) => {
-        if (resolved) return;
-        resolved = true;
-        socket.off('joinedRoom', successHandler);
-        clearTimeout(timeoutId);
+        const targetPath = `/game/${joinedRoomId}`;
+        const currentPath = window.location.pathname;
+
+        set({
+          roomId,
+          showJoinRoom: false,
+          intentionalJoin: false,
+          navigationTarget: currentPath === targetPath ? null : targetPath,
+        });
+
+        return { roomId: joinedRoomId };
+      })
+      .catch((error) => {
         set({ intentionalJoin: false });
-        reject(new Error(message));
-      };
-
-      // 超时处理
-      timeoutId = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          socket.off('joinedRoom', successHandler);
-          socket.off('error', errorHandler);
-          set({ intentionalJoin: false });
-          reject(new Error('加入房间超时'));
-        }
-      }, 10000); // 10秒超时
-
-      // 监听成功和错误响应
-      socket.once('joinedRoom', successHandler);
-      socket.once('error', errorHandler);
-
-      // 发送加入房间请求（只传递roomId和deviceId）
-      socket.emit('joinRoom', { roomId, deviceId, playerName: null });
-    });
+        throw error;
+      });
   },
 
   // 开始游戏
   startGame: () => {
     const { socket, roomId } = get();
-    console.log('开始游戏被调用', { socket: !!socket, roomId });
-    if (socket && roomId) {
-      console.log('发送startGame事件到服务器', roomId);
-      socket.emit('startGame', roomId);
-    } else {
-      console.log('无法开始游戏：socket或roomId不存在');
+    if (!roomId) {
+      return Promise.reject(new Error('房间不存在'));
     }
+
+    return emitWithResponse(socket, {
+      emitEvent: 'startGame',
+      payload: roomId,
+      successEvent: 'startGameSuccess',
+      errorEvent: 'startGameError',
+      timeoutMs: 5000,
+      timeoutMessage: '开始游戏请求超时',
+    });
   },
 
   recoverRoom: () => {
     const { socket, roomId } = get();
-    if (socket && roomId) {
-      socket.emit('recoverRoom', roomId);
+    if (!roomId) {
+      return Promise.reject(new Error('房间不存在'));
     }
+
+    return emitWithResponse(socket, {
+      emitEvent: 'recoverRoom',
+      payload: roomId,
+      successEvent: 'recoverRoomSuccess',
+      errorEvent: 'recoverRoomError',
+      timeoutMs: 5000,
+      timeoutMessage: '恢复房间请求超时',
+    });
   },
 
   // 玩家动作
   playerAction: (action, amount = 0) => {
     const { socket } = get();
-    if (socket) {
-      socket.emit('playerAction', { action, amount });
-    }
+    return emitWithResponse(socket, {
+      emitEvent: 'playerAction',
+      payload: { action, amount },
+      successEvent: 'playerActionSuccess',
+      errorEvent: 'playerActionError',
+      timeoutMs: 5000,
+      timeoutMessage: '玩家操作请求超时',
+    });
   },
 
   // 换座
   changeSeat: (fromSeat, toSeat) => {
     const { socket } = get();
-    if (socket) {
-      socket.emit('changeSeat', { fromSeat, toSeat });
-    }
+    return emitWithResponse(socket, {
+      emitEvent: 'changeSeat',
+      payload: { fromSeat, toSeat },
+      successEvent: 'changeSeatSuccess',
+      errorEvent: 'changeSeatError',
+      timeoutMs: 5000,
+      timeoutMessage: '换座请求超时',
+    });
   },
 
   // 入座
   takeSeat: (seatIndex) => {
     const { socket } = get();
-    if (socket) {
-      socket.emit('takeSeat', { seatIndex });
-    }
+    return emitWithResponse(socket, {
+      emitEvent: 'takeSeat',
+      payload: { seatIndex },
+      successEvent: 'takeSeatSuccess',
+      errorEvent: 'takeSeatError',
+      timeoutMs: 5000,
+      timeoutMessage: '入座请求超时',
+    });
   },
 
   // 离座
   leaveSeat: () => {
     const { socket } = get();
-    if (socket) {
-      console.log('请求离座');
-      socket.emit('leaveSeat');
-    }
+    return emitWithResponse(socket, {
+      emitEvent: 'leaveSeat',
+      payload: undefined,
+      successEvent: 'leaveSeatSuccess',
+      errorEvent: 'leaveSeatError',
+      timeoutMs: 5000,
+      timeoutMessage: '离座请求超时',
+    });
+  },
+
+  leaveRoom: () => {
+    const { socket, roomId } = get();
+    return emitWithResponse(socket, {
+      emitEvent: 'leaveRoom',
+      payload: roomId,
+      successEvent: 'leaveRoomSuccess',
+      errorEvent: 'leaveRoomError',
+      timeoutMs: 5000,
+      timeoutMessage: '退出房间请求超时',
+    });
   },
 
   // 补码请求
   requestRebuy: (amount) => {
-    return new Promise((resolve, reject) => {
-      const { socket } = get();
-      if (!socket) {
-        reject(new Error('连接未建立'));
-        return;
-      }
-
-      let timeoutId;
-      let resolved = false;
-
-      // 创建一次性监听器来处理响应
-      const successHandler = (payload) => {
-        if (resolved) return;
-        resolved = true;
-        socket.off('error', errorHandler);
-        clearTimeout(timeoutId);
-        resolve(payload);
-      };
-
-      const errorHandler = (message) => {
-        if (resolved) return;
-        resolved = true;
-        socket.off('rebuySuccess', successHandler);
-        clearTimeout(timeoutId);
-        reject(new Error(message));
-      };
-
-      // 超时处理
-      timeoutId = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          socket.off('rebuySuccess', successHandler);
-          socket.off('error', errorHandler);
-          reject(new Error('补码请求超时'));
-        }
-      }, 5000); // 5秒超时
-
-      // 监听成功和错误响应
-      socket.once('rebuySuccess', successHandler);
-      socket.once('error', errorHandler);
-
-      // 发送补码请求
-      socket.emit('requestRebuy', amount);
+    const { socket } = get();
+    return emitWithResponse(socket, {
+      emitEvent: 'requestRebuy',
+      payload: amount,
+      successEvent: 'rebuySuccess',
+      errorEvent: 'requestRebuyError',
+      timeoutMs: 5000,
+      timeoutMessage: '补码请求超时',
     });
   },
 
   // 亮牌
   revealHand: (mode, cardIndex = null) => {
     const { socket } = get();
-    if (socket) {
-      socket.emit('revealHand', { mode, cardIndex });
-    }
+    return emitWithResponse(socket, {
+      emitEvent: 'revealHand',
+      payload: { mode, cardIndex },
+      successEvent: 'revealHandSuccess',
+      errorEvent: 'revealHandError',
+      timeoutMs: 5000,
+      timeoutMessage: '亮牌请求超时',
+    });
   },
 
   // 亮牌
   showHand: () => {
-    get().revealHand('show_all');
+    return get().revealHand('show_all');
   },
 
   // 盖牌
   muckHand: () => {
-    get().revealHand('hide');
+    return get().revealHand('hide');
   },
 
   // 手动重连
@@ -528,6 +586,14 @@ const useGameStore = create((set, get) => ({
   setShowJoinRoom: (show) => set({ showJoinRoom: show }),
   setShowHandResult: (show) =>
     set(show ? { showHandResult: true } : { showHandResult: false, handResult: null }),
+  setDisplayModePreference: (mode) => {
+    const normalizedMode = normalizeDisplayModePreference(mode);
+    persistDisplayModePreference(normalizedMode);
+    set((state) => ({
+      displayModePreference: normalizedMode,
+      effectiveDisplayMode: deriveEffectiveDisplayMode(state.roomSettings, normalizedMode),
+    }));
+  },
 
   // 导航控制
   clearNavigationTarget: () => set({ navigationTarget: null }),
@@ -559,6 +625,7 @@ const useGameStore = create((set, get) => ({
       canCheck: false,
       canRaise: false,
       minRaise: 0,
+      effectiveDisplayMode: deriveEffectiveDisplayMode(null, get().displayModePreference),
       showHandResult: false,
       handResult: null,
     });

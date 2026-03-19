@@ -1,25 +1,33 @@
 import { Plus } from 'lucide-react';
 import React from 'react';
 import { useGame } from '../contexts/GameContext';
-import { deriveSeatSelectionNotice } from '../view-models/gameViewModel';
+import { deriveRequestErrorFeedback, deriveSeatTakeFeedback } from '../view-models/gameViewModel';
 
-const EmptySeat = ({ seatIndex, position, getPositionLabel, roomState }) => {
+const EmptySeat = ({ seatIndex, position, getPositionLabel, seatLabel, roomState }) => {
   const { takeSeat } = useGame();
 
-  const handleTakeSeat = () => {
-    const notice = deriveSeatSelectionNotice(roomState, seatIndex);
-    window.dispatchEvent(
-      new CustomEvent(notice.channel, {
-        detail: notice.detail,
-      })
-    );
-
-    takeSeat(seatIndex);
+  const handleTakeSeat = async () => {
+    try {
+      const result = await takeSeat(seatIndex);
+      const notice = deriveSeatTakeFeedback({ ...result, roomState });
+      window.dispatchEvent(
+        new CustomEvent(notice.channel, {
+          detail: notice.detail,
+        })
+      );
+    } catch (error) {
+      const notice = deriveRequestErrorFeedback({
+        scope: 'takeSeat',
+        fallbackPrefix: '入座失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+    }
   };
 
   return (
     <div
-      className="player-seat empty-seat compact"
+      className="player-seat player-seat--compact empty-seat"
       style={{
         left: `calc(50% + ${position.x}px)`,
         top: `calc(50% + ${position.y}px)`,
@@ -40,7 +48,7 @@ const EmptySeat = ({ seatIndex, position, getPositionLabel, roomState }) => {
         </div>
 
         {/* 座位号/位置标记 */}
-        <div className="text-xs text-gray-500 mt-1">{getPositionLabel ? getPositionLabel(seatIndex) : `座位 ${seatIndex + 1}`}</div>
+        <div className="text-xs text-gray-500 mt-1">{seatLabel || (getPositionLabel ? getPositionLabel(seatIndex) : `座位 ${seatIndex + 1}`)}</div>
       </div>
     </div>
   );

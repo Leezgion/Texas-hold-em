@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
+import { getDisplayModeTheme } from '../utils/productMode';
 import { getLatestHandSummary } from '../view-models/handHistoryViewModel';
 
-const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerId, onReveal }) => {
+const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerId, onReveal, effectiveDisplayMode = 'pro' }) => {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   useEffect(() => {
@@ -26,6 +27,9 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
   }
 
   const latestSummary = getLatestHandSummary(gameState?.handHistory || []);
+  const theme = getDisplayModeTheme(effectiveDisplayMode);
+  const roomCopy = theme.room;
+  const isProMode = effectiveDisplayMode === 'pro';
   const canReveal =
     gameState?.revealPolicy === 'free_reveal_after_hand'
       ? Boolean(currentPlayer?.inHand)
@@ -35,7 +39,7 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
     <div className="absolute left-1/2 top-24 z-20 w-[min(32rem,calc(100%-2rem))] -translate-x-1/2 rounded-2xl border border-poker-gold/40 bg-black/70 px-4 py-3 text-white shadow-2xl backdrop-blur-md">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-sm uppercase tracking-[0.2em] text-poker-gold">结算中</div>
+          <div className="text-sm uppercase tracking-[0.2em] text-poker-gold">{roomCopy.latestHandLabel}</div>
           <div className="mt-1 text-lg font-semibold">{latestSummary?.title || '本手已结束'}</div>
         </div>
         <div className="rounded-full border border-white/20 px-3 py-1 text-sm text-gray-200">{remainingSeconds}s</div>
@@ -44,6 +48,12 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
       {latestSummary?.lines?.[0] && (
         <div className="mt-3 rounded-xl border border-poker-gold/30 bg-poker-gold/10 px-3 py-2 text-sm font-semibold text-poker-gold">
           {latestSummary.lines[0]}
+        </div>
+      )}
+
+      {(isProMode || effectiveDisplayMode === 'study') && latestSummary?.boardLabel && (
+        <div className="mt-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-300">
+          Board {latestSummary.boardLabel}
         </div>
       )}
 

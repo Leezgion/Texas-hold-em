@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import Card from './Card';
 import { useGame } from '../contexts/GameContext';
+import { deriveRequestErrorFeedback, deriveSeatChangeFeedback } from '../view-models/gameViewModel';
 
 const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted, isActiveTimer, getPositionLabel }) => {
   const [showHand, setShowHand] = useState(false);
@@ -13,9 +14,38 @@ const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted
     }
   };
 
-  const handleSeatChange = (newSeat) => {
+  const handleSeatChange = async (newSeat) => {
     if (player.folded || !player.isActive) {
-      changeSeat(player.seat, newSeat);
+      try {
+        const result = await changeSeat(player.seat, newSeat);
+        const notice = deriveSeatChangeFeedback(result);
+        window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+      } catch (error) {
+        const notice = deriveRequestErrorFeedback({
+          scope: 'seatChange',
+          fallbackPrefix: '换座失败',
+          error,
+        });
+        window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+      }
+    }
+  };
+
+  const handleRevealChoice = async (mode) => {
+    try {
+      if (mode === 'show_all') {
+        await requestShowHand();
+        return;
+      }
+
+      await muckHand();
+    } catch (error) {
+      const notice = deriveRequestErrorFeedback({
+        scope: 'revealHand',
+        fallbackPrefix: '亮牌选择失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
     }
   };
 
@@ -144,13 +174,13 @@ const Player = ({ player, isCurrentPlayer, isCurrentTurn, gameState, gameStarted
         {gameState?.phase === 'showdown' && (
           <div className="flex space-x-1">
             <button
-              onClick={() => requestShowHand()}
+              onClick={() => handleRevealChoice('show_all')}
               className=" success text-xs px-2 py-1 flex-1"
             >
               亮牌
             </button>
             <button
-              onClick={() => muckHand()}
+              onClick={() => handleRevealChoice('hide')}
               className=" danger text-xs px-2 py-1 flex-1"
             >
               盖牌

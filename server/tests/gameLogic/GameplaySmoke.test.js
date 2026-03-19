@@ -80,6 +80,22 @@ describe('Gameplay smoke regression', () => {
     jest.useRealTimers();
   });
 
+  it('returns authoritative action metadata after accepting a player action', () => {
+    const { roomManager, room } = createSixPlayerRoom({ settleMs: 10 });
+
+    roomManager.startGame(room.id, 'device-host');
+
+    const currentPlayerId = room.gameLogic.getGameState().currentPlayerId;
+    const result = roomManager.handlePlayerAction(currentPlayerId, 'fold');
+
+    expect(result).toEqual({
+      roomId: room.id,
+      roomState: room.roomState,
+      action: 'fold',
+      amount: 0,
+    });
+  });
+
   it('plays three six-player hands without seat drift or phantom side pots', () => {
     const { roomManager, room } = createSixPlayerRoom({ settleMs: 10 });
 

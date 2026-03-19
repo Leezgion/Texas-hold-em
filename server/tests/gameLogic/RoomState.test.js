@@ -113,6 +113,49 @@ describe('RoomManager state vocabularies', () => {
     expect(room.settings.settleMs).toBe(8000);
   });
 
+  it('defaults roomMode to pro when the creator does not provide one', () => {
+    const { io, gameRooms, socketDeviceMap, roomManager } = createManager();
+    const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+
+    const roomId = roomManager.createRoom(hostSocket, {
+      duration: 60,
+      maxPlayers: 6,
+      allinDealCount: 1,
+    });
+
+    const room = gameRooms.get(roomId);
+    expect(room.settings.roomMode).toBe('pro');
+  });
+
+  it('preserves an explicit roomMode when the creator selects one', () => {
+    const { io, gameRooms, socketDeviceMap, roomManager } = createManager();
+    const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+
+    const roomId = roomManager.createRoom(hostSocket, {
+      duration: 60,
+      maxPlayers: 6,
+      allinDealCount: 1,
+      roomMode: 'study',
+    });
+
+    const room = gameRooms.get(roomId);
+    expect(room.settings.roomMode).toBe('study');
+  });
+
+  it('rejects unsupported roomMode values', () => {
+    const { io, socketDeviceMap, roomManager } = createManager();
+    const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+
+    expect(() =>
+      roomManager.createRoom(hostSocket, {
+        duration: 60,
+        maxPlayers: 6,
+        allinDealCount: 1,
+        roomMode: 'arcade',
+      })
+    ).toThrow('无效的房间模式');
+  });
+
   it('rejects startGame from a non-host player', () => {
     jest.useFakeTimers();
     try {
@@ -163,13 +206,18 @@ describe('RoomManager state vocabularies', () => {
       expect(host.tableState).toBe(TABLE_STATES.SPECTATING);
       expect(host.seat).toBe(-1);
 
-      expect(() => roomManager.startGame(roomId, 'device-host')).not.toThrow();
+      const result = roomManager.startGame(roomId, 'device-host');
 
       expect(room.gameStarted).toBe(true);
       expect(host.inHand).toBe(false);
       expect(host.hand).toEqual([]);
       expect(host.tableState).toBe(TABLE_STATES.SPECTATING);
       expect(room.players.filter((player) => player.inHand)).toHaveLength(2);
+      expect(result).toEqual({
+        roomId,
+        handStarted: true,
+        roomState: room.roomState,
+      });
     } finally {
       jest.clearAllTimers();
       jest.useRealTimers();
@@ -206,13 +254,14 @@ describe('RoomManager state vocabularies', () => {
       room.players[2].isSpectator = true;
       room.players[2].needsRebuy = true;
 
-      room.gameLogic.startNewHand();
+      const result = room.gameLogic.startNewHand();
 
       expect(room.roomState).toBe(ROOM_STATES.IDLE);
       expect(room.gameStarted).toBe(false);
       expect(room.startTime).toBeNull();
       expect(room.timer).toBeNull();
       expect(roomManager.roomRequiresRecovery(room)).toBe(false);
+      expect(result).toBe(false);
     } finally {
       jest.clearAllTimers();
       jest.useRealTimers();
@@ -311,7 +360,7 @@ describe('RoomManager state vocabularies', () => {
       room.players[1].totalBet = 100;
       room.players[1].hand = ['QC', 'QD'];
 
-      roomManager.recoverRoom(roomId, 'device-host');
+      const recoveryResult = roomManager.recoverRoom(roomId, 'device-host');
 
       expect(dirtyGameLogic.clearPlayerTimer).toHaveBeenCalled();
       expect(dirtyGameLogic.clearNextHandTimeout).toHaveBeenCalled();
@@ -333,8 +382,18 @@ describe('RoomManager state vocabularies', () => {
         expect(player.tableState).toBe(TABLE_STATES.SEATED_READY);
       });
 
-      expect(() => roomManager.startGame(roomId, 'device-host')).not.toThrow();
+      expect(recoveryResult).toEqual({
+        roomId,
+        roomState: ROOM_STATES.IDLE,
+      });
+
+      const restartResult = roomManager.startGame(roomId, 'device-host');
       expect(room.gameStarted).toBe(true);
+      expect(restartResult).toEqual({
+        roomId,
+        handStarted: true,
+        roomState: room.roomState,
+      });
     } finally {
       jest.clearAllTimers();
       jest.useRealTimers();
@@ -352,6 +411,71 @@ describe('RoomManager state vocabularies', () => {
     });
 
     expect(() => roomManager.recoverRoom(roomId, 'device-host')).toThrow('房间当前不需要恢复');
+  });
+
+  it('ejects a device from earlier rooms when it creates a new room', () => {
+    jest.useFakeTimers();
+    try {
+      const { io, gameRooms, socketDeviceMap, roomManager } = createManager();
+      const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+      const guestSocket = registerDevice(io, socketDeviceMap, 'socket-guest', 'device-guest');
+
+      roomManager.startGameTimer = jest.fn();
+
+      const firstRoomId = roomManager.createRoom(hostSocket, {
+        duration: 60,
+        maxPlayers: 6,
+        allinDealCount: 1,
+      });
+
+      const secondRoomId = roomManager.createRoom(hostSocket, {
+        duration: 60,
+        maxPlayers: 6,
+        allinDealCount: 1,
+      });
+
+      roomManager.joinRoom(guestSocket, secondRoomId, 'device-guest', 'Guest');
+      roomManager.startGame(secondRoomId, 'device-host');
+
+      const result = roomManager.handlePlayerAction('device-host', 'fold');
+      const firstRoom = gameRooms.get(firstRoomId);
+      const secondRoom = gameRooms.get(secondRoomId);
+
+      expect(result.roomId).toBe(secondRoomId);
+      expect(firstRoom).toBeUndefined();
+      expect(secondRoom.players.find((player) => player.id === 'device-host')).toBeDefined();
+    } finally {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    }
+  });
+
+  it('ejects a device from earlier rooms when it joins a different room', () => {
+    const { io, gameRooms, socketDeviceMap, roomManager } = createManager();
+    const firstHostSocket = registerDevice(io, socketDeviceMap, 'socket-host-1', 'device-host-1');
+    const secondHostSocket = registerDevice(io, socketDeviceMap, 'socket-host-2', 'device-host-2');
+    const guestSocket = registerDevice(io, socketDeviceMap, 'socket-guest', 'device-guest');
+
+    const firstRoomId = roomManager.createRoom(firstHostSocket, {
+      duration: 60,
+      maxPlayers: 6,
+      allinDealCount: 1,
+    });
+
+    const secondRoomId = roomManager.createRoom(secondHostSocket, {
+      duration: 60,
+      maxPlayers: 6,
+      allinDealCount: 1,
+    });
+
+    roomManager.joinRoom(guestSocket, firstRoomId, 'device-guest', 'Guest');
+    roomManager.joinRoom(guestSocket, secondRoomId, 'device-guest', 'Guest');
+
+    const firstRoom = gameRooms.get(firstRoomId);
+    const secondRoom = gameRooms.get(secondRoomId);
+
+    expect(firstRoom.players.find((player) => player.id === 'device-guest')).toBeUndefined();
+    expect(secondRoom.players.find((player) => player.id === 'device-guest')).toBeDefined();
   });
 });
 

@@ -1,12 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildHandHistoryView, buildHandSummary, buildTablePotSummary } from './handHistoryViewModel.js';
+import { buildHandHistoryView, buildHandSummary, buildTablePotSummary, deriveEventRailView } from './handHistoryViewModel.js';
 
 test('summarizes main pot, side pots, and reveal choices', () => {
   const summary = buildHandSummary({
     handNumber: 9,
     totalPot: 5000,
+    chipDeltas: {
+      p1: 3000,
+      p2: -2000,
+    },
+    players: [
+      { id: 'p1', nickname: 'Alice' },
+      { id: 'p2', nickname: 'Bob' },
+    ],
     potResults: [
       {
         potId: 0,
@@ -24,15 +32,18 @@ test('summarizes main pot, side pots, and reveal choices', () => {
     reveals: [
       { playerId: 'p3', nickname: 'Carol', reveal: 'show_one', cards: ['A♠'] },
     ],
+    communityCards: ['A♠', 'K♥', '7♦', '2♣', '2♠'],
   });
 
   assert.equal(summary.title, '第 9 手');
+  assert.equal(summary.boardLabel, 'A♠ K♥ 7♦ 2♣ 2♠');
   assert.match(summary.lines[0], /总池/);
   assert.match(summary.lines[1], /主池/);
   assert.match(summary.lines[1], /Alice/);
   assert.match(summary.lines[2], /边池/);
   assert.match(summary.lines[2], /Bob/);
-  assert.match(summary.lines[3], /亮牌/);
+  assert.match(summary.lines[3], /净赢亏/);
+  assert.match(summary.lines.at(-1), /亮牌/);
 });
 
 test('summarizes split side pots with per-player shares', () => {
@@ -93,6 +104,40 @@ test('builds drawer items in reverse hand order with chip delta lines', () => {
   assert.match(history[0].lines.at(-1), /净赢亏/);
 });
 
+test('formats object-based board cards for pro-mode summaries', () => {
+  const summary = buildHandSummary({
+    handNumber: 3,
+    communityCards: [
+      { rank: 14, suit: 'spades' },
+      { rank: 13, suit: 'hearts' },
+      { rank: 10, suit: 'clubs' },
+    ],
+  });
+
+  assert.equal(summary.boardLabel, 'A♠ K♥ 10♣');
+});
+
+test('formats object-based reveal cards in hand summaries', () => {
+  const summary = buildHandSummary({
+    handNumber: 4,
+    reveals: [
+      {
+        playerId: 'p1',
+        nickname: 'Alice',
+        reveal: 'show_all',
+        cards: [
+          { rank: 14, suit: 'spades' },
+          { rank: 11, suit: 'diamonds' },
+        ],
+      },
+    ],
+  });
+
+  assert.match(summary.lines[0], /Alice/);
+  assert.match(summary.lines[0], /A♠/);
+  assert.match(summary.lines[0], /J♦/);
+});
+
 test('builds a clearer table pot summary for contested and uncontested side pots', () => {
   const summary = buildTablePotSummary({
     pot: 3020,
@@ -108,4 +153,36 @@ test('builds a clearer table pot summary for contested and uncontested side pots
   assert.equal(summary.items[1].detail, '2人争夺');
   assert.equal(summary.items[2].label, '待匹配差额');
   assert.equal(summary.items[2].detail, '仍需其他玩家补齐');
+});
+
+test('derives an event-rail summary from the latest hand history and live table pot state', () => {
+  const eventRail = deriveEventRailView({
+    roomState: 'settling',
+    gameState: {
+      pot: 5000,
+      sidePots: [{ id: 1, amount: 2000, eligiblePlayers: ['p1', 'p2'] }],
+      handHistory: [
+        {
+          handNumber: 11,
+          totalPot: 5000,
+          reason: '摊牌',
+          communityCards: ['A♠', 'K♥', '7♦', '2♣', '2♠'],
+          potResults: [
+            {
+              potId: 0,
+              potType: 'main',
+              amount: 3000,
+              winners: [{ playerId: 'p1', nickname: 'Alice', amount: 3000 }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  assert.equal(eventRail.roomState, 'settling');
+  assert.equal(eventRail.livePotSummary.items[0].label, '总池');
+  assert.equal(eventRail.latestSummary.handNumber, 11);
+  assert.equal(eventRail.latestSummary.boardLabel, 'A♠ K♥ 7♦ 2♣ 2♠');
+  assert.equal(eventRail.historyCount, 1);
 });

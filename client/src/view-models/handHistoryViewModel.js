@@ -1,16 +1,54 @@
 import { formatSignedChips } from './gameViewModel.js';
 
+function formatCardLabel(card) {
+  if (!card) {
+    return '';
+  }
+
+  if (typeof card === 'string') {
+    return card;
+  }
+
+  const suitSymbols = {
+    hearts: '♥',
+    diamonds: '♦',
+    clubs: '♣',
+    spades: '♠',
+  };
+
+  const rankLabels = {
+    11: 'J',
+    12: 'Q',
+    13: 'K',
+    14: 'A',
+  };
+
+  const rank = rankLabels[card.rank] || String(card.rank || '');
+  const suit = suitSymbols[card.suit] || '';
+
+  return `${rank}${suit}`.trim();
+}
+
+function formatBoardLabel(communityCards = []) {
+  if (!Array.isArray(communityCards) || communityCards.length === 0) {
+    return null;
+  }
+
+  return communityCards.map(formatCardLabel).filter(Boolean).join(' ');
+}
+
 function getPlayerName(record, playerId) {
   return record.players?.find((player) => player.id === playerId)?.nickname || playerId;
 }
 
 function formatRevealLine(reveal) {
   const name = reveal.nickname || reveal.playerId;
+  const cardsLabel = (reveal.cards || []).map(formatCardLabel).filter(Boolean).join(' ');
   if ((reveal.reveal || reveal.mode) === 'show_one') {
-    return `${name} 亮牌 ${reveal.cards?.join(' ') || ''}`.trim();
+    return `${name} 亮牌 ${cardsLabel}`.trim();
   }
   if ((reveal.reveal || reveal.mode) === 'show_all') {
-    return `${name} 全亮 ${reveal.cards?.join(' ') || ''}`.trim();
+    return `${name} 全亮 ${cardsLabel}`.trim();
   }
   return `${name} 盖牌`;
 }
@@ -68,8 +106,9 @@ export function buildHandSummary(record) {
     handNumber: record.handNumber,
     title: `第 ${record.handNumber} 手`,
     communityCards: record.communityCards || [],
+    boardLabel: formatBoardLabel(record.communityCards || []),
     reason: record.reason || null,
-    lines: [totalLine, ...winnerLines, ...revealLines, ...chipDeltaLines].filter(Boolean),
+    lines: [totalLine, ...winnerLines, ...chipDeltaLines, ...revealLines].filter(Boolean),
   };
 }
 
@@ -119,4 +158,15 @@ export function buildHandHistoryView(records = []) {
 
 export function getLatestHandSummary(records = []) {
   return buildHandHistoryView(records)[0] || null;
+}
+
+export function deriveEventRailView({ roomState = 'idle', gameState = null } = {}) {
+  const handHistory = Array.isArray(gameState?.handHistory) ? gameState.handHistory : [];
+
+  return {
+    roomState,
+    historyCount: handHistory.length,
+    latestSummary: getLatestHandSummary(handHistory),
+    livePotSummary: buildTablePotSummary(gameState),
+  };
 }

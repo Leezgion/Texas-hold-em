@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 
 import { buildHandHistoryView } from '../view-models/handHistoryViewModel';
 
-const HandHistoryDrawer = ({ records = [] }) => {
+const HandHistoryDrawer = ({ records = [], effectiveDisplayMode = 'pro' }) => {
   const [open, setOpen] = useState(false);
   const summaries = buildHandHistoryView(records);
+  const isProMode = effectiveDisplayMode === 'pro';
 
   return (
     <div className={`absolute right-0 top-24 z-20 flex h-[calc(100%-7rem)] transition-transform ${open ? 'translate-x-0' : 'translate-x-[18rem]'}`}>
@@ -39,6 +40,11 @@ const HandHistoryDrawer = ({ records = [] }) => {
                   <div className="text-sm font-semibold text-white">{summary.title}</div>
                   {summary.reason && <div className="text-[11px] text-gray-400">{summary.reason}</div>}
                 </div>
+                {isProMode && summary.boardLabel && (
+                  <div className="mb-2 rounded-lg border border-gray-700 bg-black/20 px-2 py-1 text-[11px] text-gray-300">
+                    Board {summary.boardLabel}
+                  </div>
+                )}
                 <div className="space-y-1 text-xs text-gray-200">
                   {summary.lines.length > 0 ? (
                     summary.lines.map((line, index) => (

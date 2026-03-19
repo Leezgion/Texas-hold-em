@@ -1,0 +1,149 @@
+export const ROOM_MODE_META = Object.freeze({
+  club: {
+    label: 'Club',
+    title: '私局辅助',
+    detail: '强调少争议、低认知负担和稳定操作。',
+    tagline: '像高级私局桌控台一样稳。',
+    highlights: ['少争议', '房主管理', '清晰结算'],
+  },
+  pro: {
+    label: 'Pro',
+    title: '职业对局',
+    detail: '强调节奏、信息密度和操作效率。',
+    tagline: '像线上职业桌一样快。',
+    highlights: ['密集信息', '快速操作', '数字优先'],
+  },
+  study: {
+    label: 'Study',
+    title: '训练复盘',
+    detail: '强调解释、记录和回看理解。',
+    tagline: '像牌局分析台一样清楚。',
+    highlights: ['时间线', '状态解释', '复盘友好'],
+  },
+});
+
+export const DISPLAY_MODE_META = Object.freeze({
+  inherit: {
+    label: '跟随房间',
+    detail: '默认跟随当前房间模式。',
+  },
+  ...ROOM_MODE_META,
+});
+
+const DISPLAY_MODE_THEME_META = Object.freeze({
+  club: Object.freeze({
+    mode: 'club',
+    label: ROOM_MODE_META.club.label,
+    title: ROOM_MODE_META.club.title,
+    shellClassName: 'mode-shell-club',
+    accentClassName: 'mode-accent-club',
+    layoutDensity: 'medium',
+    motionStyle: 'measured',
+    room: Object.freeze({
+      stageLabel: 'Table Console',
+      stageCaption: '把牌桌状态、入座和主持动作放在最稳的视线里。',
+      intelTitle: '桌况总览',
+      intelCaption: '房主和成员先看这里，再决定下一步。',
+      eventTitle: '最近动态',
+      eventCaption: '保留最关键的结算和变更，不让信息过载。',
+      actionTitle: '本席控制',
+      actionCaption: '当前座位、筹码和开局入口保持清楚直接。',
+      rosterTitle: '成员名单',
+      rosterCaption: '优先减少争议和误读。',
+      stacksTitle: '桌上筹码',
+      historyTitle: '最近几手',
+      latestHandLabel: '最近结算',
+      historyPreviewCount: 3,
+      startButtonLabel: '发下一手',
+      actionStatStyle: 'pills',
+    }),
+  }),
+  pro: Object.freeze({
+    mode: 'pro',
+    label: ROOM_MODE_META.pro.label,
+    title: ROOM_MODE_META.pro.title,
+    shellClassName: 'mode-shell-pro',
+    accentClassName: 'mode-accent-pro',
+    layoutDensity: 'high',
+    motionStyle: 'sharp',
+    room: Object.freeze({
+      stageLabel: 'Table Stage',
+      stageCaption: '底池、牌面和轮转保持在同一焦点内。',
+      intelTitle: 'Intel Rail',
+      intelCaption: '紧凑桌况、座位和主持动作集中在左侧。',
+      eventTitle: 'Event Rail',
+      eventCaption: '资金流、最新结果和时间线优先。',
+      actionTitle: 'Hero Seat',
+      actionCaption: '数字优先的即时决策区。',
+      rosterTitle: 'Roster',
+      rosterCaption: '座位、位置、状态、净额。',
+      stacksTitle: 'Stacks',
+      historyTitle: 'Hand Tape',
+      latestHandLabel: 'Latest Hand',
+      historyPreviewCount: 4,
+      startButtonLabel: '开始游戏',
+      actionStatStyle: 'grid',
+    }),
+  }),
+  study: Object.freeze({
+    mode: 'study',
+    label: ROOM_MODE_META.study.label,
+    title: ROOM_MODE_META.study.title,
+    shellClassName: 'mode-shell-study',
+    accentClassName: 'mode-accent-study',
+    layoutDensity: 'medium',
+    motionStyle: 'annotated',
+    room: Object.freeze({
+      stageLabel: 'Review Stage',
+      stageCaption: '当前牌面、池子层级和结算窗口都为回看服务。',
+      intelTitle: 'State Notes',
+      intelCaption: '房间状态和成员语义更显式。',
+      eventTitle: 'Review Rail',
+      eventCaption: '上一手、底池层级和时间线更详细。',
+      actionTitle: 'Hero Review',
+      actionCaption: '操作前先看清位置、筹码和说明。',
+      rosterTitle: '状态面板',
+      rosterCaption: '保留更强的解释性标签。',
+      stacksTitle: 'Chip Ledger',
+      historyTitle: 'Timeline',
+      latestHandLabel: '上一手结算',
+      historyPreviewCount: 6,
+      startButtonLabel: '开始并记录本手',
+      actionStatStyle: 'annotated',
+    }),
+  }),
+});
+
+const ROOM_MODES = Object.freeze(Object.keys(ROOM_MODE_META));
+const DISPLAY_MODE_PREFERENCES = Object.freeze(Object.keys(DISPLAY_MODE_META));
+
+export function normalizeRoomMode(mode) {
+  return ROOM_MODES.includes(mode) ? mode : 'pro';
+}
+
+export function normalizeDisplayModePreference(mode) {
+  return DISPLAY_MODE_PREFERENCES.includes(mode) ? mode : 'inherit';
+}
+
+export function resolveDisplayMode(roomMode, displayModePreference = 'inherit') {
+  const normalizedRoomMode = normalizeRoomMode(roomMode);
+  const normalizedDisplayModePreference = normalizeDisplayModePreference(displayModePreference);
+
+  if (normalizedDisplayModePreference === 'inherit') {
+    return normalizedRoomMode;
+  }
+
+  return normalizedDisplayModePreference;
+}
+
+export function getDisplayModeTheme(mode) {
+  const normalizedMode = normalizeRoomMode(mode === 'inherit' ? 'pro' : mode);
+  return DISPLAY_MODE_THEME_META[normalizedMode];
+}
+
+export function buildModePreviewCards() {
+  return ['club', 'pro', 'study'].map((mode) => ({
+    ...ROOM_MODE_META[mode],
+    ...DISPLAY_MODE_THEME_META[mode],
+  }));
+}

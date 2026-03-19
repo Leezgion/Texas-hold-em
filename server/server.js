@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
       socket.emit('roomCreated', { roomId });
       console.log(`房间创建成功: ${roomId}`);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('createRoomError', { message: error.message });
     }
   });
 
@@ -96,7 +96,7 @@ io.on('connection', (socket) => {
       roomManager.joinRoom(socket, roomId, actualDeviceId, playerName);
       console.log(`设备 ${actualDeviceId} (${playerName || '未知玩家'}) 加入房间 ${roomId}`);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('joinRoomError', { message: error.message });
     }
   });
 
@@ -107,7 +107,8 @@ io.on('connection', (socket) => {
       if (!deviceId) {
         throw new Error('设备未注册');
       }
-      roomManager.startGame(roomId, deviceId);
+      const result = roomManager.startGame(roomId, deviceId);
+      socket.emit('startGameSuccess', result);
       console.log(`房间 ${roomId} 开始游戏`);
     } catch (error) {
       if (error.code === ERROR_CODES.ROOM_RECOVERY_REQUIRED) {
@@ -117,7 +118,7 @@ io.on('connection', (socket) => {
           message: error.message,
         });
       }
-      socket.emit('error', error.message);
+      socket.emit('startGameError', { message: error.message, code: error.code });
     }
   });
 
@@ -128,10 +129,11 @@ io.on('connection', (socket) => {
         throw new Error('设备未注册');
       }
 
-      roomManager.recoverRoom(roomId, deviceId);
+      const result = roomManager.recoverRoom(roomId, deviceId);
+      socket.emit('recoverRoomSuccess', result);
       console.log(`房间 ${roomId} 已恢复到空闲状态`);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('recoverRoomError', { message: error.message, code: error.code });
     }
   });
 
@@ -142,9 +144,10 @@ io.on('connection', (socket) => {
       if (!deviceId) {
         throw new Error('设备未注册');
       }
-      roomManager.handlePlayerAction(deviceId, action, amount);
+      const result = roomManager.handlePlayerAction(deviceId, action, amount);
+      socket.emit('playerActionSuccess', result);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('playerActionError', { message: error.message, code: error.code });
     }
   });
 
@@ -155,9 +158,10 @@ io.on('connection', (socket) => {
       if (!deviceId) {
         throw new Error('设备未注册');
       }
-      roomManager.handleSeatChange(deviceId, fromSeat, toSeat);
+      const result = roomManager.handleSeatChange(deviceId, fromSeat, toSeat);
+      socket.emit('changeSeatSuccess', result);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('changeSeatError', { message: error.message });
     }
   });
 
@@ -168,9 +172,10 @@ io.on('connection', (socket) => {
       if (!deviceId) {
         throw new Error('设备未注册');
       }
-      roomManager.handleTakeSeat(deviceId, seatIndex);
+      const result = roomManager.handleTakeSeat(deviceId, seatIndex);
+      socket.emit('takeSeatSuccess', result);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('takeSeatError', { message: error.message });
     }
   });
 
@@ -178,15 +183,13 @@ io.on('connection', (socket) => {
   socket.on('leaveSeat', () => {
     try {
       const deviceId = socketDeviceMap.get(socket.id);
-      console.log('收到离座请求:', { socketId: socket.id, deviceId });
       if (!deviceId) {
         throw new Error('设备未注册');
       }
-      roomManager.handleLeaveSeat(deviceId);
-      console.log('离座处理完成:', deviceId);
+      const result = roomManager.handleLeaveSeat(deviceId);
+      socket.emit('leaveSeatSuccess', result);
     } catch (error) {
-      console.log('离座处理失败:', error.message);
-      socket.emit('error', error.message);
+      socket.emit('leaveSeatError', { message: error.message });
     }
   });
 
@@ -197,9 +200,10 @@ io.on('connection', (socket) => {
       if (!deviceId) {
         throw new Error('设备未注册');
       }
-      roomManager.handleLeaveRoom(deviceId, roomId);
+      const result = roomManager.handleLeaveRoom(deviceId, roomId);
+      socket.emit('leaveRoomSuccess', result);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('leaveRoomError', { message: error.message });
     }
   });
 
@@ -212,7 +216,7 @@ io.on('connection', (socket) => {
       }
       roomManager.handleRebuyRequest(deviceId, amount);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('requestRebuyError', { message: error.message });
     }
   });
 
@@ -223,9 +227,10 @@ io.on('connection', (socket) => {
       if (!deviceId) {
         throw new Error('设备未注册');
       }
-      roomManager.revealHand(deviceId, mode, cardIndex);
+      const result = roomManager.revealHand(deviceId, mode, cardIndex);
+      socket.emit('revealHandSuccess', result);
     } catch (error) {
-      socket.emit('error', error.message);
+      socket.emit('revealHandError', { message: error.message, code: error.code });
     }
   });
 

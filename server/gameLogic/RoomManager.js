@@ -306,6 +306,10 @@ class RoomManager {
     });
 
     this.broadcastRoomState(room);
+    return {
+      roomId,
+      roomState: room.roomState,
+    };
   }
 
   canPlayerRebuy(player) {
@@ -336,6 +340,7 @@ class RoomManager {
         maxPlayers: mergedSettings.maxPlayers || 6,
         allowStraddle: mergedSettings.allowStraddle || false,
         allinDealCount: mergedSettings.allinDealCount || 1,
+        roomMode: ['club', 'pro', 'study'].includes(mergedSettings.roomMode) ? mergedSettings.roomMode : 'pro',
         settleMs: mergedSettings.settleMs ?? 3000,
         revealPolicy: mergedSettings.revealPolicy || REVEAL_POLICIES.SHOWDOWN_ONLY,
         initialChips: 1000,
@@ -353,6 +358,8 @@ class RoomManager {
     if (!deviceId) {
       throw new Error('设备未注册');
     }
+
+    this.leaveOtherRoomsForDevice(deviceId);
 
     // 创建者作为第一个玩家加入
     const player = {
@@ -418,6 +425,10 @@ class RoomManager {
     ) {
       throw new Error('无效的亮牌策略');
     }
+
+    if (settings.roomMode !== undefined && !['club', 'pro', 'study'].includes(settings.roomMode)) {
+      throw new Error('无效的房间模式');
+    }
   }
 
   // 加入房间 - 支持观战模式和中途入座
@@ -426,6 +437,8 @@ class RoomManager {
     if (!room) {
       throw new Error('房间不存在');
     }
+
+    this.leaveOtherRoomsForDevice(deviceId, roomId);
 
     // 移除游戏已开始的限制，支持观战模式
     // if (room.gameStarted) {
@@ -572,7 +585,11 @@ class RoomManager {
     const handStarted = room.gameLogic.startNewHand();
     if (!handStarted) {
       this.broadcastRoomState(room);
-      return;
+      return {
+        roomId,
+        handStarted: false,
+        roomState: room.roomState,
+      };
     }
 
     // 通知所有玩家游戏开始
@@ -581,6 +598,11 @@ class RoomManager {
 
     // 启动游戏计时器
     this.startGameTimer(roomId);
+    return {
+      roomId,
+      handStarted: true,
+      roomState: room.roomState,
+    };
   }
 
   // 启动游戏计时器
@@ -639,6 +661,12 @@ class RoomManager {
 
     room.gameLogic.handlePlayerAction(playerId, action, amount);
     this.broadcastRoomState(room);
+    return {
+      roomId: room.id,
+      roomState: room.roomState,
+      action,
+      amount: amount || 0,
+    };
   }
 
   // 处理换座
@@ -665,6 +693,12 @@ class RoomManager {
 
     player.seat = toSeat;
     this.broadcastRoomState(room);
+    return {
+      fromSeat,
+      toSeat,
+      tableState: player.tableState,
+      roomState: room.roomState,
+    };
   }
 
   // 处理入座
@@ -692,7 +726,11 @@ class RoomManager {
     if (player.chips <= 0 || player.needsRebuy) {
       this.transitionPlayerState(player, TABLE_STATES.BUSTED_WAIT_REBUY);
       this.broadcastRoomState(room);
-      return;
+      return {
+        seatIndex,
+        tableState: player.tableState,
+        roomState: room.roomState,
+      };
     }
 
     // 如果玩家已经在座位上，先离座到统一的观战状态
@@ -709,6 +747,11 @@ class RoomManager {
     }
 
     this.broadcastRoomState(room);
+    return {
+      seatIndex,
+      tableState: player.tableState,
+      roomState: room.roomState,
+    };
   }
 
   // 处理离座
@@ -723,9 +766,12 @@ class RoomManager {
       throw new Error('玩家不存在');
     }
 
+    let forcedFold = false;
+
     // 如果游戏进行中且玩家正在参与当前手牌，先强制弃牌
     if (room.gameStarted && room.gameLogic && room.gameLogic.isPlayerInCurrentHand(player)) {
       room.gameLogic.forceFoldPlayer(playerId, 'leave_seat');
+      forcedFold = true;
     }
 
     // 离座：设置为观战状态
@@ -736,6 +782,11 @@ class RoomManager {
     player.lastAction = null;
 
     this.broadcastRoomState(room);
+    return {
+      forcedFold,
+      tableState: player.tableState,
+      roomState: room.roomState,
+    };
   }
 
   // 处理补码请求
@@ -805,6 +856,11 @@ class RoomManager {
 
     room.gameLogic.handleRevealSelection(playerId, mode, cardIndex);
     this.broadcastRoomState(room);
+    return {
+      roomId: room.id,
+      mode,
+      cardIndex,
+    };
   }
 
   getVisibleHandForViewer(player, viewerPlayerId = null) {
@@ -846,7 +902,7 @@ class RoomManager {
   handleDeviceReconnect(deviceId, socket) {
     // 查找设备所在的房间
     for (const room of this.gameRooms.values()) {
-      const player = room.players.find((p) => p.id === deviceId);
+      const player = room.players.find((p) => p.id === deviceId && !p.hasLeftRoom);
       if (player) {
         // 更新Socket ID并恢复连接状态
         player.socketId = socket.id;
@@ -867,30 +923,55 @@ class RoomManager {
   // 根据玩家ID查找房间
   findRoomByPlayerId(playerId) {
     for (const room of this.gameRooms.values()) {
-      if (room.players.some((p) => p.id === playerId)) {
+      if (room.players.some((p) => p.id === playerId && !p.hasLeftRoom)) {
         return room;
       }
     }
     return null;
   }
 
+  leaveOtherRoomsForDevice(playerId, targetRoomId = null) {
+    for (const room of this.gameRooms.values()) {
+      if (room.id === targetRoomId) {
+        continue;
+      }
+
+      const player = room.players.find((entry) => entry.id === playerId && !entry.hasLeftRoom);
+      if (!player) {
+        continue;
+      }
+
+      this.handleLeaveRoomInRoom(room, playerId);
+    }
+  }
+
   handleLeaveRoom(playerId) {
     const room = this.findRoomByPlayerId(playerId);
     if (!room) {
-      return;
+      throw new Error('房间不存在');
+    }
+
+    return this.handleLeaveRoomInRoom(room, playerId);
+  }
+
+  handleLeaveRoomInRoom(room, playerId) {
+    if (!room) {
+      throw new Error('房间不存在');
     }
 
     const player = room.players.find((entry) => entry.id === playerId);
     if (!player) {
-      return;
+      throw new Error('玩家不存在');
     }
 
     const playerSocket = player.socketId ? this.io.sockets.sockets.get(player.socketId) : null;
     playerSocket?.leave(room.id);
+    let forcedFold = false;
 
     if (room.gameStarted) {
       if (room.gameLogic && room.gameLogic.isPlayerInCurrentHand(player)) {
         room.gameLogic.forceFoldPlayer(playerId, 'leave_room');
+        forcedFold = true;
       }
 
       player.hasLeftRoom = true;
@@ -910,10 +991,17 @@ class RoomManager {
 
     this.reassignHostIfNeeded(room);
     this.cleanupRoomIfEmpty(room.id);
+    const roomClosed = !this.gameRooms.has(room.id);
 
-    if (this.gameRooms.has(room.id)) {
+    if (!roomClosed) {
       this.broadcastRoomState(room);
     }
+
+    return {
+      roomId: room.id,
+      forcedFold,
+      roomClosed,
+    };
   }
 
   reassignHostIfNeeded(room) {

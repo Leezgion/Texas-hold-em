@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
+import { deriveRequestErrorFeedback } from '../view-models/gameViewModel';
 import Modal from './Modal';
 
 const JoinRoomModal = ({ roomId }) => {
@@ -17,7 +18,12 @@ const JoinRoomModal = ({ roomId }) => {
       // 只有成功时才关闭模态框
       handleClose();
     } catch (error) {
-      window.dispatchEvent(new CustomEvent('game-error', { detail: `加入房间失败：${error.message}` }));
+      const notice = deriveRequestErrorFeedback({
+        scope: 'joinRoom',
+        fallbackPrefix: '加入房间失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
       setIsSubmitting(false); // 重置提交状态，允许重试
     }
   };

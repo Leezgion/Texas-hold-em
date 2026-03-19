@@ -42,17 +42,14 @@ const LeaveSeatModal = ({
             取消
           </button>
           <button
-            onClick={() => {
-            console.log('🔴 LeaveSeatModal: 确认按钮被点击');
-            onConfirm();
-          }}
-          className={`flex-1 px-4 py-3 font-medium rounded-lg transition-colors ${
-            dialog.isDangerous ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-poker-gold hover:bg-yellow-500 text-black'
-          }`}
-        >
-          {confirmText}
-        </button>
-      </div>
+            onClick={onConfirm}
+            className={`flex-1 px-4 py-3 font-medium rounded-lg transition-colors ${
+              dialog.isDangerous ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-poker-gold hover:bg-yellow-500 text-black'
+            }`}
+          >
+            {confirmText}
+          </button>
+        </div>
     </Modal>
   );
 };export default LeaveSeatModal;

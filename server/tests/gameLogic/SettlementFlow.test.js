@@ -99,10 +99,15 @@ describe('Settling window and reveal policies', () => {
       reason: 'test',
     });
 
-    roomManager.revealHand(guest.id, 'show_one', 0);
+    const result = roomManager.revealHand(guest.id, 'show_one', 0);
 
     expect(guest.revealMode).toBe('show_one');
     expect(guest.revealedCardIndices).toEqual([0]);
+    expect(result).toEqual({
+      roomId: room.id,
+      mode: 'show_one',
+      cardIndex: 0,
+    });
   });
 
   it('auto-advances from settling to the next hand after the timer expires', () => {

@@ -1,8 +1,16 @@
 import { ChevronDown, ChevronUp, Crown, Eye, Users, Gamepad2 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
-import { derivePlayerStateView, deriveRoomOccupancy } from '../view-models/gameViewModel';
+import { derivePlayerStateView, deriveProPlayerSummary, deriveRoomOccupancy } from '../view-models/gameViewModel';
 
-const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roomState = 'idle', currentPlayerId }) => {
+const PlayerPanel = ({
+  players = [],
+  roomSettings = {},
+  gameStarted = false,
+  roomState = 'idle',
+  currentPlayerId,
+  gameState = null,
+  effectiveDisplayMode = 'pro',
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const panelRef = useRef(null);
 
@@ -40,6 +48,7 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
 
   // 如果players未定义，使用空数组
   const playersArray = Array.isArray(players) ? players.filter(Boolean) : [];
+  const isProMode = effectiveDisplayMode === 'pro';
 
   const { seatedPlayers, spectators } = deriveRoomOccupancy(playersArray, roomState);
 
@@ -191,6 +200,11 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                     .map((player) => {
                       const status = getPlayerStatus(player);
                       const StatusIcon = status.icon;
+                      const proSummary = deriveProPlayerSummary(player, {
+                        roomState,
+                        players: playersArray,
+                        gameState,
+                      });
                       return (
                         <div
                           key={player.id}
@@ -200,7 +214,7 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                         >
                           <div className="flex items-center space-x-2 min-w-0">
                             <div className="flex items-center space-x-1 flex-shrink-0">
-                              <span className="text-xs bg-gray-600 px-1.5 py-0.5 rounded text-gray-300">座{(Number(player.seat) || 0) + 1}</span>
+                              <span className="text-xs bg-gray-600 px-1.5 py-0.5 rounded text-gray-300">{proSummary.seatLabel}</span>
                               {player.isHost && (
                                 <Crown
                                   size={12}
@@ -215,17 +229,18 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                             >
                               {getDisplayName(player)}
                             </span>
+                            {isProMode && proSummary.positionLabel && <span className="text-[11px] text-gray-400">{proSummary.positionLabel}</span>}
                           </div>
                           <div className="flex items-center space-x-2 flex-shrink-0">
                             <div className="text-right">
-                              <div className="text-xs text-yellow-400 font-mono">{(Number(player.chips) || 0).toLocaleString()}</div>
+                              <div className="text-xs text-yellow-400 font-mono">{proSummary.chipsLabel}</div>
                               <div className={`text-[11px] ${player.ledger?.sessionNet >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {derivePlayerStateView(player, roomState).netLabel}
+                                {proSummary.netLabel}
                               </div>
                             </div>
                             <div className={`flex items-center space-x-1 ${getStatusColor(player)}`}>
                               {StatusIcon && <StatusIcon size={12} />}
-                              <span className="text-xs">{status.text}</span>
+                              <span className="text-xs">{isProMode ? proSummary.statusLabel : status.text}</span>
                             </div>
                           </div>
                         </div>
@@ -249,6 +264,11 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                   {spectators.map((player) => {
                     const status = getPlayerStatus(player);
                     const StatusIcon = status.icon;
+                    const proSummary = deriveProPlayerSummary(player, {
+                      roomState,
+                      players: playersArray,
+                      gameState,
+                    });
                     return (
                       <div
                         key={player.id}
@@ -278,10 +298,21 @@ const PlayerPanel = ({ players = [], roomSettings = {}, gameStarted = false, roo
                           >
                             {getDisplayName(player)}
                           </span>
+                          {isProMode && proSummary.seatLabel && <span className="text-[11px] text-gray-500">{proSummary.seatLabel}</span>}
                         </div>
-                        <span className={`text-xs ${getStatusColor(player)} flex items-center space-x-1`}>
-                          <span>{status.text}</span>
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          {isProMode && (
+                            <div className="text-right">
+                              <div className="text-xs text-yellow-400 font-mono">{proSummary.chipsLabel}</div>
+                              <div className={`text-[11px] ${player.ledger?.sessionNet >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {proSummary.netLabel}
+                              </div>
+                            </div>
+                          )}
+                          <span className={`text-xs ${getStatusColor(player)} flex items-center space-x-1`}>
+                            <span>{isProMode ? proSummary.statusLabel : status.text}</span>
+                          </span>
+                        </div>
                       </div>
                     );
                   })}

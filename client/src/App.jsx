@@ -4,6 +4,7 @@ import { Route, BrowserRouter as Router, Routes, useNavigate } from 'react-route
 
 import GameRoom from './components/GameRoom';
 import HomePage from './components/HomePage';
+import ModeShell from './components/ModeShell';
 import ReconnectingOverlay from './components/ReconnectingOverlay';
 import ToastContainer from './components/Toast';
 import { useToast } from './hooks/useToast';
@@ -75,11 +76,11 @@ function App() {
 
 // 应用内容组件（可以访问useGame）
 function AppContent() {
-  const { isReconnecting, reconnectAttempts, manualReconnect } = useGame();
+  const { isReconnecting, reconnectAttempts, manualReconnect, effectiveDisplayMode } = useGame();
 
   return (
     <>
-      <div className="min-h-screen bg-poker-dark">
+      <ModeShell mode={effectiveDisplayMode}>
         <Routes>
           <Route
             path="/"
@@ -90,7 +91,7 @@ function AppContent() {
             element={<GameRoom />}
           />
         </Routes>
-      </div>
+      </ModeShell>
       <ReconnectingOverlay
         isReconnecting={isReconnecting}
         attemptNumber={reconnectAttempts}

@@ -1,32 +1,37 @@
-import { ChevronDown, LogOut, Plus, Share2, Users } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import ActionButtons from './ActionButtons';
-import Card from './Card';
-import CommunityCards from './CommunityCards';
-import EmptySeat from './EmptySeat';
-import HandHistoryDrawer from './HandHistoryDrawer';
+import ActionDock from './ActionDock';
+import EventRail from './EventRail';
 import HandResultModal from './HandResultModal';
+import IntelRail from './IntelRail';
 import JoinRoomModal from './JoinRoomModal';
-import Leaderboard from './Leaderboard';
 import LeaveSeatModal from './LeaveSeatModal';
-import Player from './Player';
-import PlayerPanel from './PlayerPanel';
 import RebuyModal from './RebuyModal';
+import SeatRing from './SeatRing';
 import SettlementOverlay from './SettlementOverlay';
 import ShareLinkModal from './ShareLinkModal';
+import TableBanner from './TableBanner';
+import TableHeader from './TableHeader';
+import TableStage from './TableStage';
 import { useGame } from '../contexts/GameContext';
 import {
   deriveCanStartGame,
+  deriveIntelRailView,
+  deriveLeaveRoomFeedback,
+  deriveLeaveSeatFeedback,
   derivePendingJoinBanner,
   derivePlayerStateView,
+  deriveRequestErrorFeedback,
+  deriveSeatRingView,
+  deriveTableShellView,
   deriveRecoveryBanner,
+  deriveRecoverRoomFeedback,
+  deriveStartGameFeedback,
 } from '../view-models/gameViewModel';
-import { buildTablePotSummary } from '../view-models/handHistoryViewModel';
+import { buildTablePotSummary, deriveEventRailView } from '../view-models/handHistoryViewModel';
 
 const EMPTY_PLAYERS = [];
-const EMPTY_CARDS = [];
 
 // 自定义hook来检测屏幕尺寸
 const useWindowSize = () => {
@@ -71,10 +76,13 @@ const GameRoom = () => {
     startGame,
     recoverRoom,
     resetGame,
+    leaveRoom,
+    leaveSeat,
     isCreatingRoom,
     navigationTarget,
     currentPlayerView,
     revealHand,
+    effectiveDisplayMode,
   } = useGame();
 
   const [showShareLink, setShowShareLink] = useState(false);
@@ -203,10 +211,26 @@ const GameRoom = () => {
     ? derivePlayerStateView(currentPlayer, activeRoomState)
     : currentPlayerView;
   const canStartGame = deriveCanStartGame(currentPlayer, playersList, activeRoomState);
-  const recoveryBanner = deriveRecoveryBanner(currentPlayer, activeRoomState);
-  const pendingJoinBanner = derivePendingJoinBanner(currentPlayer, activeRoomState);
   const handHistoryRecords = safeGameState?.handHistory || [];
   const tablePotSummary = buildTablePotSummary(safeGameState);
+  const shellView = deriveTableShellView({
+    roomId,
+    roomState: activeRoomState,
+    roomSettings,
+    connected,
+    effectiveDisplayMode,
+    currentPlayer,
+  });
+  const intelRailView = deriveIntelRailView({
+    roomState: activeRoomState,
+    roomSettings,
+    currentPlayer,
+    players: playersList,
+  });
+  const eventRailView = deriveEventRailView({
+    roomState: activeRoomState,
+    gameState: safeGameState,
+  });
 
   useEffect(() => {
     setGameLogs([]);
@@ -299,7 +323,6 @@ const GameRoom = () => {
 
   // 处理离座确认
   const handleLeaveSeat = () => {
-    console.log('离座按钮被点击', { gameStarted, currentPlayer });
     if (gameStarted && currentPlayer && currentPlayerStateView?.tableState === 'active_in_hand') {
       // 游戏中离座，需要确认
       setShowLeaveSeat(true);
@@ -310,29 +333,25 @@ const GameRoom = () => {
   };
 
   // 确认离座
-  const confirmLeaveSeat = () => {
-    console.log('确认离座被调用');
-    console.log('离座状态:', {
-      hasSocket: !!socket,
-      hasCurrentPlayer: !!currentPlayer,
-      gameStarted,
-      playerFolded: currentPlayer?.folded,
-      playerId: currentPlayer?.id,
-    });
-
-    if (socket && currentPlayer) {
-      if (gameStarted && currentPlayerStateView?.tableState === 'active_in_hand') {
-        // 游戏中自动fold
-        console.log('游戏中离座，先弃牌');
-        socket.emit('playerAction', { action: 'fold', amount: 0 });
-      }
-      // 离开座位
-      console.log('发送离座请求');
-      socket.emit('leaveSeat');
-    } else {
-      console.log('无法离座: socket或currentPlayer不存在');
+  const confirmLeaveSeat = async () => {
+    if (!currentPlayer) {
+      window.dispatchEvent(new CustomEvent('game-error', { detail: '当前没有可离开的座位状态' }));
+      return;
     }
-    setShowLeaveSeat(false);
+
+    try {
+      const result = await leaveSeat();
+      const notice = deriveLeaveSeatFeedback(result);
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+      setShowLeaveSeat(false);
+    } catch (error) {
+      const notice = deriveRequestErrorFeedback({
+        scope: 'leaveSeat',
+        fallbackPrefix: '离座失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+    }
   };
 
   // 处理退出房间确认
@@ -347,18 +366,58 @@ const GameRoom = () => {
   };
 
   // 确认退出房间
-  const confirmExitRoom = () => {
-    if (socket && currentPlayer) {
-      if (gameStarted && currentPlayerStateView?.tableState === 'active_in_hand') {
-        // 游戏中自动fold
-        socket.emit('playerAction', { action: 'fold', amount: 0 });
-      }
-      // 离开房间
-      socket.emit('leaveRoom', roomId);
+  const confirmExitRoom = async () => {
+    try {
+      const result = await leaveRoom();
+      const notice = deriveLeaveRoomFeedback(result);
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+      resetGame();
+      setShowExitRoom(false);
+      navigate('/');
+    } catch (error) {
+      const notice = deriveRequestErrorFeedback({
+        scope: 'leaveRoom',
+        fallbackPrefix: '退出房间失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
     }
-    resetGame();
-    setShowExitRoom(false);
-    navigate('/');
+  };
+
+  const handleStartGame = async () => {
+    try {
+      const result = await startGame();
+      const notice = deriveStartGameFeedback(result);
+      if (notice) {
+        window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+      }
+    } catch (error) {
+      if (error.code === 'ROOM_RECOVERY_REQUIRED') {
+        return;
+      }
+
+      const notice = deriveRequestErrorFeedback({
+        scope: 'startGame',
+        fallbackPrefix: '开始游戏失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+    }
+  };
+
+  const handleRecoverRoom = async () => {
+    try {
+      const result = await recoverRoom();
+      const notice = deriveRecoverRoomFeedback(result);
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+    } catch (error) {
+      const notice = deriveRequestErrorFeedback({
+        scope: 'recoverRoom',
+        fallbackPrefix: '恢复房间失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+    }
   };
 
   // 计算玩家座位位置 - 主观视角，当前玩家总是在底部
@@ -387,13 +446,13 @@ const GameRoom = () => {
     let radius, scale;
     if (isSmallMobile) {
       radius = 230; // 增加最小半径：从140->170
-      scale = 0.6; // 最小缩放
+      scale = 0.42; // 手机纵向壳层更窄，需要更小的环桌半径
     } else if (isMobile) {
       radius = 220; // 增加中等半径：从180->220
-      scale = 0.7; // 中等缩放
+      scale = 0.5; // 平板/横向手机仍需收窄左右座位间距
     } else {
       radius = 320; // 增加桌面半径：从280->320
-      scale = 1; // 原始尺寸
+      scale = 0.82; // 旧布局按全屏设计，这里改成面板内缩放
     }
 
     // 为不同玩家数量定义最佳布局，根据设备尺寸调整
@@ -537,382 +596,163 @@ const GameRoom = () => {
     return `座位 ${seatIndex + 1}`;
   };
 
+  const tableSizeClassName =
+    windowSize.width < 480
+      ? 'w-52 h-52'
+      : windowSize.width < 768
+      ? 'w-64 h-64'
+      : 'w-80 h-80';
+
+  const seatRingEntries = deriveSeatRingView({
+    players: playersList,
+    maxPlayers,
+    currentPlayerId,
+    roomState: activeRoomState,
+    gameState: safeGameState,
+  }).map((seat) => {
+    const position = getPlayerPosition({ seat: seat.seatIndex }, Array.from({ length: maxPlayers }, (_, index) => ({ seat: index })));
+    const isCurrentTurn =
+      seat.player && safeGameState ? safeGameState.currentPlayerIndex === playersList.indexOf(seat.player) : false;
+
+    return {
+      ...seat,
+      position,
+      isCurrentTurn,
+      isActiveTimer: Boolean(safeGameState && safeGameState.timeRemaining > 0 && isCurrentTurn),
+    };
+  });
+
   return (
-    <div className="min-h-screen bg-poker-dark relative overflow-hidden">
-      {/* 重新设计的顶部信息栏 */}
-      <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center">
-        {/* 左侧：玩家面板 */}
-        <PlayerPanel
-          players={playersList}
-          roomSettings={roomSettings}
-          gameStarted={gameStarted}
-          roomState={activeRoomState}
-          currentPlayerId={currentPlayerId}
+    <div className="min-h-screen px-3 py-3 sm:px-4 lg:px-6">
+      <div className="mx-auto flex min-h-screen max-w-[1600px] flex-col gap-4 pb-6">
+        <TableHeader
+          shellView={shellView}
+          onShare={() => setShowShareLink(true)}
+          onLeaveRoom={handleExitRoom}
+          onLeaveSeat={handleLeaveSeat}
+          onOpenRebuy={() => setShowRebuy(true)}
+          canLeaveSeat={Boolean(currentPlayerStateView?.canLeaveSeat)}
+          canRequestRebuy={Boolean(currentPlayerStateView?.canRequestRebuy)}
         />
 
-        {/* 右侧：操作按钮组 + 倒计时 */}
-        <div className="flex items-center space-x-2">
-          {/* 倒计时器 - 紧凑版 */}
-          {safeGameState && safeGameState.timeRemaining > 0 && safeGameState.currentPlayerIndex !== undefined && (
-            <div
-              className={`w-12 h-12 rounded-full border-2 ${
-                safeGameState.timeRemaining > 30
-                  ? 'border-green-400 text-green-400'
-                  : safeGameState.timeRemaining > 10
-                  ? 'border-yellow-400 text-yellow-400'
-                  : 'border-red-400 text-red-400'
-              } bg-gray-800/95 backdrop-blur-sm flex items-center justify-center`}
-            >
-              <div className="text-sm font-bold font-mono">{safeGameState.timeRemaining}</div>
-            </div>
-          )}
+        {(shellView.recoveryBanner || shellView.pendingJoinBanner) && (
+          <div className="grid gap-3">
+            <TableBanner
+              banner={shellView.recoveryBanner}
+              tone="amber"
+              onAction={handleRecoverRoom}
+            />
+            <TableBanner
+              banner={shellView.pendingJoinBanner}
+              tone="sky"
+            />
+          </div>
+        )}
 
-          {/* 补码按钮 */}
-          {currentPlayer && currentPlayerStateView?.canRequestRebuy && (
-            <div
-              onClick={() => setShowRebuy(true)}
-              className="w-10 h-10 bg-green-600/80 hover:bg-green-600 backdrop-blur-sm rounded-lg border border-green-500 flex items-center justify-center transition-colors cursor-pointer"
-              title="补码"
-            >
-              <Plus size={18} />
-            </div>
-          )}
-
-          {/* 分享按钮 */}
-          <div
-            onClick={() => setShowShareLink(true)}
-            className="w-10 h-10 bg-gray-800/80 hover:bg-gray-700/80 backdrop-blur-sm rounded-lg border border-gray-600 flex items-center justify-center transition-colors cursor-pointer"
-            title="分享链接"
-          >
-            <Share2 size={18} />
+        <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_340px]">
+          <div className="order-2 xl:order-1">
+            <IntelRail
+              intelRailView={intelRailView}
+              players={playersList}
+              roomSettings={roomSettings}
+              gameStarted={gameStarted}
+              roomState={activeRoomState}
+              roomStateLabel={shellView.roomStateLabel}
+              currentPlayerId={currentPlayerId}
+              gameState={safeGameState}
+              effectiveDisplayMode={effectiveDisplayMode}
+            />
           </div>
 
-          {/* 离座按钮 - 只有已入座的玩家才显示 */}
-          {currentPlayer && currentPlayerStateView?.canLeaveSeat && (
-            <div
-              onClick={handleLeaveSeat}
-              className="w-10 h-10 bg-orange-600/80 hover:bg-orange-600 backdrop-blur-sm rounded-lg border border-orange-500 flex items-center justify-center transition-colors cursor-pointer"
-              title="离座观战"
-            >
-              <ChevronDown size={18} />
-            </div>
-          )}
-
-          {/* 退出按钮 */}
-          <div
-            onClick={handleExitRoom}
-            className="w-10 h-10 bg-red-600/80 hover:bg-red-600 backdrop-blur-sm rounded-lg border border-red-500 flex items-center justify-center transition-colors cursor-pointer"
-            title="退出房间"
-          >
-            <LogOut size={18} />
-          </div>
-        </div>
-      </div>
-
-      {(recoveryBanner || pendingJoinBanner) && (
-        <div className="absolute top-20 left-4 right-4 z-10 space-y-3">
-          {recoveryBanner && (
-            <div className="mx-auto max-w-3xl rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 backdrop-blur-sm">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-amber-200">{recoveryBanner.title}</p>
-                  <p className="text-sm text-amber-100/90">{recoveryBanner.detail}</p>
-                </div>
-                {recoveryBanner.canRecover && (
-                  <button
-                    onClick={() => recoverRoom()}
-                    className="rounded-lg border border-amber-300/60 bg-amber-200/10 px-4 py-2 text-sm font-medium text-amber-100 transition hover:bg-amber-200/20"
-                  >
-                    {recoveryBanner.actionLabel}
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {pendingJoinBanner && (
-            <div className="mx-auto max-w-3xl rounded-2xl border border-sky-400/40 bg-sky-500/10 px-4 py-3 backdrop-blur-sm">
-              <p className="text-sm font-semibold text-sky-100">{pendingJoinBanner.title}</p>
-              <p className="mt-1 text-sm text-sky-50/90">{pendingJoinBanner.detail}</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 游戏桌 */}
-      <div className="relative w-full h-screen flex items-center justify-center">
-        {/* 扑克桌 */}
-        <div
-          className={`poker-table relative ${
-            windowSize.width < 480
-              ? 'w-48 h-48' // 小屏手机: 192px (减小从224px)
-              : windowSize.width < 768
-              ? 'w-56 h-56' // 普通手机: 224px (减小从256px)
-              : 'w-72 h-72' // 桌面: 288px (减小从320px)
-          }`}
-        >
-          {/* 公共牌区域 */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <CommunityCards />
+          <div className="order-1 xl:order-2">
+            <TableStage
+              shellView={shellView}
+              tablePotSummary={tablePotSummary}
+              tableSizeClassName={tableSizeClassName}
+              effectiveDisplayMode={effectiveDisplayMode}
+              settlementOverlay={
+                <SettlementOverlay
+                  roomState={activeRoomState}
+                  gameState={safeGameState}
+                  currentPlayer={currentPlayer}
+                  currentPlayerId={currentPlayerId}
+                  onReveal={revealHand}
+                  effectiveDisplayMode={effectiveDisplayMode}
+                />
+              }
+              seatRing={
+                <SeatRing
+                  seats={seatRingEntries}
+                  roomState={activeRoomState}
+                  gameState={safeGameState}
+                  gameStarted={gameStarted}
+                />
+              }
+            />
           </div>
 
-          {/* 底池 */}
-          {safeGameState && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-16">
-              <div className="bg-black bg-opacity-50 px-4 py-2 rounded-lg border border-poker-gold">
-                <div className="space-y-1">
-                  {tablePotSummary.items.map((item, index) => (
-                    <div
-                      key={`${item.label}-${index}`}
-                      className={`flex items-center justify-between gap-4 text-xs ${
-                        index === 0 ? 'border-b border-gray-600 pb-1 text-sm' : ''
-                      }`}
-                    >
-                      <div className="min-w-0">
-                        <div className={index === 0 ? 'text-poker-gold font-semibold' : 'text-gray-300'}>{item.label}</div>
-                        {item.detail && <div className="text-[11px] text-gray-500">{item.detail}</div>}
-                      </div>
-                      <span className={index === 0 ? 'text-white text-lg' : 'text-yellow-400'}>{item.amount}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 游戏阶段和倒计时 */}
-          {safeGameState && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-32">
-              <div className="bg-black bg-opacity-50 px-4 py-2 rounded-lg border border-poker-gold">
-                <span className="text-poker-gold font-semibold">
-                  {safeGameState.phase === 'preflop' && '翻牌前'}
-                  {safeGameState.phase === 'flop' && '翻牌'}
-                  {safeGameState.phase === 'turn' && '转牌'}
-                  {safeGameState.phase === 'river' && '河牌'}
-                  {safeGameState.phase === 'showdown' && '摊牌'}
-                </span>
-              </div>
-            </div>
-          )}
+          <div className="order-3">
+            <EventRail
+              eventRailView={eventRailView}
+              records={handHistoryRecords}
+              players={playersList}
+              roomState={activeRoomState}
+              gameState={safeGameState}
+              currentPlayerId={currentPlayerId}
+              effectiveDisplayMode={effectiveDisplayMode}
+            />
+          </div>
         </div>
 
-        <SettlementOverlay
-          roomState={activeRoomState}
-          gameState={safeGameState}
+        <ActionDock
           currentPlayer={currentPlayer}
+          currentPlayerView={currentPlayerStateView}
+          gameStarted={gameStarted}
+          canStartGame={canStartGame}
+          onStartGame={handleStartGame}
+          gameState={safeGameState}
           currentPlayerId={currentPlayerId}
-          onReveal={revealHand}
+          players={playersList}
+          effectiveDisplayMode={effectiveDisplayMode}
+          roomState={activeRoomState}
         />
 
-        {/* 所有座位（玩家和空座位） */}
-        {Array.from({ length: maxPlayers }, (_, seatIndex) => {
-          // 找到该座位的玩家（包括当前玩家）
-          const seatPlayer = playersList.find((player) => player.seat === seatIndex);
+        <ShareLinkModal
+          show={showShareLink}
+          onClose={() => setShowShareLink(false)}
+          roomId={roomId}
+        />
 
-          // 为了正确计算位置，我们需要模拟一个玩家数组
-          const allPlayers = Array.from({ length: maxPlayers }, (_, i) => ({ seat: i }));
-          const position = getPlayerPosition({ seat: seatIndex }, allPlayers);
+        <RebuyModal
+          show={showRebuy}
+          onClose={() => setShowRebuy(false)}
+        />
 
-          if (seatPlayer) {
-            // 有玩家的座位
-            const isCurrentPlayer = seatPlayer.id === currentPlayerId;
-            const isCurrentTurn = safeGameState && safeGameState.currentPlayerIndex === playersList.indexOf(seatPlayer);
-            const isActiveTimer = safeGameState && safeGameState.timeRemaining > 0 && isCurrentTurn;
+        <HandResultModal
+          show={showHandResult}
+          onClose={() => setShowHandResult(false)}
+        />
 
-            if (isCurrentPlayer) {
-              // 当前玩家的座位显示为占用状态，但不显示详细信息（详细信息在底部）
-              return (
-                <div
-                  key={`seat-${seatIndex}`}
-                  className={`player-seat current-player-seat compact ${isActiveTimer ? 'current-turn-timer' : ''}`}
-                  style={{
-                    left: `calc(50% + ${position.x}px)`,
-                    top: `calc(50% + ${position.y}px)`,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                >
-                  <div className="text-center relative">
-                    <div
-                      className={`w-12 h-12 bg-blue-600/20 backdrop-blur-sm rounded-lg border-2 ${
-                        isActiveTimer ? 'border-yellow-400 animate-pulse' : 'border-blue-400'
-                      } flex items-center justify-center`}
-                    >
-                      <div className={`text-xs font-semibold ${isActiveTimer ? 'text-yellow-400' : 'text-blue-400'}`}>
-                        我的
-                        <br />
-                        位置
-                      </div>
-                    </div>
-                    <div className={`text-xs mt-1 ${isActiveTimer ? 'text-yellow-400' : 'text-blue-400'}`}>{getPositionLabel(seatIndex)}</div>
-                  </div>
-                </div>
-              );
-            } else {
-              // 其他玩家的座位
-              return (
-                <div
-                  key={`seat-${seatIndex}`}
-                  className={`player-seat compact ${seatPlayer.isActive ? 'active' : ''} ${isCurrentTurn ? 'current-turn' : ''} ${isActiveTimer ? 'current-turn-timer' : ''}`}
-                  style={{
-                    left: `calc(50% + ${position.x}px)`,
-                    top: `calc(50% + ${position.y}px)`,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                >
-                  <Player
-                    player={seatPlayer}
-                    isCurrentPlayer={false}
-                    isCurrentTurn={isCurrentTurn}
-                    gameState={safeGameState}
-                    gameStarted={gameStarted}
-                    isActiveTimer={isActiveTimer}
-                    getPositionLabel={getPositionLabel}
-                  />
-                </div>
-              );
-            }
-          } else {
-            // 空座位
-            return (
-              <EmptySeat
-                key={`empty-seat-${seatIndex}`}
-                seatIndex={seatIndex}
-                position={position}
-                getPositionLabel={getPositionLabel}
-                roomState={activeRoomState}
-              />
-            );
-          }
-        })}
+        <LeaveSeatModal
+          show={showLeaveSeat}
+          onClose={() => setShowLeaveSeat(false)}
+          onConfirm={confirmLeaveSeat}
+          player={currentPlayer}
+          roomState={activeRoomState}
+          isExitingRoom={false}
+        />
+
+        <LeaveSeatModal
+          show={showExitRoom}
+          onClose={() => setShowExitRoom(false)}
+          onConfirm={confirmExitRoom}
+          player={currentPlayer}
+          roomState={activeRoomState}
+          isExitingRoom={true}
+        />
+
+        <JoinRoomModal roomId={roomId} />
       </div>
-
-      {/* 右侧边栏 - 移动端隐藏或调整位置 */}
-      <div
-        className={`absolute ${
-          windowSize.width < 768
-            ? 'hidden'
-            : 'right-4 top-20 w-72 space-y-4'
-        }`}
-      >
-        <Leaderboard players={playersList} />
-      </div>
-
-      <HandHistoryDrawer records={handHistoryRecords} />
-
-      {/* 底部UI区域 - 简化设计 */}
-      {currentPlayer && (
-        <div className="absolute bottom-0 left-0 right-0">
-          {/* 操作按钮区域 */}
-          {gameStarted && (
-            <div className="flex justify-center mb-3">
-              <ActionButtons
-                player={currentPlayer}
-                gameState={safeGameState}
-                currentPlayerId={currentPlayerId}
-                players={playersList}
-              />
-            </div>
-          )}
-
-          <div className="relative">
-            {/* 手牌区域 - 居中显示 */}
-            {gameStarted && (Array.isArray(currentPlayer.hand) ? currentPlayer.hand : EMPTY_CARDS).length > 0 && (
-              <div className="flex justify-center space-x-4 mb-4">
-                {(Array.isArray(currentPlayer.hand) ? currentPlayer.hand : EMPTY_CARDS).map((card, index) => (
-                  <Card
-                    key={index}
-                    card={card}
-                    size="large"
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* 左下角玩家信息 */}
-            <div className="absolute bottom-4 left-4 bg-gray-800/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-gray-600">
-              <div className="flex items-center space-x-2 text-sm">
-                <span
-                  className="font-semibold text-white"
-                  title={currentPlayer.nickname || currentPlayer.id || '玩家'}
-                >
-                  {getDisplayName(currentPlayer.nickname)}
-                </span>
-                {currentPlayer.isHost && <span className="text-poker-gold">👑</span>}
-              </div>
-              <div className="text-poker-gold font-semibold">{Number(currentPlayer.chips) || 0}</div>
-              {gameStarted && currentPlayerStateView && (
-                <div
-                  className={`text-xs ${
-                    currentPlayerStateView.tableState === 'folded_this_hand'
-                      ? 'text-red-400'
-                      : currentPlayerStateView.tableState === 'all_in_this_hand'
-                      ? 'text-poker-gold'
-                      : (Number(currentPlayer.currentBet) || 0) > 0
-                      ? 'text-blue-400'
-                      : 'text-gray-400'
-                  }`}
-                >
-                  {(Number(currentPlayer.currentBet) || 0) > 0 && currentPlayerStateView.tableState === 'active_in_hand'
-                    ? `下注: ${Number(currentPlayer.currentBet) || 0}`
-                    : currentPlayerStateView.statusLabel}
-                </div>
-              )}
-            </div>
-
-            {/* 开始游戏按钮（入座玩家可用） - 居中显示 */}
-            {!gameStarted && currentPlayer && canStartGame && (
-              <div className="flex justify-center pb-4">
-                <button
-                  onClick={() => startGame()}
-                  className="bg-green-600 hover:bg-green-700 text-white font-semibold text-lg px-8 py-3 rounded-lg transition-colors"
-                >
-                  开始游戏
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 模态框 */}
-      <ShareLinkModal
-        show={showShareLink}
-        onClose={() => setShowShareLink(false)}
-        roomId={roomId}
-      />
-
-      <RebuyModal
-        show={showRebuy}
-        onClose={() => setShowRebuy(false)}
-      />
-
-      <HandResultModal
-        show={showHandResult}
-        onClose={() => setShowHandResult(false)}
-      />
-
-      {/* 离座确认模态框 */}
-      <LeaveSeatModal
-        show={showLeaveSeat}
-        onClose={() => setShowLeaveSeat(false)}
-        onConfirm={confirmLeaveSeat}
-        player={currentPlayer}
-        roomState={activeRoomState}
-        isExitingRoom={false}
-      />
-
-      {/* 退出房间确认模态框 */}
-      <LeaveSeatModal
-        show={showExitRoom}
-        onClose={() => setShowExitRoom(false)}
-        onConfirm={confirmExitRoom}
-        player={currentPlayer}
-        roomState={activeRoomState}
-        isExitingRoom={true}
-      />
-
-      {/* 加入房间模态框 - 用于直接访问URL的情况 */}
-      <JoinRoomModal roomId={roomId} />
     </div>
   );
 };

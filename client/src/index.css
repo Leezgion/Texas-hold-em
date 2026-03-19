@@ -3,12 +3,340 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --mode-shell-base: #07111a;
+    --mode-shell-surface: rgba(10, 18, 28, 0.78);
+    --mode-shell-surface-strong: rgba(10, 18, 28, 0.92);
+    --mode-shell-border: rgba(255, 255, 255, 0.1);
+    --mode-shell-glow: rgba(168, 85, 247, 0.18);
+    --mode-shell-accent: #f59e0b;
+    --mode-shell-accent-strong: #fbbf24;
+    --mode-shell-accent-soft: rgba(245, 158, 11, 0.14);
+    --mode-shell-accent-soft-strong: rgba(245, 158, 11, 0.26);
+    --mode-shell-accent-border: rgba(245, 158, 11, 0.4);
+    --mode-shell-accent-ring: rgba(245, 158, 11, 0.18);
+    --mode-shell-accent-shadow: rgba(245, 158, 11, 0.24);
+    --mode-shell-grid: rgba(255, 255, 255, 0.03);
+  }
+
   body {
-    @apply bg-poker-dark text-white font-sans;
+    @apply text-white font-sans;
+    background: var(--mode-shell-base);
   }
 }
 
 @layer components {
+  .mode-shell {
+    @apply relative min-h-screen overflow-x-hidden text-white;
+    background:
+      radial-gradient(circle at top left, var(--mode-shell-glow), transparent 32rem),
+      radial-gradient(circle at top right, var(--mode-shell-accent-ring), transparent 28rem),
+      linear-gradient(180deg, var(--mode-shell-surface-strong), var(--mode-shell-base));
+  }
+
+  .mode-shell__content {
+    @apply relative z-10 min-h-screen;
+  }
+
+  .mode-shell__ambient {
+    @apply pointer-events-none absolute inset-0;
+    filter: blur(40px);
+  }
+
+  .mode-shell__ambient--primary {
+    background: radial-gradient(circle at 18% 16%, var(--mode-shell-accent-soft-strong), transparent 24rem);
+    opacity: 0.8;
+  }
+
+  .mode-shell__ambient--secondary {
+    background: radial-gradient(circle at 82% 10%, var(--mode-shell-accent-ring), transparent 20rem);
+    opacity: 0.55;
+  }
+
+  .mode-shell__grid {
+    @apply pointer-events-none absolute inset-0 opacity-70;
+    background-image:
+      linear-gradient(to right, var(--mode-shell-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--mode-shell-grid) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 85%);
+  }
+
+  .mode-shell-club {
+    --mode-shell-base: #120d07;
+    --mode-shell-surface: rgba(30, 21, 12, 0.82);
+    --mode-shell-surface-strong: rgba(23, 15, 10, 0.94);
+    --mode-shell-border: rgba(231, 183, 100, 0.22);
+    --mode-shell-glow: rgba(214, 163, 74, 0.24);
+    --mode-shell-accent: #d6a34a;
+    --mode-shell-accent-strong: #f1c979;
+    --mode-shell-accent-soft: rgba(214, 163, 74, 0.15);
+    --mode-shell-accent-soft-strong: rgba(214, 163, 74, 0.26);
+    --mode-shell-accent-border: rgba(241, 201, 121, 0.45);
+    --mode-shell-accent-ring: rgba(241, 201, 121, 0.18);
+    --mode-shell-accent-shadow: rgba(214, 163, 74, 0.28);
+    --mode-shell-grid: rgba(241, 201, 121, 0.045);
+  }
+
+  .mode-shell-pro {
+    --mode-shell-base: #080b12;
+    --mode-shell-surface: rgba(11, 14, 23, 0.82);
+    --mode-shell-surface-strong: rgba(10, 12, 20, 0.94);
+    --mode-shell-border: rgba(161, 174, 196, 0.14);
+    --mode-shell-glow: rgba(127, 29, 29, 0.3);
+    --mode-shell-accent: #f97316;
+    --mode-shell-accent-strong: #fb7185;
+    --mode-shell-accent-soft: rgba(249, 115, 22, 0.12);
+    --mode-shell-accent-soft-strong: rgba(251, 113, 133, 0.22);
+    --mode-shell-accent-border: rgba(251, 113, 133, 0.38);
+    --mode-shell-accent-ring: rgba(251, 113, 133, 0.16);
+    --mode-shell-accent-shadow: rgba(249, 115, 22, 0.22);
+    --mode-shell-grid: rgba(148, 163, 184, 0.04);
+  }
+
+  .mode-shell-study {
+    --mode-shell-base: #07121a;
+    --mode-shell-surface: rgba(10, 24, 31, 0.82);
+    --mode-shell-surface-strong: rgba(8, 18, 26, 0.94);
+    --mode-shell-border: rgba(96, 165, 250, 0.18);
+    --mode-shell-glow: rgba(56, 189, 248, 0.22);
+    --mode-shell-accent: #38bdf8;
+    --mode-shell-accent-strong: #f59e0b;
+    --mode-shell-accent-soft: rgba(56, 189, 248, 0.14);
+    --mode-shell-accent-soft-strong: rgba(56, 189, 248, 0.24);
+    --mode-shell-accent-border: rgba(56, 189, 248, 0.38);
+    --mode-shell-accent-ring: rgba(56, 189, 248, 0.16);
+    --mode-shell-accent-shadow: rgba(56, 189, 248, 0.22);
+    --mode-shell-grid: rgba(125, 211, 252, 0.045);
+  }
+
+  .mode-accent-club {
+    color: #f1c979;
+  }
+
+  .mode-accent-pro {
+    color: #fb7185;
+  }
+
+  .mode-accent-study {
+    color: #38bdf8;
+  }
+
+  .mode-gateway-panel,
+  .mode-gateway-control__block {
+    border: 1px solid var(--mode-shell-border);
+    background: linear-gradient(180deg, var(--mode-shell-surface), rgba(3, 7, 18, 0.55));
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(18px);
+  }
+
+  .mode-gateway-panel {
+    @apply rounded-[2rem];
+  }
+
+  .mode-gateway-panel__inner {
+    @apply px-6 py-8 sm:px-8 sm:py-10 lg:px-10;
+  }
+
+  .mode-gateway-title {
+    font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+    @apply text-4xl font-semibold leading-tight text-white sm:text-5xl xl:text-6xl;
+    letter-spacing: -0.04em;
+  }
+
+  .mode-status-pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/15 px-4 py-2 text-sm text-slate-200;
+  }
+
+  .mode-status-pill--online::before,
+  .mode-status-pill--offline::before {
+    content: "";
+    @apply inline-block h-2 w-2 rounded-full;
+  }
+
+  .mode-status-pill--online::before {
+    background: #34d399;
+    box-shadow: 0 0 18px rgba(52, 211, 153, 0.6);
+  }
+
+  .mode-status-pill--offline::before {
+    background: #fb7185;
+    box-shadow: 0 0 18px rgba(251, 113, 133, 0.55);
+  }
+
+  .mode-preview-card {
+    @apply w-full rounded-[1.5rem] border px-5 py-5 text-left transition duration-300;
+    border-color: var(--mode-shell-border);
+    background:
+      linear-gradient(180deg, var(--mode-shell-surface), rgba(8, 15, 25, 0.55)),
+      radial-gradient(circle at top right, var(--mode-shell-accent-soft), transparent 12rem);
+    box-shadow:
+      0 16px 50px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .mode-preview-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--mode-shell-accent-border);
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.32),
+      0 0 0 1px var(--mode-shell-accent-ring);
+  }
+
+  .mode-preview-card--selected {
+    border-color: var(--mode-shell-accent-border);
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.34),
+      0 0 0 1px var(--mode-shell-accent-ring),
+      0 0 36px var(--mode-shell-accent-soft);
+  }
+
+  .mode-preview-card--compact {
+    @apply rounded-[1.25rem] px-4 py-4;
+  }
+
+  .mode-preview-card__eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-[0.24em];
+  }
+
+  .mode-preview-card__badge {
+    @apply rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-white;
+  }
+
+  .mode-preview-card__badge--ghost {
+    @apply bg-transparent text-slate-300;
+  }
+
+  .mode-preview-card__chip {
+    @apply rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-slate-300;
+  }
+
+  .mode-gateway-control {
+    @apply flex flex-col gap-4;
+  }
+
+  .mode-gateway-control__block {
+    @apply rounded-[1.75rem] p-6;
+  }
+
+  .mode-primary-button,
+  .mode-secondary-button {
+    @apply w-full rounded-2xl px-5 py-4 text-base font-semibold transition duration-300 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .mode-primary-button {
+    background: linear-gradient(135deg, var(--mode-shell-accent-strong), var(--mode-shell-accent));
+    color: #050816;
+    box-shadow: 0 18px 36px var(--mode-shell-accent-shadow);
+  }
+
+  .mode-primary-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .mode-secondary-button {
+    border: 1px solid var(--mode-shell-border);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+  }
+
+  .mode-secondary-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--mode-shell-accent-border);
+  }
+
+  .mode-room-input {
+    @apply w-full rounded-2xl border px-4 py-4 text-center text-xl tracking-[0.32em] text-white outline-none transition duration-300;
+    font-family: "IBM Plex Mono", "Consolas", monospace;
+    border-color: var(--mode-shell-border);
+    background: rgba(2, 6, 23, 0.5);
+  }
+
+  .mode-room-input:focus {
+    border-color: var(--mode-shell-accent-border);
+    box-shadow: 0 0 0 4px var(--mode-shell-accent-ring);
+  }
+
+  .poker-shell-panel {
+    border: 1px solid var(--mode-shell-border);
+    background:
+      linear-gradient(180deg, var(--mode-shell-surface), rgba(4, 8, 18, 0.55)),
+      radial-gradient(circle at top right, var(--mode-shell-accent-soft), transparent 14rem);
+    box-shadow:
+      0 24px 72px rgba(0, 0, 0, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(18px);
+  }
+
+  .poker-shell-panel--accent {
+    background:
+      linear-gradient(180deg, var(--mode-shell-surface-strong), rgba(4, 8, 18, 0.62)),
+      radial-gradient(circle at top right, var(--mode-shell-accent-soft-strong), transparent 12rem);
+  }
+
+  .poker-shell-kicker {
+    @apply text-[11px] uppercase tracking-[0.28em] text-slate-400;
+  }
+
+  .poker-shell-chip {
+    @apply rounded-full border border-white/10 bg-white/5 px-3 py-1 text-slate-100;
+  }
+
+  .poker-shell-stat-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(15, 23, 42, 0.18));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .table-stage-surface {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      inset 0 0 50px rgba(255, 255, 255, 0.03);
+  }
+
+  .table-stage-surface--club {
+    background:
+      radial-gradient(circle at center, rgba(121, 78, 33, 0.18), transparent 42%),
+      radial-gradient(circle at center, rgba(25, 89, 52, 0.94), rgba(10, 43, 27, 0.96));
+  }
+
+  .table-stage-surface--pro {
+    background:
+      radial-gradient(circle at center, rgba(174, 64, 39, 0.14), transparent 38%),
+      radial-gradient(circle at center, rgba(23, 101, 57, 0.92), rgba(9, 34, 24, 0.96));
+  }
+
+  .table-stage-surface--study {
+    background:
+      linear-gradient(rgba(125, 211, 252, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(125, 211, 252, 0.04) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(14, 165, 233, 0.12), transparent 44%),
+      radial-gradient(circle at center, rgba(14, 116, 144, 0.92), rgba(7, 39, 53, 0.96));
+    background-size: 44px 44px, 44px 44px, auto, auto;
+  }
+
+  [data-display-mode="club"] .poker-shell-panel {
+    box-shadow:
+      0 28px 90px rgba(36, 18, 6, 0.4),
+      inset 0 1px 0 rgba(255, 244, 210, 0.05);
+  }
+
+  [data-display-mode="pro"] .poker-shell-panel {
+    box-shadow:
+      0 24px 72px rgba(0, 0, 0, 0.38),
+      0 0 0 1px rgba(255, 255, 255, 0.02),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  [data-display-mode="study"] .poker-shell-panel {
+    box-shadow:
+      0 28px 80px rgba(3, 20, 31, 0.42),
+      inset 0 1px 0 rgba(186, 230, 253, 0.05);
+  }
+
   .poker-table {
     @apply bg-poker-green rounded-full border-8 border-poker-gold shadow-2xl;
     background: radial-gradient(circle, #0f5132 0%, #0a3d26 100%);
@@ -86,28 +414,40 @@
     @apply min-w-[80px] max-w-[120px];
   }
 
-  .player-seat.compact {
-    @apply p-1 min-w-[60px] max-w-[100px];
+  .player-seat.player-seat--compact {
+    padding: 0.25rem;
+    min-width: 60px;
+    max-width: 100px;
   }
 
   /* 移动端座位优化 */
   @media (max-width: 767px) {
     .player-seat {
-      @apply min-w-[50px] max-w-[80px] text-xs;
+      min-width: 50px;
+      max-width: 80px;
+      font-size: 0.75rem;
+      line-height: 1rem;
     }
 
-    .player-seat.compact {
-      @apply p-0.5 min-w-[45px] max-w-[70px];
+    .player-seat.player-seat--compact {
+      padding: 0.125rem;
+      min-width: 45px;
+      max-width: 70px;
     }
   }
 
   @media (max-width: 479px) {
     .player-seat {
-      @apply min-w-[40px] max-w-[65px] text-xs;
+      min-width: 40px;
+      max-width: 65px;
+      font-size: 0.75rem;
+      line-height: 1rem;
     }
 
-    .player-seat.compact {
-      @apply p-0.5 min-w-[35px] max-w-[55px];
+    .player-seat.player-seat--compact {
+      padding: 0.125rem;
+      min-width: 35px;
+      max-width: 55px;
     }
   }
 

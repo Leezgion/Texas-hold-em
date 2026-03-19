@@ -1,26 +1,53 @@
 import { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
+import { ROOM_MODE_META, buildModePreviewCards } from '../utils/productMode';
+import { deriveRequestErrorFeedback } from '../view-models/gameViewModel';
+import ModePreviewCard from './ModePreviewCard';
 import SliderInput from './SliderInput';
 import Modal from './Modal';
 
 const CreateRoomModal = () => {
   const { showCreateRoom, setShowCreateRoom, createRoom } = useGame();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const modeCards = buildModePreviewCards();
 
   const [settings, setSettings] = useState({
+    roomMode: 'pro',
     duration: 60,
     maxPlayers: 6,
     allowStraddle: false,
     allinDealCount: 1,
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    createRoom(settings);
-    setShowCreateRoom(false);
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await createRoom(settings);
+      setShowCreateRoom(false);
+    } catch (error) {
+      const notice = deriveRequestErrorFeedback({
+        scope: 'createRoom',
+        fallbackPrefix: '创建房间失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
+    if (isSubmitting) {
+      return;
+    }
+
     setShowCreateRoom(false);
   };
 
@@ -29,6 +56,7 @@ const CreateRoomModal = () => {
       <button
         type="button"
         onClick={handleClose}
+        disabled={isSubmitting}
         className="flex-1 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base"
       >
         取消
@@ -36,9 +64,10 @@ const CreateRoomModal = () => {
       <button
         type="submit"
         form="create-room-form"
+        disabled={isSubmitting}
         className="flex-1 py-3 bg-poker-gold hover:bg-yellow-500 text-black rounded-lg font-bold transition-colors duration-200 text-sm sm:text-base"
       >
-        创建房间
+        {isSubmitting ? '创建中...' : '创建房间'}
       </button>
     </div>
   );
@@ -51,12 +80,29 @@ const CreateRoomModal = () => {
       layout="scrollable"
       padding=""
       footer={footerContent}
+      closeOnOverlayClick={!isSubmitting}
     >
       <form
         id="create-room-form"
         onSubmit={handleSubmit}
         className="space-y-4 sm:space-y-6"
       >
+            {isSubmitting && <div className="text-xs text-yellow-400 text-center">正在等待服务器确认房间创建...</div>}
+            <div>
+              <label className="form-label">桌型预设</label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {modeCards.map((card) => (
+                  <ModePreviewCard
+                    key={card.mode}
+                    card={card}
+                    compact
+                    selected={settings.roomMode === card.mode}
+                    onSelect={() => setSettings({ ...settings, roomMode: card.mode })}
+                  />
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-gray-400">{ROOM_MODE_META[settings.roomMode].detail}</p>
+            </div>
             {/* 游戏时长 */}
             <div>
               <label className="form-label">游戏时长</label>
@@ -139,8 +185,9 @@ const CreateRoomModal = () => {
 
             {/* 初始筹码说明 */}
             <div className="bg-gray-700/50 p-3 sm:p-4 rounded-lg border border-gray-600">
-              <h4 className="font-semibold text-poker-gold mb-2 text-sm sm:text-base">游戏设置说明</h4>
+              <h4 className="font-semibold text-poker-gold mb-2 text-sm sm:text-base">桌面预设说明</h4>
               <ul className="text-xs sm:text-sm text-gray-300 space-y-1">
+                <li>• 当前房间模式：{ROOM_MODE_META[settings.roomMode].title}</li>
                 <li>• 初始筹码：1000</li>
                 <li>• 小盲注：10，大盲注：20</li>
                 <li>• 最小加注：大盲注金额</li>

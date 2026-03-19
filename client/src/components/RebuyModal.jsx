@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
-import { derivePlayerStateView } from '../view-models/gameViewModel';
+import { derivePlayerStateView, deriveRequestErrorFeedback } from '../view-models/gameViewModel';
 import SliderInput from './SliderInput';
 import Modal from './Modal';
 
@@ -28,7 +28,12 @@ const RebuyModal = ({ show, onClose }) => {
       await requestRebuy(amount);
       onClose();
     } catch (error) {
-      window.dispatchEvent(new CustomEvent('game-error', { detail: `补码失败：${error.message}` }));
+      const notice = deriveRequestErrorFeedback({
+        scope: 'requestRebuy',
+        fallbackPrefix: '补码失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
     } finally {
       setIsSubmitting(false);
     }
