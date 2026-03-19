@@ -18,6 +18,7 @@ const ActionDock = ({
   players,
   effectiveDisplayMode,
   roomState,
+  viewportLayout,
 }) => {
   if (!currentPlayer) {
     return null;
@@ -39,7 +40,12 @@ const ActionDock = ({
   const handCards = dockView?.handCards || [];
 
   return (
-    <section className="poker-shell-panel poker-shell-panel--accent tactical-dock rounded-[1.75rem] px-4 py-4">
+    <section
+      className="poker-shell-panel poker-shell-panel--accent tactical-dock rounded-[1.75rem] px-4 py-4"
+      data-viewport-model={viewportLayout?.viewportModel}
+      data-support-surface-model={viewportLayout?.supportSurfaceModel}
+      data-hero-dock-placement={viewportLayout?.heroDockPlacement}
+    >
       <div className="tactical-dock__grid">
         <div className="min-w-0">
           <div className="poker-shell-kicker">{roomCopy.actionTitle}</div>

@@ -16,6 +16,7 @@ import TableHeader from './TableHeader';
 import TableStage from './TableStage';
 import { useGame } from '../contexts/GameContext';
 import { resolveRoomShellLayout } from '../utils/productMode';
+import { resolveRoomViewportLayout } from '../utils/roomViewportLayout';
 import { buildSeatRingPositions, resolveTableDiameter } from '../utils/seatRingLayout';
 import {
   deriveCanStartGame,
@@ -103,6 +104,7 @@ const GameRoom = () => {
   const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
   const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
   const roomShellLayout = resolveRoomShellLayout(windowSize.width);
+  const roomViewportLayout = resolveRoomViewportLayout(windowSize);
   const roomShellGridClassName =
     roomShellLayout === 'three-column'
       ? 'room-shell-grid room-shell-grid--three-column'
@@ -562,10 +564,17 @@ const GameRoom = () => {
   });
 
   return (
-    <div className="min-h-screen px-3 py-3 sm:px-4 lg:px-6">
+    <div
+      className="min-h-screen px-3 py-3 sm:px-4 lg:px-6"
+      data-viewport-model={roomViewportLayout.viewportModel}
+      data-page-scroll={roomViewportLayout.pageScroll}
+      data-hero-dock-placement={roomViewportLayout.heroDockPlacement}
+      data-support-surface-model={roomViewportLayout.supportSurfaceModel}
+    >
       <div className="mx-auto flex min-h-screen max-w-[1600px] flex-col gap-4 pb-6">
         <TableHeader
           shellView={shellView}
+          viewportLayout={roomViewportLayout}
           onShare={() => setShowShareLink(true)}
           onLeaveRoom={handleExitRoom}
           onLeaveSeat={handleLeaveSeat}
@@ -658,6 +667,7 @@ const GameRoom = () => {
           players={playersList}
           effectiveDisplayMode={effectiveDisplayMode}
           roomState={activeRoomState}
+          viewportLayout={roomViewportLayout}
         />
 
         <ShareLinkModal

@@ -25,6 +25,7 @@ const ActionIconButton = ({ title, onClick, icon: Icon, tone = 'default' }) => {
 
 const TableHeader = ({
   shellView,
+  viewportLayout,
   onShare,
   onLeaveRoom,
   onLeaveSeat,
@@ -33,7 +34,12 @@ const TableHeader = ({
   canRequestRebuy = false,
 }) => {
   return (
-    <header className="rounded-[1.75rem] border border-white/10 bg-black/25 px-4 py-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+    <header
+      className="rounded-[1.75rem] border border-white/10 bg-black/25 px-4 py-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl"
+      data-viewport-model={viewportLayout?.viewportModel}
+      data-support-surface-model={viewportLayout?.supportSurfaceModel}
+      data-page-scroll={viewportLayout?.pageScroll}
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-3">
           <div>
