@@ -5,6 +5,7 @@ import {
   buildProActionStatRows,
   deriveActionDockView,
   deriveTableShellView,
+  deriveSeatRingView,
   deriveIntelRailView,
   deriveProActionSummary,
   deriveProPlayerSummary,
@@ -76,6 +77,162 @@ test('maps recovery-required seats to waiting-for-recovery labels', () => {
   );
 
   assert.equal(view.statusLabel, '等待恢复');
+});
+
+test('builds ordered seat-ring entries with current-player and empty-seat markers', () => {
+  const seatRing = deriveSeatRingView({
+    maxPlayers: 4,
+    currentPlayerId: 'p2',
+    roomState: 'in_hand',
+    players: [
+      {
+        id: 'p1',
+        nickname: 'Alice',
+        seat: 2,
+        chips: 1200,
+        tableState: 'active_in_hand',
+      },
+      {
+        id: 'p2',
+        nickname: 'Bob',
+        seat: 0,
+        chips: 980,
+        tableState: 'seated_wait_next_hand',
+      },
+    ],
+    gameState: {
+      dealerPosition: 2,
+    },
+  });
+
+  assert.deepEqual(
+    seatRing.map((seat) => ({
+      seatIndex: seat.seatIndex,
+      seatLabel: seat.seatLabel,
+      occupied: seat.occupied,
+      isCurrentPlayer: seat.isCurrentPlayer,
+      statusLabel: seat.statusLabel,
+      seatTone: seat.seatTone,
+      positionLabel: seat.positionLabel,
+    })),
+    [
+      {
+        seatIndex: 0,
+        seatLabel: '座1',
+        occupied: true,
+        isCurrentPlayer: true,
+        statusLabel: '下一手加入',
+        seatTone: 'hero-pending',
+        positionLabel: null,
+      },
+      {
+        seatIndex: 1,
+        seatLabel: '座2',
+        occupied: false,
+        isCurrentPlayer: false,
+        statusLabel: '空座',
+        seatTone: 'open-seat',
+        positionLabel: null,
+      },
+      {
+        seatIndex: 2,
+        seatLabel: '座3',
+        occupied: true,
+        isCurrentPlayer: false,
+        statusLabel: '游戏中',
+        seatTone: 'occupied-live',
+        positionLabel: null,
+      },
+      {
+        seatIndex: 3,
+        seatLabel: '座4',
+        occupied: false,
+        isCurrentPlayer: false,
+        statusLabel: '空座',
+        seatTone: 'open-seat',
+        positionLabel: null,
+      },
+    ]
+  );
+});
+
+test('threads canonical anchor semantics through every seat-ring entry', () => {
+  const canonicalSlots = [
+    {
+      seatIndex: 0,
+      anchorSlotId: 'desktop-4-hero-0',
+      anchorRole: 'hero',
+      anchorZone: 'dock-edge',
+      position: { x: 0, y: 240, profile: 'desktop-oval', anchorRole: 'hero', anchorZone: 'dock-edge' },
+    },
+    {
+      seatIndex: 1,
+      anchorSlotId: 'desktop-4-lower-left-1',
+      anchorRole: 'lower-left',
+      anchorZone: 'table-flank',
+      position: { x: -210, y: 124, profile: 'desktop-oval', anchorRole: 'lower-left', anchorZone: 'table-flank' },
+    },
+    {
+      seatIndex: 2,
+      anchorSlotId: 'desktop-4-top-2',
+      anchorRole: 'top',
+      anchorZone: 'stage-band-clear',
+      position: { x: 0, y: -280, profile: 'desktop-oval', anchorRole: 'top', anchorZone: 'stage-band-clear' },
+    },
+    {
+      seatIndex: 3,
+      anchorSlotId: 'desktop-4-lower-right-3',
+      anchorRole: 'lower-right',
+      anchorZone: 'table-flank',
+      position: { x: 210, y: 124, profile: 'desktop-oval', anchorRole: 'lower-right', anchorZone: 'table-flank' },
+    },
+  ];
+
+  const seatRing = deriveSeatRingView({
+    maxPlayers: 4,
+    currentPlayerId: 'p2',
+    roomState: 'in_hand',
+    players: [
+      {
+        id: 'p1',
+        nickname: 'Alice',
+        seat: 2,
+        chips: 1200,
+        tableState: 'active_in_hand',
+      },
+      {
+        id: 'p2',
+        nickname: 'Bob',
+        seat: 0,
+        chips: 980,
+        tableState: 'seated_wait_next_hand',
+      },
+    ],
+    gameState: {
+      dealerPosition: 2,
+    },
+    canonicalSlots,
+  });
+
+  assert.equal(seatRing[0].anchorRole, 'hero');
+  assert.equal(seatRing[0].anchorZone, 'dock-edge');
+  assert.equal(seatRing[0].anchorSlotId, 'desktop-4-hero-0');
+  assert.deepEqual(seatRing[0].position, canonicalSlots[0].position);
+  assert.ok(seatRing.every((seat) => seat.anchorSlotId));
+  assert.deepEqual(
+    seatRing.map((seat) => ({
+      seatIndex: seat.seatIndex,
+      anchorSlotId: seat.anchorSlotId,
+      anchorRole: seat.anchorRole,
+      anchorZone: seat.anchorZone,
+    })),
+    canonicalSlots.map((slot) => ({
+      seatIndex: slot.seatIndex,
+      anchorSlotId: slot.anchorSlotId,
+      anchorRole: slot.anchorRole,
+      anchorZone: slot.anchorZone,
+    }))
+  );
 });
 
 test('derives seat selection notices from the authoritative room state', () => {

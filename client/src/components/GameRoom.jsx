@@ -9,6 +9,7 @@ import JoinRoomModal from './JoinRoomModal';
 import LeaveSeatModal from './LeaveSeatModal';
 import RebuyModal from './RebuyModal';
 import RoomPanelSheet from './RoomPanelSheet';
+import SeatRing from './SeatRing';
 import SettlementOverlay from './SettlementOverlay';
 import ShareLinkModal from './ShareLinkModal';
 import TableBanner from './TableBanner';
@@ -27,6 +28,7 @@ import {
   derivePendingJoinBanner,
   derivePlayerStateView,
   deriveRequestErrorFeedback,
+  deriveSeatRingView,
   deriveTableShellView,
   deriveRecoveryBanner,
   deriveRecoverRoomFeedback,
@@ -116,6 +118,7 @@ const GameRoom = () => {
   const playersList = Array.isArray(players) ? players : EMPTY_PLAYERS;
   const activeRoomState = roomState || 'idle';
   const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
+  const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
   const roomViewportLayout = resolveRoomViewportLayout(windowSize);
   const stageShellLayout = mapViewportModelToStageShellLayout(roomViewportLayout.viewportModel);
   const usesSideRails = roomViewportLayout.viewportModel === 'ultrawide-terminal';
@@ -565,6 +568,23 @@ const GameRoom = () => {
       : tableDiameter === 352
       ? 'w-[22rem] h-[22rem]'
       : 'w-80 h-80';
+  const seatRingEntries = deriveSeatRingView({
+    players: playersList,
+    maxPlayers,
+    currentPlayerId,
+    roomState: activeRoomState,
+    gameState: safeGameState,
+    canonicalSlots: roomGeometryContract.seatGuides,
+  }).map((seat) => {
+    const isCurrentTurn =
+      seat.player && safeGameState ? safeGameState.currentPlayerIndex === playersList.indexOf(seat.player) : false;
+
+    return {
+      ...seat,
+      isCurrentTurn,
+      isActiveTimer: Boolean(safeGameState && safeGameState.timeRemaining > 0 && isCurrentTurn),
+    };
+  });
 
   return (
     <div
@@ -654,6 +674,15 @@ const GameRoom = () => {
                         effectiveDisplayMode={effectiveDisplayMode}
                       />
                     }
+                    seatRing={
+                      <SeatRing
+                        seats={seatRingEntries}
+                        roomState={activeRoomState}
+                        gameState={safeGameState}
+                        gameStarted={gameStarted}
+                        geometryContract={roomGeometryContract}
+                      />
+                    }
                   />
                 </div>
 
@@ -692,6 +721,15 @@ const GameRoom = () => {
                         currentPlayerId={currentPlayerId}
                         onReveal={revealHand}
                         effectiveDisplayMode={effectiveDisplayMode}
+                      />
+                    }
+                    seatRing={
+                      <SeatRing
+                        seats={seatRingEntries}
+                        roomState={activeRoomState}
+                        gameState={safeGameState}
+                        gameStarted={gameStarted}
+                        geometryContract={roomGeometryContract}
                       />
                     }
                   />
