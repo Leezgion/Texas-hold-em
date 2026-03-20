@@ -66,12 +66,13 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
   if (!gameState || !gameState.communityCards) {
     return (
       <div
-        className={`community-cards-area community-cards-center-shell community-cards-area--${resolvedTableProfile} ${
+        className={`community-cards-area community-cards-center-shell community-cards-center-shell--compact-density community-cards-area--${resolvedTableProfile} ${
           compactBoardLayout ? 'community-cards-area--compact' : 'community-cards-area--spacious'
         }`}
         data-table-profile={resolvedTableProfile}
         data-card-density={resolvedBoardLayout.cardDensity}
         data-center-priority="board-pot-street"
+        data-center-shell-density="compact"
       >
         <div
           className="community-cards-center-shell__tray community-cards-area__tray"
@@ -133,12 +134,13 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
 
   return (
     <div
-      className={`community-cards-area community-cards-center-shell community-cards-area--${resolvedTableProfile} ${
+      className={`community-cards-area community-cards-center-shell community-cards-center-shell--compact-density community-cards-area--${resolvedTableProfile} ${
         compactBoardLayout ? 'community-cards-area--compact' : 'community-cards-area--spacious'
       }`}
       data-table-profile={resolvedTableProfile}
       data-card-density={resolvedBoardLayout.cardDensity}
       data-center-priority="board-pot-street"
+      data-center-shell-density="compact"
     >
       {resolvedBoardLayout.phaseVisible && (
         <div className="community-cards-center-shell__phase community-cards-area__phase">

@@ -27,12 +27,16 @@ test('SeatCard renders embedded plaque class names instead of floating card clas
   assert.match(seatCardSource, /arena-seat-plaque/);
   assert.match(seatCardSource, /arena-seat-plaque--current-turn/);
   assert.match(seatCardSource, /arena-seat-plaque--broadcast-response/);
+  assert.match(seatCardSource, /arena-seat-plaque__meta-row/);
+  assert.match(seatCardSource, /data-plaque-density-model/);
   assert.match(seatCardSource, /arena-seat-plaque__turn-glow--broadcast-turn-cue/);
   assert.doesNotMatch(seatCardSource, /arena-seat-card/);
 });
 
 test('EmptySeat uses embedded plaque trigger classes', () => {
   assert.match(emptySeatSource, /arena-seat-plaque__empty-trigger/);
+  assert.match(emptySeatSource, /arena-seat-plaque__empty-trigger--compact/);
+  assert.match(emptySeatSource, /arena-seat-plaque__empty-copy/);
   assert.doesNotMatch(emptySeatSource, /arena-seat-empty-trigger/);
 });
 
@@ -66,4 +70,6 @@ test('broadcast tactical css stays aligned with scoped cue usage and phone confi
     cssSource,
     /mode-shell\[data-shell-reduced-motion="true"\][\s\S]*tactical-dock__turn-chip--broadcast-cue[\s\S]*animation:\s*none/
   );
+  assert.match(cssSource, /\.arena-seat-plaque--compact-secondary\s*\{/);
+  assert.match(cssSource, /\.arena-seat-plaque__empty-trigger--compact\s*\{/);
 });

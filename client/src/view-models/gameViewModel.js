@@ -520,6 +520,10 @@ function deriveSeatDensityTier(relativeSlotIndex = 0) {
   return relativeSlotIndex === 0 ? 'compact-primary' : 'compact-secondary';
 }
 
+function deriveSeatPlaqueDensityModel() {
+  return 'broadcast-compact';
+}
+
 export function deriveSeatRingView({
   players = [],
   maxPlayers = 6,
@@ -545,6 +549,7 @@ export function deriveSeatRingView({
     const anchorRole = deriveSeatAnchorRole(canonicalSlot, relativeSlotIndex);
     const anchorZone = deriveSeatAnchorZone(canonicalSlot, anchorRole);
     const densityTier = deriveSeatDensityTier(relativeSlotIndex);
+    const plaqueDensityModel = deriveSeatPlaqueDensityModel();
 
     if (!player) {
       return {
@@ -557,6 +562,7 @@ export function deriveSeatRingView({
         positionLabel: null,
         visualRole: 'embedded-plaque',
         densityTier,
+        plaqueDensityModel,
         anchorSlotId: canonicalSlot?.anchorSlotId || null,
         canonicalSlotIndex: canonicalSlot ? relativeSlotIndex : null,
         anchorRole,
@@ -586,6 +592,7 @@ export function deriveSeatRingView({
       netLabel: summary.netLabel,
       visualRole: 'embedded-plaque',
       densityTier,
+      plaqueDensityModel,
       anchorSlotId: canonicalSlot?.anchorSlotId || null,
       canonicalSlotIndex: canonicalSlot ? relativeSlotIndex : null,
       anchorRole,

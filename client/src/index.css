@@ -1394,6 +1394,10 @@
     justify-content: center;
   }
 
+  .table-stage-center-shell[data-center-shell-density="compact"] {
+    gap: 0;
+  }
+
   .table-stage-center-shell__board {
     position: relative;
     z-index: 18;
@@ -1409,6 +1413,24 @@
 
   .table-stage-center-shell[data-center-priority="board-pot-street"] .table-stage-center-shell__street {
     opacity: 0.82;
+  }
+
+  .table-stage-center-shell[data-center-shell-density="compact"] .table-stage-board-tray {
+    width: calc(100% - 4.6rem);
+    height: 5.15rem;
+  }
+
+  .table-stage-center-shell[data-center-shell-density="compact"] .table-stage-pot-capsule {
+    top: 0.95rem;
+    min-width: min(88%, 18.75rem);
+    padding: 0.58rem 0.95rem;
+  }
+
+  .table-stage-center-shell[data-center-shell-density="compact"] .table-stage-beacon {
+    bottom: 0.95rem;
+    max-width: min(92%, 30rem);
+    gap: 0.45rem;
+    padding: 0.55rem 0.88rem;
   }
 
   .table-stage-board-tray {
@@ -1639,6 +1661,11 @@
       opacity var(--arena-motion-enter) ease;
   }
 
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] {
+    border-radius: 0.88rem;
+    padding: 0.42rem 0.5rem;
+  }
+
   .arena-seat-plaque--broadcast-response {
     transition:
       transform var(--arena-motion-plaque-response) ease,
@@ -1679,10 +1706,33 @@
       0 14px 30px rgba(2, 6, 12, 0.38);
   }
 
+  .arena-seat-plaque--compact-secondary {
+    width: clamp(5.45rem, 10.4vw, 7.4rem);
+    min-height: 4.35rem;
+  }
+
   .arena-seat-plaque__header,
   .arena-seat-plaque__stack-row,
   .arena-seat-plaque__status-row {
     @apply flex items-center justify-between gap-2;
+  }
+
+  .arena-seat-plaque__meta-row,
+  .arena-seat-plaque__badge-row,
+  .arena-seat-plaque__status-strip {
+    @apply flex items-center;
+  }
+
+  .arena-seat-plaque__meta-row {
+    gap: 0.32rem;
+    min-width: 0;
+  }
+
+  .arena-seat-plaque__badge-row,
+  .arena-seat-plaque__status-strip {
+    gap: 0.26rem;
+    justify-content: flex-end;
+    min-width: 0;
   }
 
   .arena-seat-plaque__seat-label {
@@ -1721,6 +1771,42 @@
 
   .arena-seat-plaque__status {
     @apply max-w-[5.2rem] truncate text-[10px] text-slate-300;
+  }
+
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__header,
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__stack-row,
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__status-row {
+    gap: 0.34rem;
+  }
+
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__stack-row {
+    margin-top: 0.62rem;
+  }
+
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__status-row {
+    margin-top: 0.52rem;
+  }
+
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__seat-label {
+    font-size: 0.5rem;
+    letter-spacing: 0.18em;
+  }
+
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__name,
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__stack {
+    font-size: 0.76rem;
+  }
+
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__badge,
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__bet,
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__net {
+    font-size: 0.5rem;
+    padding: 0.14rem 0.34rem;
+  }
+
+  .arena-seat-plaque[data-plaque-density-model="broadcast-compact"] .arena-seat-plaque__status {
+    max-width: 4.8rem;
+    font-size: 0.56rem;
   }
 
   .arena-seat-plaque__turn-glow {
@@ -1820,6 +1906,12 @@
     cursor: pointer;
   }
 
+  .arena-seat-plaque__empty-trigger--compact {
+    height: 2.25rem;
+    width: 2.25rem;
+    border-radius: 0.8rem;
+  }
+
   .arena-seat-plaque__empty-trigger:hover {
     border-color: rgba(125, 211, 252, 0.48);
     background: rgba(14, 165, 233, 0.08);
@@ -1839,6 +1931,13 @@
 
   .arena-seat-plaque__empty-text {
     @apply mt-1 text-[10px] uppercase tracking-[0.22em] text-slate-400;
+  }
+
+  .arena-seat-plaque__empty-copy {
+    display: grid;
+    gap: 0.18rem;
+    justify-items: center;
+    margin-top: 0.55rem;
   }
 
   .table-stage-surface--club {
@@ -3900,6 +3999,25 @@
 
   .community-cards-center-shell {
     width: 100%;
+  }
+
+  .community-cards-center-shell--compact-density .community-cards-area__tray {
+    gap: 0.58rem;
+    padding: 0.6rem 0.78rem 0.58rem;
+  }
+
+  .community-cards-center-shell--compact-density .community-cards-center-shell__phase-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+  }
+
+  .community-cards-center-shell--compact-density .community-cards-center-shell__phase-rule {
+    margin-top: 0.28rem;
+    width: 2.2rem;
+  }
+
+  .community-cards-center-shell--compact-density .community-cards-area__pot {
+    padding: 0.35rem 0.9rem;
   }
 
   .community-cards-area__phase {

@@ -57,6 +57,7 @@ const TableStage = ({
   const tableRailTone = tableSurfaceLayout.material?.railTone || 'black-gold';
   const centerSurfaceModel = tableSurfaceLayout.centerSurfaceModel || 'broadcast-clean-center';
   const centerPriority = tablePotSummary.centerPriority || 'board-pot-street';
+  const centerShellDensity = 'compact';
 
   return (
     <section
@@ -103,7 +104,11 @@ const TableStage = ({
       >
         <div className="table-stage-atmosphere" aria-hidden="true" />
 
-        <div className="table-stage-center-shell" data-center-priority={centerPriority}>
+        <div
+          className="table-stage-center-shell table-stage-center-shell--compact-density"
+          data-center-priority={centerPriority}
+          data-center-shell-density={centerShellDensity}
+        >
           <div
             className="table-stage-center-shell__board table-stage-core"
             data-table-profile={tableSurfaceLayout.profile}

@@ -16,6 +16,7 @@ const EmptySeat = ({
   anchorSlotId = null,
   visualRole = 'embedded-plaque',
   densityTier = 'compact-secondary',
+  plaqueDensityModel = 'broadcast-compact',
 }) => {
   const { takeSeat, seatRequestPending } = useGame();
   const resolvedSeatLabel =
@@ -53,6 +54,7 @@ const EmptySeat = ({
       data-anchor-slot-id={anchorSlotId}
       data-visual-role={visualRole}
       data-density-tier={densityTier}
+      data-plaque-density-model={plaqueDensityModel}
       style={{
         left: `calc(50% + ${position.x}px)`,
         top: `calc(50% + ${position.y}px)`,
@@ -67,11 +69,12 @@ const EmptySeat = ({
         data-anchor-slot-id={anchorSlotId}
         data-visual-role={visualRole}
         data-density-tier={densityTier}
+        data-plaque-density-model={plaqueDensityModel}
       >
         <button
           type="button"
           onClick={handleTakeSeat}
-          className="arena-seat-plaque__empty-trigger group"
+          className="arena-seat-plaque__empty-trigger arena-seat-plaque__empty-trigger--compact group"
           disabled={seatRequestPending}
           aria-label={`入座 ${resolvedSeatLabel}`}
           title={`点击入座 (座位 ${seatIndex + 1})`}
@@ -81,8 +84,10 @@ const EmptySeat = ({
             className="text-slate-400 transition-colors group-hover:text-sky-300"
           />
         </button>
-        <div className="arena-seat-plaque__seat-label mt-3">{resolvedSeatLabel}</div>
-        <div className="arena-seat-plaque__empty-text">Open Seat</div>
+        <div className="arena-seat-plaque__empty-copy">
+          <div className="arena-seat-plaque__seat-label">{resolvedSeatLabel}</div>
+          <div className="arena-seat-plaque__empty-text">Open Seat</div>
+        </div>
       </div>
     </div>
   );

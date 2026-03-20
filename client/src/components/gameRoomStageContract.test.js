@@ -165,6 +165,7 @@ test('TableStage threads broadcast center material hooks through the pot capsule
   );
 
   assert.match(stage, /table-stage-center-shell/);
+  assert.match(stage, /data-center-shell-density="compact"/);
   assert.match(stage, /table-stage-center-shell__pot/);
   assert.match(stage, /table-stage-center-shell__board/);
   assert.match(stage, /table-stage-center-shell__street/);
@@ -182,14 +183,21 @@ test('Settlement sheet stays above center-shell layers to preserve reveal-button
 
 test('CommunityCards and TableStage use the cleaned center-shell naming and avoid HUD-ring language', () => {
   assert.match(communityCardsSource, /community-cards-center-shell/);
+  assert.match(communityCardsSource, /community-cards-center-shell--compact-density/);
   assert.match(communityCardsSource, /community-cards-center-shell__phase/);
   assert.match(communityCardsSource, /community-cards-center-shell__tray/);
   assert.match(tableStageSource, /table-stage-center-shell/);
+  assert.match(tableStageSource, /data-center-shell-density=\{centerShellDensity\}/);
   assert.match(tableStageSource, /table-stage-center-shell__pot/);
   assert.match(tableStageSource, /table-stage-center-shell__board/);
   assert.match(tableStageSource, /table-stage-center-shell__street/);
   assert.doesNotMatch(communityCardsSource, /shell-orbit|orbitRingPath|guide-ring|hud-ring|hud ring/i);
   assert.doesNotMatch(tableStageSource, /shell-orbit|orbitRingPath|guide-ring|hud-ring|hud ring/i);
+});
+
+test('center-shell css encodes a compact board-first density pass', () => {
+  assert.match(stageStylesSource, /\.table-stage-center-shell\[data-center-shell-density="compact"\]\s*\{/);
+  assert.match(stageStylesSource, /\.community-cards-center-shell--compact-density\s+\.community-cards-area__tray\s*\{/);
 });
 
 test('ActionDock renders a sync placeholder instead of blanking the center during live-hand state transitions', async () => {

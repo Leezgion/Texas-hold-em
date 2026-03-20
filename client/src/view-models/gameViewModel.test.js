@@ -114,6 +114,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
       statusLabel: seat.statusLabel,
       seatTone: seat.seatTone,
       positionLabel: seat.positionLabel,
+      plaqueDensityModel: seat.plaqueDensityModel,
     })),
     [
       {
@@ -124,6 +125,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
         statusLabel: '下一手加入',
         seatTone: 'hero-pending',
         positionLabel: null,
+        plaqueDensityModel: 'broadcast-compact',
       },
       {
         seatIndex: 1,
@@ -133,6 +135,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
         statusLabel: '空座',
         seatTone: 'open-seat',
         positionLabel: null,
+        plaqueDensityModel: 'broadcast-compact',
       },
       {
         seatIndex: 2,
@@ -142,6 +145,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
         statusLabel: '游戏中',
         seatTone: 'occupied-live',
         positionLabel: null,
+        plaqueDensityModel: 'broadcast-compact',
       },
       {
         seatIndex: 3,
@@ -151,6 +155,7 @@ test('builds ordered seat-ring entries with current-player and empty-seat marker
         statusLabel: '空座',
         seatTone: 'open-seat',
         positionLabel: null,
+        plaqueDensityModel: 'broadcast-compact',
       },
     ]
   );
@@ -217,6 +222,7 @@ test('threads canonical anchor semantics through every seat-ring entry', () => {
   assert.equal(seatRing[0].anchorRole, 'hero');
   assert.equal(seatRing[0].visualRole, 'embedded-plaque');
   assert.equal(seatRing[0].densityTier, 'compact-primary');
+  assert.equal(seatRing[0].plaqueDensityModel, 'broadcast-compact');
   assert.equal(seatRing[0].anchorZone, 'dock-edge');
   assert.equal(seatRing[0].anchorSlotId, 'desktop-4-hero-0');
   assert.deepEqual(seatRing[0].position, canonicalSlots[0].position);

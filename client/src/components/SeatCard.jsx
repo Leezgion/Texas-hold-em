@@ -15,6 +15,7 @@ const SeatCard = ({
   const canonicalSlotIndex = Number.isInteger(seat.canonicalSlotIndex) ? seat.canonicalSlotIndex : null;
   const densityTier = seat.densityTier || 'compact-secondary';
   const visualRole = seat.visualRole || 'embedded-plaque';
+  const plaqueDensityModel = seat.plaqueDensityModel || 'broadcast-compact';
 
   if (!seat.occupied) {
     return (
@@ -30,6 +31,7 @@ const SeatCard = ({
         anchorSlotId={seat.anchorSlotId || null}
         visualRole={visualRole}
         densityTier={densityTier}
+        plaqueDensityModel={plaqueDensityModel}
       />
     );
   }
@@ -52,6 +54,7 @@ const SeatCard = ({
       data-canonical-slot-index={canonicalSlotIndex}
       data-visual-role={visualRole}
       data-density-tier={densityTier}
+      data-plaque-density-model={plaqueDensityModel}
       data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
       style={{
         left: `calc(50% + ${seat.position.x}px)`,
@@ -70,29 +73,34 @@ const SeatCard = ({
         data-canonical-slot-index={canonicalSlotIndex}
         data-visual-role={visualRole}
         data-density-tier={densityTier}
+        data-plaque-density-model={plaqueDensityModel}
         data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
       >
         <div className="arena-seat-plaque__header">
           <div className="min-w-0">
-            <div className="arena-seat-plaque__seat-label">{seat.seatLabel}</div>
+            <div className="arena-seat-plaque__meta-row">
+              <div className="arena-seat-plaque__seat-label">{seat.seatLabel}</div>
+              {seat.positionLabel && <span className="arena-seat-plaque__badge arena-seat-plaque__badge--ghost">{seat.positionLabel}</span>}
+            </div>
             <div className="arena-seat-plaque__name" title={displayName}>
               {seat.isCurrentPlayer ? 'Hero' : displayName}
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="arena-seat-plaque__badge-row">
             {player.isHost && <span className="arena-seat-plaque__badge">HOST</span>}
-            {seat.positionLabel && <span className="arena-seat-plaque__badge arena-seat-plaque__badge--ghost">{seat.positionLabel}</span>}
           </div>
         </div>
 
         <div className="arena-seat-plaque__stack-row">
           <span className="arena-seat-plaque__stack">{seat.chipsLabel || '0'}</span>
-          {currentBet > 0 && <span className="arena-seat-plaque__bet">BET {currentBet}</span>}
+          <div className="arena-seat-plaque__status-strip">
+            {currentBet > 0 && <span className="arena-seat-plaque__bet">BET {currentBet}</span>}
+            {hasNet && <span className="arena-seat-plaque__net">{seat.netLabel}</span>}
+          </div>
         </div>
 
         <div className="arena-seat-plaque__status-row">
           <span className="arena-seat-plaque__status">{seat.statusLabel}</span>
-          {hasNet && <span className="arena-seat-plaque__net">{seat.netLabel}</span>}
         </div>
 
         {seat.isCurrentTurn && (
