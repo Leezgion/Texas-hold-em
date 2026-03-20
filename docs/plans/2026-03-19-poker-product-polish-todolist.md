@@ -1101,3 +1101,9 @@ This pass closed the density-pass browser-evidence task on the reused local-dev 
 - density-specific pitfall recorded:
   - after many HMR updates, a browser page can enter a corrupted `useGame must be used within a GameProvider` state
   - reloading the page cleared the corruption without restarting the user-owned dev servers
+
+- Task 6 final verification rerun for this density-pass evidence task:
+  - client full node tests: `176/176`
+  - client build: passed
+  - server full suite: `114/114`
+  - these reruns were part of the same density-pass evidence closure and confirmed the browser evidence did not leave the repo in a broken state
