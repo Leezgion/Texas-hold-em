@@ -1,8 +1,9 @@
-import Card from './Card';
 import { useState, useEffect } from 'react';
+
+import Card from './Card';
 import { useGame } from '../contexts/GameContext';
 
-const CommunityCards = ({ boardLayout = null }) => {
+const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
   const { gameState } = useGame();
   const [animatingCards, setAnimatingCards] = useState(new Set());
   const [previousPhase, setPreviousPhase] = useState('preflop');
@@ -15,53 +16,46 @@ const CommunityCards = ({ boardLayout = null }) => {
     cardDensity: 'regular',
     phaseVisible: true,
   };
+  const resolvedTableProfile = tableProfile || resolvedBoardLayout.tableProfile || 'desktop-oval';
   const compactBoardLayout = !resolvedBoardLayout.phaseVisible;
   const cardStyle = {
     width: `${resolvedBoardLayout.cardWidth}px`,
     height: `${resolvedBoardLayout.cardHeight}px`,
   };
 
-  // 监听游戏阶段变化，触发翻牌动画
   useEffect(() => {
     if (!gameState || !gameState.phase) return;
 
     const currentPhase = gameState.phase;
 
-    // 检测阶段变化
     if (currentPhase !== previousPhase) {
       let cardsToAnimate = [];
 
-      // 根据新阶段确定要翻转的牌
       switch (currentPhase) {
         case 'flop':
-          cardsToAnimate = [0, 1, 2]; // 翻牌：翻转前3张
+          cardsToAnimate = [0, 1, 2];
           break;
         case 'turn':
-          cardsToAnimate = [3]; // 转牌：翻转第4张
+          cardsToAnimate = [3];
           break;
         case 'river':
-          cardsToAnimate = [4]; // 河牌：翻转第5张
+          cardsToAnimate = [4];
           break;
       }
 
-      // 逐张翻牌动画
       if (cardsToAnimate.length > 0) {
         cardsToAnimate.forEach((cardIndex, i) => {
           setTimeout(() => {
             setAnimatingCards((prev) => new Set([...prev, cardIndex]));
 
-            // TODO: 在这里可以添加翻牌音效
-            // playCardFlipSound();
-
-            // 动画完成后移除动画状态
             setTimeout(() => {
               setAnimatingCards((prev) => {
                 const newSet = new Set(prev);
                 newSet.delete(cardIndex);
                 return newSet;
               });
-            }, 600); // 翻牌动画持续时间
-          }, i * 200); // 每张牌间隔200ms
+            }, 600);
+          }, i * 200);
         });
       }
 
@@ -72,16 +66,19 @@ const CommunityCards = ({ boardLayout = null }) => {
   if (!gameState || !gameState.communityCards) {
     return (
       <div
-        className="flex justify-center"
-        style={{ gap: `${resolvedBoardLayout.gap}px` }}
+        className={`community-cards-area community-cards-area--${resolvedTableProfile} ${
+          compactBoardLayout ? 'community-cards-area--compact' : 'community-cards-area--spacious'
+        }`}
+        data-table-profile={resolvedTableProfile}
+        data-card-density={resolvedBoardLayout.cardDensity}
       >
-        {[1, 2, 3, 4, 5].map((index) => (
-          <div
-            key={index}
-            className="poker-card community back"
-            style={cardStyle}
-          ></div>
-        ))}
+        <div className="community-cards-area__tray" data-table-profile={resolvedTableProfile}>
+          <div className="community-cards-area__rail" style={{ gap: `${resolvedBoardLayout.gap}px` }}>
+            {[1, 2, 3, 4, 5].map((index) => (
+              <div key={index} className="poker-card community back" style={cardStyle}></div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -122,34 +119,36 @@ const CommunityCards = ({ boardLayout = null }) => {
   };
 
   const visibleCards = getVisibleCards();
+  const trayStyle =
+    resolvedBoardLayout.trayWidth && resolvedBoardLayout.trayHeight
+      ? {
+          width: `${resolvedBoardLayout.trayWidth}px`,
+          minHeight: `${resolvedBoardLayout.trayHeight}px`,
+        }
+      : undefined;
 
   return (
-    <div className="text-center" data-table-profile={resolvedBoardLayout.tableProfile || 'desktop-oval'}>
-      {/* 阶段标题 */}
+    <div
+      className={`community-cards-area community-cards-area--${resolvedTableProfile} ${
+        compactBoardLayout ? 'community-cards-area--compact' : 'community-cards-area--spacious'
+      }`}
+      data-table-profile={resolvedTableProfile}
+      data-card-density={resolvedBoardLayout.cardDensity}
+    >
       {resolvedBoardLayout.phaseVisible && (
-        <div className="mb-3">
+        <div className="community-cards-area__phase">
           <div className="mb-1 text-sm font-bold text-yellow-400 sm:text-lg">{getPhaseText()}</div>
           <div className="mx-auto h-1 w-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 sm:w-16"></div>
         </div>
       )}
 
-      {/* 公共牌区域 */}
       <div
-        className="community-cards-area"
-        data-table-profile={resolvedBoardLayout.tableProfile || 'desktop-oval'}
-        style={
-          compactBoardLayout
-            ? {
-                padding: 0,
-                background: 'transparent',
-              }
-            : undefined
-        }
+        className="community-cards-area__tray"
+        data-table-profile={resolvedTableProfile}
+        data-card-density={resolvedBoardLayout.cardDensity}
+        style={trayStyle}
       >
-        <div
-          className={`flex justify-center ${resolvedBoardLayout.phaseVisible ? 'mb-4' : 'mb-0'}`}
-          style={{ gap: `${resolvedBoardLayout.gap}px` }}
-        >
+        <div className="community-cards-area__rail" style={{ gap: `${resolvedBoardLayout.gap}px` }}>
           {[0, 1, 2, 3, 4].map((cardIndex) => {
             const card = communityCards[cardIndex];
             const isVisible = cardIndex < visibleCards.length;
@@ -164,15 +163,10 @@ const CommunityCards = ({ boardLayout = null }) => {
                 }}
               >
                 <div className={`card-flipper ${isVisible && !isAnimating ? 'flipped' : ''}`}>
-                  {/* 背面 */}
                   <div className="card-face card-back">
-                    <div
-                      className="poker-card community back"
-                      style={cardStyle}
-                    ></div>
+                    <div className="poker-card community back" style={cardStyle}></div>
                   </div>
 
-                  {/* 正面 */}
                   <div className="card-face card-front">
                     {card ? (
                       <Card
@@ -182,10 +176,7 @@ const CommunityCards = ({ boardLayout = null }) => {
                         style={cardStyle}
                       />
                     ) : (
-                      <div
-                        className="poker-card community back"
-                        style={cardStyle}
-                      ></div>
+                      <div className="poker-card community back" style={cardStyle}></div>
                     )}
                   </div>
                 </div>
@@ -194,9 +185,8 @@ const CommunityCards = ({ boardLayout = null }) => {
           })}
         </div>
 
-        {/* 底池信息 */}
         {gameState.pot > 0 && resolvedBoardLayout.phaseVisible && (
-          <div className="bg-gray-800/80 backdrop-blur-xs px-4 py-2 rounded-lg border border-gray-600 inline-block">
+          <div className="community-cards-area__pot">
             <div className="text-sm text-gray-300">底池</div>
             <div className="text-lg font-bold text-green-400">{gameState.pot}</div>
           </div>

@@ -1124,6 +1124,14 @@
     transform: translate(-50%, -50%) scale(0.98);
   }
 
+  .table-stage-chrome[data-shell-orientation="horizontal-capsule"] .table-stage-chrome__outer {
+    filter: drop-shadow(0 24px 42px rgba(0, 0, 0, 0.18));
+  }
+
+  .table-stage-chrome[data-shell-orientation="vertical-capsule"] .table-stage-chrome__outer {
+    filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.2));
+  }
+
   .table-stage-chrome[data-table-family="tournament-capsule-9max"] .table-stage-chrome__halo {
     fill: rgba(245, 158, 11, 0.045);
     stroke: rgba(251, 191, 36, 0.08);
@@ -1327,6 +1335,18 @@
   .table-stage-board-tray[data-table-profile="phone-oval"] {
     width: calc(100% - 2rem);
     height: 4.55rem;
+  }
+
+  .table-stage-board-tray[data-table-shell-orientation="horizontal-capsule"] {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 14px 30px rgba(0, 0, 0, 0.28);
+  }
+
+  .table-stage-board-tray[data-table-shell-orientation="vertical-capsule"] {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 18px 34px rgba(0, 0, 0, 0.3);
   }
 
   .table-stage-pot-capsule {
@@ -3487,35 +3507,62 @@
     }
   }
 
-  /* 公共牌区域的背景效果 */
   .community-cards-area {
-    background: radial-gradient(ellipse at center, rgba(15, 81, 50, 0.3) 0%, transparent 70%);
-    border-radius: 20px;
-    padding: 20px;
-    position: relative;
+    @apply relative z-10 inline-flex flex-col items-center justify-center;
+    gap: 0.7rem;
+    padding: 0.25rem 0;
   }
 
-  .community-cards-area[data-table-profile="phone-oval"] {
-    padding: 12px 10px;
-    border-radius: 18px;
-    transform: translateY(-0.1rem);
+  .community-cards-area--spacious {
+    gap: 0.9rem;
   }
 
-  .community-cards-area::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
-    border-radius: 20px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+  .community-cards-area--compact {
+    transform: translateY(-0.08rem);
   }
 
-  .community-cards-area:hover::before {
-    opacity: 1;
+  .community-cards-area__phase {
+    @apply relative z-10 text-center;
+  }
+
+  .community-cards-area__tray {
+    @apply relative z-10 flex flex-col items-center justify-center gap-3 overflow-hidden;
+    padding: 0.85rem 1rem 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+      linear-gradient(180deg, rgba(5, 12, 20, 0.8), rgba(8, 15, 24, 0.56)),
+      radial-gradient(circle at center, rgba(251, 191, 36, 0.08), transparent 72%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 16px 40px rgba(0, 0, 0, 0.26);
+    border-radius: 999px;
+  }
+
+  .community-cards-area__tray[data-table-profile="phone-oval"] {
+    border-radius: 1.55rem;
+    padding: 0.7rem 0.8rem 0.72rem;
+  }
+
+  .community-cards-area__tray[data-card-density="compact"] {
+    gap: 0.65rem;
+  }
+
+  .community-cards-area__rail {
+    @apply flex justify-center;
+  }
+
+  .community-cards-area__pot {
+    @apply inline-flex flex-col items-center justify-center rounded-full px-4 py-2 text-center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+      linear-gradient(180deg, rgba(10, 16, 26, 0.82), rgba(4, 8, 15, 0.68)),
+      radial-gradient(circle at top, rgba(245, 158, 11, 0.12), transparent 72%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 12px 28px rgba(0, 0, 0, 0.22);
+  }
+
+  .community-cards-area--compact .community-cards-area__tray {
+    width: min(100%, 100%);
   }
 }

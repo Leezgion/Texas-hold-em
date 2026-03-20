@@ -20,12 +20,48 @@ const TableStageChrome = ({
     roomShellLayout,
     tableProfile,
   });
+  const shellOrientation = chrome.table.shellOrientation || 'horizontal-capsule';
+  const shellCornerRadius = chrome.table.shellCornerRadius || Math.round(Math.min(chrome.table.outerRx, chrome.table.outerRy));
+  const outerShell = {
+    x: chrome.centerX - chrome.table.outerRx,
+    y: chrome.centerY - chrome.table.outerRy,
+    width: chrome.table.outerRx * 2,
+    height: chrome.table.outerRy * 2,
+  };
+  const innerShell = {
+    x: chrome.centerX - chrome.table.innerRx,
+    y: chrome.centerY - chrome.table.innerRy,
+    width: chrome.table.innerRx * 2,
+    height: chrome.table.innerRy * 2,
+  };
+  const haloShell = {
+    x: outerShell.x - (shellOrientation === 'vertical-capsule' ? 22 : 28),
+    y: outerShell.y - (shellOrientation === 'vertical-capsule' ? 18 : 22),
+    width: outerShell.width + (shellOrientation === 'vertical-capsule' ? 44 : 56),
+    height: outerShell.height + (shellOrientation === 'vertical-capsule' ? 36 : 44),
+  };
+  const glowShell = {
+    x: innerShell.x + 12,
+    y: innerShell.y + 10,
+    width: Math.max(0, innerShell.width - 24),
+    height: Math.max(0, innerShell.height - 20),
+  };
+  const tableShellRadius = Math.min(shellCornerRadius, Math.min(outerShell.width, outerShell.height) / 2);
+  const innerShellRadius = Math.min(Math.max(shellCornerRadius - 4, 0), Math.min(innerShell.width, innerShell.height) / 2);
+  const glowShellRadius = Math.min(Math.max(innerShellRadius - 2, 0), Math.min(glowShell.width, glowShell.height) / 2);
+  const orbitRingPath = [
+    `M ${chrome.centerX} ${chrome.centerY - chrome.orbit.ry}`,
+    `A ${chrome.orbit.rx} ${chrome.orbit.ry} 0 1 1 ${chrome.centerX} ${chrome.centerY + chrome.orbit.ry}`,
+    `A ${chrome.orbit.rx} ${chrome.orbit.ry} 0 1 1 ${chrome.centerX} ${chrome.centerY - chrome.orbit.ry}`,
+    'Z',
+  ].join(' ');
 
   return (
     <svg
       className="table-stage-chrome"
       data-table-family={chrome.family}
       data-table-profile={chrome.profile}
+      data-shell-orientation={shellOrientation}
       viewBox={`0 0 ${chrome.width} ${chrome.height}`}
       style={{ width: `${chrome.width}px`, height: `${chrome.height}px` }}
       aria-hidden="true"
@@ -43,44 +79,49 @@ const TableStageChrome = ({
       </defs>
 
       <g className="table-stage-chrome__shell">
-        <ellipse
+        <rect
           className="table-stage-chrome__halo"
-          cx={chrome.centerX}
-          cy={chrome.centerY}
-          rx={chrome.table.outerRx + 28}
-          ry={chrome.table.outerRy + 22}
+          x={haloShell.x}
+          y={haloShell.y}
+          width={haloShell.width}
+          height={haloShell.height}
+          rx={Math.min(tableShellRadius + 12, Math.min(haloShell.width, haloShell.height) / 2)}
+          ry={Math.min(tableShellRadius + 12, Math.min(haloShell.width, haloShell.height) / 2)}
         />
-        <ellipse
+        <rect
           className="table-stage-chrome__outer"
-          cx={chrome.centerX}
-          cy={chrome.centerY}
-          rx={chrome.table.outerRx}
-          ry={chrome.table.outerRy}
+          x={outerShell.x}
+          y={outerShell.y}
+          width={outerShell.width}
+          height={outerShell.height}
+          rx={tableShellRadius}
+          ry={tableShellRadius}
         />
-        <ellipse
+        <rect
           className="table-stage-chrome__inner"
-          cx={chrome.centerX}
-          cy={chrome.centerY}
-          rx={chrome.table.innerRx}
-          ry={chrome.table.innerRy}
+          x={innerShell.x}
+          y={innerShell.y}
+          width={innerShell.width}
+          height={innerShell.height}
+          rx={innerShellRadius}
+          ry={innerShellRadius}
         />
-        <ellipse
+        <rect
           className="table-stage-chrome__glow"
-          cx={chrome.centerX}
-          cy={chrome.centerY}
-          rx={chrome.table.innerRx - 12}
-          ry={chrome.table.innerRy - 10}
+          x={glowShell.x}
+          y={glowShell.y}
+          width={glowShell.width}
+          height={glowShell.height}
+          rx={glowShellRadius}
+          ry={glowShellRadius}
           fill="url(#stage-felt-glow)"
         />
       </g>
 
       <g className="table-stage-chrome__orbit">
-        <ellipse
+        <path
           className="table-stage-chrome__orbit-ring"
-          cx={chrome.centerX}
-          cy={chrome.centerY}
-          rx={chrome.orbit.rx}
-          ry={chrome.orbit.ry}
+          d={orbitRingPath}
         />
         {chrome.orbitMarkers.map((marker) => (
           <circle

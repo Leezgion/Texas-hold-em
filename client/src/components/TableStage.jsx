@@ -88,6 +88,7 @@ const TableStage = ({
       <div
         className={`${stageLayoutClassName} ${stagePulseClassName} table-stage-surface--${theme.mode} relative flex items-center justify-center rounded-[2rem] px-4 py-6 ${isCompressedStage ? 'overflow-hidden' : 'overflow-visible'}`}
         data-table-profile={tableSurfaceLayout.profile}
+        data-table-shell-orientation={tableSurfaceLayout.shellOrientation}
         data-height-class={tableSurfaceLayout.heightClass}
         data-stage-density={tableSurfaceLayout.stageDensity}
         data-table-family={tableSurfaceLayout.family}
@@ -172,10 +173,12 @@ const TableStage = ({
             seatGuides={seatGuides}
             geometryContract={runtimeGeometry}
             roomShellLayout={resolvedRoomShellLayout}
+            tableProfile={tableSurfaceLayout.profile}
           />
           <div
             className="poker-table table-stage-table-shell relative z-10"
             data-table-profile={tableSurfaceLayout.profile}
+            data-table-shell-orientation={tableSurfaceLayout.shellOrientation}
             data-height-class={tableSurfaceLayout.heightClass}
             data-stage-density={tableSurfaceLayout.stageDensity}
             data-table-family={tableSurfaceLayout.family}
@@ -187,6 +190,7 @@ const TableStage = ({
             <div
               className="table-stage-board-tray absolute inset-0 flex items-center justify-center"
               data-table-profile={tableSurfaceLayout.profile}
+              data-table-shell-orientation={tableSurfaceLayout.shellOrientation}
               data-height-class={tableSurfaceLayout.heightClass}
               data-stage-density={tableSurfaceLayout.stageDensity}
               data-table-family={tableSurfaceLayout.family}
@@ -196,7 +200,7 @@ const TableStage = ({
                 borderRadius: tableSurfaceLayout.profile === 'phone-oval' ? '1.5rem' : '999px',
               }}
             >
-              <CommunityCards boardLayout={boardLayout} />
+              <CommunityCards boardLayout={boardLayout} tableProfile={tableSurfaceLayout.profile} />
             </div>
           </div>
         </div>

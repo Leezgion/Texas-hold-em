@@ -41,6 +41,7 @@ export function resolveTableSurfaceLayout({
   const stageScale = heightClass === 'short-height' ? (profile === 'phone-oval' ? 0.58 : 0.74) : 1;
   const effectiveTableDiameter = Math.max(0, Math.round(safeTableDiameter * stageScale));
   const stageDensity = resolvedStageViewportContract.stageDensity;
+  const shellOrientation = profile === 'phone-oval' ? 'vertical-capsule' : 'horizontal-capsule';
 
   if (profile === 'phone-oval') {
     return {
@@ -50,6 +51,7 @@ export function resolveTableSurfaceLayout({
       stageDensity,
       stageScale,
       effectiveTableDiameter,
+      shellOrientation,
       tableWidth: Math.round(effectiveTableDiameter * 1.02),
       tableHeight: Math.round(effectiveTableDiameter * 1.46),
       boardTrayInsetX: 20,
@@ -67,6 +69,7 @@ export function resolveTableSurfaceLayout({
     stageDensity,
     stageScale,
     effectiveTableDiameter,
+    shellOrientation,
     tableWidth: Math.round(effectiveTableDiameter * 1.72),
     tableHeight: Math.round(effectiveTableDiameter * 0.9),
     boardTrayInsetX: 26,
@@ -320,6 +323,20 @@ export function buildStageChromeLayout({
     y: stageBandY + centerDeltaY,
     rx: compact ? 20 : 26,
   };
+  const shellCornerRadius = Math.round(
+    Math.min(
+      surface.shellOrientation === 'vertical-capsule' ? surface.tableWidth : surface.tableHeight,
+      surface.shellOrientation === 'vertical-capsule' ? surface.tableHeight : surface.tableWidth
+    ) / 2
+  );
+  const stageBandClearance = Math.max(
+    0,
+    Math.round((adjustedCenterY - outerRy) - (adjustedStageBand.y + adjustedStageBand.height))
+  );
+  const boardTrayClearance = Math.max(
+    0,
+    Math.round((adjustedCenterY - boardTrayHeight / 2) - (adjustedStageBand.y + adjustedStageBand.height))
+  );
   const adjustedSeatGuides = normalizedSeatGuides.map((guide, index) => ({
     ...guide,
     cx: guide.cx + centerDeltaX,
@@ -332,6 +349,7 @@ export function buildStageChromeLayout({
     heightClass: surface.heightClass,
     stageDensity: surface.stageDensity,
     stageScale: surface.stageScale,
+    shellOrientation: surface.shellOrientation,
     viewMode: compact ? 'compact' : 'wide',
     width: adjustedWidth,
     height: adjustedHeight,
@@ -344,8 +362,15 @@ export function buildStageChromeLayout({
       innerRy,
       width: surface.tableWidth,
       height: surface.tableHeight,
+      shellOrientation: surface.shellOrientation,
+      shellRx: outerRx,
+      shellRy: outerRy,
+      shellCornerRadius,
     },
-    stageBand: adjustedStageBand,
+    stageBand: {
+      ...adjustedStageBand,
+      clearanceToTable: stageBandClearance,
+    },
     orbit: {
       rx: orbitRx,
       ry: orbitRy,
@@ -359,6 +384,12 @@ export function buildStageChromeLayout({
       x: adjustedCenterX - boardTrayWidth / 2,
       y: adjustedCenterY - boardTrayHeight / 2,
       rx: compact ? 18 : 24,
+      shellOrientation: 'horizontal-capsule',
+      shellRx: boardTrayWidth / 2,
+      shellRy: boardTrayHeight / 2,
+      shellCornerRadius: Math.round(Math.min(boardTrayWidth, boardTrayHeight) / 2),
+      clearanceToStageBand: boardTrayClearance,
+      dockBias: surface.profile === 'phone-oval' ? 'dock-edge' : 'table-core',
     },
     guideRadius,
     seatGuides: adjustedSeatGuides,

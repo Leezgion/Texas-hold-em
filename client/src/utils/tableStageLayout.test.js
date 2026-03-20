@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -13,6 +14,10 @@ import { buildSeatRingPositions, getSeatRingLayoutProfile } from './seatRingLayo
 
 function getCommunityRowWidth({ cardWidth, gap, cardCount = 5 }) {
   return cardWidth * cardCount + gap * Math.max(0, cardCount - 1);
+}
+
+function readSource(relativePath) {
+  return fs.readFileSync(new URL(relativePath, import.meta.url), 'utf8');
 }
 
 test('keeps five community cards inside the phone table safe width', () => {
@@ -269,6 +274,63 @@ test('desktop oval stage chrome leaves a real clearance gap above the top seat',
     layout.centerY + topSeat.y + profile.cardHeight / 2 <= layout.stageBand.y - 12,
     'top seat should stay clearly above the stage band'
   );
+});
+
+test('desktop capsule stage chrome exposes horizontal shell semantics and tray clearance', () => {
+  const layout = buildStageChromeLayout({
+    viewportWidth: 1440,
+    viewportHeight: 900,
+    tableDiameter: 352,
+    roomShellLayout: 'split-stage',
+    tableProfile: 'desktop-oval',
+    seatGuides: [],
+  });
+
+  assert.equal(layout.table.shellOrientation, 'horizontal-capsule');
+  assert.ok(layout.table.shellRx > layout.table.shellRy);
+  assert.ok(layout.stageBand.clearanceToTable >= 12);
+  assert.ok(layout.boardTray.clearanceToStageBand >= 14);
+  assert.ok(layout.boardTray.shellRx >= layout.boardTray.shellRy);
+});
+
+test('phone capsule stage chrome exposes vertical shell semantics and dock-side tray clearance', () => {
+  const layout = buildStageChromeLayout({
+    viewportWidth: 390,
+    viewportHeight: 844,
+    tableDiameter: 208,
+    roomShellLayout: 'stacked',
+    tableProfile: 'phone-oval',
+    seatGuides: [],
+  });
+
+  assert.equal(layout.table.shellOrientation, 'vertical-capsule');
+  assert.ok(layout.table.shellRy > layout.table.shellRx);
+  assert.equal(layout.boardTray.dockBias, 'dock-edge');
+  assert.ok(layout.stageBand.clearanceToTable >= 10);
+  assert.ok(layout.boardTray.clearanceToStageBand >= 10);
+});
+
+test('TableStageChrome renders capsule rect shells instead of ellipse HUD rings', () => {
+  const source = readSource('../components/TableStageChrome.jsx');
+
+  assert.match(source, /data-shell-orientation/);
+  assert.match(source, /<rect/);
+  assert.doesNotMatch(source, /<ellipse/);
+});
+
+test('CommunityCards composes the board tray as a profile-aware capsule rail', () => {
+  const source = readSource('../components/CommunityCards.jsx');
+
+  assert.match(source, /tableProfile/);
+  assert.match(source, /community-cards-area__tray/);
+  assert.match(source, /community-cards-area--/);
+});
+
+test('TableStage threads the resolved table profile into the community board render path', () => {
+  const source = readSource('../components/TableStage.jsx');
+
+  assert.match(source, /tableProfile=\{tableSurfaceLayout\.profile\}/);
+  assert.match(source, /data-table-shell-orientation/);
 });
 
 test('keeps phone portrait stage chrome compact while preserving marker metadata', () => {
