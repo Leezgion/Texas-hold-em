@@ -101,3 +101,21 @@ test('ActionButtons preserves 44px touch targets for primary and commit actions'
   );
   assert.doesNotMatch(actionButtonsSource, /className=\{`h-9 flex-1 \$\{/);
 });
+
+test('ActionDock keeps the live-hand action frame wired to ActionButtons', () => {
+  assert.match(
+    actionDockSource,
+    /gameStarted && \(\s*<motion\.div[\s\S]*<ActionButtons/s
+  );
+});
+
+test('ActionButtons fail-closes when player or gameState is temporarily unavailable', () => {
+  assert.match(
+    actionButtonsSource,
+    /useEffect\(\(\) => \{\s*if \(gameState\) \{\s*setIsSubmitting\(false\);\s*\}\s*\}, \[gameState\]\);/s
+  );
+  assert.match(
+    actionButtonsSource,
+    /const hasResolvedActionState = Boolean\(player && gameState\);[\s\S]*useKeyboardShortcuts\(\{[\s\S]*\}\);\s*if \(!hasResolvedActionState\) \{\s*return \(\s*<div className="flex h-10 items-center justify-center rounded-xl border border-gray-600 bg-gray-800\/90 px-3 backdrop-blur-xs">[\s\S]*等待牌局状态同步[\s\S]*\);\s*\}/s
+  );
+});

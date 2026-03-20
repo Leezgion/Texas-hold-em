@@ -67,7 +67,8 @@ async function loadBundledModule(relativePath) {
     jsx: 'automatic',
     logLevel: 'silent',
     external: bundledExternal,
-    plugins: relativePath === './TableStage.jsx' ? [gameContextStubPlugin] : [],
+    plugins:
+      relativePath === './TableStage.jsx' || relativePath === './ActionDock.jsx' ? [gameContextStubPlugin] : [],
   });
 
   const module = require(outfile);
@@ -189,4 +190,43 @@ test('CommunityCards and TableStage use the cleaned center-shell naming and avoi
   assert.match(tableStageSource, /table-stage-center-shell__street/);
   assert.doesNotMatch(communityCardsSource, /shell-orbit|orbitRingPath|guide-ring|hud-ring|hud ring/i);
   assert.doesNotMatch(tableStageSource, /shell-orbit|orbitRingPath|guide-ring|hud-ring|hud ring/i);
+});
+
+test('ActionDock renders a sync placeholder instead of blanking the center during live-hand state transitions', async () => {
+  const { module } = await loadBundledModule('./ActionDock.jsx');
+  const dock = renderComponent(
+    React.createElement(module.default, {
+      currentPlayer: {
+        id: 'hero-1',
+        nickname: 'Hero',
+        chips: 960,
+        currentBet: 20,
+        isHost: true,
+        hand: [],
+      },
+      currentPlayerView: {
+        statusLabel: '游戏中',
+      },
+      gameStarted: true,
+      canStartGame: false,
+      onStartGame: () => {},
+      gameState: null,
+      currentPlayerId: 'hero-1',
+      players: [],
+      effectiveDisplayMode: 'pro',
+      roomState: 'in_hand',
+      viewportLayout: {
+        viewportModel: 'desktop-terminal',
+        supportSurfacePolicyKey: 'desktop',
+      },
+      shellView: {
+        heroDockPriority: 'table-first',
+        heroDockStyle: 'table-coupled-terminal',
+        heroDockDensity: 'high-efficiency',
+      },
+    })
+  );
+
+  assert.match(dock, /等待牌局状态同步/);
+  assert.match(dock, /tactical-dock__action-frame/);
 });
