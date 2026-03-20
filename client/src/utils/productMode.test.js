@@ -280,6 +280,20 @@ test('exposes profile-first create-room surface contract for the terminal modal'
   assert.equal(studyTheme.createRoom.advancedSectionTitle, '高级规则');
 });
 
+test('exposes broadcast tactical density metadata for room and create-room surfaces', () => {
+  const clubTheme = getDisplayModeTheme('club');
+  const proTheme = getDisplayModeTheme('pro');
+  const studyTheme = getDisplayModeTheme('study');
+
+  for (const theme of [clubTheme, proTheme, studyTheme]) {
+    assert.equal(theme.roomTerminal.densityModel, 'high-efficiency');
+    assert.equal(theme.roomTerminal.desktop.stageSpacing, 'tight');
+    assert.equal(theme.roomTerminal.phone.supportLauncherDensity, 'compact');
+    assert.equal(theme.createRoom.densityModel, 'compact-terminal');
+    assert.equal(theme.createRoom.modeTileHeight, 'short');
+  }
+});
+
 test('resets the create-room advanced panel when the modal reopens', () => {
   assert.equal(
     deriveCreateRoomAdvancedPanelState({

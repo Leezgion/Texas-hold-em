@@ -985,6 +985,7 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Extend Motion choreography into `EventRail` and `Hand Tape`
 - `[done]` Upgrade `TableStage` to an SVG-backed stage chrome
 - `[done]` Capture tablet and ultrawide shell screenshots after the Motion pass
+- `[next]` Run the `Broadcast Tactical Density Pass` to compress dead spacing in the create-room sheet, room shell, plaques, and phone support launchers without breaking the single-screen contract
 
 ## Risks To Watch
 

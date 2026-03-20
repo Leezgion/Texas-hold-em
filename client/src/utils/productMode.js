@@ -72,16 +72,24 @@ const ROOM_TERMINAL_VISUAL_CONTRACT = Object.freeze({
   heroDockStyle: 'table-coupled-terminal',
 });
 
+const ROOM_TERMINAL_DENSITY_CONTRACT = Object.freeze({
+  densityModel: 'high-efficiency',
+  desktopStageSpacing: 'tight',
+  phoneSupportLauncherDensity: 'compact',
+});
+
 const ROOM_TERMINAL_META = Object.freeze({
   club: Object.freeze({
     intent: 'single-screen-terminal',
     tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
     maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
     ...ROOM_TERMINAL_VISUAL_CONTRACT,
+    densityModel: ROOM_TERMINAL_DENSITY_CONTRACT.densityModel,
     desktop: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',
       surfacePolicy: 'table-and-dock',
+      stageSpacing: ROOM_TERMINAL_DENSITY_CONTRACT.desktopStageSpacing,
     }),
     phone: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.phoneGeometryModel,
@@ -89,6 +97,7 @@ const ROOM_TERMINAL_META = Object.freeze({
       heroDock: 'fixed-bottom',
       sheetOrder: Object.freeze(['players', 'history', 'room']),
       surfacePolicy: 'bottom-sheets',
+      supportLauncherDensity: ROOM_TERMINAL_DENSITY_CONTRACT.phoneSupportLauncherDensity,
     }),
     sheetLabels: ROOM_TERMINAL_LABELS.club,
   }),
@@ -97,10 +106,12 @@ const ROOM_TERMINAL_META = Object.freeze({
     tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
     maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
     ...ROOM_TERMINAL_VISUAL_CONTRACT,
+    densityModel: ROOM_TERMINAL_DENSITY_CONTRACT.densityModel,
     desktop: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',
       surfacePolicy: 'table-and-dock',
+      stageSpacing: ROOM_TERMINAL_DENSITY_CONTRACT.desktopStageSpacing,
     }),
     phone: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.phoneGeometryModel,
@@ -108,6 +119,7 @@ const ROOM_TERMINAL_META = Object.freeze({
       heroDock: 'fixed-bottom',
       sheetOrder: Object.freeze(['players', 'history', 'room']),
       surfacePolicy: 'bottom-sheets',
+      supportLauncherDensity: ROOM_TERMINAL_DENSITY_CONTRACT.phoneSupportLauncherDensity,
     }),
     sheetLabels: ROOM_TERMINAL_LABELS.pro,
   }),
@@ -116,10 +128,12 @@ const ROOM_TERMINAL_META = Object.freeze({
     tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
     maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
     ...ROOM_TERMINAL_VISUAL_CONTRACT,
+    densityModel: ROOM_TERMINAL_DENSITY_CONTRACT.densityModel,
     desktop: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',
       surfacePolicy: 'table-and-dock',
+      stageSpacing: ROOM_TERMINAL_DENSITY_CONTRACT.desktopStageSpacing,
     }),
     phone: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.phoneGeometryModel,
@@ -127,6 +141,7 @@ const ROOM_TERMINAL_META = Object.freeze({
       heroDock: 'fixed-bottom',
       sheetOrder: Object.freeze(['players', 'history', 'room']),
       surfacePolicy: 'bottom-sheets',
+      supportLauncherDensity: ROOM_TERMINAL_DENSITY_CONTRACT.phoneSupportLauncherDensity,
     }),
     sheetLabels: ROOM_TERMINAL_LABELS.study,
   }),
@@ -136,9 +151,11 @@ const CREATE_ROOM_META = Object.freeze({
   club: Object.freeze({
     entryModel: 'profile-first',
     primaryActionLabel: '创建房间',
+    densityModel: 'compact-terminal',
     surface: 'panel',
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
+    modeTileHeight: 'short',
     advancedSettingsMode: 'collapsed',
     scrollbarStyle: 'themed',
     essentialSectionTitle: '基础设置',
@@ -148,9 +165,11 @@ const CREATE_ROOM_META = Object.freeze({
   pro: Object.freeze({
     entryModel: 'profile-first',
     primaryActionLabel: '创建房间',
+    densityModel: 'compact-terminal',
     surface: 'panel',
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
+    modeTileHeight: 'short',
     advancedSettingsMode: 'collapsed',
     scrollbarStyle: 'themed',
     essentialSectionTitle: '基础设置',
@@ -160,9 +179,11 @@ const CREATE_ROOM_META = Object.freeze({
   study: Object.freeze({
     entryModel: 'profile-first',
     primaryActionLabel: '创建房间',
+    densityModel: 'compact-terminal',
     surface: 'panel',
     phoneSurface: 'full-screen-sheet',
     tileLayout: 'horizontal',
+    modeTileHeight: 'short',
     advancedSettingsMode: 'collapsed',
     scrollbarStyle: 'themed',
     essentialSectionTitle: '基础设置',
