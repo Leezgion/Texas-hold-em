@@ -181,6 +181,12 @@ For Poker OS shell work, add these spot checks explicitly:
     - `anchorCount = 9`
     - `tableBody overlaps = 0`
     - `cardBand overlaps = 0`
+- short-handed occupancy verification: after any occupancy-map change, recheck at least:
+  - one `2-player` room and confirm the non-hero seat is a true centered opposite `top` seat
+  - one `6-player` room and confirm the layout reads as:
+    - hero bottom
+    - left/right flank pairs
+    - one true centered `top` seat
 - tactical dock: stat cards wrap cleanly on phone portrait instead of compressing into unreadable chips
 - roster and stack ledger: long device-style nicknames truncate instead of widening narrow cards
 - cross-mode check: `club / pro / study` remain visibly different in theme and information emphasis

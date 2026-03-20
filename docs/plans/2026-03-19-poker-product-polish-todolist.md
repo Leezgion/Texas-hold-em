@@ -793,6 +793,45 @@ This is a client preference. It should not change server truth or give one playe
   - this rerun closed the two final branch-review concerns:
     - canonical slot geometry is now footprint-driven and stable across active footprints
     - modalized surfaces now render outside the inerted app root instead of inside it
+  - post-review short-handed occupancy spot check after `c7443ce`:
+    - `2-player` room `D2MUUC` desktop `1280x900`:
+      - screenshot:
+        - `.runlogs/task3-room-2p-desktop.png`
+      - backend truth:
+        - `.runlogs/task3-room-2p-debug.json`
+        - `settings.maxPlayers = 2`
+      - browser geometry:
+        - `anchorCount = 2`
+        - `tableFamily = tournament-capsule-9max`
+        - `tableProfile = desktop-oval`
+        - `scrollHeight = clientHeight = 900`
+        - hero center:
+          - `x = 435`
+          - `y = 665`
+        - opposite seat center:
+          - `x = 435`
+          - `y = 76`
+        - result:
+          - heads-up now uses a true centered opposite seat, not the old `top-left` convenience slot
+    - `6-player` room `EYQTON` desktop `1280x900`:
+      - screenshot:
+        - `.runlogs/task3-room-6p-desktop.png`
+      - backend truth:
+        - `.runlogs/task3-room-6p-debug.json`
+        - `settings.maxPlayers = 6`
+      - browser geometry:
+        - `anchorCount = 6`
+        - `tableFamily = tournament-capsule-9max`
+        - `tableProfile = desktop-oval`
+        - `scrollHeight = clientHeight = 900`
+        - top seat center:
+          - `x = 453`
+          - `y = 76`
+        - left/right flank pairs:
+          - `座2` / `座6` at `y = 566`
+          - `座3` / `座5` at `y = 248`
+        - result:
+          - short-handed occupancy now matches the documented hero + flank pairs + true `top` seat model
 
 ## Next Tactical Arena Backlog
 
