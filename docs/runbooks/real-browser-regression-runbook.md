@@ -172,6 +172,15 @@ For Poker OS shell work, add these spot checks explicitly:
   - `document.getElementById('root').contains(activeDialog) === false`
   - forward `Tab` and backward `Shift+Tab` both stay inside the dialog/sheet
   - `Escape` clears the dialog and removes `inert` from `#root`
+- canonical-seat-symmetry verification: when validating the unified `9-max` table, verify all of:
+  - desktop `9-max` left/right seat pairs remain mirrored around the center line
+  - phone `9-max` left/right seat pairs remain mirrored around the center line
+  - the projected `slotId` / normalized slot metadata remains stable across active footprints
+  - browser metrics still show:
+    - `tableFamily = tournament-capsule-9max`
+    - `anchorCount = 9`
+    - `tableBody overlaps = 0`
+    - `cardBand overlaps = 0`
 - tactical dock: stat cards wrap cleanly on phone portrait instead of compressing into unreadable chips
 - roster and stack ledger: long device-style nicknames truncate instead of widening narrow cards
 - cross-mode check: `club / pro / study` remain visibly different in theme and information emphasis

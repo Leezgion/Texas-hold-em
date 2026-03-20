@@ -735,6 +735,15 @@ This is a client preference. It should not change server truth or give one playe
     - hero stayed anchored to the canonical hero slot
     - no scenario reintroduced page-scroll fighting once the room-shell scroll contract was threaded through the tablet / short-height path
 - canonical-table + true-modal follow-up rerun on the same live `3001 / 5173` dev pair:
+  - explicit review gates for this rerun:
+    - canonical seat symmetry must be treated as a first-class gate, not a post-hoc summary:
+      - desktop `9-max` left/right slot pairs must stay mirrored around the center line
+      - phone `9-max` left/right slot pairs must stay mirrored around the center line
+      - the same canonical slot ids and normalized coordinates must stay stable across active footprints
+    - true modal keyboard isolation must be treated as a first-class gate:
+      - active `[role="dialog"]` must live under `#modal-root`, not inside inerted `#root`
+      - forward `Tab` and backward `Shift+Tab` must stay inside the active surface
+      - `Escape` must clear the surface and remove inert from `#root`
   - create-room desktop modal rerun after the portal-root fix:
     - screenshot:
       - `.runlogs/task3-create-room-modal-desktop.png`
