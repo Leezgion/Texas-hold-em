@@ -161,6 +161,8 @@ For Poker OS shell work, add these spot checks explicitly:
   - room phone waiting with compact launcher row
   - room phone support sheet open without page-length scroll
 - broadcast tactical density evidence: record the exact artifacts and measurements:
+  - treat the following as a dated sample capture set from `2026-03-20`, not as fixed future inputs
+  - for future reruns, use a naming pattern like `density-<date>-<surface>.png` and substitute the current room IDs instead of reusing `SBJV6M` / `0G3HEY`
   - screenshots:
     - `.runlogs/density-create-room-desktop.png`
     - `.runlogs/density-room-desktop-waiting.png`
@@ -169,23 +171,30 @@ For Poker OS shell work, add these spot checks explicitly:
     - `.runlogs/density-room-phone-roster-sheet.png`
   - create-room desktop:
     - dialog `1024x868`
+    - this is a modal-body-owned overflow case, not a locked room-shell page-scroll case
+    - body overflow `visible`
+    - html overflow `visible`
+    - dialog class `modal-content max-w-5xl create-room-modal`
+    - overflow owner `.modal-content__body.create-room-modal__body`
+    - modal body `clientHeight = 716`, `scrollHeight = 859`, `overflowY = auto`
     - modal tiles `306x180`
     - page metrics `1347/900`
-  - room desktop waiting (`SBJV6M`):
+  - room desktop waiting viewport `1366x900` (`SBJV6M`):
     - page `770/770`
     - shell `763/763`
     - hero dock `top 490 / bottom 764.2 / height 274.2`
-    - plaques `138x98` and `118x94`
-  - room desktop live (`SBJV6M`):
+    - DOM/a11y extracted sample text for plaques: `138x98` -> `座1 Hero HOST 1,000 等待开始`; `118x94` -> `座2 OPEN SEAT`
+  - room desktop live viewport `1366x900` (`SBJV6M`):
     - page `770/770`
     - shell `763/763`
     - hero dock `top 328.96 / bottom 764.20 / height 435.23`
-  - room phone waiting (`0G3HEY`):
+    - DOM/a11y extracted sample text: `座1 SB/BTN Hero HOST 990 BET 10 -10 游戏中`; `座2 BB device_mmynmk3d_2v08hd_lbfwmz 980 BET 20 -20 游戏中`; `座3 OPEN SEAT`
+  - room phone waiting viewport `390x844` (`0G3HEY`):
     - page `844/844`
     - shell `844/844`
     - hero dock `top 547.72 / bottom 842.40 / height 294.68`
-    - plaques `69x98` and `69x109`
-  - room phone roster sheet (`0G3HEY`):
+    - DOM/a11y extracted sample text for plaques: `69x98` -> `座1 Hero HOST 1,000 等待开始`; `69x109` -> `座2 OPEN SEAT`
+  - room phone roster sheet viewport `390x844` (`0G3HEY`):
     - page `844/844`
     - shell `844/844`
     - sheet density `tight-terminal`
