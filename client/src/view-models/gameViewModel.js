@@ -478,6 +478,26 @@ function deriveSeatTone(player = null, { isCurrentPlayer = false, roomState = 'i
   return 'occupied-live';
 }
 
+function deriveSeatAnchorRole(canonicalSlot = null, relativeSlotIndex = 0) {
+  if (canonicalSlot?.anchorRole) {
+    return canonicalSlot.anchorRole;
+  }
+
+  return relativeSlotIndex === 0 ? 'hero' : 'ring';
+}
+
+function deriveSeatAnchorZone(canonicalSlot = null, anchorRole = 'ring') {
+  if (canonicalSlot?.anchorZone) {
+    return canonicalSlot.anchorZone;
+  }
+
+  return anchorRole === 'hero' ? 'dock-edge' : 'table-flank';
+}
+
+function deriveSeatDensityTier(relativeSlotIndex = 0) {
+  return relativeSlotIndex === 0 ? 'compact-primary' : 'compact-secondary';
+}
+
 export function deriveSeatRingView({
   players = [],
   maxPlayers = 6,
@@ -500,6 +520,9 @@ export function deriveSeatRingView({
     const player = safePlayers.find((candidate) => Number(candidate?.seat) === seatIndex);
     const relativeSlotIndex = ((seatIndex - heroSeatIndex + safeMaxPlayers) % safeMaxPlayers);
     const canonicalSlot = safeCanonicalSlots[relativeSlotIndex] || null;
+    const anchorRole = deriveSeatAnchorRole(canonicalSlot, relativeSlotIndex);
+    const anchorZone = deriveSeatAnchorZone(canonicalSlot, anchorRole);
+    const densityTier = deriveSeatDensityTier(relativeSlotIndex);
 
     if (!player) {
       return {
@@ -510,10 +533,12 @@ export function deriveSeatRingView({
         statusLabel: '空座',
         seatTone: 'open-seat',
         positionLabel: null,
+        visualRole: 'embedded-plaque',
+        densityTier,
         anchorSlotId: canonicalSlot?.anchorSlotId || null,
         canonicalSlotIndex: canonicalSlot ? relativeSlotIndex : null,
-        anchorRole: canonicalSlot?.anchorRole || null,
-        anchorZone: canonicalSlot?.anchorZone || null,
+        anchorRole,
+        anchorZone,
         position: canonicalSlot?.position || null,
         player: null,
       };
@@ -537,10 +562,12 @@ export function deriveSeatRingView({
       positionLabel: summary.positionLabel,
       chipsLabel: summary.chipsLabel,
       netLabel: summary.netLabel,
+      visualRole: 'embedded-plaque',
+      densityTier,
       anchorSlotId: canonicalSlot?.anchorSlotId || null,
       canonicalSlotIndex: canonicalSlot ? relativeSlotIndex : null,
-      anchorRole: canonicalSlot?.anchorRole || null,
-      anchorZone: canonicalSlot?.anchorZone || null,
+      anchorRole,
+      anchorZone,
       position: canonicalSlot?.position || null,
       player,
     };

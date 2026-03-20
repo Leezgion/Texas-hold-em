@@ -13,6 +13,8 @@ const SeatCard = ({
   const anchorZone = seat.anchorZone || seat.position?.anchorZone || 'table-flank';
   const anchorRole = seat.anchorRole || seat.position?.anchorRole || 'ring';
   const canonicalSlotIndex = Number.isInteger(seat.canonicalSlotIndex) ? seat.canonicalSlotIndex : null;
+  const densityTier = seat.densityTier || 'compact-secondary';
+  const visualRole = seat.visualRole || 'embedded-plaque';
 
   if (!seat.occupied) {
     return (
@@ -26,6 +28,8 @@ const SeatCard = ({
         anchorZone={anchorZone}
         anchorRole={anchorRole}
         anchorSlotId={seat.anchorSlotId || null}
+        visualRole={visualRole}
+        densityTier={densityTier}
       />
     );
   }
@@ -34,16 +38,18 @@ const SeatCard = ({
   const displayName = player.nickname || player.id || (seat.isCurrentPlayer ? 'Hero' : '玩家');
   const currentBet = Number(player.currentBet) || 0;
   const hasNet = typeof seat.netLabel === 'string' && seat.netLabel !== '0';
-  const seatToneClassName = `arena-seat-card--${seat.seatTone || 'occupied-live'}`;
+  const seatToneClassName = `arena-seat-plaque--${seat.seatTone || 'occupied-live'}`;
 
   return (
     <div
-      className={`arena-seat-anchor ${seat.isCurrentTurn ? 'arena-seat-anchor--current-turn' : ''}`}
+      className={`arena-seat-plaque-anchor ${seat.isCurrentTurn ? 'arena-seat-plaque-anchor--current-turn' : ''}`}
       data-table-profile={resolvedTableProfile}
       data-anchor-zone={anchorZone}
       data-anchor-role={anchorRole}
       data-anchor-slot-id={seat.anchorSlotId || null}
       data-canonical-slot-index={canonicalSlotIndex}
+      data-visual-role={visualRole}
+      data-density-tier={densityTier}
       data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
       style={{
         left: `calc(50% + ${seat.position.x}px)`,
@@ -52,42 +58,44 @@ const SeatCard = ({
       }}
     >
       <div
-        className={`arena-seat-card ${seatToneClassName} ${seat.isCurrentTurn ? 'arena-seat-card--current-turn' : ''} ${
-          seat.isActiveTimer ? 'arena-seat-card--active-timer' : ''
-        } ${player.folded ? 'arena-seat-card--folded' : ''}`}
+        className={`arena-seat-plaque ${seatToneClassName} arena-seat-plaque--${densityTier} ${
+          seat.isCurrentTurn ? 'arena-seat-plaque--current-turn' : ''
+        } ${seat.isActiveTimer ? 'arena-seat-plaque--active-timer' : ''} ${player.folded ? 'arena-seat-plaque--folded' : ''}`}
         data-table-profile={resolvedTableProfile}
         data-anchor-zone={anchorZone}
         data-anchor-role={anchorRole}
         data-anchor-slot-id={seat.anchorSlotId || null}
         data-canonical-slot-index={canonicalSlotIndex}
+        data-visual-role={visualRole}
+        data-density-tier={densityTier}
         data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
       >
-        <div className="arena-seat-card__header">
+        <div className="arena-seat-plaque__header">
           <div className="min-w-0">
-            <div className="arena-seat-card__seat-label">{seat.seatLabel}</div>
-            <div className="arena-seat-card__name" title={displayName}>
+            <div className="arena-seat-plaque__seat-label">{seat.seatLabel}</div>
+            <div className="arena-seat-plaque__name" title={displayName}>
               {seat.isCurrentPlayer ? 'Hero' : displayName}
             </div>
           </div>
           <div className="flex items-center gap-1">
-            {player.isHost && <span className="arena-seat-card__badge">HOST</span>}
-            {seat.positionLabel && <span className="arena-seat-card__badge arena-seat-card__badge--ghost">{seat.positionLabel}</span>}
+            {player.isHost && <span className="arena-seat-plaque__badge">HOST</span>}
+            {seat.positionLabel && <span className="arena-seat-plaque__badge arena-seat-plaque__badge--ghost">{seat.positionLabel}</span>}
           </div>
         </div>
 
-        <div className="arena-seat-card__stack-row">
-          <span className="arena-seat-card__stack">{seat.chipsLabel || '0'}</span>
-          {currentBet > 0 && <span className="arena-seat-card__bet">BET {currentBet}</span>}
+        <div className="arena-seat-plaque__stack-row">
+          <span className="arena-seat-plaque__stack">{seat.chipsLabel || '0'}</span>
+          {currentBet > 0 && <span className="arena-seat-plaque__bet">BET {currentBet}</span>}
         </div>
 
-        <div className="arena-seat-card__footer">
-          <span className="arena-seat-card__status">{seat.statusLabel}</span>
-          {hasNet && <span className="arena-seat-card__net">{seat.netLabel}</span>}
+        <div className="arena-seat-plaque__status-row">
+          <span className="arena-seat-plaque__status">{seat.statusLabel}</span>
+          {hasNet && <span className="arena-seat-plaque__net">{seat.netLabel}</span>}
         </div>
 
         {seat.isCurrentTurn && (
           <span
-            className="arena-seat-card__turn-marker"
+            className="arena-seat-plaque__turn-glow"
             aria-hidden="true"
             data-anchor-slot-id={seat.anchorSlotId || null}
             data-canonical-slot-index={canonicalSlotIndex}

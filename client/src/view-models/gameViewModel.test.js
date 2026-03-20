@@ -215,6 +215,8 @@ test('threads canonical anchor semantics through every seat-ring entry', () => {
   });
 
   assert.equal(seatRing[0].anchorRole, 'hero');
+  assert.equal(seatRing[0].visualRole, 'embedded-plaque');
+  assert.equal(seatRing[0].densityTier, 'compact-primary');
   assert.equal(seatRing[0].anchorZone, 'dock-edge');
   assert.equal(seatRing[0].anchorSlotId, 'desktop-4-hero-0');
   assert.deepEqual(seatRing[0].position, canonicalSlots[0].position);
