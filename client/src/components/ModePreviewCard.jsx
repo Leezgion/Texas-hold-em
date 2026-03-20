@@ -6,6 +6,8 @@ const ModePreviewCard = ({
   active = false,
   compact = false,
   surfaceVariant = 'default',
+  surfaceDensity = 'default',
+  tileHeight = 'default',
   onSelect,
 }) => {
   const isCreateRoomTile = surfaceVariant === 'create-room-tile';
@@ -15,6 +17,8 @@ const ModePreviewCard = ({
   const variantClassName = [
     surfaceVariant === 'create-room' ? 'mode-preview-card--create-room' : '',
     isCreateRoomTile ? 'mode-preview-card--terminal-tile' : '',
+    isCreateRoomTile && surfaceDensity === 'compact-terminal' ? 'mode-preview-card--terminal-tile-compact' : '',
+    isCreateRoomTile && tileHeight === 'short' ? 'mode-preview-card--terminal-tile-short' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -25,6 +29,8 @@ const ModePreviewCard = ({
         type="button"
         onClick={onSelect}
         className={`${baseClassName} ${variantClassName} ${card.shellClassName} ${selected ? 'mode-preview-card--selected' : ''}`}
+        data-surface-density={surfaceDensity}
+        data-tile-height={tileHeight}
       >
         <div className="mode-preview-card__tile-head">
           <div className={`mode-preview-card__eyebrow ${card.accentClassName}`}>{card.label}</div>

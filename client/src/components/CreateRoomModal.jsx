@@ -107,6 +107,10 @@ const CreateRoomModal = () => {
       bodyClassName="create-room-modal__body"
       headerClassName="create-room-modal__header"
       footerClassName="create-room-modal__footer"
+      contentProps={{
+        'data-create-room-density': createRoomCopy.densityModel,
+        'data-create-room-tile-height': createRoomCopy.modeTileHeight,
+      }}
       footer={footerContent}
       closeOnOverlayClick={!isSubmitting}
     >
@@ -136,6 +140,8 @@ const CreateRoomModal = () => {
                   card={card}
                   compact
                   surfaceVariant="create-room-tile"
+                  surfaceDensity={createRoomCopy.densityModel}
+                  tileHeight={createRoomCopy.modeTileHeight}
                   selected={settings.roomMode === card.mode}
                   onSelect={() => setSettings({ ...settings, roomMode: card.mode })}
                 />

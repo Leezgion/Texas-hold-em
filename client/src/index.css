@@ -475,6 +475,15 @@
     align-content: start;
   }
 
+  .mode-preview-card--terminal-tile-compact {
+    @apply px-3.5 py-3.5;
+    gap: 0.65rem;
+  }
+
+  .mode-preview-card--terminal-tile-short {
+    min-height: 8.9rem;
+  }
+
   .mode-preview-card__tile-head,
   .mode-preview-card__tile-title-row {
     @apply flex items-start justify-between gap-3;
@@ -490,6 +499,22 @@
 
   .mode-preview-card__tile-copy {
     @apply text-sm leading-6 text-slate-200;
+  }
+
+  .mode-preview-card--terminal-tile-compact .mode-preview-card__tile-title {
+    @apply text-base sm:text-lg;
+  }
+
+  .mode-preview-card--terminal-tile-compact .mode-preview-card__tile-persona {
+    @apply text-[11px] tracking-[0.14em];
+  }
+
+  .mode-preview-card--terminal-tile-compact .mode-preview-card__tile-copy {
+    @apply text-xs leading-5 text-slate-300;
+  }
+
+  .mode-preview-card--terminal-tile-compact .mode-preview-card__chip {
+    @apply px-2 py-0.5 text-[10px];
   }
 
   .mode-preview-card__tile-chip-row {
@@ -3364,15 +3389,15 @@
   }
 
   .create-room-modal__body {
-    @apply px-4 py-4 sm:px-6;
+    @apply px-4 py-3.5 sm:px-5;
   }
 
   .create-room-modal__form {
-    @apply flex flex-col gap-5;
+    @apply flex flex-col gap-4;
   }
 
   .create-room-modal__layout {
-    @apply flex flex-col gap-4;
+    @apply flex flex-col gap-3;
   }
 
   .create-room-modal__notice {
@@ -3383,12 +3408,16 @@
     @apply rounded-[1.5rem] border border-white/10 bg-white/5 p-4 sm:p-5;
   }
 
+  .create-room-modal[data-create-room-density="compact-terminal"] .create-room-modal__section {
+    @apply rounded-[1.35rem] border border-white/10 bg-white/5 p-3.5 sm:p-4;
+  }
+
   .create-room-modal__section--advanced {
     @apply bg-slate-950/35;
   }
 
   .create-room-modal__section-header {
-    @apply mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between;
+    @apply mb-3 flex flex-col gap-2.5 md:flex-row md:items-start md:justify-between;
   }
 
   .create-room-modal__section-kicker {
@@ -3404,7 +3433,7 @@
   }
 
   .create-room-modal__section-copy {
-    @apply text-xs text-slate-300 md:max-w-[18rem] md:text-right;
+    @apply text-xs leading-5 text-slate-300 md:max-w-[16rem] md:text-right;
   }
 
   .create-room-modal__mode-grid {
@@ -3412,7 +3441,7 @@
   }
 
   .create-room-modal__mode-strip {
-    @apply grid gap-3 lg:grid-cols-3;
+    @apply grid gap-2.5 lg:grid-cols-3;
   }
 
   .create-room-modal__mode-panel,
@@ -3422,11 +3451,11 @@
   }
 
   .create-room-modal__mode-sidebar {
-    @apply mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(16rem,0.9fr)];
+    @apply mt-3 grid gap-2.5 lg:grid-cols-[minmax(0,1.1fr)_minmax(15rem,0.9fr)];
   }
 
   .create-room-modal__mode-summary {
-    @apply rounded-[1.25rem] border border-white/10 bg-black/20 px-4 py-3;
+    @apply rounded-[1.15rem] border border-white/10 bg-black/20 px-3.5 py-3;
   }
 
   .create-room-modal__mode-summary-label {
@@ -3434,15 +3463,15 @@
   }
 
   .create-room-modal__mode-summary-copy {
-    @apply mt-2 text-sm leading-6 text-slate-200;
+    @apply mt-1.5 text-sm leading-5 text-slate-200;
   }
 
   .create-room-modal__settings-grid {
-    @apply grid gap-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)];
+    @apply grid gap-3 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)];
   }
 
   .create-room-modal__main-grid {
-    @apply grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)];
+    @apply grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(19rem,0.85fr)];
   }
 
   .create-room-modal__field {
@@ -3450,11 +3479,11 @@
   }
 
   .create-room-modal__mode-facts {
-    @apply grid gap-3;
+    @apply grid gap-2.5;
   }
 
   .create-room-modal__mode-fact {
-    @apply rounded-[1.1rem] border border-white/10 bg-black/25 px-4 py-3;
+    @apply rounded-[1rem] border border-white/10 bg-black/25 px-3.5 py-3;
   }
 
   .create-room-modal__mode-fact-label {
@@ -3462,11 +3491,11 @@
   }
 
   .create-room-modal__mode-fact-value {
-    @apply mt-2 block text-sm leading-6 text-slate-100;
+    @apply mt-1.5 block text-sm leading-5 text-slate-100;
   }
 
   .create-room-modal__mode-fact-chips {
-    @apply mt-2 flex flex-wrap gap-2;
+    @apply mt-1.5 flex flex-wrap gap-1.5;
   }
 
   .create-room-modal__section-toggle {
@@ -3478,11 +3507,11 @@
   }
 
   .create-room-modal__advanced-body {
-    @apply mt-4 flex flex-col gap-4;
+    @apply mt-3 flex flex-col gap-3;
   }
 
   .create-room-modal__toggle-row {
-    @apply flex items-center justify-between gap-4 rounded-[1.25rem] border border-white/10 bg-black/20 px-4 py-4;
+    @apply flex items-center justify-between gap-4 rounded-[1.15rem] border border-white/10 bg-black/20 px-3.5 py-3.5;
   }
 
   .create-room-modal__allin-grid {
@@ -3498,11 +3527,11 @@
   }
 
   .create-room-modal__preset-note {
-    @apply rounded-[1.25rem] border border-white/10 bg-slate-950/55 p-4;
+    @apply rounded-[1.15rem] border border-white/10 bg-slate-950/55 p-3.5;
   }
 
   .create-room-modal__footer {
-    @apply pt-3;
+    @apply pt-2.5;
   }
 
   .create-room-modal__footer-actions {

@@ -22,6 +22,7 @@ const Modal = ({
   headerClassName = '',
   footerClassName = '',
   closeOnEscape = closeOnOverlayClick,
+  contentProps = {},
 }) => {
   const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
@@ -83,13 +84,14 @@ const Modal = ({
         data-modal-phone-surface={phoneSurface}
         onClick={handleOverlayClick}
       >
-        <div
-          className={`modal-content ${maxWidth} ${className}`}
-          data-modal-surface={surface}
-          data-modal-phone-surface={phoneSurface}
-          onClick={(e) => e.stopPropagation()}
-          {...dialogProps}
-        >
+      <div
+        className={`modal-content ${maxWidth} ${className}`}
+        data-modal-surface={surface}
+        data-modal-phone-surface={phoneSurface}
+        onClick={(e) => e.stopPropagation()}
+        {...contentProps}
+        {...dialogProps}
+      >
           {(title || showCloseButton) && (
             <div className={`modal-content__header ${headerClassName}`}>
               {renderTitle('text-xl sm:text-2xl font-bold text-poker-gold')}
@@ -128,6 +130,7 @@ const Modal = ({
         data-modal-surface={surface}
         data-modal-phone-surface={phoneSurface}
         onClick={(e) => e.stopPropagation()}
+        {...contentProps}
         {...dialogProps}
       >
         {(title || showCloseButton) && (
