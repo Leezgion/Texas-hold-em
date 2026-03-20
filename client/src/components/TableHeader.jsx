@@ -48,6 +48,7 @@ const TableHeader = ({
       data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-page-scroll={viewportLayout?.pageScroll}
       data-hero-dock-priority={shellView?.heroDockPriority}
+      data-stage-spacing={shellView?.stageSpacing}
     >
       <div className="room-terminal-header__content flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="room-terminal-header__identity flex flex-wrap items-center gap-3">

@@ -1,4 +1,4 @@
-import { ROOM_MODE_META } from '../utils/productMode.js';
+import { ROOM_MODE_META, getDisplayModeTheme } from '../utils/productMode.js';
 
 const REBUY_BLOCKED_STATES = new Set(['active_in_hand', 'all_in_this_hand', 'disconnected']);
 const SEATED_STATES = new Set([
@@ -386,6 +386,8 @@ export function deriveTableShellView({
 } = {}) {
   const roomMode = roomSettings?.roomMode || 'pro';
   const modeMeta = ROOM_MODE_META[roomMode] || ROOM_MODE_META.pro;
+  const displayModeTheme = getDisplayModeTheme(effectiveDisplayMode);
+  const roomTerminalTheme = displayModeTheme.roomTerminal || {};
   const safePlayers = Array.isArray(players) ? players : [];
   const currentTurnPlayer =
     roomState === 'in_hand' && Number.isInteger(gameState?.currentPlayerIndex)
@@ -423,6 +425,8 @@ export function deriveTableShellView({
     heroDockPriority: 'always-visible',
     heroDockStyle: 'table-coupled-terminal',
     heroDockDensity: 'high-efficiency',
+    stageSpacing: roomTerminalTheme.desktop?.stageSpacing || 'tight',
+    supportLauncherDensity: roomTerminalTheme.phone?.supportLauncherDensity || 'compact',
     supportSurfacePolicy: TERMINAL_SUPPORT_SURFACE_POLICY,
     pendingJoinBanner: derivePendingJoinBanner(currentPlayer, roomState),
     recoveryBanner: deriveRecoveryBanner(currentPlayer, roomState),

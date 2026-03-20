@@ -16,6 +16,7 @@ test('GameRoom keeps the dock inside the single-screen main stage stack', () => 
   assert.match(gameRoomSource, /'--room-terminal-dock-reserve': `\$\{measuredDockReservePx\}px`/);
   assert.match(gameRoomSource, /data-hero-dock-style=\{shellView\.heroDockStyle\}/);
   assert.match(gameRoomSource, /data-hero-dock-density=\{shellView\.heroDockDensity\}/);
+  assert.match(gameRoomSource, /data-stage-spacing=\{shellView\.stageSpacing\}/);
   assert.match(gameRoomSource, /const isTableCoupledHeroDock = shellView\.heroDockStyle === 'table-coupled-terminal'/);
   assert.match(
     gameRoomSource,
@@ -38,6 +39,8 @@ test('TableHeader and ActionDock consume the terminal layout policies from the v
   assert.match(actionDockSource, /data-dock-presentation=\{viewportLayout\?\.dockPresentation\}/);
   assert.match(actionDockSource, /data-hero-dock-style=\{shellView\?\.heroDockStyle\}/);
   assert.match(actionDockSource, /data-hero-dock-density=\{shellView\?\.heroDockDensity\}/);
+  assert.match(actionDockSource, /data-support-launcher-density=\{shellView\?\.supportLauncherDensity\}/);
+  assert.match(tableHeaderSource, /data-stage-spacing=\{shellView\?\.stageSpacing\}/);
   assert.match(tableHeaderSource, /data-support-surface-policy-key=\{viewportLayout\?\.supportSurfacePolicyKey\}/);
   assert.match(actionDockSource, /data-support-surface-policy-key=\{viewportLayout\?\.supportSurfacePolicyKey\}/);
 });
