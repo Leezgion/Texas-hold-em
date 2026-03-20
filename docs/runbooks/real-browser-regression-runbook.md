@@ -165,6 +165,7 @@ For Poker OS shell work, add these spot checks explicitly:
   - for future reruns, use a naming pattern like `density-<date>-<surface>.png` and substitute the current room IDs instead of reusing `SBJV6M` / `0G3HEY`
   - the committed `density-*.png` files are the 2026-03-20 pre-convention sample set for this pass
   - `.runlogs/` is gitignored, so commit evidence with `git add -f <paths>`
+  - viewport numbers like `1366x900` and `390x844` are CSS-pixel viewports; screenshot files may be DPR-scaled and therefore larger on disk
   - screenshots:
     - `.runlogs/density-create-room-desktop.png`
     - `.runlogs/density-room-desktop-waiting.png`
@@ -199,10 +200,10 @@ For Poker OS shell work, add these spot checks explicitly:
   - room phone roster sheet open viewport `390x844` (`0G3HEY`):
     - page `844/844`
     - shell `844/844`
-    - sheet density `tight-terminal`
-    - presentation `bottom-sheet`
-    - railSurfaceVariant `panel`
-    - launcher `compact`
+    - `data-sheet-density="tight-terminal"`
+    - `data-room-panel-presentation="bottom-sheet"`
+    - `data-surface-variant="panel"`
+    - `data-support-launcher-density="compact"`
     - body `516/773`
   - HMR pitfall:
     - after many HMR updates, a page can hit `useGame must be used within a GameProvider`

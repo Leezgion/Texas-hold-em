@@ -1064,6 +1064,7 @@ This pass closed the density-pass browser-evidence task on the reused local-dev 
   - `.runlogs/density-room-phone-waiting.png`
   - `.runlogs/density-room-phone-roster-sheet.png`
 - the committed `density-*.png` files are the 2026-03-20 pre-convention sample set for this pass
+- viewport numbers like `1366x900` and `390x844` are CSS-pixel viewports; screenshot files may be DPR-scaled and therefore larger on disk
 - create-room desktop compact mode tiles:
   - modal dialog footprint: `1024x868`
   - modal-body-owned overflow case, not a locked room-shell page-scroll case
@@ -1100,10 +1101,10 @@ This pass closed the density-pass browser-evidence task on the reused local-dev 
 - room phone roster sheet open viewport `390x844`:
   - `scrollHeight = clientHeight = 844`
   - shell `scrollHeight = clientHeight = 844`
-  - `sheetDensity = tight-terminal`
-  - `sheetPresentation = bottom-sheet`
-  - `railSurfaceVariant = panel`
-  - `launcherDensity = compact`
+  - `data-sheet-density = tight-terminal`
+  - `data-room-panel-presentation = bottom-sheet`
+  - `data-surface-variant = panel`
+  - `data-support-launcher-density = compact`
   - sheet body scroll remained independent: `clientHeight = 516`, `scrollHeight = 773`
   - the page itself did not regain a hidden scroll range under the sheet
 - density-specific pitfall recorded:
