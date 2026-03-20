@@ -20,7 +20,6 @@ const TableStageChrome = ({
     roomShellLayout,
     tableProfile,
   });
-  const railFlow = chrome.table.outerRy > chrome.table.outerRx ? 'vertical-rail' : 'horizontal-rail';
   const feltTone = chrome.material?.feltTone || 'deep-green-velvet';
   const railTone = chrome.material?.railTone || 'black-gold';
   const centerSurfaceModel = chrome.centerSurfaceModel || 'broadcast-clean-center';
@@ -58,7 +57,6 @@ const TableStageChrome = ({
       className="table-stage-chrome"
       data-table-family={chrome.family}
       data-table-profile={chrome.profile}
-      data-table-rail-flow={railFlow}
       data-center-surface-model={centerSurfaceModel}
       data-table-material-felt-tone={feltTone}
       data-table-material-rail-tone={railTone}
@@ -66,23 +64,6 @@ const TableStageChrome = ({
       style={{ width: `${chrome.width}px`, height: `${chrome.height}px` }}
       aria-hidden="true"
     >
-      <defs>
-        <linearGradient id="table-rail-metal" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="rgba(247, 229, 173, 0.9)" />
-          <stop offset="50%" stopColor="rgba(191, 143, 45, 0.9)" />
-          <stop offset="100%" stopColor="rgba(64, 42, 14, 0.98)" />
-        </linearGradient>
-        <linearGradient id="table-rail-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="rgba(11, 13, 18, 0.9)" />
-          <stop offset="100%" stopColor="rgba(1, 3, 6, 0.98)" />
-        </linearGradient>
-        <radialGradient id="table-felt-sheen" cx="50%" cy="44%" r="68%">
-          <stop offset="0%" stopColor="rgba(172, 222, 161, 0.08)" />
-          <stop offset="58%" stopColor="rgba(17, 86, 53, 0.2)" />
-          <stop offset="100%" stopColor="rgba(3, 18, 11, 0)" />
-        </radialGradient>
-      </defs>
-
       <g className="table-stage-chrome__rail-stack">
         <rect
           className="table-stage-chrome__outer-rail"
@@ -92,7 +73,6 @@ const TableStageChrome = ({
           height={outerRail.height}
           rx={railRadius}
           ry={railRadius}
-          fill="url(#table-rail-metal)"
         />
         <rect
           className="table-stage-chrome__transition-rail"
@@ -102,7 +82,6 @@ const TableStageChrome = ({
           height={transitionRail.height}
           rx={transitionRadius}
           ry={transitionRadius}
-          fill="url(#table-rail-shadow)"
         />
         <rect
           className="table-stage-chrome__felt"
@@ -112,7 +91,6 @@ const TableStageChrome = ({
           height={feltSurface.height}
           rx={feltRadius}
           ry={feltRadius}
-          fill="url(#table-felt-sheen)"
         />
       </g>
 

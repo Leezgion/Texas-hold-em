@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { build } from 'esbuild';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+const require = createRequire(import.meta.url);
 
 import {
   buildStageChromeLayout,
@@ -19,6 +28,55 @@ function getCommunityRowWidth({ cardWidth, gap, cardCount = 5 }) {
 function readSource(relativePath) {
   return fs.readFileSync(new URL(relativePath, import.meta.url), 'utf8');
 }
+
+const bundledModuleCache = new Map();
+const bundledTempDirs = [];
+const bundledExternal = [
+  'react',
+  'react-dom',
+  'react-dom/server',
+  'motion',
+  'motion/*',
+  'motion/react',
+  'react-router-dom',
+  'socket.io-client',
+  'lucide-react',
+];
+
+async function loadBundledModule(relativePath) {
+  const cached = bundledModuleCache.get(relativePath);
+
+  if (cached) {
+    return cached;
+  }
+
+  const entryFilePath = fileURLToPath(new URL(relativePath, import.meta.url));
+  const tempDir = mkdtempSync(path.join(process.cwd(), '.tmp-stage-layout-'));
+  const outfile = path.join(tempDir, `${path.basename(relativePath, '.jsx')}.cjs`);
+
+  await build({
+    entryPoints: [entryFilePath],
+    bundle: true,
+    format: 'cjs',
+    platform: 'node',
+    outfile,
+    jsx: 'automatic',
+    logLevel: 'silent',
+    external: bundledExternal,
+  });
+
+  const module = require(outfile);
+  const loaded = { module, tempDir };
+  bundledModuleCache.set(relativePath, loaded);
+  bundledTempDirs.push(tempDir);
+  return loaded;
+}
+
+test.after(() => {
+  for (const tempDir of bundledTempDirs) {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
 
 test('keeps five community cards inside the phone table safe width', () => {
   const layout = resolveCommunityCardLayout({
@@ -319,15 +377,27 @@ test('phone capsule stage chrome exposes vertical shell semantics and dock-side 
   assert.ok(layout.boardTray.clearanceToStageBand >= 10);
 });
 
-test('TableStageChrome renders broadcast rail and felt material hooks instead of ellipse HUD rings', () => {
-  const source = readSource('../components/TableStageChrome.jsx');
+test('TableStageChrome renders broadcast rail and felt material hooks instead of ellipse HUD rings', async () => {
+  const { module } = await loadBundledModule('../components/TableStageChrome.jsx');
+  const chrome = renderToStaticMarkup(
+    React.createElement(module.default, {
+      seatGuides: [],
+      viewportWidth: 1280,
+      viewportHeight: 900,
+      tableDiameter: 352,
+    })
+  );
 
-  assert.match(source, /data-table-rail-flow/);
-  assert.match(source, /data-center-surface-model/);
-  assert.match(source, /data-table-material-felt-tone/);
-  assert.match(source, /data-table-material-rail-tone/);
-  assert.match(source, /<rect/);
-  assert.doesNotMatch(source, /<ellipse/);
+  assert.match(chrome, /data-table-family="broadcast-tactical-9max"/);
+  assert.match(chrome, /data-center-surface-model="broadcast-clean-center"/);
+  assert.match(chrome, /data-table-material-felt-tone="deep-green-velvet"/);
+  assert.match(chrome, /data-table-material-rail-tone="black-gold"/);
+  assert.match(chrome, /table-stage-chrome__outer-rail/);
+  assert.match(chrome, /table-stage-chrome__transition-rail/);
+  assert.match(chrome, /table-stage-chrome__felt/);
+  assert.match(chrome, /table-stage-chrome__center-frame-shell/);
+  assert.doesNotMatch(chrome, /data-table-rail-flow/);
+  assert.doesNotMatch(chrome, /<defs>/);
 });
 
 test('TableStageChrome stops using the old shell-orbit HUD framing language', () => {
