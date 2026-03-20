@@ -707,7 +707,7 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Tactical Arena winner-first settlement hierarchy rerun with fresh browser evidence on `2026-03-19`
 - `[done]` Tactical Arena Motion choreography rerun with fresh browser evidence on `2026-03-19`
 - `[done]` Tactical Arena rail Motion + SVG-backed stage rerun with fresh browser evidence on `2026-03-19`
-- `[done]` Single-screen terminal motion-cost / mobile-scroll rerun with fresh browser evidence on `2026-03-19`
+- `[done]` Single-screen terminal motion-cost / mobile-scroll rerun with fresh browser evidence on `2026-03-20`
 - `[done]` Unified `9-max` room-shell table contract now advertised through `roomTerminal` metadata
 - unified `9-max` browser rerun on the live local `3001 / 5173` dev pair:
   - create-room desktop modal stayed readable after the dialog-semantics pass:

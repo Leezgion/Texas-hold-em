@@ -30,6 +30,8 @@
     "touchScroll": "sheet-body-y-only",
     "motionEnterMs": 120,
     "motionEmphasisMs": 160,
+    "potAnimation": "none",
+    "beaconAnimation": "none",
     "presentation": "bottom-sheet",
     "rootInert": true
   }
