@@ -30,6 +30,17 @@ function assertUsesExplicitAnchorPath(layout, playerCount) {
   assert.equal(layout.templateSource, 'explicit-9max');
 }
 
+function indexBySlotId(positions) {
+  const entries = positions.map((seat) => {
+    assert.ok(seat.slotId, `missing slotId for ${seat.anchorRole || 'unknown-seat'}`);
+    assert.ok(seat.normalized, `missing normalized projection for ${seat.slotId}`);
+
+    return [seat.slotId, seat];
+  });
+
+  return Object.fromEntries(entries);
+}
+
 function getSeatCardCollisionPairs({
   positions,
   cardWidth,
@@ -362,6 +373,74 @@ test('phone 9-max canonical anchors stay mirrored around the center line', () =>
   assert.equal(layout[7].y, layout[8].y);
 });
 
+test('desktop canonical slots keep normalized coordinates stable across active footprints', () => {
+  const splitStage = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 1440,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+  const threeColumn = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 1600,
+    roomShellLayout: 'three-column',
+    tableDiameter: 320,
+    profile: 'desktop-oval',
+  });
+
+  const splitBySlot = indexBySlotId(splitStage);
+  const threeBySlot = indexBySlotId(threeColumn);
+
+  assert.deepEqual(
+    Object.keys(splitBySlot).sort(),
+    Object.keys(threeBySlot).sort()
+  );
+  assert.equal(Object.keys(splitBySlot).length, 9);
+
+  for (const slotId of Object.keys(splitBySlot)) {
+    assert.deepEqual(
+      splitBySlot[slotId].normalized,
+      threeBySlot[slotId].normalized,
+      `desktop normalized projection for ${slotId}`
+    );
+  }
+});
+
+test('phone canonical slots keep normalized coordinates stable across active footprints', () => {
+  const portrait = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 390,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+  const shortHeight = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 844,
+    roomShellLayout: 'stacked',
+    tableDiameter: 186,
+    profile: 'phone-oval',
+  });
+
+  const portraitBySlot = indexBySlotId(portrait);
+  const shortBySlot = indexBySlotId(shortHeight);
+
+  assert.deepEqual(
+    Object.keys(portraitBySlot).sort(),
+    Object.keys(shortBySlot).sort()
+  );
+  assert.equal(Object.keys(portraitBySlot).length, 9);
+
+  for (const slotId of Object.keys(portraitBySlot)) {
+    assert.deepEqual(
+      portraitBySlot[slotId].normalized,
+      shortBySlot[slotId].normalized,
+      `phone normalized projection for ${slotId}`
+    );
+  }
+});
+
 test('supported 2-9 player rooms keep the canonical table body and stage band clear', () => {
   const cases = [
     {
@@ -391,14 +470,20 @@ test('supported 2-9 player rooms keep the canonical table body and stage band cl
         tableDiameter: config.tableDiameter,
         profile: config.profile,
       });
+      const runtimeFootprint = getSeatRingLayoutProfile({
+        viewportWidth: config.viewportWidth,
+        roomShellLayout: config.roomShellLayout,
+        tableDiameter: config.tableDiameter,
+        profile: config.profile,
+      });
 
       assert.equal(layout.overlaps.tableBody, 0, `${config.profile} table overlap for ${playerCount} players`);
       assert.equal(layout.overlaps.stageBand, 0, `${config.profile} stage overlap for ${playerCount} players`);
       assert.equal(
         countTableRectOverlaps({
           positions: layout,
-          tableWidth: config.tableDiameter,
-          tableHeight: config.tableDiameter,
+          tableWidth: runtimeFootprint.tableWidth,
+          tableHeight: runtimeFootprint.tableHeight,
           cardWidth: config.cardWidth,
           cardHeight: config.cardHeight,
         }),

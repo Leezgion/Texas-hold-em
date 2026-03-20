@@ -40,93 +40,69 @@ function resolveTableFootprint({ tableDiameter = 0, profile = 'desktop-oval' } =
 }
 
 const SUPPORTS_2_TO_9_OCCUPANCY = {
-  2: [0, 7],
-  3: [0, 5, 6],
-  4: [0, 1, 2, 7],
-  5: [0, 1, 2, 5, 6],
-  6: [0, 1, 2, 3, 4, 7],
-  7: [0, 1, 2, 3, 4, 5, 6],
-  8: [0, 1, 2, 3, 4, 5, 6, 7],
-  9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+  2: ['hero', 'top-left'],
+  3: ['hero', 'upper-left', 'upper-right'],
+  4: ['hero', 'lower-left', 'lower-right', 'top-left'],
+  5: ['hero', 'lower-left', 'lower-right', 'upper-left', 'upper-right'],
+  6: ['hero', 'lower-left', 'lower-right', 'middle-left', 'middle-right', 'top-left'],
+  7: ['hero', 'lower-left', 'lower-right', 'middle-left', 'middle-right', 'upper-left', 'upper-right'],
+  8: ['hero', 'lower-left', 'lower-right', 'middle-left', 'middle-right', 'upper-left', 'upper-right', 'top-left'],
+  9: ['hero', 'lower-left', 'lower-right', 'middle-left', 'middle-right', 'upper-left', 'upper-right', 'top-left', 'top-right'],
 };
 
-function buildCanonicalSeatAnchors({
+const CANONICAL_SLOT_MODELS = {
+  'desktop-oval': [
+    { slotId: 'hero', anchorRole: 'hero', anchorZone: 'table-edge', normalized: { x: 0, y: 0.78 } },
+    { slotId: 'lower-left', anchorRole: 'lower-left', anchorZone: 'table-flank', normalized: { x: -1, y: 0.48 } },
+    { slotId: 'lower-right', anchorRole: 'lower-right', anchorZone: 'table-flank', normalized: { x: 1, y: 0.48 } },
+    { slotId: 'middle-left', anchorRole: 'middle-left', anchorZone: 'table-flank', normalized: { x: -1, y: 0 } },
+    { slotId: 'middle-right', anchorRole: 'middle-right', anchorZone: 'table-flank', normalized: { x: 1, y: 0 } },
+    { slotId: 'upper-left', anchorRole: 'upper-left', anchorZone: 'table-flank', normalized: { x: -1, y: -0.48 } },
+    { slotId: 'upper-right', anchorRole: 'upper-right', anchorZone: 'table-flank', normalized: { x: 1, y: -0.48 } },
+    { slotId: 'top-left', anchorRole: 'top-left', anchorZone: 'table-flank', normalized: { x: -1, y: -1 } },
+    { slotId: 'top-right', anchorRole: 'top-right', anchorZone: 'table-flank', normalized: { x: 1, y: -1 } },
+  ],
+  'phone-oval': [
+    { slotId: 'hero', anchorRole: 'hero', anchorZone: 'dock-edge', normalized: { x: 0, y: 0.72 } },
+    { slotId: 'lower-left', anchorRole: 'lower-left', anchorZone: 'table-flank', normalized: { x: -1, y: 0.48 } },
+    { slotId: 'lower-right', anchorRole: 'lower-right', anchorZone: 'table-flank', normalized: { x: 1, y: 0.48 } },
+    { slotId: 'middle-left', anchorRole: 'middle-left', anchorZone: 'table-flank', normalized: { x: -1, y: 0 } },
+    { slotId: 'middle-right', anchorRole: 'middle-right', anchorZone: 'table-flank', normalized: { x: 1, y: 0 } },
+    { slotId: 'upper-left', anchorRole: 'upper-left', anchorZone: 'table-flank', normalized: { x: -1, y: -0.48 } },
+    { slotId: 'upper-right', anchorRole: 'upper-right', anchorZone: 'table-flank', normalized: { x: 1, y: -0.48 } },
+    { slotId: 'top-left', anchorRole: 'top-left', anchorZone: 'table-flank', normalized: { x: -1, y: -1 } },
+    { slotId: 'top-right', anchorRole: 'top-right', anchorZone: 'table-flank', normalized: { x: 1, y: -1 } },
+  ],
+};
+
+function resolveCanonicalProjection({
   tableWidth,
   tableHeight,
   cardWidth,
   cardHeight,
   horizontalGap,
   verticalGap,
-  heroAnchorZone,
-  heroYMultiplier,
 } = {}) {
-  const halfWidth = tableWidth / 2;
-  const halfHeight = tableHeight / 2;
-  const pairX = Math.round(halfWidth + cardWidth * 0.5 + horizontalGap);
-  const heroY = Math.round(halfHeight + cardHeight * heroYMultiplier + verticalGap * 1.05);
-  const lowerY = Math.round(halfHeight);
-  const middleY = 0;
-  const upperY = -Math.round(halfHeight);
-  const topY = Math.round(
-    -(halfHeight + cardHeight * (heroAnchorZone === 'dock-edge' ? 1.0 : 0.98) + verticalGap * (heroAnchorZone === 'dock-edge' ? 1.15 : 1.2))
-  );
+  return {
+    xExtent: Math.round(tableWidth / 2 + cardWidth / 2 + horizontalGap),
+    yExtent: Math.round(tableHeight / 2 + cardHeight + verticalGap * 1.2),
+  };
+}
 
-  return [
-    {
-      x: 0,
-      y: heroY,
-      anchorZone: heroAnchorZone,
-      anchorRole: 'hero',
-    },
-    {
-      x: -pairX,
-      y: lowerY,
-      anchorZone: 'table-flank',
-      anchorRole: 'lower-left',
-    },
-    {
-      x: pairX,
-      y: lowerY,
-      anchorZone: 'table-flank',
-      anchorRole: 'lower-right',
-    },
-    {
-      x: -pairX,
-      y: middleY,
-      anchorZone: 'table-flank',
-      anchorRole: 'middle-left',
-    },
-    {
-      x: pairX,
-      y: middleY,
-      anchorZone: 'table-flank',
-      anchorRole: 'middle-right',
-    },
-    {
-      x: -pairX,
-      y: upperY,
-      anchorZone: 'table-flank',
-      anchorRole: 'upper-left',
-    },
-    {
-      x: pairX,
-      y: upperY,
-      anchorZone: 'table-flank',
-      anchorRole: 'upper-right',
-    },
-    {
-      x: -pairX,
-      y: topY,
-      anchorZone: 'table-flank',
-      anchorRole: 'top-left',
-    },
-    {
-      x: pairX,
-      y: topY,
-      anchorZone: 'table-flank',
-      anchorRole: 'top-right',
-    },
-  ].map(roundPosition);
+function buildCanonicalSeatAnchors({ profile, ...layoutProfile } = {}) {
+  const slotModel = CANONICAL_SLOT_MODELS[profile] || [];
+  const projection = resolveCanonicalProjection(layoutProfile);
+
+  return slotModel.map((slot) =>
+    roundPosition({
+      slotId: slot.slotId,
+      x: projection.xExtent * slot.normalized.x,
+      y: projection.yExtent * slot.normalized.y,
+      anchorZone: slot.anchorZone,
+      anchorRole: slot.anchorRole,
+      normalized: { ...slot.normalized },
+    })
+  );
 }
 
 function buildSeatRingPositionsForSupportedProfile({
@@ -135,18 +111,19 @@ function buildSeatRingPositionsForSupportedProfile({
   ...layoutProfile
 } = {}) {
   const template = buildCanonicalSeatAnchors({
+    profile,
     ...layoutProfile,
-    heroAnchorZone: profile === 'phone-oval' ? 'dock-edge' : 'table-edge',
-    heroYMultiplier: profile === 'phone-oval' ? 0.38 : 0.52,
   });
-  const templateIndexes = SUPPORTS_2_TO_9_OCCUPANCY[playerCount];
+  const templateSlotIds = SUPPORTS_2_TO_9_OCCUPANCY[playerCount];
 
-  if (!templateIndexes) {
+  if (!templateSlotIds) {
     return null;
   }
 
-  return templateIndexes.map((index) => ({
-    ...template[index],
+  const templateBySlotId = new Map(template.map((slot) => [slot.slotId, slot]));
+
+  return templateSlotIds.map((slotId) => ({
+    ...templateBySlotId.get(slotId),
   }));
 }
 

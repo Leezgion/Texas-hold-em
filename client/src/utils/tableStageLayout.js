@@ -165,13 +165,15 @@ export function resolveRoomGeometryContract({
       : [];
   const canonicalSlots = canonicalPositions.map((position, seatIndex) => ({
     seatIndex,
-    anchorSlotId: `${tableSurfaceLayout.profile}:${safePlayerCount}:${position.anchorRole || 'ring'}:${seatIndex}`,
+    slotId: position.slotId || null,
+    anchorSlotId: `${tableSurfaceLayout.profile}:${safePlayerCount}:${position.slotId || position.anchorRole || 'ring'}:${seatIndex}`,
     anchorRole: position.anchorRole || null,
     anchorZone: position.anchorZone || null,
     position: {
       x: position.x,
       y: position.y,
       profile: tableSurfaceLayout.profile,
+      slotId: position.slotId || null,
       anchorRole: position.anchorRole || null,
       anchorZone: position.anchorZone || null,
     },
@@ -277,7 +279,11 @@ export function buildStageChromeLayout({
       occupied: Boolean(sourceSeat.occupied),
       isCurrentTurn: Boolean(sourceSeat.isCurrentTurn),
       isHero: Boolean(sourceSeat.isHero || sourceSeat.isCurrentPlayer),
-      anchorSlotId: canonicalPosition?.anchorRole ? `${surface.profile}:${seatCount}:${canonicalPosition.anchorRole}:${relativeSeat}` : null,
+      slotId: canonicalPosition?.slotId || null,
+      anchorSlotId:
+        canonicalPosition?.slotId || canonicalPosition?.anchorRole
+          ? `${surface.profile}:${seatCount}:${canonicalPosition?.slotId || canonicalPosition?.anchorRole}:${relativeSeat}`
+          : null,
       anchorRole: canonicalPosition?.anchorRole || null,
       anchorZone: canonicalPosition?.anchorZone || null,
       cx: canonicalPosition ? centerX + canonicalPosition.x : centerX,
