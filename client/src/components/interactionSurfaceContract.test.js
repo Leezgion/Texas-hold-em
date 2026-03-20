@@ -24,3 +24,8 @@ test('SeatCard renders embedded plaque class names instead of floating card clas
   assert.match(seatCardSource, /arena-seat-plaque--current-turn/);
   assert.doesNotMatch(seatCardSource, /arena-seat-card/);
 });
+
+test('EmptySeat uses embedded plaque trigger classes', () => {
+  assert.match(emptySeatSource, /arena-seat-plaque__empty-trigger/);
+  assert.doesNotMatch(emptySeatSource, /arena-seat-empty-trigger/);
+});

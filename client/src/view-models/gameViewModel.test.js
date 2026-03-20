@@ -237,6 +237,68 @@ test('threads canonical anchor semantics through every seat-ring entry', () => {
   );
 });
 
+test('maps canonical-role anchorZone fallbacks without flattening top and desktop hero zones', () => {
+  const canonicalSlots = [
+    {
+      seatIndex: 0,
+      anchorSlotId: 'desktop-4-hero-0',
+      anchorRole: 'hero',
+      position: { x: 0, y: 240, profile: 'desktop-oval' },
+    },
+    {
+      seatIndex: 1,
+      anchorSlotId: 'desktop-4-lower-left-1',
+      anchorRole: 'lower-left',
+      position: { x: -210, y: 124, profile: 'desktop-oval' },
+    },
+    {
+      seatIndex: 2,
+      anchorSlotId: 'desktop-4-top-2',
+      anchorRole: 'top',
+      position: { x: 0, y: -280, profile: 'desktop-oval' },
+    },
+    {
+      seatIndex: 3,
+      anchorSlotId: 'desktop-4-lower-right-3',
+      anchorRole: 'lower-right',
+      position: { x: 210, y: 124, profile: 'desktop-oval' },
+    },
+  ];
+
+  const seatRing = deriveSeatRingView({
+    maxPlayers: 4,
+    currentPlayerId: 'hero',
+    roomState: 'in_hand',
+    players: [
+      {
+        id: 'hero',
+        nickname: 'Hero',
+        seat: 0,
+        chips: 980,
+        tableState: 'active_in_hand',
+      },
+      {
+        id: 'villain',
+        nickname: 'Villain',
+        seat: 2,
+        chips: 1200,
+        tableState: 'active_in_hand',
+      },
+    ],
+    gameState: {
+      dealerPosition: 2,
+    },
+    canonicalSlots,
+  });
+
+  assert.equal(seatRing[0].anchorRole, 'hero');
+  assert.equal(seatRing[0].anchorZone, 'table-edge');
+  assert.equal(seatRing[2].anchorRole, 'top');
+  assert.equal(seatRing[2].anchorZone, 'stage-band-clear');
+  assert.equal(seatRing[1].densityTier, 'compact-secondary');
+  assert.equal(seatRing[2].densityTier, 'compact-secondary');
+});
+
 test('exposes explicit canonical slot indices on rotated seat-ring entries', () => {
   const canonicalSlots = [
     {

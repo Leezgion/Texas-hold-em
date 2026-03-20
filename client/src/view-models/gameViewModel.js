@@ -483,6 +483,10 @@ function deriveSeatAnchorRole(canonicalSlot = null, relativeSlotIndex = 0) {
     return canonicalSlot.anchorRole;
   }
 
+  if (canonicalSlot?.position?.anchorRole) {
+    return canonicalSlot.position.anchorRole;
+  }
+
   return relativeSlotIndex === 0 ? 'hero' : 'ring';
 }
 
@@ -491,7 +495,19 @@ function deriveSeatAnchorZone(canonicalSlot = null, anchorRole = 'ring') {
     return canonicalSlot.anchorZone;
   }
 
-  return anchorRole === 'hero' ? 'dock-edge' : 'table-flank';
+  if (canonicalSlot?.position?.anchorZone) {
+    return canonicalSlot.position.anchorZone;
+  }
+
+  if (anchorRole === 'top') {
+    return 'stage-band-clear';
+  }
+
+  if (anchorRole === 'hero') {
+    return canonicalSlot?.position?.profile === 'phone-oval' ? 'dock-edge' : 'table-edge';
+  }
+
+  return 'table-flank';
 }
 
 function deriveSeatDensityTier(relativeSlotIndex = 0) {
