@@ -75,11 +75,13 @@ test('enforces the stricter phone-terminal motion contract', () => {
 
   assert.equal(phone.allowBackdropBlurStacks, false);
   assert.equal(phone.pageFloat, 'disabled');
+  assert.equal(phone.sheetPresentation, 'tight-terminal');
   assert.equal(phone.primaryTransitions, 'transform-opacity-only');
   assert.equal(phone.surfaceBlur, 'minimal');
   assert.equal(phone.ambientMotion, 'reduced');
   assert.equal(desktop.allowBackdropBlurStacks, true);
   assert.equal(desktop.pageFloat, 'enabled');
+  assert.equal(desktop.sheetPresentation, 'panel-surface');
   assert.equal(desktop.primaryTransitions, 'full-shell');
   assert.ok(phone.stage.initial.y < desktop.stage.initial.y);
   assert.ok(phone.cue.initial.y < desktop.cue.initial.y);

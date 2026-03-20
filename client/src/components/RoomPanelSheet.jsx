@@ -15,6 +15,7 @@ const RoomPanelSheet = ({
   const surfaceRef = useRef(null);
   const closeButtonRef = useRef(null);
   const titleId = useId();
+  const sheetDensity = presentation === 'bottom-sheet' ? 'tight-terminal' : 'panel-surface';
   const { handleKeyDown } = useModalSurface({
     open,
     onClose,
@@ -37,11 +38,13 @@ const RoomPanelSheet = ({
     <div
       className="room-panel-sheet"
       data-room-panel-presentation={presentation}
+      data-sheet-density={sheetDensity}
       onClick={onClose}
     >
       <div
         className="room-panel-sheet__surface"
         data-room-panel-presentation={presentation}
+        data-sheet-density={sheetDensity}
         onClick={(event) => event.stopPropagation()}
         ref={surfaceRef}
         role="dialog"
@@ -50,7 +53,7 @@ const RoomPanelSheet = ({
         tabIndex={-1}
         onKeyDown={handleKeyDown}
       >
-        <div className="room-panel-sheet__header">
+        <div className="room-panel-sheet__header" data-sheet-density={sheetDensity}>
           <div className="min-w-0">
             <div className="room-panel-sheet__kicker">Support Surface</div>
             <h2 id={titleId} className="room-panel-sheet__title">
@@ -61,6 +64,7 @@ const RoomPanelSheet = ({
           <button
             type="button"
             className="room-panel-sheet__close"
+            data-sheet-density={sheetDensity}
             ref={closeButtonRef}
             onClick={onClose}
           >
@@ -68,7 +72,7 @@ const RoomPanelSheet = ({
           </button>
         </div>
 
-        <div className="room-panel-sheet__body">{children}</div>
+        <div className="room-panel-sheet__body" data-sheet-density={sheetDensity}>{children}</div>
       </div>
     </div>,
     portalHost

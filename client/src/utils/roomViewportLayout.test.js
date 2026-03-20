@@ -9,6 +9,7 @@ test('phone portrait keeps the hero dock fixed and moves support surfaces into s
 
   assert.equal(layout.viewportModel, 'phone-terminal');
   assert.equal(layout.pageScroll, 'locked');
+  assert.equal(layout.supportLauncherDensity, 'compact');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.dockPresentation, 'overlay-terminal');
   assert.equal(layout.headerDensity, 'compact');
@@ -125,6 +126,7 @@ test('phone and compact desktop expose explicit support-surface policy metadata'
   const phone = resolveRoomViewportLayout({ width: 390, height: 844 });
   const compactDesktop = resolveRoomViewportLayout({ width: 1280, height: 900 });
 
+  assert.equal(phone.supportLauncherDensity, 'compact');
   assert.deepEqual(phone.supportSurfacePolicy, {
     phone: 'sheet',
     tablet: 'panel',
@@ -140,6 +142,7 @@ test('phone and compact desktop expose explicit support-surface policy metadata'
     desktop: 'panel',
     ultrawide: 'rail',
   });
+  assert.equal(compactDesktop.supportLauncherDensity, 'regular');
   assert.equal(compactDesktop.supportSurfacePolicyKey, 'desktop');
   assert.equal(compactDesktop.supportSurfacePolicy[compactDesktop.supportSurfacePolicyKey], 'panel');
 });

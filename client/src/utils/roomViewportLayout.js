@@ -46,6 +46,10 @@ function resolveSupportSurfacePolicyKey(viewportModel = 'desktop-terminal') {
   }
 }
 
+function resolveSupportLauncherDensity(viewportModel = 'desktop-terminal') {
+  return viewportModel === 'phone-terminal' ? 'compact' : 'regular';
+}
+
 export function resolveStageViewportContract({ width = 0, height = 0 } = {}) {
   const safeWidth = Number(width) || 0;
   const heightClass = resolveHeightClass({ width: safeWidth, height });
@@ -79,6 +83,7 @@ function buildViewportLayout({
     roomScrollContract: 'single-screen',
     heroDockPlacement: 'fixed-bottom',
     dockPresentation: 'overlay-terminal',
+    supportLauncherDensity: resolveSupportLauncherDensity(viewportModel),
     headerDensity,
     headerActionModel: prefersToolbarActions ? 'toolbar' : 'room-sheet-first',
     dockReservePx: resolveDockReservePx({

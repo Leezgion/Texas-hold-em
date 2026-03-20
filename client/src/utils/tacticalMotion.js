@@ -89,6 +89,7 @@ function buildViewportMotionContract(viewport, ambientOpacity, motion = {}) {
     viewport,
     tableVisualCueStyle: 'broadcast-tactical',
     viewportShellStyle: isPhoneTerminal ? 'restrained-terminal' : 'restrained-competition',
+    sheetPresentation: isPhoneTerminal ? 'tight-terminal' : 'panel-surface',
     tacticalCueBudget: isPhoneTerminal ? 'conservative-focused' : 'focused',
     tacticalCueScope: 'turn-plaque-dock-settlement',
     allowBackdropBlurStacks: !isPhoneTerminal,

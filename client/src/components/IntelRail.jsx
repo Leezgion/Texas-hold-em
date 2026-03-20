@@ -77,6 +77,7 @@ const IntelRail = ({
   };
   const summaryCards = summaryCardsByMode[effectiveDisplayMode] || summaryCardsByMode.pro;
   const ContainerTag = presentation === 'rail' ? 'aside' : 'div';
+  const supportLauncherDensity = viewportLayout?.supportLauncherDensity || 'regular';
 
   return (
     <ContainerTag
@@ -86,6 +87,7 @@ const IntelRail = ({
       data-support-surface-policy={viewportLayout?.supportSurfacePolicyValue}
       data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-surface-variant={presentation}
+      data-support-launcher-density={supportLauncherDensity}
     >
       <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--intel rounded-[1.75rem] p-4 sm:p-5">
         <div className="tactical-rail__header">

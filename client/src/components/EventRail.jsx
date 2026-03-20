@@ -30,6 +30,7 @@ const EventRail = ({
   const historyLineLimit = effectiveDisplayMode === 'study' ? 6 : 4;
   const centerPriority = eventRailView.livePotSummary?.centerPriority || 'board-pot-street';
   const ContainerTag = presentation === 'rail' ? 'aside' : 'div';
+  const supportLauncherDensity = viewportLayout?.supportLauncherDensity || 'regular';
 
   return (
     <ContainerTag
@@ -39,6 +40,7 @@ const EventRail = ({
       data-support-surface-policy={viewportLayout?.supportSurfacePolicyValue}
       data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-surface-variant={presentation}
+      data-support-launcher-density={supportLauncherDensity}
     >
       <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--event rounded-[1.75rem] p-4 sm:p-5">
         <div className="tactical-rail__header">
