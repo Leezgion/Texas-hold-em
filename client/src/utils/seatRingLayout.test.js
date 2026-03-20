@@ -335,42 +335,54 @@ test('keeps supported phone 7-9 player rooms collision-free and anchored to the 
   }
 });
 
-test('desktop 9-max canonical anchors stay mirrored around the center line', () => {
+test('desktop 8-player canonical occupancy stays mirrored around the center line', () => {
   const layout = buildSeatRingPositions({
-    playerCount: 9,
+    playerCount: 8,
     viewportWidth: 1440,
     roomShellLayout: 'split-stage',
     tableDiameter: 352,
     profile: 'desktop-oval',
   });
 
-  assert.equal(layout[1].x, -layout[2].x);
-  assert.equal(layout[1].y, layout[2].y);
-  assert.equal(layout[3].x, -layout[4].x);
-  assert.equal(layout[3].y, layout[4].y);
-  assert.equal(layout[5].x, -layout[6].x);
-  assert.equal(layout[5].y, layout[6].y);
-  assert.equal(layout[7].x, -layout[8].x);
-  assert.equal(layout[7].y, layout[8].y);
+  const seatsBySlot = indexBySlotId(layout);
+
+  assert.deepEqual(
+    layout.map((seat) => seat.slotId),
+    ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right']
+  );
+  assert.equal(seatsBySlot.top.x, 0);
+  assert.equal(seatsBySlot.top.anchorRole, 'top');
+  assert.equal(seatsBySlot['lower-left'].x, -seatsBySlot['lower-right'].x);
+  assert.equal(seatsBySlot['lower-left'].y, seatsBySlot['lower-right'].y);
+  assert.equal(seatsBySlot['upper-left'].x, -seatsBySlot['upper-right'].x);
+  assert.equal(seatsBySlot['upper-left'].y, seatsBySlot['upper-right'].y);
+  assert.equal(seatsBySlot['top-left'].x, -seatsBySlot['top-right'].x);
+  assert.equal(seatsBySlot['top-left'].y, seatsBySlot['top-right'].y);
 });
 
-test('phone 9-max canonical anchors stay mirrored around the center line', () => {
+test('phone 8-player canonical occupancy stays mirrored around the center line', () => {
   const layout = buildSeatRingPositions({
-    playerCount: 9,
+    playerCount: 8,
     viewportWidth: 390,
     roomShellLayout: 'stacked',
     tableDiameter: 208,
     profile: 'phone-oval',
   });
 
-  assert.equal(layout[1].x, -layout[2].x);
-  assert.equal(layout[1].y, layout[2].y);
-  assert.equal(layout[3].x, -layout[4].x);
-  assert.equal(layout[3].y, layout[4].y);
-  assert.equal(layout[5].x, -layout[6].x);
-  assert.equal(layout[5].y, layout[6].y);
-  assert.equal(layout[7].x, -layout[8].x);
-  assert.equal(layout[7].y, layout[8].y);
+  const seatsBySlot = indexBySlotId(layout);
+
+  assert.deepEqual(
+    layout.map((seat) => seat.slotId),
+    ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right']
+  );
+  assert.equal(seatsBySlot.top.x, 0);
+  assert.equal(seatsBySlot.top.anchorRole, 'top');
+  assert.equal(seatsBySlot['lower-left'].x, -seatsBySlot['lower-right'].x);
+  assert.equal(seatsBySlot['lower-left'].y, seatsBySlot['lower-right'].y);
+  assert.equal(seatsBySlot['upper-left'].x, -seatsBySlot['upper-right'].x);
+  assert.equal(seatsBySlot['upper-left'].y, seatsBySlot['upper-right'].y);
+  assert.equal(seatsBySlot['top-left'].x, -seatsBySlot['top-right'].x);
+  assert.equal(seatsBySlot['top-left'].y, seatsBySlot['top-right'].y);
 });
 
 test('short-handed canonical occupancy uses the documented opposite top seat semantics', () => {
@@ -458,6 +470,88 @@ test('short-handed canonical occupancy uses the documented opposite top seat sem
     assert.equal(topSeat.x, 0, `${config.label} top seat should stay centered`);
     assert.equal(topSeat.anchorRole, 'top', `${config.label} top seat role`);
     assert.equal(topSeat.anchorZone, 'stage-band-clear', `${config.label} top seat zone`);
+    assert.equal(layout.overlaps.tableBody, 0, `${config.label} table overlap`);
+    assert.equal(layout.overlaps.stageBand, 0, `${config.label} stage overlap`);
+  }
+});
+
+test('late short-handed occupancies use the documented 9-slot tournament table semantics', () => {
+  const cases = [
+    {
+      label: 'desktop seven-handed',
+      playerCount: 7,
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      profile: 'desktop-oval',
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'upper-right', 'lower-right'],
+      expectedSlotCount: 7,
+    },
+    {
+      label: 'desktop eight-handed',
+      playerCount: 8,
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      profile: 'desktop-oval',
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right'],
+      expectedSlotCount: 8,
+    },
+    {
+      label: 'desktop nine-handed',
+      playerCount: 9,
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      profile: 'desktop-oval',
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right', 'near-hero-right'],
+      expectedSlotCount: 9,
+    },
+    {
+      label: 'phone seven-handed',
+      playerCount: 7,
+      viewportWidth: 390,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      profile: 'phone-oval',
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'upper-right', 'lower-right'],
+      expectedSlotCount: 7,
+    },
+    {
+      label: 'phone eight-handed',
+      playerCount: 8,
+      viewportWidth: 390,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      profile: 'phone-oval',
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right'],
+      expectedSlotCount: 8,
+    },
+    {
+      label: 'phone nine-handed',
+      playerCount: 9,
+      viewportWidth: 390,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      profile: 'phone-oval',
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right', 'near-hero-right'],
+      expectedSlotCount: 9,
+    },
+  ];
+
+  for (const config of cases) {
+    const layout = buildSeatRingPositions({
+      playerCount: config.playerCount,
+      viewportWidth: config.viewportWidth,
+      roomShellLayout: config.roomShellLayout,
+      tableDiameter: config.tableDiameter,
+      profile: config.profile,
+    });
+
+    const uniqueSlotIds = new Set(layout.map((seat) => seat.slotId));
+
+    assert.deepEqual(layout.map((seat) => seat.slotId), config.expectedSlots, `${config.label} slot semantics`);
+    assert.equal(uniqueSlotIds.size, config.expectedSlotCount, `${config.label} unique slot count`);
     assert.equal(layout.overlaps.tableBody, 0, `${config.label} table overlap`);
     assert.equal(layout.overlaps.stageBand, 0, `${config.label} stage overlap`);
   }
