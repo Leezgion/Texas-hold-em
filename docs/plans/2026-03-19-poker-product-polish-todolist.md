@@ -985,12 +985,12 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Extend Motion choreography into `EventRail` and `Hand Tape`
 - `[done]` Upgrade `TableStage` to an SVG-backed stage chrome
 - `[done]` Capture tablet and ultrawide shell screenshots after the Motion pass
-- `[next]` Run the `Broadcast Tactical Density Pass` to compress dead spacing in the create-room sheet, room shell, plaques, and phone support launchers without breaking the single-screen contract. The browser-evidence pass must capture all of:
+- `[done]` Run the `Broadcast Tactical Density Pass` to compress dead spacing in the create-room sheet, room shell, plaques, and phone support launchers without breaking the single-screen contract. The browser-evidence pass captured all of:
   - create-room desktop compact mode tiles
   - room desktop waiting with tighter header/dock spacing
   - room desktop live-hand with co-visible table and action area
   - room phone waiting with compact launcher row
-  - room phone support sheet open without page-length scroll
+  - room phone roster sheet open without page-length scroll
 
 ## Risks To Watch
 
@@ -1063,6 +1063,7 @@ This pass closed the density-pass browser-evidence task on the reused local-dev 
   - `.runlogs/density-room-desktop-live.png`
   - `.runlogs/density-room-phone-waiting.png`
   - `.runlogs/density-room-phone-roster-sheet.png`
+- the committed `density-*.png` files are the 2026-03-20 pre-convention sample set for this pass
 - create-room desktop compact mode tiles:
   - modal dialog footprint: `1024x868`
   - modal-body-owned overflow case, not a locked room-shell page-scroll case
@@ -1096,7 +1097,7 @@ This pass closed the density-pass browser-evidence task on the reused local-dev 
   - hero dock remained visible with `top = 547.72`, `bottom = 842.40`, `height = 294.68`
   - DOM/a11y extracted sample text for plaques: `座1 Hero HOST 1,000 等待开始`; `座2 OPEN SEAT`
   - the compact launcher row stayed present and the page-length scroll stayed locked out
-- room phone portrait support sheet open viewport `390x844`:
+- room phone roster sheet open viewport `390x844`:
   - `scrollHeight = clientHeight = 844`
   - shell `scrollHeight = clientHeight = 844`
   - `sheetDensity = tight-terminal`

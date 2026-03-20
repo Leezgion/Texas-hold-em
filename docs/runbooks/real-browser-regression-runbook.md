@@ -159,10 +159,11 @@ For Poker OS shell work, add these spot checks explicitly:
   - room desktop waiting with tighter header/dock spacing
   - room desktop live-hand with co-visible table and action area
   - room phone waiting with compact launcher row
-  - room phone support sheet open without page-length scroll
+  - room phone roster sheet open without page-length scroll
 - broadcast tactical density evidence: record the exact artifacts and measurements:
   - treat the following as a dated sample capture set from `2026-03-20`, not as fixed future inputs
   - for future reruns, use a naming pattern like `density-<date>-<surface>.png` and substitute the current room IDs instead of reusing `SBJV6M` / `0G3HEY`
+  - the committed `density-*.png` files are the 2026-03-20 pre-convention sample set for this pass
   - screenshots:
     - `.runlogs/density-create-room-desktop.png`
     - `.runlogs/density-room-desktop-waiting.png`
@@ -194,7 +195,7 @@ For Poker OS shell work, add these spot checks explicitly:
     - shell `844/844`
     - hero dock `top 547.72 / bottom 842.40 / height 294.68`
     - DOM/a11y extracted sample text for plaques: `69x98` -> `座1 Hero HOST 1,000 等待开始`; `69x109` -> `座2 OPEN SEAT`
-  - room phone roster sheet viewport `390x844` (`0G3HEY`):
+  - room phone roster sheet open viewport `390x844` (`0G3HEY`):
     - page `844/844`
     - shell `844/844`
     - sheet density `tight-terminal`
