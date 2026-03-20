@@ -734,6 +734,56 @@ This is a client preference. It should not change server truth or give one playe
     - `2 / 6 / 9` players all stayed on the same tournament-capsule stage language
     - hero stayed anchored to the canonical hero slot
     - no scenario reintroduced page-scroll fighting once the room-shell scroll contract was threaded through the tablet / short-height path
+- canonical-table + true-modal follow-up rerun on the same live `3001 / 5173` dev pair:
+  - create-room desktop modal rerun after the portal-root fix:
+    - screenshot:
+      - `.runlogs/task3-create-room-modal-desktop.png`
+    - browser contract:
+      - `rootInert = true`
+      - `rootAriaHidden = true`
+      - `modalRootHasDialog = true`
+      - `dialogInsideRoot = false`
+      - `Tab` remained inside `#modal-root`
+      - `Escape` closed the dialog and restored focus to `创建新游戏`
+  - room support-sheet desktop rerun on `0LMECG` after the portal-root fix:
+    - screenshot:
+      - `.runlogs/task3-room-sheet-desktop.png`
+    - browser contract:
+      - `rootInert = true`
+      - `rootAriaHidden = true`
+      - `modalRootHasDialog = true`
+      - `dialogInsideRoot = false`
+      - focus opened on `关闭`
+      - forward `Tab` stayed inside the sheet and reached `补码`
+      - backward `Shift+Tab` stayed inside the sheet and reached `分享房间链接`
+      - `Escape` cleared the dialog and removed inert from `#root`
+  - fresh `9-max` desktop rerun on room `0LMECG`:
+    - screenshot:
+      - `.runlogs/task3-room-9max-desktop.png`
+    - browser metrics:
+      - `tableFamily = tournament-capsule-9max`
+      - `tableProfile = desktop-oval`
+      - `anchorCount = 9`
+      - `scrollHeight = clientHeight = 900`
+      - `tableBody overlaps = 0`
+      - `cardBand overlaps = 0`
+  - fresh `9-max` phone rerun on room `0LMECG`:
+    - screenshot:
+      - `.runlogs/task3-room-9max-phone.png`
+    - browser metrics:
+      - `tableFamily = tournament-capsule-9max`
+      - `tableProfile = phone-oval`
+      - `anchorCount = 9`
+      - `scrollHeight = clientHeight = 844`
+      - `tableBody overlaps = 0`
+      - `cardBand overlaps = 0`
+  - backend truth for this rerun:
+    - `.runlogs/task3-room-9max-debug.json`
+    - `settings.maxPlayers = 9`
+    - `settings.roomMode = pro`
+  - this rerun closed the two final branch-review concerns:
+    - canonical slot geometry is now footprint-driven and stable across active footprints
+    - modalized surfaces now render outside the inerted app root instead of inside it
 
 ## Next Tactical Arena Backlog
 

@@ -166,6 +166,12 @@ For Poker OS shell work, add these spot checks explicitly:
 - room shell mobile: opening `Players / History / Room` must not reintroduce page-length scrolling; verify:
   - `document.scrollingElement.scrollHeight === document.scrollingElement.clientHeight`
   - the sheet body still has its own independent scroll range when content is long
+- true-modal verification: when `CreateRoomModal` or a room support sheet is open, verify all of:
+  - `document.getElementById('root').hasAttribute('inert') === true`
+  - `document.getElementById('modal-root')` contains the active `[role="dialog"]`
+  - `document.getElementById('root').contains(activeDialog) === false`
+  - forward `Tab` and backward `Shift+Tab` both stay inside the dialog/sheet
+  - `Escape` clears the dialog and removes `inert` from `#root`
 - tactical dock: stat cards wrap cleanly on phone portrait instead of compressing into unreadable chips
 - roster and stack ledger: long device-style nicknames truncate instead of widening narrow cards
 - cross-mode check: `club / pro / study` remain visibly different in theme and information emphasis
@@ -231,3 +237,4 @@ Expected final state:
   - `document.scrollingElement.scrollHeight === clientHeight`
   - `.arena-seat-anchor` overlap checks against both the table body and the community-card band
 - Do not budget wide short-height `phone-oval` plaques from the true-phone footprint. The `2026-03-19` rerun only went green after the helper reserved a footprint closer to `94 x 138`, which browser rects exposed before the unit tests did.
+- A modal controller test is not enough if the dialog still renders inside `#root`; if `#root` is inerted, modalized surfaces must live in a separate host such as `#modal-root` or the browser contract is still broken.
