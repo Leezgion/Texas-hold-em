@@ -181,6 +181,13 @@ For Poker OS shell work, add these spot checks explicitly:
     - `anchorCount = 9`
     - `tableBody overlaps = 0`
     - `cardBand overlaps = 0`
+- canonical-seat-symmetry verification: after any canonical-slot refactor, do not stop at `2 / 6 / 9`; recheck at least:
+  - one `7-player` desktop room
+  - one `8-player` desktop room
+  - one `8-player` phone room
+  - one `9-player` desktop room
+  - one `9-player` phone room
+- canonical-seat-symmetry verification: record the top and mirrored flank centers for `7 / 8 / 9` rooms so the documented tournament reading order is provable from browser geometry, not only from helper-level tests
 - short-handed occupancy verification: after any occupancy-map change, recheck at least:
   - one `2-player` room and confirm the non-hero seat is a true centered opposite `top` seat
   - one `6-player` room and confirm the layout reads as:
@@ -241,6 +248,7 @@ Expected final state:
 - If a browser page shows old room state, verify the room via `/api/debug/rooms/:roomId` before assuming a gameplay bug.
 - If multi-player testing looks wrong, check whether you accidentally reused the same browser context and therefore the same `deviceId`.
 - If one page on the same device suddenly fails `createRoom` or `joinRoom` with `设备未注册`, check whether another page re-registered the same `deviceId` more recently.
+- If you sequentially create new single-player evidence rooms from the same `deviceId`, the newly hosted room can replace the older empty room and make the old room id return `404`; capture evidence immediately or use isolated browser contexts for parallel `7 / 8 / 9` occupancy proof.
 - If a stale room page now shows `当前页面身份已失效，请刷新页面后重试。`, treat that as the expected front-end warning for a stolen `deviceId -> socket` mapping rather than a gameplay-state bug.
 - `stop-all` should always be followed by `status`; a printed success line is not sufficient evidence that both listeners are already gone.
 - After any Tailwind or build-pipeline dependency change, always hard-restart `5173`; do not trust a dev server that stayed alive across `npm install` or config rewiring.

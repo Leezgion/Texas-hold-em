@@ -832,6 +832,124 @@ This is a client preference. It should not change server truth or give one playe
           - `座3` / `座5` at `y = 248`
         - result:
           - short-handed occupancy now matches the documented hero + flank pairs + true `top` seat model
+  - post-review true `9-anchor` occupancy rerun after `300fb24` and the fail-closed clamp follow-up:
+    - `7-player` room `B562EM` desktop `1280x900`:
+      - screenshot:
+        - `.runlogs/task3-room-7p-desktop-fresh.png`
+      - backend truth:
+        - `.runlogs/task3-room-7p-debug.json`
+        - `settings.maxPlayers = 7`
+        - `settings.roomMode = pro`
+      - browser geometry:
+        - `tableFamily = tournament-capsule-9max`
+        - `tableProfile = desktop-oval`
+        - `anchorCount = 7`
+        - `scrollHeight = clientHeight = 900`
+        - `tableBody overlaps = 0`
+        - `cardBand overlaps = 0`
+        - seat centers:
+          - left column:
+            - `(257, 646)`
+            - `(257, 328)`
+            - `(257, 156)`
+          - centered top:
+            - `(640, 156)`
+          - right column:
+            - `(1023, 328)`
+            - `(1023, 646)`
+      - result:
+        - `7-player` now reads as hero bottom + three left-side anchors + true centered `top` + mirrored upper/lower right anchors
+    - `8-player` room `J5VWKI` desktop `1280x900`:
+      - screenshot:
+        - `.runlogs/task3-room-8p-desktop-fresh.png`
+      - backend truth:
+        - `.runlogs/task3-room-8p-debug.json`
+        - `settings.maxPlayers = 8`
+        - `settings.roomMode = pro`
+      - browser geometry:
+        - `tableFamily = tournament-capsule-9max`
+        - `tableProfile = desktop-oval`
+        - `anchorCount = 8`
+        - `scrollHeight = clientHeight = 900`
+        - `tableBody overlaps = 0`
+        - `cardBand overlaps = 0`
+        - centered top:
+          - `(640, 156)`
+        - mirrored flank pairs:
+          - top:
+            - `(257, 156)` / `(1023, 156)`
+          - upper:
+            - `(257, 328)` / `(1023, 328)`
+          - lower:
+            - `(257, 646)` / `(1023, 646)`
+    - the same `8-player` room `J5VWKI` rerun at phone portrait `390x844`:
+      - screenshot:
+        - `.runlogs/task3-room-8p-phone.png`
+      - browser geometry:
+        - `tableFamily = tournament-capsule-9max`
+        - `tableProfile = phone-oval`
+        - `anchorCount = 8`
+        - `scrollHeight = clientHeight = 844`
+        - `tableBody overlaps = 0`
+        - `cardBand overlaps = 0`
+        - centered top:
+          - `(195, 307)`
+        - mirrored flank pairs:
+          - top:
+            - `(46, 307)` / `(344, 307)`
+          - upper:
+            - `(46, 464)` / `(344, 464)`
+          - lower:
+            - `(46, 754)` / `(344, 754)`
+    - `9-player` room `T1AFB6` desktop `1280x900`:
+      - screenshot:
+        - `.runlogs/task3-room-9p-desktop.png`
+      - backend truth:
+        - `.runlogs/task3-room-9p-debug.json`
+        - `settings.maxPlayers = 9`
+        - `settings.roomMode = pro`
+      - browser geometry:
+        - `tableFamily = tournament-capsule-9max`
+        - `tableProfile = desktop-oval`
+        - `anchorCount = 9`
+        - `scrollHeight = clientHeight = 900`
+        - `tableBody overlaps = 0`
+        - `cardBand overlaps = 0`
+        - centered top:
+          - `(640, 156)`
+        - mirrored flank pairs:
+          - top:
+            - `(257, 156)` / `(1023, 156)`
+          - upper:
+            - `(257, 328)` / `(1023, 328)`
+          - lower:
+            - `(257, 646)` / `(1023, 646)`
+        - ninth anchor:
+          - near-hero-right at `(977, 811)`
+    - the same `9-player` room `T1AFB6` rerun at phone portrait `390x844`:
+      - screenshot:
+        - `.runlogs/task3-room-9p-phone.png`
+      - browser geometry:
+        - `tableFamily = tournament-capsule-9max`
+        - `tableProfile = phone-oval`
+        - `anchorCount = 9`
+        - `scrollHeight = clientHeight = 844`
+        - `tableBody overlaps = 0`
+        - `cardBand overlaps = 0`
+        - centered top:
+          - `(195, 307)`
+        - mirrored flank pairs:
+          - top:
+            - `(46, 307)` / `(344, 307)`
+          - upper:
+            - `(46, 464)` / `(344, 464)`
+          - lower:
+            - `(46, 754)` / `(344, 754)`
+        - ninth anchor:
+          - near-hero-right at `(326, 905)`
+  - this rerun closed the remaining “10-slot model” concern:
+    - the validated browser path now covers `7 / 8 / 9` players, not only `2 / 6 / 9`
+    - `10+` inputs are now clamped back to the explicit `9-anchor` contract instead of silently reviving the legacy generic ring
 
 ## Next Tactical Arena Backlog
 
