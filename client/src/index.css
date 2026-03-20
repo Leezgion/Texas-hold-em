@@ -1270,11 +1270,12 @@
   }
 
   .table-stage-table-shell {
+    --table-stage-shell-radius: 48% / 36%;
     border-width: 10px;
     border-color: rgba(16, 22, 32, 0.88);
     width: 100%;
     max-width: min(94vw, 38rem);
-    border-radius: 48% / 36%;
+    border-radius: var(--table-stage-shell-radius);
     box-shadow:
       0 24px 64px rgba(0, 0, 0, 0.42),
       inset 0 0 0 1px rgba(255, 255, 255, 0.05),
@@ -1287,6 +1288,14 @@
   .table-stage-table-shell[data-table-family="tournament-capsule-9max"] {
     border-color: rgba(8, 19, 15, 0.96);
     background: radial-gradient(circle at 50% 32%, #126d43 0%, #0d5735 56%, #072e1f 100%);
+  }
+
+  .table-stage-table-shell[data-table-shell-orientation="horizontal-capsule"] {
+    --table-stage-shell-radius: 48% / 36%;
+  }
+
+  .table-stage-table-shell[data-table-shell-orientation="vertical-capsule"] {
+    --table-stage-shell-radius: 38% / 48%;
   }
 
   .table-stage-table-shell[data-height-class="short-height"] {
@@ -1304,7 +1313,6 @@
 
   .table-stage-table-shell[data-table-profile="phone-oval"] {
     max-width: min(82vw, 16rem);
-    border-radius: 38% / 48%;
   }
 
   .table-stage-board-tray {

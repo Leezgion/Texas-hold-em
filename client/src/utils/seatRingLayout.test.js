@@ -421,6 +421,28 @@ test('phone 8-player canonical occupancy stays mirrored around the center line',
   assert.equal(seatsBySlot['top-left'].y, seatsBySlot['top-right'].y);
 });
 
+test('phone 8-player portrait capsule tapers the top corners inboard from the lower rail', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 8,
+    viewportWidth: 390,
+    viewportHeight: 844,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+
+  const seatsBySlot = indexBySlotId(layout);
+
+  assert.ok(
+    Math.abs(seatsBySlot['top-left'].x) < Math.abs(seatsBySlot['lower-left'].x),
+    `expected top-left ${seatsBySlot['top-left'].x} to sit inboard of lower-left ${seatsBySlot['lower-left'].x}`
+  );
+  assert.ok(
+    Math.abs(seatsBySlot['top-right'].x) < Math.abs(seatsBySlot['lower-right'].x),
+    `expected top-right ${seatsBySlot['top-right'].x} to sit inboard of lower-right ${seatsBySlot['lower-right'].x}`
+  );
+});
+
 test('short-handed canonical occupancy uses the documented opposite top seat semantics', () => {
   const cases = [
     {

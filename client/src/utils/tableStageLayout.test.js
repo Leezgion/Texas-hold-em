@@ -333,6 +333,17 @@ test('TableStage threads the resolved table profile into the community board ren
   assert.match(source, /data-table-shell-orientation/);
 });
 
+test('visible felt shell radius follows shell-orientation semantics instead of a phone-only override', () => {
+  const source = readSource('../index.css');
+
+  assert.match(source, /\.table-stage-table-shell\[data-table-shell-orientation="horizontal-capsule"\]/);
+  assert.match(source, /\.table-stage-table-shell\[data-table-shell-orientation="vertical-capsule"\]/);
+  assert.doesNotMatch(
+    source,
+    /\.table-stage-table-shell\[data-table-profile="phone-oval"\]\s*\{[^}]*border-radius/
+  );
+});
+
 test('keeps phone portrait stage chrome compact while preserving marker metadata', () => {
   const layout = buildStageChromeLayout({
     viewportWidth: 390,
