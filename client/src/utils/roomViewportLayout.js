@@ -25,6 +25,27 @@ function resolveDockReservePx({ viewportModel = 'desktop-terminal', heightClass 
   }
 }
 
+const SUPPORT_SURFACE_POLICY = Object.freeze({
+  phone: 'sheet',
+  tablet: 'panel',
+  desktop: 'panel-or-rail',
+  ultrawide: 'rail',
+});
+
+function resolveSupportSurfacePolicyKey(viewportModel = 'desktop-terminal') {
+  switch (viewportModel) {
+    case 'phone-terminal':
+      return 'phone';
+    case 'tablet-terminal':
+      return 'tablet';
+    case 'ultrawide-terminal':
+      return 'ultrawide';
+    case 'desktop-terminal':
+    default:
+      return 'desktop';
+  }
+}
+
 export function resolveStageViewportContract({ width = 0, height = 0 } = {}) {
   const safeWidth = Number(width) || 0;
   const heightClass = resolveHeightClass({ width: safeWidth, height });
@@ -39,12 +60,12 @@ export function resolveStageViewportContract({ width = 0, height = 0 } = {}) {
 function buildViewportLayout({
   viewportModel,
   supportSurfaceModel,
-  supportSurfacePolicy,
   contentMaxWidth,
   width = 0,
   height = 0,
 } = {}) {
   const stageViewportContract = resolveStageViewportContract({ width, height });
+  const supportSurfacePolicyKey = resolveSupportSurfacePolicyKey(viewportModel);
   const headerDensity =
     viewportModel === 'phone-terminal' || stageViewportContract.heightClass === 'short-height'
       ? 'compact'
@@ -65,7 +86,9 @@ function buildViewportLayout({
       heightClass: stageViewportContract.heightClass,
     }),
     supportSurfaceModel,
-    supportSurfacePolicy,
+    supportSurfacePolicy: SUPPORT_SURFACE_POLICY,
+    supportSurfacePolicyKey,
+    supportSurfacePolicyValue: SUPPORT_SURFACE_POLICY[supportSurfacePolicyKey],
     contentMaxWidth,
     ...stageViewportContract,
   };
@@ -78,7 +101,6 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
     return buildViewportLayout({
       viewportModel: 'ultrawide-terminal',
       supportSurfaceModel: 'rails-and-overlays',
-      supportSurfacePolicy: 'rails-and-overlays',
       contentMaxWidth: '1600px',
       width: safeWidth,
       height,
@@ -89,7 +111,6 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
     return buildViewportLayout({
       viewportModel: 'desktop-terminal',
       supportSurfaceModel: 'slide-panels',
-      supportSurfacePolicy: 'slide-panels',
       contentMaxWidth: '1440px',
       width: safeWidth,
       height,
@@ -100,7 +121,6 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
     return buildViewportLayout({
       viewportModel: 'tablet-terminal',
       supportSurfaceModel: 'slide-panels',
-      supportSurfacePolicy: 'slide-panels',
       contentMaxWidth: '100%',
       width: safeWidth,
       height,
@@ -110,7 +130,6 @@ export function resolveRoomViewportLayout({ width = 0, height = 0 } = {}) {
   return buildViewportLayout({
     viewportModel: 'phone-terminal',
     supportSurfaceModel: 'bottom-sheets',
-    supportSurfacePolicy: 'bottom-sheets',
     contentMaxWidth: '100%',
     width: safeWidth,
     height,

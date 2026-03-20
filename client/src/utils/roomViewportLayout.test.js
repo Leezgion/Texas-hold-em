@@ -15,7 +15,14 @@ test('phone portrait keeps the hero dock fixed and moves support surfaces into s
   assert.equal(layout.headerActionModel, 'room-sheet-first');
   assert.equal(layout.dockReservePx, 224);
   assert.equal(layout.supportSurfaceModel, 'bottom-sheets');
-  assert.equal(layout.supportSurfacePolicy, 'bottom-sheets');
+  assert.deepEqual(layout.supportSurfacePolicy, {
+    phone: 'sheet',
+    tablet: 'panel',
+    desktop: 'panel-or-rail',
+    ultrawide: 'rail',
+  });
+  assert.equal(layout.supportSurfacePolicyKey, 'phone');
+  assert.equal(layout.supportSurfacePolicyValue, 'sheet');
   assert.equal(layout.contentMaxWidth, '100%');
 });
 
@@ -46,7 +53,14 @@ test('desktop keeps the room terminal centered with secondary rails', () => {
   assert.equal(layout.headerActionModel, 'toolbar');
   assert.equal(layout.dockReservePx, 196);
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
-  assert.equal(layout.supportSurfacePolicy, 'slide-panels');
+  assert.deepEqual(layout.supportSurfacePolicy, {
+    phone: 'sheet',
+    tablet: 'panel',
+    desktop: 'panel-or-rail',
+    ultrawide: 'rail',
+  });
+  assert.equal(layout.supportSurfacePolicyKey, 'desktop');
+  assert.equal(layout.supportSurfacePolicyValue, 'panel-or-rail');
   assert.equal(layout.contentMaxWidth, '1440px');
 });
 
@@ -62,7 +76,14 @@ test('ultrawide expands the same terminal without turning it into a page layout'
   assert.equal(layout.headerActionModel, 'toolbar');
   assert.equal(layout.dockReservePx, 208);
   assert.equal(layout.supportSurfaceModel, 'rails-and-overlays');
-  assert.equal(layout.supportSurfacePolicy, 'rails-and-overlays');
+  assert.deepEqual(layout.supportSurfacePolicy, {
+    phone: 'sheet',
+    tablet: 'panel',
+    desktop: 'panel-or-rail',
+    ultrawide: 'rail',
+  });
+  assert.equal(layout.supportSurfacePolicyKey, 'ultrawide');
+  assert.equal(layout.supportSurfacePolicyValue, 'rail');
   assert.equal(layout.contentMaxWidth, '1600px');
 });
 
@@ -95,8 +116,32 @@ test('compact desktop keeps support surfaces out of the main page flow', () => {
   assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
-  assert.equal(layout.supportSurfacePolicy, 'slide-panels');
+  assert.equal(layout.supportSurfacePolicyKey, 'desktop');
+  assert.equal(layout.supportSurfacePolicyValue, 'panel-or-rail');
   assert.equal(layout.contentMaxWidth, '1440px');
+});
+
+test('phone and compact desktop expose explicit support-surface policy metadata', () => {
+  const phone = resolveRoomViewportLayout({ width: 390, height: 844 });
+  const compactDesktop = resolveRoomViewportLayout({ width: 1280, height: 900 });
+
+  assert.deepEqual(phone.supportSurfacePolicy, {
+    phone: 'sheet',
+    tablet: 'panel',
+    desktop: 'panel-or-rail',
+    ultrawide: 'rail',
+  });
+  assert.equal(phone.supportSurfacePolicyKey, 'phone');
+  assert.equal(phone.supportSurfacePolicy[phone.supportSurfacePolicyKey], 'sheet');
+
+  assert.deepEqual(compactDesktop.supportSurfacePolicy, {
+    phone: 'sheet',
+    tablet: 'panel',
+    desktop: 'panel-or-rail',
+    ultrawide: 'rail',
+  });
+  assert.equal(compactDesktop.supportSurfacePolicyKey, 'desktop');
+  assert.equal(compactDesktop.supportSurfacePolicy[compactDesktop.supportSurfacePolicyKey], 'panel-or-rail');
 });
 
 test('short-height landscape windows switch the room terminal into a compressed stage budget', () => {

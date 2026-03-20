@@ -83,6 +83,8 @@ const IntelRail = ({
       className="room-terminal-support-rail tactical-rail tactical-rail--intel"
       data-viewport-model={viewportLayout?.viewportModel}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
+      data-support-surface-policy={viewportLayout?.supportSurfacePolicyValue}
+      data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-surface-variant={presentation}
     >
       <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--intel rounded-[1.75rem] p-4 sm:p-5">

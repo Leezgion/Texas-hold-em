@@ -51,8 +51,8 @@ const ActionDock = ({
   );
   const supportsSecondaryPanels =
     typeof onToggleSupportPanel === 'function' &&
-    viewportLayout?.supportSurfaceModel &&
-    viewportLayout.supportSurfaceModel !== 'rails-and-overlays';
+    viewportLayout?.supportSurfacePolicyKey &&
+    viewportLayout.supportSurfacePolicyKey !== 'ultrawide';
 
   return (
     <section
@@ -61,6 +61,8 @@ const ActionDock = ({
       data-height-class={viewportLayout?.heightClass}
       data-stage-density={viewportLayout?.stageDensity}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
+      data-support-surface-policy={viewportLayout?.supportSurfacePolicyValue}
+      data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-hero-dock-placement={viewportLayout?.heroDockPlacement}
       data-hero-dock-priority={shellView?.heroDockPriority}
       data-dock-presentation={viewportLayout?.dockPresentation}

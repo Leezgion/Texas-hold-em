@@ -44,6 +44,8 @@ const TableHeader = ({
       data-header-action-model={viewportLayout?.headerActionModel}
       data-stage-density={viewportLayout?.stageDensity}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
+      data-support-surface-policy={viewportLayout?.supportSurfacePolicyValue}
+      data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-page-scroll={viewportLayout?.pageScroll}
       data-hero-dock-priority={shellView?.heroDockPriority}
     >

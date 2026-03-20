@@ -123,10 +123,10 @@ const GameRoom = () => {
   const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
   const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
   const stageShellLayout = mapViewportModelToStageShellLayout(roomViewportLayout.viewportModel);
-  const usesSideRails = roomViewportLayout.viewportModel === 'ultrawide-terminal';
-  const usesSupportPanels = roomViewportLayout.supportSurfaceModel !== 'rails-and-overlays';
+  const usesSideRails = roomViewportLayout.supportSurfacePolicyKey === 'ultrawide';
+  const usesSupportPanels = roomViewportLayout.supportSurfacePolicyKey !== 'ultrawide';
   const supportPanelPresentation =
-    roomViewportLayout.supportSurfaceModel === 'bottom-sheets' ? 'bottom-sheet' : 'slide-panel';
+    roomViewportLayout.supportSurfacePolicyValue === 'sheet' ? 'bottom-sheet' : 'slide-panel';
   const roomShellGridClassName = usesSideRails
     ? 'room-shell-grid room-shell-grid--three-column'
     : 'room-shell-grid room-shell-grid--terminal-stack';
@@ -632,7 +632,8 @@ const GameRoom = () => {
       data-page-scroll={roomViewportLayout.pageScroll}
       data-hero-dock-placement={roomViewportLayout.heroDockPlacement}
       data-support-surface-model={roomViewportLayout.supportSurfaceModel}
-      data-support-surface-policy={roomViewportLayout.supportSurfacePolicy}
+      data-support-surface-policy={roomViewportLayout.supportSurfacePolicyValue}
+      data-support-surface-policy-key={roomViewportLayout.supportSurfacePolicyKey}
       data-shell-layout={shellView.shellLayout}
       data-hero-dock-priority={shellView.heroDockPriority}
       data-room-motion-budget={roomViewportLayout.viewportModel === 'phone-terminal' ? 'mobile-tight' : 'standard'}
