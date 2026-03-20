@@ -53,6 +53,9 @@ const TableStage = ({
   const stagePulseClassName = shellView.stagePulseTone
     ? `table-stage-surface--${shellView.stagePulseTone}`
     : 'table-stage-surface--idle';
+  const tableFeltTone = tableSurfaceLayout.material?.feltTone || 'deep-green-velvet';
+  const tableRailTone = tableSurfaceLayout.material?.railTone || 'black-gold';
+  const centerSurfaceModel = tableSurfaceLayout.centerSurfaceModel || 'broadcast-clean-center';
 
   return (
     <section
@@ -92,6 +95,9 @@ const TableStage = ({
         data-height-class={tableSurfaceLayout.heightClass}
         data-stage-density={tableSurfaceLayout.stageDensity}
         data-table-family={tableSurfaceLayout.family}
+        data-center-surface-model={centerSurfaceModel}
+        data-table-material-felt-tone={tableFeltTone}
+        data-table-material-rail-tone={tableRailTone}
         style={{ minHeight: `${tableSurfaceLayout.stageBudget.minStageBudgetPx}px` }}
       >
         <div className="table-stage-atmosphere" aria-hidden="true" />
@@ -168,6 +174,9 @@ const TableStage = ({
           data-height-class={tableSurfaceLayout.heightClass}
           data-stage-density={tableSurfaceLayout.stageDensity}
           data-table-family={tableSurfaceLayout.family}
+          data-center-surface-model={centerSurfaceModel}
+          data-table-material-felt-tone={tableFeltTone}
+          data-table-material-rail-tone={tableRailTone}
         >
           <TableStageChrome
             seatGuides={seatGuides}
@@ -182,6 +191,9 @@ const TableStage = ({
             data-height-class={tableSurfaceLayout.heightClass}
             data-stage-density={tableSurfaceLayout.stageDensity}
             data-table-family={tableSurfaceLayout.family}
+            data-center-surface-model={centerSurfaceModel}
+            data-table-material-felt-tone={tableFeltTone}
+            data-table-material-rail-tone={tableRailTone}
             style={{
               width: `${tableSurfaceLayout.tableWidth}px`,
               height: `${tableSurfaceLayout.tableHeight}px`,
@@ -194,6 +206,9 @@ const TableStage = ({
               data-height-class={tableSurfaceLayout.heightClass}
               data-stage-density={tableSurfaceLayout.stageDensity}
               data-table-family={tableSurfaceLayout.family}
+              data-center-surface-model={centerSurfaceModel}
+              data-table-material-felt-tone={tableFeltTone}
+              data-table-material-rail-tone={tableRailTone}
               style={{
                 width: `${boardLayout.trayWidth}px`,
                 height: `${boardLayout.trayHeight}px`,

@@ -20,146 +20,117 @@ const TableStageChrome = ({
     roomShellLayout,
     tableProfile,
   });
-  const shellOrientation = chrome.table.shellOrientation || 'horizontal-capsule';
-  const shellCornerRadius = chrome.table.shellCornerRadius || Math.round(Math.min(chrome.table.outerRx, chrome.table.outerRy));
-  const outerShell = {
+  const railFlow = chrome.table.outerRy > chrome.table.outerRx ? 'vertical-rail' : 'horizontal-rail';
+  const feltTone = chrome.material?.feltTone || 'deep-green-velvet';
+  const railTone = chrome.material?.railTone || 'black-gold';
+  const centerSurfaceModel = chrome.centerSurfaceModel || 'broadcast-clean-center';
+  const outerRail = {
     x: chrome.centerX - chrome.table.outerRx,
     y: chrome.centerY - chrome.table.outerRy,
     width: chrome.table.outerRx * 2,
     height: chrome.table.outerRy * 2,
   };
-  const innerShell = {
-    x: chrome.centerX - chrome.table.innerRx,
-    y: chrome.centerY - chrome.table.innerRy,
-    width: chrome.table.innerRx * 2,
-    height: chrome.table.innerRy * 2,
+  const transitionRail = {
+    x: outerRail.x + 14,
+    y: outerRail.y + 12,
+    width: Math.max(0, outerRail.width - 28),
+    height: Math.max(0, outerRail.height - 24),
   };
-  const haloShell = {
-    x: outerShell.x - (shellOrientation === 'vertical-capsule' ? 22 : 28),
-    y: outerShell.y - (shellOrientation === 'vertical-capsule' ? 18 : 22),
-    width: outerShell.width + (shellOrientation === 'vertical-capsule' ? 44 : 56),
-    height: outerShell.height + (shellOrientation === 'vertical-capsule' ? 36 : 44),
+  const feltSurface = {
+    x: transitionRail.x + 10,
+    y: transitionRail.y + 8,
+    width: Math.max(0, transitionRail.width - 20),
+    height: Math.max(0, transitionRail.height - 16),
   };
-  const glowShell = {
-    x: innerShell.x + 12,
-    y: innerShell.y + 10,
-    width: Math.max(0, innerShell.width - 24),
-    height: Math.max(0, innerShell.height - 20),
+  const centerFrame = {
+    x: chrome.boardTray.x - 14,
+    y: chrome.boardTray.y - 12,
+    width: chrome.boardTray.width + 28,
+    height: chrome.boardTray.height + 24,
   };
-  const tableShellRadius = Math.min(shellCornerRadius, Math.min(outerShell.width, outerShell.height) / 2);
-  const innerShellRadius = Math.min(Math.max(shellCornerRadius - 4, 0), Math.min(innerShell.width, innerShell.height) / 2);
-  const glowShellRadius = Math.min(Math.max(innerShellRadius - 2, 0), Math.min(glowShell.width, glowShell.height) / 2);
-  const orbitRingPath = [
-    `M ${chrome.centerX} ${chrome.centerY - chrome.orbit.ry}`,
-    `A ${chrome.orbit.rx} ${chrome.orbit.ry} 0 1 1 ${chrome.centerX} ${chrome.centerY + chrome.orbit.ry}`,
-    `A ${chrome.orbit.rx} ${chrome.orbit.ry} 0 1 1 ${chrome.centerX} ${chrome.centerY - chrome.orbit.ry}`,
-    'Z',
-  ].join(' ');
+  const railRadius = Math.min(Math.min(outerRail.width, outerRail.height) / 2, chrome.table.shellCornerRadius || 999);
+  const transitionRadius = Math.min(Math.min(transitionRail.width, transitionRail.height) / 2, Math.max(railRadius - 10, 0));
+  const feltRadius = Math.min(Math.min(feltSurface.width, feltSurface.height) / 2, Math.max(transitionRadius - 8, 0));
+  const frameRadius = Math.min(Math.min(centerFrame.width, centerFrame.height) / 2, Math.max(chrome.boardTray.rx + 6, 18));
 
   return (
     <svg
       className="table-stage-chrome"
       data-table-family={chrome.family}
       data-table-profile={chrome.profile}
-      data-shell-orientation={shellOrientation}
+      data-table-rail-flow={railFlow}
+      data-center-surface-model={centerSurfaceModel}
+      data-table-material-felt-tone={feltTone}
+      data-table-material-rail-tone={railTone}
       viewBox={`0 0 ${chrome.width} ${chrome.height}`}
       style={{ width: `${chrome.width}px`, height: `${chrome.height}px` }}
       aria-hidden="true"
     >
       <defs>
-        <radialGradient id="stage-felt-glow" cx="50%" cy="45%" r="62%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
-          <stop offset="55%" stopColor="rgba(125,211,252,0.08)" />
-          <stop offset="100%" stopColor="rgba(2,6,23,0)" />
-        </radialGradient>
-        <linearGradient id="stage-tray-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="rgba(191,219,254,0.36)" />
-          <stop offset="100%" stopColor="rgba(15,23,42,0.18)" />
+        <linearGradient id="table-rail-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="rgba(247, 229, 173, 0.9)" />
+          <stop offset="50%" stopColor="rgba(191, 143, 45, 0.9)" />
+          <stop offset="100%" stopColor="rgba(64, 42, 14, 0.98)" />
         </linearGradient>
+        <linearGradient id="table-rail-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="rgba(11, 13, 18, 0.9)" />
+          <stop offset="100%" stopColor="rgba(1, 3, 6, 0.98)" />
+        </linearGradient>
+        <radialGradient id="table-felt-sheen" cx="50%" cy="44%" r="68%">
+          <stop offset="0%" stopColor="rgba(172, 222, 161, 0.08)" />
+          <stop offset="58%" stopColor="rgba(17, 86, 53, 0.2)" />
+          <stop offset="100%" stopColor="rgba(3, 18, 11, 0)" />
+        </radialGradient>
       </defs>
 
-      <g className="table-stage-chrome__shell">
+      <g className="table-stage-chrome__rail-stack">
         <rect
-          className="table-stage-chrome__halo"
-          x={haloShell.x}
-          y={haloShell.y}
-          width={haloShell.width}
-          height={haloShell.height}
-          rx={Math.min(tableShellRadius + 12, Math.min(haloShell.width, haloShell.height) / 2)}
-          ry={Math.min(tableShellRadius + 12, Math.min(haloShell.width, haloShell.height) / 2)}
+          className="table-stage-chrome__outer-rail"
+          x={outerRail.x}
+          y={outerRail.y}
+          width={outerRail.width}
+          height={outerRail.height}
+          rx={railRadius}
+          ry={railRadius}
+          fill="url(#table-rail-metal)"
         />
         <rect
-          className="table-stage-chrome__outer"
-          x={outerShell.x}
-          y={outerShell.y}
-          width={outerShell.width}
-          height={outerShell.height}
-          rx={tableShellRadius}
-          ry={tableShellRadius}
+          className="table-stage-chrome__transition-rail"
+          x={transitionRail.x}
+          y={transitionRail.y}
+          width={transitionRail.width}
+          height={transitionRail.height}
+          rx={transitionRadius}
+          ry={transitionRadius}
+          fill="url(#table-rail-shadow)"
         />
         <rect
-          className="table-stage-chrome__inner"
-          x={innerShell.x}
-          y={innerShell.y}
-          width={innerShell.width}
-          height={innerShell.height}
-          rx={innerShellRadius}
-          ry={innerShellRadius}
-        />
-        <rect
-          className="table-stage-chrome__glow"
-          x={glowShell.x}
-          y={glowShell.y}
-          width={glowShell.width}
-          height={glowShell.height}
-          rx={glowShellRadius}
-          ry={glowShellRadius}
-          fill="url(#stage-felt-glow)"
+          className="table-stage-chrome__felt"
+          x={feltSurface.x}
+          y={feltSurface.y}
+          width={feltSurface.width}
+          height={feltSurface.height}
+          rx={feltRadius}
+          ry={feltRadius}
+          fill="url(#table-felt-sheen)"
         />
       </g>
 
-      <g className="table-stage-chrome__orbit">
-        <path
-          className="table-stage-chrome__orbit-ring"
-          d={orbitRingPath}
-        />
-        {chrome.orbitMarkers.map((marker) => (
-          <circle
-            key={`orbit-${marker.index}`}
-            className={`table-stage-chrome__orbit-marker ${
-              marker.isHeadMarker ? 'table-stage-chrome__orbit-marker--head' : ''
-            }`}
-            cx={marker.cx}
-            cy={marker.cy}
-            r={marker.r}
-          />
-        ))}
-      </g>
-
-      <g className="table-stage-chrome__tray">
+      <g className="table-stage-chrome__center-frame">
         <rect
-          className="table-stage-chrome__stage-band"
-          x={chrome.stageBand.x}
-          y={chrome.stageBand.y}
-          width={chrome.stageBand.width}
-          height={chrome.stageBand.height}
-          rx={chrome.stageBand.rx}
-        />
-        <rect
-          className="table-stage-chrome__tray-shell"
-          x={chrome.boardTray.x}
-          y={chrome.boardTray.y}
-          width={chrome.boardTray.width}
-          height={chrome.boardTray.height}
-          rx={chrome.boardTray.rx}
-          fill="rgba(2,6,23,0.24)"
-          stroke="url(#stage-tray-stroke)"
+          className="table-stage-chrome__center-frame-shell"
+          x={centerFrame.x}
+          y={centerFrame.y}
+          width={centerFrame.width}
+          height={centerFrame.height}
+          rx={frameRadius}
+          ry={frameRadius}
         />
         <line
-          className="table-stage-chrome__tray-line"
-          x1={chrome.boardTray.x + 18}
+          className="table-stage-chrome__center-frame-line"
+          x1={centerFrame.x + 16}
           y1={chrome.centerY}
-          x2={chrome.boardTray.x + chrome.boardTray.width - 18}
+          x2={centerFrame.x + centerFrame.width - 16}
           y2={chrome.centerY}
         />
       </g>
@@ -167,24 +138,42 @@ const TableStageChrome = ({
       <g className="table-stage-chrome__seat-guides">
         {chrome.seatGuides.map((guide) => {
           const toneClassName = guide.isCurrentTurn
-            ? 'table-stage-chrome__guide--current-turn'
+            ? 'table-stage-chrome__seat-node--current-turn'
             : guide.occupied
-            ? 'table-stage-chrome__guide--occupied'
-            : 'table-stage-chrome__guide--open';
+            ? 'table-stage-chrome__seat-node--occupied'
+            : 'table-stage-chrome__seat-node--open';
+          const nodeSize = chrome.guideRadius + 4;
+          const nodeX = guide.cx - nodeSize;
+          const nodeY = guide.cy - nodeSize;
 
           return (
-            <g key={`guide-${guide.seatIndex}`} className={`table-stage-chrome__guide ${toneClassName}`}>
+            <g key={`guide-${guide.seatIndex}`} className={`table-stage-chrome__seat-guide ${toneClassName}`}>
               <line
-                className="table-stage-chrome__guide-line"
+                className="table-stage-chrome__guide-spoke"
                 x1={chrome.centerX}
                 y1={chrome.centerY}
                 x2={guide.cx}
                 y2={guide.cy}
               />
-              <circle className="table-stage-chrome__guide-ring" cx={guide.cx} cy={guide.cy} r={chrome.guideRadius + 6} />
-              <circle className="table-stage-chrome__guide-core" cx={guide.cx} cy={guide.cy} r={chrome.guideRadius} />
+              <rect
+                className="table-stage-chrome__seat-node"
+                x={nodeX}
+                y={nodeY}
+                width={nodeSize * 2}
+                height={nodeSize * 2}
+                rx={Math.max(3, nodeSize / 2)}
+                ry={Math.max(3, nodeSize / 2)}
+              />
               {guide.anchorZone === 'dock-edge' && (
-                <circle className="table-stage-chrome__guide-dock" cx={guide.cx} cy={guide.cy} r={chrome.guideRadius + 10} />
+                <rect
+                  className="table-stage-chrome__seat-node-pulse"
+                  x={nodeX - 3}
+                  y={nodeY - 3}
+                  width={nodeSize * 2 + 6}
+                  height={nodeSize * 2 + 6}
+                  rx={Math.max(4, nodeSize / 2 + 1)}
+                  ry={Math.max(4, nodeSize / 2 + 1)}
+                />
               )}
               {guide.markerLabel && (
                 <text className="table-stage-chrome__marker" x={guide.cx} y={guide.cy - chrome.guideRadius - 10}>

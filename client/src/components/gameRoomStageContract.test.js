@@ -5,6 +5,7 @@ import test from 'node:test';
 const source = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 'utf8');
 const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 'utf8');
 const seatCardSource = readFileSync(new URL('./SeatCard.jsx', import.meta.url), 'utf8');
+const tableStageChromeSource = readFileSync(new URL('./TableStageChrome.jsx', import.meta.url), 'utf8');
 
 test('GameRoom threads canonical slots into the seat ring view', () => {
   assert.match(source, /canonicalSlots:\s*roomGeometryContract\.canonicalSlots/);
@@ -30,4 +31,12 @@ test('SeatRing and SeatCard expose canonical slot metadata instead of count-driv
   assert.match(seatCardSource, /data-canonical-slot-index/);
   assert.match(seatCardSource, /Number\.isInteger\(seat\.canonicalSlotIndex\)/);
   assert.doesNotMatch(seatCardSource, /Number\(seat\.canonicalSlotIndex\)/);
+});
+
+test('TableStageChrome exposes broadcast material language instead of HUD shell language', () => {
+  assert.match(tableStageChromeSource, /data-table-family/);
+  assert.match(tableStageChromeSource, /deep-green-velvet|black-gold|broadcast-clean-center/);
+  assert.doesNotMatch(tableStageChromeSource, /shellOrientation/);
+  assert.doesNotMatch(tableStageChromeSource, /orbitRingPath/);
+  assert.doesNotMatch(tableStageChromeSource, /haloShell/);
 });

@@ -50,10 +50,19 @@ test('builds the same tournament table family for desktop and phone portrait', (
   const desktop = resolveTableSurfaceLayout({ viewportWidth: 1440, tableDiameter: 352 });
   const phone = resolveTableSurfaceLayout({ viewportWidth: 390, tableDiameter: 208 });
 
-  assert.equal(desktop.family, 'tournament-capsule-9max');
-  assert.equal(phone.family, 'tournament-capsule-9max');
+  assert.equal(desktop.family, 'broadcast-tactical-9max');
+  assert.equal(phone.family, 'broadcast-tactical-9max');
   assert.equal(desktop.profile, 'desktop-oval');
   assert.equal(phone.profile, 'phone-oval');
+});
+
+test('advertises the broadcast tactical table material family and clean center surface', () => {
+  const layout = resolveTableSurfaceLayout({ viewportWidth: 1280, tableDiameter: 352 });
+
+  assert.equal(layout.family, 'broadcast-tactical-9max');
+  assert.equal(layout.centerSurfaceModel, 'broadcast-clean-center');
+  assert.equal(layout.material.feltTone, 'deep-green-velvet');
+  assert.equal(layout.material.railTone, 'black-gold');
 });
 
 test('compresses short-height landscape stage layout without changing the family', () => {
@@ -68,7 +77,7 @@ test('compresses short-height landscape stage layout without changing the family
     tableDiameter: 320,
   });
 
-  assert.equal(shortLandscape.family, 'tournament-capsule-9max');
+  assert.equal(shortLandscape.family, 'broadcast-tactical-9max');
   assert.equal(shortLandscape.heightClass, 'short-height');
   assert.equal(shortLandscape.stageDensity, 'compressed');
   assert.equal(shortLandscape.stageBudget.minStageBudgetPx, 180);
@@ -198,7 +207,7 @@ test('pins the stage chrome orbit to nine markers with a single head marker', ()
     seatGuides: [],
   });
 
-  assert.equal(layout.family, 'tournament-capsule-9max');
+  assert.equal(layout.family, 'broadcast-tactical-9max');
   assert.equal(layout.orbit.markerCount, 9);
   assert.equal(layout.orbitMarkers.length, 9);
   assert.equal(
@@ -310,12 +319,24 @@ test('phone capsule stage chrome exposes vertical shell semantics and dock-side 
   assert.ok(layout.boardTray.clearanceToStageBand >= 10);
 });
 
-test('TableStageChrome renders capsule rect shells instead of ellipse HUD rings', () => {
+test('TableStageChrome renders broadcast rail and felt material hooks instead of ellipse HUD rings', () => {
   const source = readSource('../components/TableStageChrome.jsx');
 
-  assert.match(source, /data-shell-orientation/);
+  assert.match(source, /data-table-rail-flow/);
+  assert.match(source, /data-center-surface-model/);
+  assert.match(source, /data-table-material-felt-tone/);
+  assert.match(source, /data-table-material-rail-tone/);
   assert.match(source, /<rect/);
   assert.doesNotMatch(source, /<ellipse/);
+});
+
+test('TableStageChrome stops using the old shell-orbit HUD framing language', () => {
+  const source = readSource('../components/TableStageChrome.jsx');
+
+  assert.doesNotMatch(source, /shellOrientation/);
+  assert.doesNotMatch(source, /orbitRingPath/);
+  assert.doesNotMatch(source, /haloShell/);
+  assert.doesNotMatch(source, /guide-ring/);
 });
 
 test('CommunityCards composes the board tray as a profile-aware capsule rail', () => {

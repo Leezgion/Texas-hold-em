@@ -1,7 +1,12 @@
 import { buildSeatRingPositions } from './seatRingLayout.js';
 import { resolveRoomViewportLayout, resolveStageViewportContract } from './roomViewportLayout.js';
 
-const TABLE_FAMILY = 'tournament-capsule-9max';
+const TABLE_FAMILY = 'broadcast-tactical-9max';
+const TABLE_CENTER_SURFACE_MODEL = 'broadcast-clean-center';
+const TABLE_MATERIAL = Object.freeze({
+  feltTone: 'deep-green-velvet',
+  railTone: 'black-gold',
+});
 
 function clampNumber(value, fallback = 0) {
   const normalized = Number(value);
@@ -46,6 +51,8 @@ export function resolveTableSurfaceLayout({
   if (profile === 'phone-oval') {
     return {
       family: TABLE_FAMILY,
+      centerSurfaceModel: TABLE_CENTER_SURFACE_MODEL,
+      material: TABLE_MATERIAL,
       profile,
       heightClass,
       stageDensity,
@@ -64,6 +71,8 @@ export function resolveTableSurfaceLayout({
 
   return {
     family: TABLE_FAMILY,
+    centerSurfaceModel: TABLE_CENTER_SURFACE_MODEL,
+    material: TABLE_MATERIAL,
     profile,
     heightClass,
     stageDensity,
@@ -345,6 +354,8 @@ export function buildStageChromeLayout({
 
   return {
     family: surface.family,
+    centerSurfaceModel: surface.centerSurfaceModel,
+    material: surface.material,
     profile: surface.profile,
     heightClass: surface.heightClass,
     stageDensity: surface.stageDensity,
