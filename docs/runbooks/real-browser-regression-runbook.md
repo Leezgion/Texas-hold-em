@@ -158,6 +158,12 @@ For Poker OS shell work, add these spot checks explicitly:
 - Motion choreography: when a surface uses `motion/react` on top of CSS ambience, inspect both:
   - computed `animationName` to confirm the CSS ambience is still active
   - inline `style` transforms/opacity on the same element to confirm Motion is driving the entrance or pulse state
+- phone motion-budget verification: for the single-screen terminal, also confirm:
+  - `.mode-shell` resolves tighter CSS timing vars on phone portrait than on desktop
+  - desktop currently resolves `--arena-motion-enter = 180ms` and `--arena-motion-emphasis = 260ms`
+  - phone portrait currently resolves `--arena-motion-enter = 120ms` and `--arena-motion-emphasis = 160ms`
+  - desktop support surface policy is `panel`; phone portrait support surface policy is `sheet`
+  - `.table-stage-pot-capsule` and `.table-stage-beacon` resolve `animationName = none` on phone portrait when `roomMotionBudget = mobile-tight`
 - SVG stage chrome: verify `.table-stage-chrome` exists and the seat-guide count still matches the visible seat ring; when blinds or button labels are available, confirm the SVG marker texts mirror them
 - ultrawide verification: if `resize_page` does not push `window.innerWidth` across the intended breakpoint, switch to viewport emulation before diagnosing the shell layout
 - room shell mobile: side seats stay inside the stage, the current-player marker does not wrap badly, and long nicknames truncate instead of stretching rail cards
@@ -210,6 +216,8 @@ For split-stage desktop checks, do not trust the visual plaque body height. Meas
 
 Do not trust guessed mobile footprints from unit tests alone; the first broken phone pass under-budgeted the real seat-card height by roughly half and only browser rects exposed it.
 
+When capturing live-hand browser evidence, do not wait only on hero action buttons. The host can be in-hand without being first to act; hole cards or the `preflop` stage beacon are a safer readiness signal.
+
 Update both of these after the run:
 
 - `docs/plans/2026-03-19-poker-product-readiness-todolist.md`
@@ -256,6 +264,7 @@ Expected final state:
 - Motion surfaces can look fine in a static screenshot while their entrance choreography is actually dead; inspect inline transforms or opacity on the live element before declaring the animation layer healthy.
 - DevTools window resizing can under-report the real layout width; when you need a true tablet or ultrawide breakpoint, verify `window.innerWidth` before trusting the screenshot.
 - Phone portrait support sheets can look visually correct while the page still has a hidden extra scroll range under them; inspect `document.scrollingElement` after opening a sheet instead of trusting the screenshot alone.
+- Motion-heavy CTA buttons can fail browser automation with `element is not stable` even when the page is otherwise healthy; for evidence capture, prefer waiting on hand-state cues over button stability.
 - Short-height landscape windows can resolve to the `phone-oval` table family even when the viewport is wider than `768px`; verify both:
   - `document.scrollingElement.scrollHeight === clientHeight`
   - `.arena-seat-anchor` overlap checks against both the table body and the community-card band

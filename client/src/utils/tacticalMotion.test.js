@@ -60,3 +60,43 @@ test('enforces the stricter phone-terminal motion contract', () => {
   assert.equal(phone.turnChip.animate.scale, 1);
   assert.equal(phone.turnChip.transition.scale, undefined);
 });
+
+test('phone-terminal collapses glass, pulse, and touch-scroll budgets for room surfaces', () => {
+  const phone = buildTacticalMotionProfile('pro', { viewport: 'phone-terminal' });
+  const desktop = buildTacticalMotionProfile('pro', { viewport: 'desktop-terminal' });
+
+  assert.equal(phone.touchScrollModel, 'sheet-body-y-only');
+  assert.equal(desktop.touchScrollModel, 'multi-surface');
+  assert.equal(phone.pulseBudget, 'minimal');
+  assert.equal(desktop.pulseBudget, 'full');
+  assert.ok(phone.shell.ambientBlurPx < desktop.shell.ambientBlurPx);
+  assert.equal(phone.shell.overlayBackdropBlurPx, 0);
+  assert.equal(phone.shell.panelBackdropBlurPx, 0);
+  assert.equal(phone.shell.headerBackdropBlurPx, 0);
+});
+
+test('lowers css timing budgets for phone-terminal shells', () => {
+  const phone = buildTacticalMotionProfile('pro', { viewport: 'phone-terminal' });
+  const desktop = buildTacticalMotionProfile('pro', { viewport: 'desktop-terminal' });
+
+  assert.equal(typeof phone.shellTiming, 'object');
+  assert.equal(typeof desktop.shellTiming, 'object');
+  assert.ok(phone.shellTiming.enterMs < desktop.shellTiming.enterMs);
+  assert.ok(phone.shellTiming.emphasisMs < desktop.shellTiming.emphasisMs);
+  assert.ok(phone.shellTiming.spotlightSeconds <= desktop.shellTiming.spotlightSeconds);
+  assert.ok(phone.shellTiming.floatSeconds <= desktop.shellTiming.floatSeconds);
+});
+
+test('tightens phone-terminal motion and blur budgets below the existing mobile cap', () => {
+  const phone = buildTacticalMotionProfile('pro', { viewport: 'phone-terminal' });
+
+  assert.equal(phone.shellTiming.enterMs, 120);
+  assert.equal(phone.shellTiming.emphasisMs, 160);
+  assert.equal(phone.shellTiming.ambientSeconds, 8);
+  assert.equal(phone.shellTiming.spotlightSeconds, 1.2);
+  assert.equal(phone.shellTiming.floatSeconds, 4);
+  assert.equal(phone.shell.ambientBlurPx, 12);
+  assert.equal(phone.shell.overlayBackdropBlurPx, 0);
+  assert.equal(phone.shell.panelBackdropBlurPx, 0);
+  assert.equal(phone.shell.historyDrawerBackdropBlurPx, 0);
+});

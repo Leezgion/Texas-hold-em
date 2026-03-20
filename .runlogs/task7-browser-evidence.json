@@ -1,0 +1,36 @@
+{
+  "roomId": "O1E18K",
+  "screenshots": {
+    "createRoomDesktop": ".runlogs/task7-create-room-desktop.png",
+    "createRoomPhone": ".runlogs/task7-create-room-phone.png",
+    "roomDesktopWaiting": ".runlogs/task7-room-desktop-waiting.png",
+    "roomDesktopLiveHand": ".runlogs/task7-live-hand-desktop.png",
+    "roomPhone": ".runlogs/task7-room-phone.png",
+    "phoneRoomSheet": ".runlogs/task7-phone-room-sheet.png"
+  },
+  "desktop": {
+    "viewport": "1280x900",
+    "scrollHeight": 900,
+    "clientHeight": 900,
+    "supportPolicy": "panel",
+    "supportSurfaceModel": "slide-panels",
+    "supportButtons": ["Roster", "Hand Tape", "Room"],
+    "roomMotionBudget": "standard",
+    "motionEnterMs": 180,
+    "motionEmphasisMs": 260
+  },
+  "phone": {
+    "viewport": "390x844",
+    "scrollHeight": 844,
+    "clientHeight": 844,
+    "supportPolicy": "sheet",
+    "supportSurfaceModel": "bottom-sheets",
+    "roomMotionBudget": "mobile-tight",
+    "pageFloat": "disabled",
+    "touchScroll": "sheet-body-y-only",
+    "motionEnterMs": 120,
+    "motionEmphasisMs": 160,
+    "presentation": "bottom-sheet",
+    "rootInert": true
+  }
+}

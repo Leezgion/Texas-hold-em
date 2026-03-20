@@ -618,35 +618,60 @@ This is a client preference. It should not change server truth or give one playe
       - `allowBackdropBlurStacks = false`
       - `pageFloat = disabled`
       - `primaryTransitions = transform-opacity-only`
-    - `ModeShell` now maps that contract into shell-level CSS vars and route-aware motion guards
+    - `ModeShell` now maps that contract into shell-level CSS vars instead of reusing the raw theme timings:
+      - phone portrait now resolves `--arena-motion-enter = 120ms`
+      - phone portrait now resolves `--arena-motion-emphasis = 160ms`
+      - desktop keeps the full-shell values (`180ms / 260ms`)
     - room-route phone portrait now locks the shell to a true single-screen viewport instead of leaving residual page scroll under the support sheet
     - phone support surfaces now scroll inside the sheet body instead of fighting the page container or nested rail scroll areas
-    - fresh automated rerun on `2026-03-19`:
+    - phone room shell also disables the heaviest stage pulses:
+      - `.table-stage-pot-capsule`
+      - `.table-stage-beacon`
+      - `.table-stage-atmosphere`
+    - fresh automated rerun on `2026-03-20`:
       - `cd client && node --test src/utils/tacticalMotion.test.js src/utils/roomViewportLayout.test.js src/utils/seatRingLayout.test.js src/utils/tableStageLayout.test.js src/view-models/gameViewModel.test.js src/view-models/handHistoryViewModel.test.js`
-      - `client`: `63/63` on that focused room-shell + motion + view-model scope
-      - `server`: `112/112`
+      - `client`: `104/104` on the focused room-shell + geometry + motion + view-model scope
+      - `server`: `113/113`
       - `build`: passed
-    - fresh browser evidence on room `9219U5` while reusing the live local `3001 / 5173` dev environment:
+    - fresh browser evidence on room `O1E18K` while reusing the live local `5173` frontend and the current local game server:
       - create-room desktop:
         - `.runlogs/task7-create-room-desktop.png`
       - create-room phone portrait:
         - `.runlogs/task7-create-room-phone.png`
       - room desktop `1280x900`:
-        - `.runlogs/task7-room-desktop-1280.png`
+        - `.runlogs/task7-room-desktop-waiting.png`
+      - room desktop live-hand:
+        - `.runlogs/task7-live-hand-desktop.png`
       - room phone portrait `390x844`:
-        - `.runlogs/task7-room-phone-prehand.png`
-      - live-hand table + hero-dock:
-        - `.runlogs/task7-live-hand-desktop-table-plus-dock.png`
-        - `.runlogs/task7-live-hand-phone-table-plus-dock.png`
+        - `.runlogs/task7-room-phone.png`
       - phone portrait support sheet:
-        - `.runlogs/task7-room-phone-roster-sheet.png`
-      - browser-side scroll contract after opening the phone roster sheet:
-        - `pageScrollable = false`
-        - `sheetScrollable = true`
-        - `shellOverflow = hidden`
-        - `contentOverflow = hidden`
-      - authoritative backend state still matched the UI:
-        - `GET http://127.0.0.1:3001/api/debug/rooms/9219U5`
+        - `.runlogs/task7-phone-room-sheet.png`
+      - browser-side motion + scroll contract on the current runtime:
+        - desktop:
+          - `scrollHeight = clientHeight = 900`
+          - `supportPolicy = panel`
+          - `supportButtons = [Roster, Hand Tape, Room]`
+          - `supportSurfaceModel = slide-panels`
+          - `roomMotionBudget = standard`
+          - `--arena-motion-enter = 180ms`
+          - `--arena-motion-emphasis = 260ms`
+        - phone:
+          - `scrollHeight = clientHeight = 844`
+          - `supportPolicy = sheet`
+          - `supportSurfaceModel = bottom-sheets`
+          - `roomMotionBudget = mobile-tight`
+          - `pageFloat = disabled`
+          - `touchScroll = sheet-body-y-only`
+          - `--arena-motion-enter = 120ms`
+          - `--arena-motion-emphasis = 160ms`
+          - `potAnimation = none`
+          - `beaconAnimation = none`
+      - phone sheet open:
+          - `presentation = bottom-sheet`
+          - `rootInert = true`
+          - `scrollHeight = clientHeight = 844`
+      - evidence payload:
+        - `.runlogs/task7-browser-evidence.json`
 - Newly discovered pitfall:
   - the old full-screen seat geometry does not fit unchanged inside the new shell panels; desktop clipping and mobile side-seat overflow both reappeared until the seat-ring scale was reduced for panel-based layout
   - mobile seat geometry cannot use guessed card heights; the real rendered `arena-seat-card` footprint was about `70 x 123-128`, while the first helper pass only budgeted `70 x 60`, which hid the regression in unit tests
@@ -659,6 +684,8 @@ This is a client preference. It should not change server truth or give one playe
   - once `motion/react` is layered on top of CSS keyframes, browser verification must inspect both sides:
     - CSS animation names confirm the ambient layer is still running
     - inline styles on the same elements confirm Motion is actually driving entrances or pulse transforms
+  - when the room enters a live hand, do not block browser automation on hero action buttons alone; the host can be in-hand without being first to act, so live-hand readiness should be keyed off hole cards or `preflop` stage-state instead
+  - if a motion-heavy CTA is still animating or reflowing, Playwright can reject a normal click as `element is not stable`; force-click is acceptable for evidence capture, but the UI side should still keep shrinking motion on phone-first paths
   - `resize_page` alone is not enough to validate ultrawide breakpoints in DevTools; if `window.innerWidth` stays below the target breakpoint, use viewport emulation before concluding that the three-column shell is broken
   - phone portrait support-sheet validation must also inspect `document.scrollingElement`; the UI can look visually correct while the page still has a hidden extra scroll range under the sheet
   - if you intentionally reuse local `pnpm dev` on `3001 / 5173`, treat that as a separate healthy environment from the runbook’s `3101 / 5173` regression pair and verify the backend with `/api/debug/devices` before restarting anything

@@ -14,6 +14,7 @@ test('GameRoom keeps the dock inside the single-screen main stage stack', () => 
   assert.match(gameRoomSource, /new ResizeObserver\(updateDockReserve\)/);
   assert.match(gameRoomSource, /'--room-terminal-dock-reserve': `\$\{measuredDockReservePx\}px`/);
   assert.match(gameRoomSource, /data-support-surface-policy-key=\{roomViewportLayout\.supportSurfacePolicyKey\}/);
+  assert.match(gameRoomSource, /data-room-touch-scroll-model=\{/);
   assert.match(
     gameRoomSource,
     /<div className="room-terminal-main">[\s\S]*className=\{roomShellGridClassName\}[\s\S]*<div className="room-terminal-dock"[^>]*ref=\{roomDockRef\}[^>]*>[\s\S]*<\/div>[\s\S]*<\/div>/s

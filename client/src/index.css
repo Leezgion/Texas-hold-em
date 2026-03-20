@@ -690,8 +690,13 @@
   }
 
   .room-terminal-shell[data-room-scroll-contract="single-screen"] {
-    overscroll-behavior: none;
-    touch-action: pan-x pan-y;
+    overscroll-behavior: contain;
+    touch-action: manipulation;
+  }
+
+  .room-terminal-shell[data-room-touch-scroll-model="sheet-body-y-only"] {
+    overscroll-behavior-x: none;
+    touch-action: manipulation;
   }
 
   .room-terminal-frame {
@@ -704,7 +709,7 @@
   }
 
   .room-terminal-shell[data-room-scroll-contract="single-screen"] .room-terminal-frame {
-    overscroll-behavior: none;
+    overscroll-behavior: contain;
   }
 
   .room-terminal-shell[data-height-class="short-height"] .room-terminal-frame {
@@ -864,6 +869,14 @@
     width: min(100%, 30rem);
     height: calc(100dvh - 2rem);
     border-radius: 1.5rem;
+  }
+
+  .room-panel-sheet__surface[data-room-panel-presentation="bottom-sheet"] {
+    backdrop-filter: none;
+  }
+
+  .room-panel-sheet__surface[data-room-panel-presentation="bottom-sheet"] .room-panel-sheet__header {
+    backdrop-filter: none;
   }
 
   .room-panel-sheet__header {
@@ -1368,7 +1381,7 @@
       0 18px 42px rgba(0, 0, 0, 0.35),
       0 0 0 1px rgba(255, 255, 255, 0.03),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(var(--arena-shell-pot-blur, 18px));
     animation:
       arenaStageFloat var(--arena-motion-float) ease-in-out infinite,
       arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
@@ -1395,8 +1408,20 @@
     @apply absolute bottom-5 left-1/2 z-20 flex max-w-[min(92%,34rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-[1.2rem] px-3 py-2;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(3, 7, 18, 0.52);
-    backdrop-filter: blur(14px);
+    backdrop-filter: blur(var(--arena-shell-beacon-blur, 14px));
     animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
+  }
+
+  .room-terminal-shell[data-room-motion-budget="mobile-tight"] .table-stage-atmosphere,
+  .room-terminal-shell[data-room-motion-budget="mobile-tight"] .table-stage-pot-capsule,
+  .room-terminal-shell[data-room-motion-budget="mobile-tight"] .table-stage-beacon,
+  .room-terminal-shell[data-room-motion-budget="mobile-tight"] .tactical-dock__hero-panel {
+    animation: none;
+  }
+
+  .room-terminal-shell[data-room-motion-budget="mobile-tight"] .table-stage-pot-capsule,
+  .room-terminal-shell[data-room-motion-budget="mobile-tight"] .table-stage-beacon {
+    backdrop-filter: none;
   }
 
   .table-stage-beacon__mode,
@@ -1474,7 +1499,7 @@
     box-shadow:
       0 18px 38px rgba(0, 0, 0, 0.28),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(var(--arena-shell-seat-card-blur, 16px));
     position: relative;
     overflow: hidden;
     transition:
@@ -1721,9 +1746,30 @@
   @media (max-width: 767px) {
     .mode-shell[data-shell-motion-viewport="phone-terminal"] .mode-shell__ambient,
     .mode-shell[data-shell-motion-viewport="phone-terminal"] .mode-shell__grid,
+    .mode-shell[data-shell-pulse-budget="minimal"] .table-stage-pot-capsule,
+    .mode-shell[data-shell-pulse-budget="minimal"] .table-stage-beacon,
+    .mode-shell[data-shell-pulse-budget="minimal"] .arena-seat-anchor--current-turn::before,
+    .mode-shell[data-shell-pulse-budget="minimal"] .settlement-sheet__countdown,
     .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] .tactical-dock,
     .mode-shell[data-shell-route="room"][data-shell-motion-viewport="phone-terminal"] .tactical-dock::after {
       animation: none !important;
+    }
+
+    .mode-shell[data-shell-touch-scroll-model="sheet-body-y-only"] .room-panel-sheet__body,
+    .mode-shell[data-shell-touch-scroll-model="sheet-body-y-only"] .modal-content__body {
+      overscroll-behavior-x: none;
+      overscroll-behavior-y: contain;
+      touch-action: pan-y pinch-zoom;
+    }
+
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .room-panel-sheet,
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .room-panel-sheet__header,
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .modal,
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .modal-content__header,
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .modal-content__footer,
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .tactical-history-drawer__toggle,
+    .mode-shell[data-shell-motion-viewport="phone-terminal"] .tactical-history-drawer__panel {
+      backdrop-filter: none;
     }
 
     .room-terminal-shell {
@@ -2550,7 +2596,7 @@
     background: rgba(3, 7, 18, 0.9);
     padding: 0 0.9rem;
     color: rgb(226 232 240 / 0.94);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(var(--arena-shell-history-drawer-blur, 16px));
   }
 
   .tactical-history-drawer__panel {
@@ -2558,7 +2604,7 @@
     border-top-right-radius: 1.4rem;
     border-bottom-right-radius: 1.4rem;
     padding: 1rem;
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(var(--arena-shell-history-drawer-blur, 18px));
   }
 
   .tactical-rail[data-surface-variant="panel"] {
@@ -3226,7 +3272,7 @@
       align-items: stretch;
       justify-content: stretch;
       overflow: hidden;
-      overscroll-behavior: none;
+      overscroll-behavior: contain;
     }
 
     .modal-content[data-modal-phone-surface="full-screen-sheet"] {
@@ -3237,6 +3283,11 @@
       border-left: 0;
       border-right: 0;
       overflow: hidden;
+    }
+
+    .modal-content[data-modal-phone-surface="full-screen-sheet"] .modal-content__header,
+    .modal-content[data-modal-phone-surface="full-screen-sheet"] .modal-content__footer {
+      backdrop-filter: none;
     }
 
     .create-room-modal__body {
