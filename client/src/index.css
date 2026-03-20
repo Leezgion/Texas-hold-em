@@ -1325,8 +1325,8 @@
   }
 
   .table-stage-board-tray[data-table-profile="phone-oval"] {
-    width: calc(100% - 2.25rem);
-    height: 4.65rem;
+    width: calc(100% - 2rem);
+    height: 4.55rem;
   }
 
   .table-stage-pot-capsule {
@@ -1457,8 +1457,8 @@
   }
 
   .arena-seat-card[data-table-profile="phone-oval"] {
-    width: clamp(4.4rem, 18vw, 5.8rem);
-    min-height: 4.65rem;
+    width: clamp(4.3rem, 17vw, 5.7rem);
+    min-height: 4.6rem;
   }
 
   .arena-seat-card[data-anchor-zone="dock-edge"] {

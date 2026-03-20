@@ -202,6 +202,42 @@ test('phone portrait profile keeps short-handed hero seats anchored to the dock 
   assert.equal(layout.overlaps.tableBody, 0);
 });
 
+test('desktop oval anchors taper into the capsule instead of pinning square corners', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 1440,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+  const seatsBySlot = indexBySlotId(layout);
+
+  assert.ok(
+    Math.abs(seatsBySlot['top-left'].x) < Math.abs(seatsBySlot['lower-left'].x),
+    'top-left should sit inboard of the left flank on the capsule curve'
+  );
+  assert.ok(
+    Math.abs(seatsBySlot['top-right'].x) < Math.abs(seatsBySlot['lower-right'].x),
+    'top-right should sit inboard of the right flank on the capsule curve'
+  );
+  assert.ok(Math.abs(seatsBySlot['top-left'].normalized.x) < 1);
+  assert.ok(Math.abs(seatsBySlot['top-right'].normalized.x) < 1);
+});
+
+test('phone portrait hero anchor sits deeper on the dock edge than the old circular placement', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 6,
+    viewportWidth: 390,
+    viewportHeight: 844,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+
+  assert.equal(layout.heroAnchor.zone, 'dock-edge');
+  assert.ok(layout[0].normalized.y > 0.82, 'hero should ride low on the dock edge');
+});
+
 test('short-height wide phone-oval rooms keep two-player seats outside the table with the real plaque footprint', () => {
   const effectiveTableDiameter = 186;
   const layout = buildSeatRingPositions({

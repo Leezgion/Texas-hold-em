@@ -3,7 +3,18 @@ import React from 'react';
 import { useGame } from '../contexts/GameContext';
 import { deriveRequestErrorFeedback, deriveSeatTakeFeedback } from '../view-models/gameViewModel';
 
-const EmptySeat = ({ seatIndex, position, getPositionLabel, seatLabel, seatTone = 'open-seat', roomState }) => {
+const EmptySeat = ({
+  seatIndex,
+  position,
+  getPositionLabel,
+  seatLabel,
+  seatTone = 'open-seat',
+  roomState,
+  tableProfile = 'desktop-oval',
+  anchorZone = 'table-flank',
+  anchorRole = 'ring',
+  anchorSlotId = null,
+}) => {
   const { takeSeat } = useGame();
 
   const handleTakeSeat = async () => {
@@ -28,13 +39,23 @@ const EmptySeat = ({ seatIndex, position, getPositionLabel, seatLabel, seatTone 
   return (
     <div
       className="arena-seat-anchor"
+      data-table-profile={tableProfile}
+      data-anchor-zone={anchorZone}
+      data-anchor-role={anchorRole}
+      data-anchor-slot-id={anchorSlotId}
       style={{
         left: `calc(50% + ${position.x}px)`,
         top: `calc(50% + ${position.y}px)`,
         transform: 'translate(-50%, -50%)',
       }}
     >
-      <div className={`arena-seat-card arena-seat-card--empty arena-seat-card--${seatTone}`}>
+      <div
+        className={`arena-seat-card arena-seat-card--empty arena-seat-card--${seatTone}`}
+        data-table-profile={tableProfile}
+        data-anchor-zone={anchorZone}
+        data-anchor-role={anchorRole}
+        data-anchor-slot-id={anchorSlotId}
+      >
         <div
           onClick={handleTakeSeat}
           className="arena-seat-empty-trigger group"

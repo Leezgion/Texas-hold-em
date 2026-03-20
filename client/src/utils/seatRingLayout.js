@@ -52,18 +52,18 @@ const SUPPORTS_2_TO_9_OCCUPANCY = {
 
 const CANONICAL_SLOT_MODELS = {
   'desktop-oval': [
-    { slotId: 'hero', anchorRole: 'hero', anchorZone: 'table-edge', normalized: { x: 0, y: 0.78 } },
+    { slotId: 'hero', anchorRole: 'hero', anchorZone: 'table-edge', normalized: { x: 0, y: 0.82 } },
     { slotId: 'lower-left', anchorRole: 'lower-left', anchorZone: 'table-flank', normalized: { x: -1, y: 0.48 } },
     { slotId: 'upper-left', anchorRole: 'upper-left', anchorZone: 'table-flank', normalized: { x: -1, y: -0.48 } },
-    { slotId: 'top-left', anchorRole: 'top-left', anchorZone: 'table-flank', normalized: { x: -1, y: -1 } },
+    { slotId: 'top-left', anchorRole: 'top-left', anchorZone: 'table-flank', normalized: { x: -0.98, y: -1 } },
     { slotId: 'top', anchorRole: 'top', anchorZone: 'stage-band-clear', normalized: { x: 0, y: -1 } },
-    { slotId: 'top-right', anchorRole: 'top-right', anchorZone: 'table-flank', normalized: { x: 1, y: -1 } },
+    { slotId: 'top-right', anchorRole: 'top-right', anchorZone: 'table-flank', normalized: { x: 0.98, y: -1 } },
     { slotId: 'upper-right', anchorRole: 'upper-right', anchorZone: 'table-flank', normalized: { x: 1, y: -0.48 } },
     { slotId: 'lower-right', anchorRole: 'lower-right', anchorZone: 'table-flank', normalized: { x: 1, y: 0.48 } },
-    { slotId: 'near-hero-right', anchorRole: 'near-hero-right', anchorZone: 'table-flank', normalized: { x: 0.88, y: 0.98 } },
+    { slotId: 'near-hero-right', anchorRole: 'near-hero-right', anchorZone: 'table-flank', normalized: { x: 0.92, y: 0.98 } },
   ],
   'phone-oval': [
-    { slotId: 'hero', anchorRole: 'hero', anchorZone: 'dock-edge', normalized: { x: 0, y: 0.72 } },
+    { slotId: 'hero', anchorRole: 'hero', anchorZone: 'dock-edge', normalized: { x: 0, y: 0.86 } },
     { slotId: 'lower-left', anchorRole: 'lower-left', anchorZone: 'table-flank', normalized: { x: -1, y: 0.48 } },
     { slotId: 'upper-left', anchorRole: 'upper-left', anchorZone: 'table-flank', normalized: { x: -1, y: -0.48 } },
     { slotId: 'top-left', anchorRole: 'top-left', anchorZone: 'table-flank', normalized: { x: -1, y: -1 } },
@@ -71,7 +71,7 @@ const CANONICAL_SLOT_MODELS = {
     { slotId: 'top-right', anchorRole: 'top-right', anchorZone: 'table-flank', normalized: { x: 1, y: -1 } },
     { slotId: 'upper-right', anchorRole: 'upper-right', anchorZone: 'table-flank', normalized: { x: 1, y: -0.48 } },
     { slotId: 'lower-right', anchorRole: 'lower-right', anchorZone: 'table-flank', normalized: { x: 1, y: 0.48 } },
-    { slotId: 'near-hero-right', anchorRole: 'near-hero-right', anchorZone: 'table-flank', normalized: { x: 0.88, y: 0.98 } },
+    { slotId: 'near-hero-right', anchorRole: 'near-hero-right', anchorZone: 'table-flank', normalized: { x: 0.92, y: 0.98 } },
   ],
 };
 

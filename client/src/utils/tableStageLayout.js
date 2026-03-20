@@ -240,7 +240,7 @@ export function buildStageChromeLayout({
   const guideRadius = compact ? 10 : 13;
   const stageBandWidth = Math.min(surface.tableWidth * 0.74, compact ? 188 : 316);
   const stageBandHeight = surface.stageBandHeight;
-  const stageBandY = centerY - outerRy - stageBandHeight - (compact ? 16 : 24);
+  const stageBandY = centerY - outerRy - stageBandHeight - (compact ? 14 : 16);
   const orbitMarkerCount = 9;
   const orbitRx = outerRx + (compact ? 16 : 18);
   const orbitRy = outerRy + (compact ? 12 : 14);

@@ -11,6 +11,7 @@ const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContr
         <SeatCard
           key={seat.anchorSlotId || `seat-${seat.seatIndex}`}
           seat={seat}
+          tableProfile={tableProfile}
           roomState={roomState}
           gameState={gameState}
           gameStarted={gameStarted}

@@ -4,10 +4,16 @@ import EmptySeat from './EmptySeat';
 
 const SeatCard = ({
   seat,
+  tableProfile = null,
   roomState,
   gameState,
   gameStarted,
 }) => {
+  const resolvedTableProfile = tableProfile || seat.position?.profile || 'desktop-oval';
+  const anchorZone = seat.anchorZone || seat.position?.anchorZone || 'table-flank';
+  const anchorRole = seat.anchorRole || seat.position?.anchorRole || 'ring';
+  const canonicalSlotIndex = Number.isInteger(seat.canonicalSlotIndex) ? seat.canonicalSlotIndex : null;
+
   if (!seat.occupied) {
     return (
       <EmptySeat
@@ -16,6 +22,10 @@ const SeatCard = ({
         seatLabel={seat.seatLabel}
         seatTone={seat.seatTone}
         roomState={roomState}
+        tableProfile={resolvedTableProfile}
+        anchorZone={anchorZone}
+        anchorRole={anchorRole}
+        anchorSlotId={seat.anchorSlotId || null}
       />
     );
   }
@@ -25,15 +35,11 @@ const SeatCard = ({
   const currentBet = Number(player.currentBet) || 0;
   const hasNet = typeof seat.netLabel === 'string' && seat.netLabel !== '0';
   const seatToneClassName = `arena-seat-card--${seat.seatTone || 'occupied-live'}`;
-  const tableProfile = seat.position?.profile || 'desktop-oval';
-  const anchorZone = seat.anchorZone || seat.position?.anchorZone || 'table-flank';
-  const anchorRole = seat.anchorRole || seat.position?.anchorRole || 'ring';
-  const canonicalSlotIndex = Number.isInteger(seat.canonicalSlotIndex) ? seat.canonicalSlotIndex : null;
 
   return (
     <div
       className={`arena-seat-anchor ${seat.isCurrentTurn ? 'arena-seat-anchor--current-turn' : ''}`}
-      data-table-profile={tableProfile}
+      data-table-profile={resolvedTableProfile}
       data-anchor-zone={anchorZone}
       data-anchor-role={anchorRole}
       data-anchor-slot-id={seat.anchorSlotId || null}
@@ -49,7 +55,7 @@ const SeatCard = ({
         className={`arena-seat-card ${seatToneClassName} ${seat.isCurrentTurn ? 'arena-seat-card--current-turn' : ''} ${
           seat.isActiveTimer ? 'arena-seat-card--active-timer' : ''
         } ${player.folded ? 'arena-seat-card--folded' : ''}`}
-        data-table-profile={tableProfile}
+        data-table-profile={resolvedTableProfile}
         data-anchor-zone={anchorZone}
         data-anchor-role={anchorRole}
         data-anchor-slot-id={seat.anchorSlotId || null}

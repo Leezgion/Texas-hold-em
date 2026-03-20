@@ -9,7 +9,7 @@ import {
   resolveTableSurfaceLayout,
 } from './tableStageLayout.js';
 import { resolveStageViewportContract } from './roomViewportLayout.js';
-import { buildSeatRingPositions } from './seatRingLayout.js';
+import { buildSeatRingPositions, getSeatRingLayoutProfile } from './seatRingLayout.js';
 
 function getCommunityRowWidth({ cardWidth, gap, cardCount = 5 }) {
   return cardWidth * cardCount + gap * Math.max(0, cardCount - 1);
@@ -230,6 +230,45 @@ test('maps seat guides and board tray into desktop stage chrome bounds', () => {
     assert.ok(guide.cx >= 0 && guide.cx <= layout.width, `seat ${guide.seatLabel} cx ${guide.cx} outside ${layout.width}`);
     assert.ok(guide.cy >= 0 && guide.cy <= layout.height, `seat ${guide.seatLabel} cy ${guide.cy} outside ${layout.height}`);
   });
+});
+
+test('desktop oval stage chrome leaves a real clearance gap above the top seat', () => {
+  const seatRingLayout = buildSeatRingPositions({
+    playerCount: 6,
+    viewportWidth: 1280,
+    viewportHeight: 900,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+  const seatGuides = seatRingLayout.map((seat, seatIndex) => ({
+    seatIndex,
+    seatLabel: `Seat ${seatIndex + 1}`,
+    positionLabel: null,
+    occupied: true,
+    position: { x: seat.x, y: seat.y, profile: seat.profile },
+  }));
+  const layout = buildStageChromeLayout({
+    viewportWidth: 1280,
+    viewportHeight: 900,
+    tableDiameter: 352,
+    roomShellLayout: 'split-stage',
+    tableProfile: 'desktop-oval',
+    seatGuides,
+  });
+  const profile = getSeatRingLayoutProfile({
+    viewportWidth: 1280,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+  const topSeat = seatRingLayout.find((seat) => seat.slotId === 'top');
+
+  assert.ok(topSeat);
+  assert.ok(
+    layout.centerY + topSeat.y + profile.cardHeight / 2 <= layout.stageBand.y - 12,
+    'top seat should stay clearly above the stage band'
+  );
 });
 
 test('keeps phone portrait stage chrome compact while preserving marker metadata', () => {
