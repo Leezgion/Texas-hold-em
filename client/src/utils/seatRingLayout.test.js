@@ -323,3 +323,88 @@ test('keeps supported phone 7-9 player rooms collision-free and anchored to the 
     assert.equal(layout.overlaps.stageBand, 0, `stage overlap for ${playerCount} players`);
   }
 });
+
+test('desktop 9-max canonical anchors stay mirrored around the center line', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 1440,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+
+  assert.equal(layout[1].x, -layout[2].x);
+  assert.equal(layout[1].y, layout[2].y);
+  assert.equal(layout[3].x, -layout[4].x);
+  assert.equal(layout[3].y, layout[4].y);
+  assert.equal(layout[5].x, -layout[6].x);
+  assert.equal(layout[5].y, layout[6].y);
+  assert.equal(layout[7].x, -layout[8].x);
+  assert.equal(layout[7].y, layout[8].y);
+});
+
+test('phone 9-max canonical anchors stay mirrored around the center line', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 390,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+
+  assert.equal(layout[1].x, -layout[2].x);
+  assert.equal(layout[1].y, layout[2].y);
+  assert.equal(layout[3].x, -layout[4].x);
+  assert.equal(layout[3].y, layout[4].y);
+  assert.equal(layout[5].x, -layout[6].x);
+  assert.equal(layout[5].y, layout[6].y);
+  assert.equal(layout[7].x, -layout[8].x);
+  assert.equal(layout[7].y, layout[8].y);
+});
+
+test('supported 2-9 player rooms keep the canonical table body and stage band clear', () => {
+  const cases = [
+    {
+      profile: 'desktop-oval',
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      cardWidth: 132,
+      cardHeight: 144,
+    },
+    {
+      profile: 'phone-oval',
+      viewportWidth: 390,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      cardWidth: 70,
+      cardHeight: 128,
+    },
+  ];
+
+  for (const config of cases) {
+    for (const playerCount of [2, 6, 9]) {
+      const layout = buildSeatRingPositions({
+        playerCount,
+        viewportWidth: config.viewportWidth,
+        roomShellLayout: config.roomShellLayout,
+        tableDiameter: config.tableDiameter,
+        profile: config.profile,
+      });
+
+      assert.equal(layout.overlaps.tableBody, 0, `${config.profile} table overlap for ${playerCount} players`);
+      assert.equal(layout.overlaps.stageBand, 0, `${config.profile} stage overlap for ${playerCount} players`);
+      assert.equal(
+        countTableRectOverlaps({
+          positions: layout,
+          tableWidth: config.tableDiameter,
+          tableHeight: config.tableDiameter,
+          cardWidth: config.cardWidth,
+          cardHeight: config.cardHeight,
+        }),
+        0,
+        `${config.profile} body collision for ${playerCount} players`
+      );
+    }
+  }
+});

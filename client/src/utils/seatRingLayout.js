@@ -40,165 +40,91 @@ function resolveTableFootprint({ tableDiameter = 0, profile = 'desktop-oval' } =
 }
 
 const SUPPORTS_2_TO_9_OCCUPANCY = {
-  2: [0, 4],
-  3: [0, 3, 5],
-  4: [0, 3, 4, 5],
-  5: [0, 1, 3, 4, 5],
-  6: [0, 1, 3, 4, 5, 7],
-  7: [0, 1, 2, 3, 4, 5, 7],
+  2: [0, 7],
+  3: [0, 5, 6],
+  4: [0, 1, 2, 7],
+  5: [0, 1, 2, 5, 6],
+  6: [0, 1, 2, 3, 4, 7],
+  7: [0, 1, 2, 3, 4, 5, 6],
   8: [0, 1, 2, 3, 4, 5, 6, 7],
   9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
 };
 
-function buildDesktop9MaxAnchors({
+function buildCanonicalSeatAnchors({
   tableWidth,
   tableHeight,
   cardWidth,
   cardHeight,
   horizontalGap,
   verticalGap,
+  heroAnchorZone,
+  heroYMultiplier,
 } = {}) {
   const halfWidth = tableWidth / 2;
   const halfHeight = tableHeight / 2;
-  const sideX = halfWidth + cardWidth * 0.5 + horizontalGap;
-  const topY = -(halfHeight + cardHeight * 0.82 + verticalGap * 1.2);
-  const heroY = halfHeight + cardHeight * 0.52 + verticalGap * 1.05;
-  const lowerY = 160;
-  const upperY = -160;
+  const pairX = Math.round(halfWidth + cardWidth * 0.5 + horizontalGap);
+  const heroY = Math.round(halfHeight + cardHeight * heroYMultiplier + verticalGap * 1.05);
+  const lowerY = Math.round(halfHeight);
   const middleY = 0;
-  const bottomCornerX = 160;
+  const upperY = -Math.round(halfHeight);
+  const topY = Math.round(
+    -(halfHeight + cardHeight * (heroAnchorZone === 'dock-edge' ? 1.0 : 0.98) + verticalGap * (heroAnchorZone === 'dock-edge' ? 1.15 : 1.2))
+  );
 
   return [
     {
       x: 0,
       y: heroY,
-      anchorZone: 'table-edge',
+      anchorZone: heroAnchorZone,
       anchorRole: 'hero',
     },
     {
-      x: -sideX,
+      x: -pairX,
       y: lowerY,
       anchorZone: 'table-flank',
       anchorRole: 'lower-left',
     },
     {
-      x: -sideX,
-      y: middleY,
-      anchorZone: 'table-flank',
-      anchorRole: 'left-middle',
-    },
-    {
-      x: -sideX,
-      y: upperY,
-      anchorZone: 'table-flank',
-      anchorRole: 'upper-left',
-    },
-    {
-      x: 0,
-      y: topY,
-      anchorZone: 'stage-band-clear',
-      anchorRole: 'top',
-    },
-    {
-      x: sideX,
-      y: upperY,
-      anchorZone: 'table-flank',
-      anchorRole: 'upper-right',
-    },
-    {
-      x: sideX,
-      y: middleY,
-      anchorZone: 'table-flank',
-      anchorRole: 'right-middle',
-    },
-    {
-      x: sideX,
+      x: pairX,
       y: lowerY,
       anchorZone: 'table-flank',
       anchorRole: 'lower-right',
     },
     {
-      x: bottomCornerX,
-      y: heroY,
-      anchorZone: 'table-flank',
-      anchorRole: 'bottom-right',
-    },
-  ].map(roundPosition);
-}
-
-function buildPhonePortrait9MaxAnchors({
-  tableWidth,
-  tableHeight,
-  cardWidth,
-  cardHeight,
-  horizontalGap,
-  verticalGap,
-} = {}) {
-  const halfWidth = tableWidth / 2;
-  const halfHeight = tableHeight / 2;
-  const sideX = halfWidth + cardWidth * 0.44 + horizontalGap;
-  const upperSideX = halfWidth + cardWidth * 0.4 + horizontalGap;
-  const topY = -(halfHeight + cardHeight * 0.78 + verticalGap * 1.15);
-  const heroY = halfHeight + cardHeight * 0.38 + verticalGap * 1.05;
-  const lowerY = 160;
-  const upperY = -160;
-  const middleY = 0;
-  const bottomCornerX = 160;
-
-  return [
-    {
-      x: 0,
-      y: heroY,
-      anchorZone: 'dock-edge',
-      anchorRole: 'hero',
-    },
-    {
-      x: -sideX,
-      y: lowerY,
-      anchorZone: 'table-flank',
-      anchorRole: 'lower-left',
-    },
-    {
-      x: -sideX,
+      x: -pairX,
       y: middleY,
       anchorZone: 'table-flank',
-      anchorRole: 'left-middle',
+      anchorRole: 'middle-left',
     },
     {
-      x: -upperSideX,
+      x: pairX,
+      y: middleY,
+      anchorZone: 'table-flank',
+      anchorRole: 'middle-right',
+    },
+    {
+      x: -pairX,
       y: upperY,
       anchorZone: 'table-flank',
       anchorRole: 'upper-left',
     },
     {
-      x: 0,
-      y: topY,
-      anchorZone: 'stage-band-clear',
-      anchorRole: 'top',
-    },
-    {
-      x: upperSideX,
+      x: pairX,
       y: upperY,
       anchorZone: 'table-flank',
       anchorRole: 'upper-right',
     },
     {
-      x: sideX,
-      y: middleY,
+      x: -pairX,
+      y: topY,
       anchorZone: 'table-flank',
-      anchorRole: 'right-middle',
+      anchorRole: 'top-left',
     },
     {
-      x: sideX,
-      y: lowerY,
+      x: pairX,
+      y: topY,
       anchorZone: 'table-flank',
-      anchorRole: 'lower-right',
-    },
-    {
-      x: bottomCornerX,
-      y: 300,
-      anchorZone: 'table-flank',
-      anchorRole: 'bottom-right',
+      anchorRole: 'top-right',
     },
   ].map(roundPosition);
 }
@@ -208,10 +134,11 @@ function buildSeatRingPositionsForSupportedProfile({
   profile = 'desktop-oval',
   ...layoutProfile
 } = {}) {
-  const template =
-    profile === 'phone-oval'
-      ? buildPhonePortrait9MaxAnchors(layoutProfile)
-      : buildDesktop9MaxAnchors(layoutProfile);
+  const template = buildCanonicalSeatAnchors({
+    ...layoutProfile,
+    heroAnchorZone: profile === 'phone-oval' ? 'dock-edge' : 'table-edge',
+    heroYMultiplier: profile === 'phone-oval' ? 0.38 : 0.52,
+  });
   const templateIndexes = SUPPORTS_2_TO_9_OCCUPANCY[playerCount];
 
   if (!templateIndexes) {
