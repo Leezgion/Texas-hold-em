@@ -107,22 +107,26 @@ const TableStage = ({
             <motion.div
               key={`${primaryPotItem.label}-${primaryPotItem.amount}-${secondaryPotItems.map((item) => item.amount).join('-')}`}
               className="table-stage-pot-capsule"
+              data-table-family={tableSurfaceLayout.family}
+              data-center-surface-model={centerSurfaceModel}
+              data-table-material-felt-tone={tableFeltTone}
+              data-table-material-rail-tone={tableRailTone}
               initial={motionProfile.stage.initial}
               animate={motionProfile.stage.animate}
               exit={motionProfile.stage.exit}
               transition={motionProfile.stage.transition}
             >
-            <div className="table-stage-pot-capsule__kicker">{primaryPotItem.label}</div>
-            <div className="table-stage-pot-capsule__amount">{primaryPotItem.amount}</div>
-            {secondaryPotItems.length > 0 && (
-              <div className="table-stage-pot-capsule__rail">
-                {secondaryPotItems.map((item) => (
-                  <span key={item.label} className="table-stage-pot-capsule__rail-item">
-                    {item.label} {item.amount}
-                  </span>
-                ))}
-              </div>
-            )}
+              <div className="table-stage-pot-capsule__kicker">{primaryPotItem.label}</div>
+              <div className="table-stage-pot-capsule__amount">{primaryPotItem.amount}</div>
+              {secondaryPotItems.length > 0 && (
+                <div className="table-stage-pot-capsule__rail">
+                  {secondaryPotItems.map((item) => (
+                    <span key={item.label} className="table-stage-pot-capsule__rail-item">
+                      {item.label} {item.amount}
+                    </span>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

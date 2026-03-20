@@ -365,6 +365,12 @@ test('visible felt shell radius follows shell-orientation semantics instead of a
   );
 });
 
+test('broadcast tactical table styles use the restrained grain token instead of only declaring it', () => {
+  const source = readSource('../index.css');
+
+  assert.match(source, /var\(--table-stage-grain-opacity\)/);
+});
+
 test('keeps phone portrait stage chrome compact while preserving marker metadata', () => {
   const layout = buildStageChromeLayout({
     viewportWidth: 390,

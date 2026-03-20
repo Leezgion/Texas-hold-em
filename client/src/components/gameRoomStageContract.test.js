@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const source = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 'utf8');
+const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
 const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 'utf8');
 const seatCardSource = readFileSync(new URL('./SeatCard.jsx', import.meta.url), 'utf8');
 const tableStageChromeSource = readFileSync(new URL('./TableStageChrome.jsx', import.meta.url), 'utf8');
@@ -39,4 +40,10 @@ test('TableStageChrome exposes broadcast material language instead of HUD shell 
   assert.doesNotMatch(tableStageChromeSource, /shellOrientation/);
   assert.doesNotMatch(tableStageChromeSource, /orbitRingPath/);
   assert.doesNotMatch(tableStageChromeSource, /haloShell/);
+});
+
+test('TableStage threads broadcast center material hooks through the pot capsule render', () => {
+  assert.match(tableStageSource, /className="table-stage-pot-capsule"[\s\S]*data-center-surface-model=\{centerSurfaceModel\}/);
+  assert.match(tableStageSource, /className="table-stage-pot-capsule"[\s\S]*data-table-material-felt-tone=\{tableFeltTone\}/);
+  assert.match(tableStageSource, /className="table-stage-pot-capsule"[\s\S]*data-table-material-rail-tone=\{tableRailTone\}/);
 });

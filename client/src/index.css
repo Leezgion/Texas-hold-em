@@ -1261,6 +1261,24 @@
       inset 0 22px 38px rgba(255, 255, 255, 0.025);
   }
 
+  .table-stage-table-shell[data-table-family="broadcast-tactical-9max"]::after {
+    content: "";
+    position: absolute;
+    inset: 1rem;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        rgba(255, 255, 255, var(--table-stage-grain-opacity)) 0,
+        rgba(255, 255, 255, 0) 1px,
+        rgba(255, 255, 255, 0) 8px
+      ),
+      radial-gradient(circle at center, transparent 56%, rgba(0, 0, 0, 0.12) 100%);
+    mix-blend-mode: soft-light;
+    opacity: 0.72;
+  }
+
   .table-stage-table-shell[data-table-shell-orientation="horizontal-capsule"] {
     --table-stage-shell-radius: 48% / 36%;
   }
@@ -1346,6 +1364,22 @@
     animation:
       arenaStageFloat var(--arena-motion-float) ease-in-out infinite,
       arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
+  }
+
+  .table-stage-pot-capsule[data-center-surface-model="broadcast-clean-center"] {
+    border-color: rgba(247, 229, 173, 0.2);
+    background:
+      linear-gradient(180deg, rgba(5, 10, 14, 0.84), rgba(3, 6, 10, 0.76)),
+      radial-gradient(circle at top, rgba(247, 229, 173, 0.08), transparent 10rem);
+    box-shadow:
+      0 16px 36px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.02),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .table-stage-pot-capsule[data-center-surface-model="broadcast-clean-center"] .table-stage-pot-capsule__rail-item {
+    border-color: rgba(247, 229, 173, 0.14);
+    background: rgba(255, 255, 255, 0.03);
   }
 
   .table-stage-pot-capsule__kicker {
