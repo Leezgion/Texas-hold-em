@@ -985,7 +985,12 @@ This is a client preference. It should not change server truth or give one playe
 - `[done]` Extend Motion choreography into `EventRail` and `Hand Tape`
 - `[done]` Upgrade `TableStage` to an SVG-backed stage chrome
 - `[done]` Capture tablet and ultrawide shell screenshots after the Motion pass
-- `[next]` Run the `Broadcast Tactical Density Pass` to compress dead spacing in the create-room sheet, room shell, plaques, and phone support launchers without breaking the single-screen contract
+- `[next]` Run the `Broadcast Tactical Density Pass` to compress dead spacing in the create-room sheet, room shell, plaques, and phone support launchers without breaking the single-screen contract. The browser-evidence pass must capture all of:
+  - create-room desktop compact mode tiles
+  - room desktop waiting with tighter header/dock spacing
+  - room desktop live-hand with co-visible table and action area
+  - room phone waiting with compact launcher row
+  - room phone support sheet open without page-length scroll
 
 ## Risks To Watch
 
@@ -1041,3 +1046,58 @@ This rerun closed the browser-evidence task for the new broadcast-tactical table
 - fresh blocker discovered and fixed during evidence capture:
   - starting a new hand briefly flipped `gameStarted = true` before the action-state payload was fully present, so `ActionButtons` tried to read `gameState.currentBet` and blanked the page
   - fix landed by keeping the live-hand action frame mounted, then making `ActionButtons` fail-closed with `等待牌局状态同步` until the authoritative `gameState` arrived
+
+## 2026-03-20 Broadcast Tactical Density Evidence Rerun
+
+This pass closed the density-pass browser-evidence task on the reused local-dev pair (`3001 / 5173`) without restarting the user-owned `pnpm dev` servers.
+
+- fresh room:
+  - `SBJV6M`
+  - `0G3HEY`
+- fresh screenshots:
+  - `.runlogs/density-create-room-desktop.png`
+  - `.runlogs/density-room-desktop-waiting.png`
+  - `.runlogs/density-room-desktop-live.png`
+  - `.runlogs/density-room-phone-waiting.png`
+  - `.runlogs/density-room-phone-roster-sheet.png`
+- create-room desktop compact mode tiles:
+  - modal dialog footprint: `1024x868`
+  - three compact tiles inside the modal: `306x180` each
+  - page metrics while modal open: `scrollHeight = 1347`, `clientHeight = 900`
+  - the tiles stayed horizontal and readable instead of collapsing into tall profile cards
+  - the modal read as a compact terminal sheet, not a full-height room builder
+- room desktop waiting `1366x900`:
+  - `scrollHeight = clientHeight = 770`
+  - shell `scrollHeight = clientHeight = 763`
+  - hero dock remained visible with `top = 490`, `bottom = 764.2`, `height = 274.2`
+  - hero plaque sample: `座1 Hero HOST 1,000 等待开始`
+  - open-seat plaque sample: `座2 OPEN SEAT`
+  - tighter spacing preserved readability without reintroducing page scroll
+- room desktop live-hand `1366x900`:
+  - `scrollHeight = clientHeight = 770`
+  - shell `scrollHeight = clientHeight = 763`
+  - hero dock stayed co-visible with the action area: `top = 328.96`, `bottom = 764.20`, `height = 435.23`
+  - readability samples:
+    - `座1 SB/BTN Hero HOST 990 BET 10 -10 游戏中`
+    - `座2 BB device_mmynmk3d_2v08hd_lbfwmz 980 BET 20 -20 游戏中`
+    - `座3 OPEN SEAT`
+  - the compact density kept the table and decision area visible together instead of collapsing the lower dock
+- room phone portrait waiting `390x844`:
+  - `scrollHeight = clientHeight = 844`
+  - shell `scrollHeight = clientHeight = 844`
+  - hero dock remained visible with `top = 547.72`, `bottom = 842.40`, `height = 294.68`
+  - hero plaque sample: `座1 Hero HOST 1,000 等待开始`
+  - open-seat plaque sample: `座2 OPEN SEAT`
+  - the compact launcher row stayed present and the page-length scroll stayed locked out
+- room phone portrait support sheet open `390x844`:
+  - `scrollHeight = clientHeight = 844`
+  - shell `scrollHeight = clientHeight = 844`
+  - `sheetDensity = tight-terminal`
+  - `sheetPresentation = bottom-sheet`
+  - `railSurfaceVariant = panel`
+  - `launcherDensity = compact`
+  - sheet body scroll remained independent: `clientHeight = 516`, `scrollHeight = 773`
+  - the page itself did not regain a hidden scroll range under the sheet
+- density-specific pitfall recorded:
+  - after many HMR updates, a browser page can enter a corrupted `useGame must be used within a GameProvider` state
+  - reloading the page cleared the corruption without restarting the user-owned dev servers

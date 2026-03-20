@@ -154,12 +154,24 @@ For Poker OS shell work, add these spot checks explicitly:
   - room desktop live-hand
   - room phone portrait waiting
   - room phone portrait support sheet open
+- broadcast tactical density evidence: capture all of:
+  - create-room desktop compact mode tiles
+  - room desktop waiting with tighter header/dock spacing
+  - room desktop live-hand with co-visible table and action area
+  - room phone waiting with compact launcher row
+  - room phone support sheet open without page-length scroll
 - broadcast tactical evidence: for both waiting and live-hand captures, verify:
   - `document.scrollingElement.scrollHeight === document.scrollingElement.clientHeight`
   - `.room-terminal-main--table-coupled` exists
   - `.room-terminal-dock` keeps `transform = none`
   - `[data-center-priority="board-pot-street"]` is still present
   - open-seat and hero plaques remain readable after the layout settles
+- broadcast tactical density evidence: for the density pass, also verify:
+  - create-room modal tiles stay horizontal/readable instead of collapsing into stacked cards
+  - desktop waiting keeps the hero dock and open-seat plaque visible with tighter spacing
+  - desktop live-hand keeps the action area co-visible with the table
+  - phone waiting keeps the launcher row compact without restoring page-length scroll
+  - phone support sheets keep the page locked while the sheet body owns the overflow
 - room shell desktop: seat ring stays inside the stage panel and the hero dock remains readable
 - room shell desktop: in-hand current-turn verification must include the stage beacon, not only the hero dock; confirm the beacon shows the active seat and, after one real action, a last-action cue
 - settlement hierarchy: when validating settlement UI, prefer a long-settlement room such as `-SettleMs 15000` so the overlay, countdown, and winner-first ordering can be captured before the next hand starts
