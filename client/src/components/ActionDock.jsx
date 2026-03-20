@@ -174,7 +174,7 @@ const ActionDock = ({
 
             {gameStarted && (
               <motion.div
-                className="tactical-dock__action-frame tactical-dock__action-frame--broadcast-confirmation"
+                className="tactical-dock__action-frame"
                 initial={motionProfile.stage.initial}
                 animate={motionProfile.stage.animate}
                 transition={motionProfile.stage.transition}

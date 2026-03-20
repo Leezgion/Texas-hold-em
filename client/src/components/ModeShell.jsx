@@ -1,5 +1,5 @@
 import React from 'react';
-import { MotionConfig } from 'motion/react';
+import { MotionConfig, useReducedMotion } from 'motion/react';
 import { useLocation } from 'react-router-dom';
 
 import { getDisplayModeTheme } from '../utils/productMode';
@@ -8,6 +8,7 @@ import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../ut
 const ModeShell = ({ mode = 'pro', children }) => {
   const location = useLocation();
   const theme = getDisplayModeTheme(mode);
+  const reducedMotion = useReducedMotion();
   const [viewportWidth, setViewportWidth] = React.useState(() => window.innerWidth);
 
   React.useEffect(() => {
@@ -19,7 +20,7 @@ const ModeShell = ({ mode = 'pro', children }) => {
 
   const motionViewport =
     resolveTacticalMotionViewport({ viewportWidth });
-  const motionProfile = buildTacticalMotionProfile(mode, { viewport: motionViewport });
+  const motionProfile = buildTacticalMotionProfile(mode, { reducedMotion, viewport: motionViewport });
   const motionTiming = motionProfile.shellTiming || {};
   const cueTiming = motionProfile.cueTiming || {};
   const shellMotionStyle = {
@@ -43,6 +44,7 @@ const ModeShell = ({ mode = 'pro', children }) => {
     '--arena-shell-history-drawer-blur': `${motionProfile.shell.historyDrawerBackdropBlurPx}px`,
     '--arena-shell-ambient-play-state': motionProfile.ambientMotion === 'reduced' ? 'paused' : 'running',
     '--arena-shell-float-play-state': motionProfile.pageFloat === 'disabled' ? 'paused' : 'running',
+    '--arena-shell-cue-play-state': motionProfile.reducedMotion ? 'paused' : 'running',
   };
 
   return (
@@ -60,6 +62,7 @@ const ModeShell = ({ mode = 'pro', children }) => {
         data-motion-style={theme.motionStyle}
         data-shell-route={location.pathname.startsWith('/game/') ? 'room' : 'gateway'}
         data-shell-motion-viewport={motionProfile.viewport}
+        data-shell-reduced-motion={motionProfile.reducedMotion ? 'true' : 'false'}
         data-shell-page-float={motionProfile.pageFloat}
         data-shell-transition-budget={motionProfile.primaryTransitions}
         data-shell-backdrop-blur={motionProfile.surfaceBlur}

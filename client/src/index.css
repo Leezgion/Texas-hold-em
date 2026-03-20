@@ -1524,10 +1524,7 @@
   .table-stage-beacon__cue--broadcast-turn,
   .table-stage-beacon__turn-seat--broadcast-turn {
     animation: arenaBroadcastTurnCue var(--arena-motion-turn-emphasis) ease-in-out infinite;
-  }
-
-  .table-stage-beacon__last-action--broadcast-confirmation {
-    animation: arenaBroadcastConfirmation var(--arena-motion-settlement-confirm) ease-out both;
+    animation-play-state: var(--arena-shell-cue-play-state, running);
   }
 
   .arena-seat-plaque-anchor {
@@ -1563,6 +1560,7 @@
     opacity: 0.74;
     filter: blur(10px);
     animation: arenaBroadcastTurnCue var(--arena-motion-turn-emphasis) ease-in-out infinite;
+    animation-play-state: var(--arena-shell-cue-play-state, running);
   }
 
   .arena-seat-plaque {
@@ -1687,6 +1685,7 @@
 
   .arena-seat-plaque__turn-glow--broadcast-turn-cue {
     animation: arenaBroadcastTurnCue var(--arena-motion-turn-emphasis) ease-in-out infinite;
+    animation-play-state: var(--arena-shell-cue-play-state, running);
   }
 
   .arena-seat-plaque--current-turn {
@@ -2230,10 +2229,7 @@
 
   .tactical-dock__turn-chip--broadcast-cue {
     animation: arenaBroadcastTurnCue var(--arena-motion-turn-emphasis) ease-in-out infinite;
-  }
-
-  .tactical-dock__action-frame--broadcast-confirmation {
-    animation: arenaBroadcastConfirmation var(--arena-motion-settlement-confirm) ease-out both;
+    animation-play-state: var(--arena-shell-cue-play-state, running);
   }
 
   .mode-shell[data-shell-motion-viewport="phone-terminal"] .arena-seat-plaque-anchor--broadcast-turn-cue::before,
@@ -2244,9 +2240,16 @@
     animation: none;
   }
 
-  .mode-shell[data-shell-motion-viewport="phone-terminal"] .table-stage-pot-capsule--broadcast-confirmation,
-  .mode-shell[data-shell-motion-viewport="phone-terminal"] .tactical-dock__action-frame--broadcast-confirmation {
-    animation-duration: var(--arena-motion-plaque-response);
+  .mode-shell[data-shell-motion-viewport="phone-terminal"] .table-stage-pot-capsule--broadcast-confirmation {
+    animation-duration: var(--arena-motion-settlement-confirm);
+  }
+
+  .mode-shell[data-shell-reduced-motion="true"] .arena-seat-plaque-anchor--broadcast-turn-cue::before,
+  .mode-shell[data-shell-reduced-motion="true"] .arena-seat-plaque__turn-glow--broadcast-turn-cue,
+  .mode-shell[data-shell-reduced-motion="true"] .table-stage-beacon__cue--broadcast-turn,
+  .mode-shell[data-shell-reduced-motion="true"] .table-stage-beacon__turn-seat--broadcast-turn,
+  .mode-shell[data-shell-reduced-motion="true"] .tactical-dock__turn-chip--broadcast-cue {
+    animation: none !important;
   }
 
   .room-terminal-dock-panel[data-hero-dock-density="high-efficiency"] .tactical-dock__hero-panel {
