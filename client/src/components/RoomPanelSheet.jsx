@@ -1,4 +1,6 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useId, useRef } from 'react';
+
+import useModalSurface from '../hooks/useModalSurface.js';
 
 const RoomPanelSheet = ({
   open = false,
@@ -11,37 +13,14 @@ const RoomPanelSheet = ({
 }) => {
   const surfaceRef = useRef(null);
   const closeButtonRef = useRef(null);
-  const previousActiveElementRef = useRef(null);
   const titleId = useId();
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    previousActiveElementRef.current =
-      typeof document !== 'undefined' ? document.activeElement : null;
-
-    const focusTarget = closeButtonRef.current || surfaceRef.current;
-    focusTarget?.focus();
-
-    return () => {
-      const previousActiveElement = previousActiveElementRef.current;
-      previousActiveElementRef.current = null;
-
-      if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
-        previousActiveElement.focus();
-      }
-    };
-  }, [open]);
-
-  const handleKeyDown = (event) => {
-    if (event.key === 'Escape' && closeOnEscape) {
-      event.preventDefault();
-      event.stopPropagation();
-      onClose();
-    }
-  };
+  const { handleKeyDown } = useModalSurface({
+    open,
+    onClose,
+    surfaceRef,
+    closeButtonRef,
+    closeOnEscape,
+  });
 
   if (!open) {
     return null;

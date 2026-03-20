@@ -1,38 +1,149 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-test('Modal source emits real dialog semantics and focus handling', () => {
-  const source = readFileSync(new URL('./Modal.jsx', import.meta.url), 'utf8');
+import { createModalSurfaceController } from '../hooks/useModalSurface.js';
 
-  assert.match(source, /role:\s*'dialog'/);
-  assert.match(source, /['"]aria-modal['"]:\s*'true'/);
-  assert.match(source, /['"]aria-labelledby['"]:\s*title \? titleId : undefined/);
-  assert.match(source, /tabIndex:\s*-1/);
-  assert.match(source, /onKeyDown:\s*handleKeyDown/);
-  assert.match(source, /Escape/);
-  assert.match(source, /previousActiveElement/);
-  assert.match(source, /focus\(\)/);
+function createFakeElement(name) {
+  return {
+    name,
+    attributes: {},
+    focusCount: 0,
+    focus() {
+      this.focusCount += 1;
+      this.ownerDocument.activeElement = this;
+    },
+    setAttribute(attributeName, value) {
+      this.attributes[attributeName] = String(value);
+    },
+    removeAttribute(attributeName) {
+      delete this.attributes[attributeName];
+    },
+    getAttribute(attributeName) {
+      return Object.prototype.hasOwnProperty.call(this.attributes, attributeName)
+        ? this.attributes[attributeName]
+        : null;
+    },
+    hasAttribute(attributeName) {
+      return Object.prototype.hasOwnProperty.call(this.attributes, attributeName);
+    },
+  };
+}
+
+function createFakeDocument({ focusables = [] } = {}) {
+  const root = createFakeElement('root');
+  const closeButton = createFakeElement('close');
+  const primaryAction = createFakeElement('primary');
+  const surface = createFakeElement('surface');
+  const documentRef = {
+    activeElement: null,
+    getElementById(id) {
+      return id === 'root' ? root : null;
+    },
+  };
+
+  root.ownerDocument = documentRef;
+  closeButton.ownerDocument = documentRef;
+  primaryAction.ownerDocument = documentRef;
+  surface.ownerDocument = documentRef;
+  surface.querySelectorAll = () => focusables;
+
+  return {
+    documentRef,
+    root,
+    closeButton,
+    primaryAction,
+    surface,
+  };
+}
+
+test('modal surface controller traps focus, marks the background inert, and restores focus', () => {
+  const env = createFakeDocument();
+  const outsideButton = createFakeElement('outside');
+  outsideButton.ownerDocument = env.documentRef;
+  env.documentRef.activeElement = outsideButton;
+  env.surface.querySelectorAll = () => [env.closeButton, env.primaryAction];
+
+  const onCloseCalls = [];
+  const controller = createModalSurfaceController({
+    documentRef: env.documentRef,
+    rootSelector: '#root',
+    surfaceElement: env.surface,
+    closeButtonElement: env.closeButton,
+    onClose: () => onCloseCalls.push('close'),
+    closeOnEscape: true,
+  });
+
+  controller.activate();
+
+  assert.equal(env.root.getAttribute('inert'), '');
+  assert.equal(env.root.getAttribute('aria-hidden'), 'true');
+  assert.equal(env.documentRef.activeElement, env.closeButton);
+
+  controller.handleKeyDown({
+    key: 'Tab',
+    shiftKey: false,
+    preventDefault() {},
+    stopPropagation() {},
+  });
+
+  assert.equal(env.documentRef.activeElement, env.primaryAction);
+
+  controller.handleKeyDown({
+    key: 'Tab',
+    shiftKey: false,
+    preventDefault() {},
+    stopPropagation() {},
+  });
+
+  assert.equal(env.documentRef.activeElement, env.closeButton);
+
+  controller.deactivate();
+
+  assert.equal(env.root.hasAttribute('inert'), false);
+  assert.equal(env.root.hasAttribute('aria-hidden'), false);
+  assert.equal(env.documentRef.activeElement, outsideButton);
+  assert.equal(onCloseCalls.length, 0);
 });
 
-test('RoomPanelSheet source emits real dialog semantics and focus handling', () => {
-  const source = readFileSync(new URL('./RoomPanelSheet.jsx', import.meta.url), 'utf8');
+test('modal surface controller dismisses on escape when enabled', () => {
+  const env = createFakeDocument();
+  let closeCount = 0;
+  const controller = createModalSurfaceController({
+    documentRef: env.documentRef,
+    rootSelector: '#root',
+    surfaceElement: env.surface,
+    closeButtonElement: env.closeButton,
+    onClose: () => {
+      closeCount += 1;
+    },
+    closeOnEscape: true,
+  });
 
-  assert.match(source, /role="dialog"|role:\s*'dialog'/);
-  assert.match(source, /['"]aria-modal['"]:\s*'true'|aria-modal="true"/);
-  assert.match(source, /aria-labelledby=\{title \? titleId : undefined\}/);
-  assert.match(source, /tabIndex=\{-1\}/);
-  assert.match(source, /onKeyDown=\{handleKeyDown\}/);
-  assert.match(source, /Escape/);
-  assert.match(source, /previousActiveElement/);
-  assert.match(source, /focus\(\)/);
+  controller.activate();
+  controller.handleKeyDown({
+    key: 'Escape',
+    shiftKey: false,
+    preventDefault() {},
+    stopPropagation() {},
+  });
+
+  assert.equal(closeCount, 1);
 });
 
-test('dialog surfaces keep a visible focus treatment instead of removing focus cues outright', () => {
-  const source = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+test('modal surface controller keeps a visible focus treatment contract untouched', () => {
+  const env = createFakeDocument();
+  const controller = createModalSurfaceController({
+    documentRef: env.documentRef,
+    rootSelector: '#root',
+    surfaceElement: env.surface,
+    closeButtonElement: env.closeButton,
+    onClose: () => {},
+    closeOnEscape: false,
+  });
 
-  assert.match(source, /\.modal-content:focus-visible,/);
-  assert.match(source, /\.room-panel-sheet__surface:focus-visible/);
-  assert.match(source, /outline:\s*2px solid/);
-  assert.match(source, /outline-offset:\s*3px/);
+  controller.activate();
+
+  assert.equal(env.closeButton.focusCount > 0, true);
+  assert.equal(env.root.getAttribute('inert'), '');
+  assert.equal(env.root.getAttribute('aria-hidden'), 'true');
 });

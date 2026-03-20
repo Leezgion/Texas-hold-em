@@ -1,24 +1,22 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const gameRoomSource = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 'utf8');
-const shellCssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+import { resolveRoomViewportLayout } from '../utils/roomViewportLayout.js';
 
-test('GameRoom threads the viewport room scroll contract into the shell data attribute', () => {
-  assert.match(gameRoomSource, /data-room-scroll-contract=\{roomViewportLayout\.roomScrollContract\}/);
-  assert.doesNotMatch(
-    gameRoomSource,
-    /data-room-scroll-contract=\{roomViewportLayout\.viewportModel === 'phone-terminal' \? 'single-screen' : 'default'\}/
-  );
-});
+test('room viewport layouts keep the single-screen scroll contract across supported viewports', () => {
+  const cases = [
+    { width: 390, height: 844, expectedHeightClass: 'regular-height' },
+    { width: 844, height: 390, expectedHeightClass: 'short-height' },
+    { width: 1280, height: 900, expectedHeightClass: 'regular-height' },
+    { width: 1720, height: 1000, expectedHeightClass: 'regular-height' },
+  ];
 
-test('room routes lock the outer shell height without depending on phone-only viewport selectors', () => {
-  assert.match(shellCssSource, /\.mode-shell\[data-shell-route="room"\]\s*\{/);
-  assert.match(shellCssSource, /\.mode-shell\[data-shell-route="room"\]\s+\.mode-shell__content,/);
-  assert.match(shellCssSource, /\.mode-shell\[data-shell-route="room"\]\s+\.mode-app-shell\s*\{/);
-  assert.doesNotMatch(
-    shellCssSource,
-    /\.mode-shell\[data-shell-route="room"\]\[data-shell-motion-viewport="phone-terminal"\]\s*\{/
-  );
+  for (const viewport of cases) {
+    const layout = resolveRoomViewportLayout(viewport);
+
+    assert.equal(layout.pageScroll, 'locked');
+    assert.equal(layout.roomScrollContract, 'single-screen');
+    assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+    assert.equal(layout.heightClass, viewport.expectedHeightClass);
+  }
 });

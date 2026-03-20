@@ -1,4 +1,6 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useId, useRef } from 'react';
+
+import useModalSurface from '../hooks/useModalSurface.js';
 
 const Modal = ({
   show,
@@ -22,40 +24,17 @@ const Modal = ({
 }) => {
   const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
-  const previousActiveElementRef = useRef(null);
   const titleId = useId();
-
-  useEffect(() => {
-    if (!show) {
-      return undefined;
-    }
-
-    previousActiveElementRef.current =
-      typeof document !== 'undefined' ? document.activeElement : null;
-
-    const focusTarget = closeButtonRef.current || dialogRef.current;
-    focusTarget?.focus();
-
-    return () => {
-      const previousActiveElement = previousActiveElementRef.current;
-      previousActiveElementRef.current = null;
-
-      if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
-        previousActiveElement.focus();
-      }
-    };
-  }, [show]);
+  const { handleKeyDown } = useModalSurface({
+    open: show,
+    onClose,
+    surfaceRef: dialogRef,
+    closeButtonRef,
+    closeOnEscape,
+  });
 
   const handleOverlayClick = () => {
     if (closeOnOverlayClick) {
-      onClose();
-    }
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === 'Escape' && closeOnEscape) {
-      event.preventDefault();
-      event.stopPropagation();
       onClose();
     }
   };
