@@ -42,7 +42,9 @@ const SeatCard = ({
 
   return (
     <div
-      className={`arena-seat-plaque-anchor ${seat.isCurrentTurn ? 'arena-seat-plaque-anchor--current-turn' : ''}`}
+      className={`arena-seat-plaque-anchor arena-seat-plaque-anchor--broadcast-response ${
+        seat.isCurrentTurn ? 'arena-seat-plaque-anchor--current-turn arena-seat-plaque-anchor--broadcast-turn-cue' : ''
+      }`}
       data-table-profile={resolvedTableProfile}
       data-anchor-zone={anchorZone}
       data-anchor-role={anchorRole}
@@ -58,8 +60,8 @@ const SeatCard = ({
       }}
     >
       <div
-        className={`arena-seat-plaque ${seatToneClassName} arena-seat-plaque--${densityTier} ${
-          seat.isCurrentTurn ? 'arena-seat-plaque--current-turn' : ''
+        className={`arena-seat-plaque arena-seat-plaque--broadcast-response ${seatToneClassName} arena-seat-plaque--${densityTier} ${
+          seat.isCurrentTurn ? 'arena-seat-plaque--current-turn arena-seat-plaque--broadcast-turn-cue' : ''
         } ${seat.isActiveTimer ? 'arena-seat-plaque--active-timer' : ''} ${player.folded ? 'arena-seat-plaque--folded' : ''}`}
         data-table-profile={resolvedTableProfile}
         data-anchor-zone={anchorZone}
@@ -95,7 +97,7 @@ const SeatCard = ({
 
         {seat.isCurrentTurn && (
           <span
-            className="arena-seat-plaque__turn-glow"
+            className="arena-seat-plaque__turn-glow arena-seat-plaque__turn-glow--broadcast-turn-cue"
             aria-hidden="true"
             data-anchor-slot-id={seat.anchorSlotId || null}
             data-canonical-slot-index={canonicalSlotIndex}

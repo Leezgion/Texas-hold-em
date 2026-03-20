@@ -160,7 +160,7 @@ const TableStage = ({
             {primaryPotItem && (
               <motion.div
                 key={`${primaryPotItem.label}-${primaryPotItem.amount}-${secondaryPotItems.map((item) => item.amount).join('-')}`}
-                className="table-stage-center-shell__pot table-stage-pot-capsule"
+                className="table-stage-center-shell__pot table-stage-pot-capsule table-stage-pot-capsule--broadcast-confirmation"
                 data-table-family={tableSurfaceLayout.family}
                 data-center-surface-model={centerSurfaceModel}
                 data-table-material-felt-tone={tableFeltTone}
@@ -186,7 +186,7 @@ const TableStage = ({
           </AnimatePresence>
 
           <motion.div
-            className="table-stage-center-shell__street table-stage-beacon"
+            className="table-stage-center-shell__street table-stage-beacon table-stage-beacon--broadcast-cue"
             initial={motionProfile.cue.initial}
             animate={motionProfile.cue.animate}
             exit={motionProfile.cue.exit}
@@ -195,12 +195,16 @@ const TableStage = ({
             <span className="table-stage-beacon__mode">{shellView.modeLabel}</span>
             <span className="table-stage-beacon__state">{shellView.roomStateLabel}</span>
             {shellView.phaseLabel && <span className="table-stage-beacon__phase">{shellView.phaseLabel}</span>}
-            {shellView.currentTurnSeatLabel && <span className="table-stage-beacon__turn-seat">{shellView.currentTurnSeatLabel}</span>}
+            {shellView.currentTurnSeatLabel && (
+              <span className="table-stage-beacon__turn-seat table-stage-beacon__turn-seat--broadcast-turn">
+                {shellView.currentTurnSeatLabel}
+              </span>
+            )}
             <AnimatePresence initial={false} mode="wait">
               {shellView.stageActionLabel && (
                 <motion.span
                   key={`stage-cue-${shellView.stageActionLabel}`}
-                  className="table-stage-beacon__cue"
+                  className="table-stage-beacon__cue table-stage-beacon__cue--broadcast-turn"
                   initial={motionProfile.cue.initial}
                   animate={motionProfile.cue.animate}
                   exit={motionProfile.cue.exit}
@@ -214,7 +218,7 @@ const TableStage = ({
               {shellView.lastActionLabel && (
                 <motion.span
                   key={`last-action-${shellView.lastActionLabel}`}
-                  className="table-stage-beacon__last-action"
+                  className="table-stage-beacon__last-action table-stage-beacon__last-action--broadcast-confirmation"
                   initial={motionProfile.cue.initial}
                   animate={motionProfile.cue.animate}
                   exit={motionProfile.cue.exit}

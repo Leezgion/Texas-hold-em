@@ -21,12 +21,17 @@ const ModeShell = ({ mode = 'pro', children }) => {
     resolveTacticalMotionViewport({ viewportWidth });
   const motionProfile = buildTacticalMotionProfile(mode, { viewport: motionViewport });
   const motionTiming = motionProfile.shellTiming || {};
+  const cueTiming = motionProfile.cueTiming || {};
   const shellMotionStyle = {
     '--arena-motion-enter': `${motionTiming.enterMs || 180}ms`,
     '--arena-motion-emphasis': `${motionTiming.emphasisMs || 260}ms`,
     '--arena-motion-ambient': `${motionTiming.ambientSeconds || 12}s`,
     '--arena-motion-spotlight': `${motionTiming.spotlightSeconds || 2.4}s`,
     '--arena-motion-float': `${motionTiming.floatSeconds || 7}s`,
+    '--arena-motion-turn-emphasis': `${cueTiming.turnEmphasisMs || 2400}ms`,
+    '--arena-motion-plaque-response': `${cueTiming.plaqueResponseMs || 180}ms`,
+    '--arena-motion-dock-cue': `${cueTiming.dockCueMs || 220}ms`,
+    '--arena-motion-settlement-confirm': `${cueTiming.settlementConfirmMs || 240}ms`,
     '--arena-motion-ambient-opacity': motionProfile.shell.ambientOpacity,
     '--arena-shell-ambient-blur': `${motionProfile.shell.ambientBlurPx}px`,
     '--arena-shell-overlay-blur': `${motionProfile.shell.overlayBackdropBlurPx}px`,
@@ -61,6 +66,10 @@ const ModeShell = ({ mode = 'pro', children }) => {
         data-shell-ambient-motion={motionProfile.ambientMotion}
         data-shell-touch-scroll-model={motionProfile.touchScrollModel}
         data-shell-pulse-budget={motionProfile.pulseBudget}
+        data-table-visual-cue-style={motionProfile.tableVisualCueStyle}
+        data-shell-viewport-style={motionProfile.viewportShellStyle}
+        data-shell-tactical-cue-budget={motionProfile.tacticalCueBudget}
+        data-shell-tactical-cue-scope={motionProfile.tacticalCueScope}
         data-shell-layout-phone={theme.shellLayout.phone}
         data-shell-layout-tablet={theme.shellLayout.tablet}
         data-shell-layout-desktop={theme.shellLayout.desktop}

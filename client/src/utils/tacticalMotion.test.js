@@ -25,6 +25,13 @@ test('builds sharper tactical motion for pro than club or study', () => {
   assert.ok(pro.eventCard.transition.duration < club.eventCard.transition.duration);
 });
 
+test('exposes restrained broadcast-tactical visual style fields on desktop terminals', () => {
+  const profile = buildTacticalMotionProfile('pro', { viewport: 'desktop-terminal' });
+
+  assert.equal(profile.tableVisualCueStyle, 'broadcast-tactical');
+  assert.equal(profile.viewportShellStyle, 'restrained-competition');
+});
+
 test('collapses tactical motion transforms when reduced motion is requested', () => {
   const reduced = buildTacticalMotionProfile('pro', { reducedMotion: true });
 

@@ -40,6 +40,10 @@
     --arena-motion-ambient: 12s;
     --arena-motion-spotlight: 2.4s;
     --arena-motion-float: 7s;
+    --arena-motion-turn-emphasis: 2400ms;
+    --arena-motion-plaque-response: 180ms;
+    --arena-motion-dock-cue: 220ms;
+    --arena-motion-settlement-confirm: 240ms;
     --arena-motion-ambient-opacity: 0.85;
     --arena-shell-ambient-blur: 56px;
     --arena-shell-overlay-blur: 10px;
@@ -1447,6 +1451,10 @@
     @apply rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] text-slate-300;
   }
 
+  .table-stage-pot-capsule--broadcast-confirmation {
+    animation: arenaBroadcastConfirmation var(--arena-motion-settlement-confirm) ease-out both;
+  }
+
   .table-stage-beacon {
     @apply absolute bottom-5 left-1/2 z-20 flex max-w-[min(92%,34rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-[1.2rem] px-3 py-2;
     border: 1px solid rgba(255, 255, 255, 0.07);
@@ -1489,6 +1497,13 @@
     color: var(--mode-shell-accent-strong);
   }
 
+  .table-stage-beacon--broadcast-cue {
+    transition:
+      border-color var(--arena-motion-enter) ease,
+      background-color var(--arena-motion-enter) ease,
+      box-shadow var(--arena-motion-emphasis) ease;
+  }
+
   .table-stage-beacon__cue,
   .table-stage-beacon__last-action {
     width: 100%;
@@ -1506,8 +1521,23 @@
     color: rgb(148 163 184 / 0.86);
   }
 
+  .table-stage-beacon__cue--broadcast-turn,
+  .table-stage-beacon__turn-seat--broadcast-turn {
+    animation: arenaBroadcastTurnCue var(--arena-motion-turn-emphasis) ease-in-out infinite;
+  }
+
+  .table-stage-beacon__last-action--broadcast-confirmation {
+    animation: arenaBroadcastConfirmation var(--arena-motion-settlement-confirm) ease-out both;
+  }
+
   .arena-seat-plaque-anchor {
     @apply absolute z-20;
+  }
+
+  .arena-seat-plaque-anchor--broadcast-response {
+    transition:
+      transform var(--arena-motion-plaque-response) ease,
+      opacity var(--arena-motion-plaque-response) ease;
   }
 
   .arena-seat-plaque-anchor[data-anchor-zone="dock-edge"] {
@@ -1527,6 +1557,12 @@
     animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
     pointer-events: none;
     z-index: -1;
+  }
+
+  .arena-seat-plaque-anchor--broadcast-turn-cue::before {
+    opacity: 0.74;
+    filter: blur(10px);
+    animation: arenaBroadcastTurnCue var(--arena-motion-turn-emphasis) ease-in-out infinite;
   }
 
   .arena-seat-plaque {
@@ -1550,6 +1586,14 @@
       border-color var(--arena-motion-enter) ease,
       box-shadow var(--arena-motion-emphasis) ease,
       opacity var(--arena-motion-enter) ease;
+  }
+
+  .arena-seat-plaque--broadcast-response {
+    transition:
+      transform var(--arena-motion-plaque-response) ease,
+      border-color var(--arena-motion-plaque-response) ease,
+      box-shadow var(--arena-motion-emphasis) ease,
+      opacity var(--arena-motion-plaque-response) ease;
   }
 
   .arena-seat-plaque::before {
@@ -1641,8 +1685,21 @@
     animation: arenaSpotlightPulse var(--arena-motion-spotlight) ease-in-out infinite;
   }
 
+  .arena-seat-plaque__turn-glow--broadcast-turn-cue {
+    animation: arenaBroadcastTurnCue var(--arena-motion-turn-emphasis) ease-in-out infinite;
+  }
+
   .arena-seat-plaque--current-turn {
     transform: translateY(-2px);
+  }
+
+  .arena-seat-plaque--broadcast-turn-cue {
+    border-color: rgba(125, 211, 252, 0.38);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      inset 0 -12px 18px rgba(0, 0, 0, 0.28),
+      0 14px 28px rgba(2, 6, 12, 0.38),
+      0 0 0 1px rgba(125, 211, 252, 0.14);
   }
 
   .arena-seat-plaque--active-timer {
@@ -1939,6 +1996,10 @@
     animation-play-state: var(--arena-shell-float-play-state);
   }
 
+  .tactical-dock--broadcast-cue {
+    animation: none;
+  }
+
   .tactical-dock::after {
     content: "";
     position: absolute;
@@ -1950,6 +2011,11 @@
     opacity: 0.7;
     animation: arenaSheenSweep var(--arena-motion-ambient) linear infinite;
     animation-play-state: var(--arena-shell-ambient-play-state);
+  }
+
+  .tactical-dock--broadcast-cue::after {
+    opacity: 0.46;
+    animation: none;
   }
 
   .tactical-dock__grid {
@@ -1991,6 +2057,10 @@
     border-radius: 1.3rem;
     padding: 0.85rem;
     animation: arenaPanelRise var(--arena-motion-enter) ease-out both;
+  }
+
+  .tactical-dock__hero-panel--broadcast-cue {
+    animation: arenaPanelRise var(--arena-motion-dock-cue) ease-out both;
   }
 
   .room-terminal-dock-panel[data-stage-density="compressed"] .tactical-dock__hero-panel {
@@ -2156,6 +2226,27 @@
     padding: 0.82rem;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
     animation: arenaPanelRise var(--arena-motion-emphasis) ease-out both;
+  }
+
+  .tactical-dock__turn-chip--broadcast-cue {
+    animation: arenaBroadcastTurnCue var(--arena-motion-turn-emphasis) ease-in-out infinite;
+  }
+
+  .tactical-dock__action-frame--broadcast-confirmation {
+    animation: arenaBroadcastConfirmation var(--arena-motion-settlement-confirm) ease-out both;
+  }
+
+  .mode-shell[data-shell-motion-viewport="phone-terminal"] .arena-seat-plaque-anchor--broadcast-turn-cue::before,
+  .mode-shell[data-shell-motion-viewport="phone-terminal"] .arena-seat-plaque__turn-glow--broadcast-turn-cue,
+  .mode-shell[data-shell-motion-viewport="phone-terminal"] .table-stage-beacon__cue--broadcast-turn,
+  .mode-shell[data-shell-motion-viewport="phone-terminal"] .table-stage-beacon__turn-seat--broadcast-turn,
+  .mode-shell[data-shell-motion-viewport="phone-terminal"] .tactical-dock__turn-chip--broadcast-cue {
+    animation: none;
+  }
+
+  .mode-shell[data-shell-motion-viewport="phone-terminal"] .table-stage-pot-capsule--broadcast-confirmation,
+  .mode-shell[data-shell-motion-viewport="phone-terminal"] .tactical-dock__action-frame--broadcast-confirmation {
+    animation-duration: var(--arena-motion-plaque-response);
   }
 
   .room-terminal-dock-panel[data-hero-dock-density="high-efficiency"] .tactical-dock__hero-panel {
@@ -2476,6 +2567,33 @@
     100% {
       opacity: 1;
       transform: translate3d(-50%, 0, 0) scale(1);
+    }
+  }
+
+  @keyframes arenaBroadcastTurnCue {
+    0%,
+    100% {
+      opacity: 0.84;
+      filter: saturate(1);
+    }
+    50% {
+      opacity: 1;
+      filter: saturate(1.08);
+    }
+  }
+
+  @keyframes arenaBroadcastConfirmation {
+    0% {
+      border-color: rgba(251, 191, 36, 0.34);
+      box-shadow:
+        0 0 0 1px rgba(251, 191, 36, 0.18),
+        0 18px 34px rgba(0, 0, 0, 0.32);
+    }
+    100% {
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow:
+        0 10px 24px rgba(0, 0, 0, 0.26),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
   }
 

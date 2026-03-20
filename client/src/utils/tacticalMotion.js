@@ -43,12 +43,54 @@ function buildViewportShellTiming(viewport, motion = {}) {
   };
 }
 
+function buildBroadcastCueTiming(viewport, motion = {}) {
+  const isPhoneTerminal = viewport === 'phone-terminal';
+  const isTabletTerminal = viewport === 'tablet-terminal';
+  const enterMs = motion.enterMs || 180;
+  const emphasisMs = motion.emphasisMs || 260;
+  const spotlightSeconds = motion.spotlightSeconds || 2.4;
+  const turnEmphasisMs = Math.round(spotlightSeconds * 1000);
+  const plaqueResponseMs = Math.round(Math.max(120, enterMs * 0.92));
+  const dockCueMs = Math.round(Math.max(140, emphasisMs * 0.82));
+  const settlementConfirmMs = Math.round(Math.max(160, emphasisMs * 0.9));
+
+  if (isPhoneTerminal) {
+    return {
+      turnEmphasisMs: Math.min(turnEmphasisMs, 900),
+      plaqueResponseMs: Math.min(plaqueResponseMs, 120),
+      dockCueMs: Math.min(dockCueMs, 160),
+      settlementConfirmMs: Math.min(settlementConfirmMs, 180),
+    };
+  }
+
+  if (isTabletTerminal) {
+    return {
+      turnEmphasisMs: Math.min(turnEmphasisMs, 1800),
+      plaqueResponseMs: Math.min(plaqueResponseMs, 160),
+      dockCueMs: Math.min(dockCueMs, 200),
+      settlementConfirmMs: Math.min(settlementConfirmMs, 220),
+    };
+  }
+
+  return {
+    turnEmphasisMs,
+    plaqueResponseMs,
+    dockCueMs,
+    settlementConfirmMs,
+  };
+}
+
 function buildViewportMotionContract(viewport, ambientOpacity, motion = {}) {
   const isPhoneTerminal = viewport === 'phone-terminal';
   const shellTiming = buildViewportShellTiming(viewport, motion);
+  const cueTiming = buildBroadcastCueTiming(viewport, motion);
 
   return {
     viewport,
+    tableVisualCueStyle: 'broadcast-tactical',
+    viewportShellStyle: isPhoneTerminal ? 'restrained-terminal' : 'restrained-competition',
+    tacticalCueBudget: isPhoneTerminal ? 'conservative-focused' : 'focused',
+    tacticalCueScope: 'turn-plaque-dock-settlement',
     allowBackdropBlurStacks: !isPhoneTerminal,
     pageFloat: isPhoneTerminal ? 'disabled' : 'enabled',
     primaryTransitions: isPhoneTerminal ? 'transform-opacity-only' : 'full-shell',
@@ -57,6 +99,7 @@ function buildViewportMotionContract(viewport, ambientOpacity, motion = {}) {
     touchScrollModel: isPhoneTerminal ? 'sheet-body-y-only' : 'multi-surface',
     pulseBudget: isPhoneTerminal ? 'minimal' : 'full',
     shellTiming,
+    cueTiming,
     shell: {
       ambientOpacity: isPhoneTerminal ? Math.min(ambientOpacity ?? 0.85, 0.36) : ambientOpacity ?? 0.85,
       ambientBlurPx: isPhoneTerminal ? 12 : 56,
@@ -92,6 +135,12 @@ export function buildTacticalMotionProfile(mode = 'pro', { reducedMotion = false
     return {
       reducedMotion: true,
       ...viewportContract,
+      cueTiming: {
+        turnEmphasisMs: 10,
+        plaqueResponseMs: 10,
+        dockCueMs: 10,
+        settlementConfirmMs: 10,
+      },
       shellTiming: {
         enterMs: 10,
         emphasisMs: 10,

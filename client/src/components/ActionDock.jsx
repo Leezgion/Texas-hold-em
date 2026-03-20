@@ -55,7 +55,7 @@ const ActionDock = ({
 
   return (
     <section
-      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock rounded-[1.45rem] px-3 py-3"
+      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock tactical-dock--broadcast-cue rounded-[1.45rem] px-3 py-3"
       data-viewport-model={viewportLayout?.viewportModel}
       data-height-class={viewportLayout?.heightClass}
       data-stage-density={viewportLayout?.stageDensity}
@@ -75,7 +75,7 @@ const ActionDock = ({
           <div className="poker-shell-kicker">{roomCopy.actionTitle}</div>
 
           <motion.div
-            className="tactical-dock__hero-panel"
+            className="tactical-dock__hero-panel tactical-dock__hero-panel--broadcast-cue"
             initial={motionProfile.stage.initial}
             animate={motionProfile.stage.animate}
             transition={motionProfile.stage.transition}
@@ -112,7 +112,7 @@ const ActionDock = ({
                 {dockView.turnContextLabel && (
                   <motion.span
                     key={dockView.turnContextLabel}
-                    className="tactical-dock__chip"
+                    className="tactical-dock__chip tactical-dock__turn-chip tactical-dock__turn-chip--broadcast-cue"
                     initial={motionProfile.turnChip.initial}
                     animate={motionProfile.turnChip.animate}
                     exit={motionProfile.turnChip.exit}
@@ -174,7 +174,7 @@ const ActionDock = ({
 
             {gameStarted && (
               <motion.div
-                className="tactical-dock__action-frame"
+                className="tactical-dock__action-frame tactical-dock__action-frame--broadcast-confirmation"
                 initial={motionProfile.stage.initial}
                 animate={motionProfile.stage.animate}
                 transition={motionProfile.stage.transition}
