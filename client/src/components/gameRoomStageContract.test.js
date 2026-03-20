@@ -15,6 +15,7 @@ const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 
 const seatCardSource = readFileSync(new URL('./SeatCard.jsx', import.meta.url), 'utf8');
 const communityCardsSource = readFileSync(new URL('./CommunityCards.jsx', import.meta.url), 'utf8');
 const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
+const stageStylesSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 const bundledModuleCache = new Map();
 const bundledTempDirs = [];
 const bundledExternal = [
@@ -147,6 +148,7 @@ test('TableStage threads broadcast center material hooks through the pot capsule
         lastActionLabel: 'Bet',
       },
       tablePotSummary: {
+        centerPriority: 'board-pot-street',
         items: [
           { label: 'Pot', amount: '1200' },
           { label: 'Side A', amount: '600' },
@@ -166,9 +168,15 @@ test('TableStage threads broadcast center material hooks through the pot capsule
   assert.match(stage, /table-stage-center-shell__board/);
   assert.match(stage, /table-stage-center-shell__street/);
   assert.match(stage, /table-stage-pot-capsule/);
+  assert.match(stage, /data-center-priority="board-pot-street"/);
   assert.match(stage, /data-center-surface-model="broadcast-clean-center"/);
   assert.match(stage, /data-table-material-felt-tone="deep-green-velvet"/);
   assert.match(stage, /data-table-material-rail-tone="black-gold"/);
+});
+
+test('Settlement sheet stays above center-shell layers to preserve reveal-button interactions', () => {
+  assert.match(stageStylesSource, /\.table-stage-center-shell__pot\s*\{[\s\S]*?z-index:\s*21;/);
+  assert.match(stageStylesSource, /\.settlement-sheet\s*\{[\s\S]*?z-index:\s*22;/);
 });
 
 test('CommunityCards and TableStage use the cleaned center-shell naming and avoid HUD-ring language', () => {

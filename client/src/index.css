@@ -2343,7 +2343,7 @@
     position: absolute;
     left: 50%;
     top: 6rem;
-    z-index: 16;
+    z-index: 22;
     width: min(30rem, calc(100% - 2.25rem));
     transform: translateX(-50%);
     border-radius: 1.6rem;
