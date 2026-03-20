@@ -261,7 +261,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         {/* 弃牌 */}
         <button
           onClick={() => handleAction('fold')}
-          className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600/90 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-red-500 hover:shadow-red-500/30"
+          className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-600/90 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-red-500 hover:shadow-red-500/30"
           title="弃牌 (F)"
         >
           弃
@@ -271,7 +271,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         {canCheck ? (
           <button
             onClick={() => handleAction('check')}
-            className="h-10 rounded-lg bg-green-600/90 px-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-green-500 hover:shadow-green-500/30"
+            className="h-11 rounded-lg bg-green-600/90 px-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-green-500 hover:shadow-green-500/30"
             title="过牌 (C)"
           >
             过
@@ -279,7 +279,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         ) : (
           <button
             onClick={() => handleAction('call')}
-            className="h-10 rounded-lg bg-blue-600/90 px-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-blue-500 hover:shadow-blue-500/30"
+            className="h-11 rounded-lg bg-blue-600/90 px-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-blue-500 hover:shadow-blue-500/30"
             title={`跟注 ${callAmount} (C)`}
           >
             跟 {callAmount}
@@ -290,7 +290,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         {canRaise && (
           <button
             onClick={() => setShowRaiseInput(!showRaiseInput)}
-            className={`h-10 w-10 ${
+            className={`h-11 w-11 ${
               showRaiseInput ? 'bg-yellow-500/90' : 'bg-yellow-600/90 hover:bg-yellow-500'
             } flex items-center justify-center rounded-lg text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-yellow-500/30`}
             title="加注 (R)"
@@ -303,7 +303,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         {canRaise && (
           <button
             onClick={() => handleAction('allin')}
-            className="h-10 rounded-lg bg-purple-600/90 px-2.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-purple-500 hover:shadow-purple-500/30"
+            className="h-11 rounded-lg bg-purple-600/90 px-2.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-purple-500 hover:shadow-purple-500/30"
             title={`All-in ${player.chips} (A)`}
           >
             梭
@@ -368,7 +368,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
           <div className="flex items-center space-x-1.5">
             <button
               onClick={handleCustomRaise}
-              className={`h-9 flex-1 ${
+              className={`h-11 flex-1 ${
                 sliderValue === maxRaiseAmount ? 'bg-purple-600 hover:bg-purple-500' : 'bg-green-600 hover:bg-green-500'
               } rounded-lg text-sm font-bold text-white shadow-md transition-all duration-200 hover:shadow-lg`}
             >
@@ -381,7 +381,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
                 setRaiseAmount(alignedMinRaise.toString());
                 setSliderValue(alignedMinRaise);
               }}
-              className="h-9 flex-1 rounded-lg bg-gray-600 text-sm font-medium text-white transition-all duration-200 hover:bg-gray-500"
+              className="h-11 flex-1 rounded-lg bg-gray-600 text-sm font-medium text-white transition-all duration-200 hover:bg-gray-500"
             >
               取消
             </button>

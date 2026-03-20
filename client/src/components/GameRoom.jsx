@@ -256,6 +256,13 @@ const GameRoom = () => {
     players: playersList,
     gameState: safeGameState,
   });
+  const isTableCoupledHeroDock = shellView.heroDockStyle === 'table-coupled-terminal';
+  const roomTerminalMainClassName = isTableCoupledHeroDock
+    ? 'room-terminal-main room-terminal-main--table-coupled'
+    : 'room-terminal-main';
+  const roomTerminalDockClassName = isTableCoupledHeroDock
+    ? 'room-terminal-dock room-terminal-dock--lower-rail-coupled'
+    : 'room-terminal-dock';
   const intelRailView = deriveIntelRailView({
     roomState: activeRoomState,
     roomSettings,
@@ -680,7 +687,7 @@ const GameRoom = () => {
           )}
         </div>
 
-        <div className="room-terminal-main room-terminal-main--table-coupled">
+        <div className={roomTerminalMainClassName}>
           <div className={roomShellGridClassName}>
             {usesSideRails ? (
               <>
@@ -787,7 +794,7 @@ const GameRoom = () => {
             )}
           </div>
 
-          <div className="room-terminal-dock room-terminal-dock--lower-rail-coupled" ref={roomDockRef}>
+          <div className={roomTerminalDockClassName} ref={roomDockRef}>
             <ActionDock
               currentPlayer={currentPlayer}
               currentPlayerView={currentPlayerStateView}

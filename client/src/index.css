@@ -775,7 +775,7 @@
   }
 
   .room-terminal-dock--lower-rail-coupled {
-    transform: translateY(0.15rem);
+    bottom: 0.15rem;
   }
 
   .room-terminal-dock > * {
@@ -2763,7 +2763,7 @@
     }
 
     .room-terminal-dock--lower-rail-coupled {
-      transform: none;
+      bottom: max(0px, env(safe-area-inset-bottom, 0px));
     }
 
     .room-terminal-dock > * {
