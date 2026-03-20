@@ -160,6 +160,41 @@ For Poker OS shell work, add these spot checks explicitly:
   - room desktop live-hand with co-visible table and action area
   - room phone waiting with compact launcher row
   - room phone support sheet open without page-length scroll
+- broadcast tactical density evidence: record the exact artifacts and measurements:
+  - screenshots:
+    - `.runlogs/density-create-room-desktop.png`
+    - `.runlogs/density-room-desktop-waiting.png`
+    - `.runlogs/density-room-desktop-live.png`
+    - `.runlogs/density-room-phone-waiting.png`
+    - `.runlogs/density-room-phone-roster-sheet.png`
+  - create-room desktop:
+    - dialog `1024x868`
+    - modal tiles `306x180`
+    - page metrics `1347/900`
+  - room desktop waiting (`SBJV6M`):
+    - page `770/770`
+    - shell `763/763`
+    - hero dock `top 490 / bottom 764.2 / height 274.2`
+    - plaques `138x98` and `118x94`
+  - room desktop live (`SBJV6M`):
+    - page `770/770`
+    - shell `763/763`
+    - hero dock `top 328.96 / bottom 764.20 / height 435.23`
+  - room phone waiting (`0G3HEY`):
+    - page `844/844`
+    - shell `844/844`
+    - hero dock `top 547.72 / bottom 842.40 / height 294.68`
+    - plaques `69x98` and `69x109`
+  - room phone roster sheet (`0G3HEY`):
+    - page `844/844`
+    - shell `844/844`
+    - sheet density `tight-terminal`
+    - presentation `bottom-sheet`
+    - launcher `compact`
+    - body `516/773`
+  - HMR pitfall:
+    - after many HMR updates, a page can hit `useGame must be used within a GameProvider`
+    - reload the page before deciding the dev servers are unhealthy
 - broadcast tactical evidence: for both waiting and live-hand captures, verify:
   - `document.scrollingElement.scrollHeight === document.scrollingElement.clientHeight`
   - `.room-terminal-main--table-coupled` exists
