@@ -61,11 +61,23 @@ const ROOM_TERMINAL_TABLE_CONTRACT = Object.freeze({
   phoneGeometryModel: 'unified-9max-portrait',
 });
 
+const ROOM_TERMINAL_VISUAL_CONTRACT = Object.freeze({
+  tableVisualFamily: 'broadcast-tactical-9max',
+  tableMaterial: Object.freeze({
+    feltTone: 'deep-green-velvet',
+    railTone: 'black-gold',
+  }),
+  centerSurfaceModel: 'broadcast-clean-center',
+  seatPlaqueStyle: 'embedded-electronic',
+  heroDockStyle: 'table-coupled-terminal',
+});
+
 const ROOM_TERMINAL_META = Object.freeze({
   club: Object.freeze({
     intent: 'single-screen-terminal',
     tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
     maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
+    ...ROOM_TERMINAL_VISUAL_CONTRACT,
     desktop: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',
@@ -84,6 +96,7 @@ const ROOM_TERMINAL_META = Object.freeze({
     intent: 'single-screen-terminal',
     tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
     maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
+    ...ROOM_TERMINAL_VISUAL_CONTRACT,
     desktop: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',
@@ -102,6 +115,7 @@ const ROOM_TERMINAL_META = Object.freeze({
     intent: 'single-screen-terminal',
     tableFamily: ROOM_TERMINAL_TABLE_CONTRACT.tableFamily,
     maxVisualSeats: ROOM_TERMINAL_TABLE_CONTRACT.maxVisualSeats,
+    ...ROOM_TERMINAL_VISUAL_CONTRACT,
     desktop: Object.freeze({
       geometryModel: ROOM_TERMINAL_TABLE_CONTRACT.desktopGeometryModel,
       surfaceModel: 'single-screen',

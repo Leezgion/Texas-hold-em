@@ -9,6 +9,7 @@
 - `club`: for offline private games and club-style table assistance
 - `pro`: for online-grinder style play, speed, and information density
 - `study`: for review, replay, and hand-history comprehension
+- next visual pass after this contract lock: Broadcast Tactical table treatment on the approved deep-green / black-gold / clean-center surface family
 
 **Architecture direction:** keep one authoritative gameplay engine. Add a thin configuration layer instead of forking rules or UI flows:
 

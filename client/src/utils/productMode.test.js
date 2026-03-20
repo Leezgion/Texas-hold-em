@@ -50,6 +50,28 @@ test('returns stable shell theme tokens for each display mode', () => {
   assert.equal(clubTheme.motionStyle, 'measured');
 });
 
+test('locks the pro visual contract to the broadcast tactical table family', () => {
+  const pro = getDisplayModeTheme('pro');
+
+  assert.equal(pro.roomTerminal.tableVisualFamily, 'broadcast-tactical-9max');
+  assert.equal(pro.roomTerminal.tableMaterial.feltTone, 'deep-green-velvet');
+  assert.equal(pro.roomTerminal.tableMaterial.railTone, 'black-gold');
+  assert.equal(pro.roomTerminal.centerSurfaceModel, 'broadcast-clean-center');
+  assert.equal(pro.roomTerminal.seatPlaqueStyle, 'embedded-electronic');
+  assert.equal(pro.roomTerminal.heroDockStyle, 'table-coupled-terminal');
+
+  for (const mode of ['club', 'study']) {
+    const theme = getDisplayModeTheme(mode);
+
+    assert.equal(theme.roomTerminal.tableVisualFamily, 'broadcast-tactical-9max');
+    assert.equal(theme.roomTerminal.tableMaterial.feltTone, 'deep-green-velvet');
+    assert.equal(theme.roomTerminal.tableMaterial.railTone, 'black-gold');
+    assert.equal(theme.roomTerminal.centerSurfaceModel, 'broadcast-clean-center');
+    assert.equal(theme.roomTerminal.seatPlaqueStyle, 'embedded-electronic');
+    assert.equal(theme.roomTerminal.heroDockStyle, 'table-coupled-terminal');
+  }
+});
+
 test('builds mode preview cards in club-pro-study order', () => {
   assert.deepEqual(
     buildModePreviewCards().map((card) => ({
