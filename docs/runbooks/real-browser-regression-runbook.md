@@ -153,7 +153,7 @@ For Poker OS shell work, add these spot checks explicitly:
   - room desktop waiting
   - room desktop live-hand
   - room phone portrait waiting
-  - room phone portrait support sheet open
+  - room phone roster sheet open
 - broadcast tactical density evidence: capture all of:
   - create-room desktop compact mode tiles
   - room desktop waiting with tighter header/dock spacing
@@ -164,6 +164,7 @@ For Poker OS shell work, add these spot checks explicitly:
   - treat the following as a dated sample capture set from `2026-03-20`, not as fixed future inputs
   - for future reruns, use a naming pattern like `density-<date>-<surface>.png` and substitute the current room IDs instead of reusing `SBJV6M` / `0G3HEY`
   - the committed `density-*.png` files are the 2026-03-20 pre-convention sample set for this pass
+  - `.runlogs/` is gitignored, so commit evidence with `git add -f <paths>`
   - screenshots:
     - `.runlogs/density-create-room-desktop.png`
     - `.runlogs/density-room-desktop-waiting.png`
@@ -200,6 +201,7 @@ For Poker OS shell work, add these spot checks explicitly:
     - shell `844/844`
     - sheet density `tight-terminal`
     - presentation `bottom-sheet`
+    - railSurfaceVariant `panel`
     - launcher `compact`
     - body `516/773`
   - HMR pitfall:
