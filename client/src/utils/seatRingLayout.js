@@ -127,35 +127,6 @@ function buildSeatRingPositionsForSupportedProfile({
   }));
 }
 
-function buildSeatRingPositionsFallback({
-  playerCount = 0,
-  tableWidth,
-  tableHeight,
-  cardWidth,
-  cardHeight,
-  horizontalGap,
-  verticalGap,
-} = {}) {
-  const safePlayerCount = Math.max(2, Number(playerCount) || 0);
-  const halfWidth = tableWidth / 2 + cardWidth / 2 + horizontalGap;
-  const halfHeight = tableHeight / 2 + cardHeight / 2 + verticalGap;
-  const positions = [];
-
-  for (let index = 0; index < safePlayerCount; index += 1) {
-    const angle = Math.PI / 2 + (index * 2 * Math.PI) / safePlayerCount;
-    positions.push(
-      roundPosition({
-        x: halfWidth * Math.cos(angle),
-        y: halfHeight * Math.sin(angle),
-        anchorZone: index === 0 ? 'table-edge' : 'table-flank',
-        anchorRole: index === 0 ? 'hero' : 'ring',
-      })
-    );
-  }
-
-  return positions;
-}
-
 function countRectOverlaps({ positions = [], rect = null, cardWidth = 0, cardHeight = 0 } = {}) {
   if (!rect) {
     return 0;
@@ -249,30 +220,14 @@ export function buildSeatRingPositions({
     tableDiameter,
     profile,
   });
-  const safePlayerCount = Math.max(2, Number(playerCount) || 0);
-  let templateSource = 'fallback-generic';
-
-  let positions;
-  if (layoutProfile.profile === 'desktop-oval' || layoutProfile.profile === 'phone-oval') {
-    positions = buildSeatRingPositionsForSupportedProfile({
-      playerCount: safePlayerCount,
-      ...layoutProfile,
-    });
-    if (positions) {
-      templateSource = 'explicit-9max';
-    }
-  }
+  const safePlayerCount = Math.min(9, Math.max(2, Number(playerCount) || 0));
+  const positions = buildSeatRingPositionsForSupportedProfile({
+    playerCount: safePlayerCount,
+    ...layoutProfile,
+  });
 
   if (!positions) {
-    positions = buildSeatRingPositionsFallback({
-      playerCount: safePlayerCount,
-      tableWidth: layoutProfile.tableWidth,
-      tableHeight: layoutProfile.tableHeight,
-      cardWidth: layoutProfile.cardWidth,
-      cardHeight: layoutProfile.cardHeight,
-      horizontalGap: layoutProfile.horizontalGap,
-      verticalGap: layoutProfile.verticalGap,
-    });
+    throw new Error(`Unsupported seat ring profile: ${layoutProfile.profile}`);
   }
 
   const stageBand = {
@@ -317,6 +272,6 @@ export function buildSeatRingPositions({
     heroAnchor: {
       zone: layoutProfile.profile === 'phone-oval' ? 'dock-edge' : 'table-edge',
     },
-    templateSource,
+    templateSource: 'explicit-9max',
   });
 }

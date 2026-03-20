@@ -557,6 +557,32 @@ test('late short-handed occupancies use the documented 9-slot tournament table s
   }
 });
 
+test('clamps unsupported player counts to the canonical nine-anchor template', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 10,
+    viewportWidth: 1440,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+
+  assert.equal(layout.length, 9);
+  assert.equal(layout.templateSource, 'explicit-9max');
+  assert.deepEqual(layout.map((seat) => seat.slotId), [
+    'hero',
+    'lower-left',
+    'upper-left',
+    'top-left',
+    'top',
+    'top-right',
+    'upper-right',
+    'lower-right',
+    'near-hero-right',
+  ]);
+  assert.equal(layout.overlaps.tableBody, 0);
+  assert.equal(layout.overlaps.stageBand, 0);
+});
+
 test('desktop canonical slots keep normalized coordinates stable across active footprints', () => {
   const splitStage = buildSeatRingPositions({
     playerCount: 9,

@@ -135,6 +135,52 @@ test('exposes canonical anchor slots on the runtime geometry contract for suppor
   assert.equal(contract.canonicalSlots[0].position.x, 0);
 });
 
+test('runtime geometry contract keeps explicit 9-max slots for late short-handed and clamped room sizes', () => {
+  const cases = [
+    {
+      label: 'desktop eight-handed',
+      viewportWidth: 1440,
+      viewportHeight: 900,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      playerCount: 8,
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right'],
+    },
+    {
+      label: 'desktop clamped ten-handed',
+      viewportWidth: 1440,
+      viewportHeight: 900,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      playerCount: 10,
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right', 'near-hero-right'],
+    },
+    {
+      label: 'phone nine-handed',
+      viewportWidth: 390,
+      viewportHeight: 844,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      playerCount: 9,
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right', 'near-hero-right'],
+    },
+  ];
+
+  for (const config of cases) {
+    const contract = resolveRoomGeometryContract(config);
+
+    assert.deepEqual(
+      contract.canonicalSlots.map((slot) => slot.slotId),
+      config.expectedSlots,
+      `${config.label} slot semantics`
+    );
+    assert.ok(
+      contract.canonicalSlots.every((slot) => slot.anchorSlotId?.includes(slot.slotId)),
+      `${config.label} anchor slot ids`
+    );
+  }
+});
+
 test('falls back to hero orientation when the current player is spectating', () => {
   assert.equal(resolveSeatRingRotationSeatIndex({ seat: -1 }), 0);
   assert.equal(resolveSeatRingRotationSeatIndex({ seat: 4 }), 4);
