@@ -637,6 +637,8 @@ const GameRoom = () => {
       data-support-surface-policy-key={roomViewportLayout.supportSurfacePolicyKey}
       data-shell-layout={shellView.shellLayout}
       data-hero-dock-priority={shellView.heroDockPriority}
+      data-hero-dock-style={shellView.heroDockStyle}
+      data-hero-dock-density={shellView.heroDockDensity}
       data-room-motion-budget={roomViewportLayout.viewportModel === 'phone-terminal' ? 'mobile-tight' : 'standard'}
       data-room-scroll-contract={roomViewportLayout.roomScrollContract}
       data-room-touch-scroll-model={
@@ -678,7 +680,7 @@ const GameRoom = () => {
           )}
         </div>
 
-        <div className="room-terminal-main">
+        <div className="room-terminal-main room-terminal-main--table-coupled">
           <div className={roomShellGridClassName}>
             {usesSideRails ? (
               <>
@@ -785,7 +787,7 @@ const GameRoom = () => {
             )}
           </div>
 
-          <div className="room-terminal-dock" ref={roomDockRef}>
+          <div className="room-terminal-dock room-terminal-dock--lower-rail-coupled" ref={roomDockRef}>
             <ActionDock
               currentPlayer={currentPlayer}
               currentPlayerView={currentPlayerStateView}

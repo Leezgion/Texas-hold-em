@@ -35,7 +35,6 @@ const ActionDock = ({
   });
   const roomCopy = theme.room;
   const supportLabels = theme.sheetLabels || {};
-  const isCompactDock = viewportLayout?.headerDensity === 'compact';
   const dockView = deriveActionDockView({
     currentPlayer,
     currentPlayerView,
@@ -56,7 +55,7 @@ const ActionDock = ({
 
   return (
     <section
-      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock rounded-[1.75rem] px-4 py-4"
+      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock rounded-[1.45rem] px-3 py-3"
       data-viewport-model={viewportLayout?.viewportModel}
       data-height-class={viewportLayout?.heightClass}
       data-stage-density={viewportLayout?.stageDensity}
@@ -65,6 +64,8 @@ const ActionDock = ({
       data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-hero-dock-placement={viewportLayout?.heroDockPlacement}
       data-hero-dock-priority={shellView?.heroDockPriority}
+      data-hero-dock-style={shellView?.heroDockStyle}
+      data-hero-dock-density={shellView?.heroDockDensity}
       data-dock-presentation={viewportLayout?.dockPresentation}
       data-header-density={viewportLayout?.headerDensity}
       data-has-center-stage={showsDecisionCenter ? 'true' : 'false'}
@@ -72,9 +73,6 @@ const ActionDock = ({
       <div className="tactical-dock__grid">
         <div className="min-w-0">
           <div className="poker-shell-kicker">{roomCopy.actionTitle}</div>
-          {!isCompactDock ? (
-            <div className="tactical-dock__intro-copy mt-2 text-sm leading-6 text-slate-300">{roomCopy.actionCaption}</div>
-          ) : null}
 
           <motion.div
             className="tactical-dock__hero-panel"
@@ -84,22 +82,16 @@ const ActionDock = ({
           >
             <div className="tactical-dock__hero-header">
               <div className="min-w-0">
-                <div className="tactical-dock__hero-kicker">Hero Seat</div>
                 <div className="truncate text-xl font-semibold text-white">{dockView.heroName}</div>
               </div>
               <div className="flex items-center gap-2">
+                {dockView.seatLabel && <span className="tactical-dock__chip">{dockView.seatLabel}</span>}
                 {dockView.positionLabel && <span className="tactical-dock__chip">{dockView.positionLabel}</span>}
                 {dockView.isHost && <span className="tactical-dock__chip tactical-dock__chip--accent">HOST</span>}
               </div>
             </div>
 
             <div className="tactical-dock__hero-stats">
-              {dockView.seatLabel && (
-                <div className="tactical-dock__stat">
-                  <span className="tactical-dock__stat-label">Seat</span>
-                  <span className="tactical-dock__stat-value">{dockView.seatLabel}</span>
-                </div>
-              )}
               <div className="tactical-dock__stat">
                 <span className="tactical-dock__stat-label">Chips</span>
                 <span className="tactical-dock__stat-value">{dockView.chipsLabel}</span>
@@ -132,7 +124,7 @@ const ActionDock = ({
               </AnimatePresence>
               {dockView.actionSummary && (
                 <span className="tactical-dock__status-meta">
-                  TO CALL {dockView.actionSummary.toCall} · POT {dockView.actionSummary.pot}
+                  TO CALL {dockView.actionSummary.toCall.toLocaleString()} · POT {dockView.actionSummary.pot.toLocaleString()}
                 </span>
               )}
             </div>
@@ -174,7 +166,7 @@ const ActionDock = ({
               <button
                 type="button"
                 onClick={onStartGame}
-                className="mode-primary-button w-auto min-w-[14rem] px-8 py-4 text-lg"
+                className="mode-primary-button w-auto min-w-[12rem] px-6 py-3 text-base"
               >
                 {roomCopy.startButtonLabel || dockView.startButtonLabel}
               </button>

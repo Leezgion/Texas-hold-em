@@ -812,6 +812,8 @@ test('derives a poker-os shell summary for the room header and shared banners', 
     shellLayout: 'single-screen-terminal',
     stageLayoutModel: 'viewport-authoritative',
     heroDockPriority: 'always-visible',
+    heroDockStyle: 'table-coupled-terminal',
+    heroDockDensity: 'high-efficiency',
     supportSurfacePolicy: {
       phone: 'sheet',
       tablet: 'panel',
@@ -863,6 +865,8 @@ test('derives current-turn stage emphasis for in-hand rooms', () => {
   assert.equal(shell.lastActionLabel, '上一动作 座1 加注到 20');
   assert.equal(shell.stageLayoutModel, 'viewport-authoritative');
   assert.equal(shell.heroDockPriority, 'always-visible');
+  assert.equal(shell.heroDockStyle, 'table-coupled-terminal');
+  assert.equal(shell.heroDockDensity, 'high-efficiency');
   assert.equal(shell.supportSurfacePolicy.phone, 'sheet');
   assert.equal(shell.supportSurfacePolicy.desktop, 'panel-or-rail');
 });

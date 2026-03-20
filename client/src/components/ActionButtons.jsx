@@ -1,4 +1,3 @@
-import { Check, TrendingUp, X, Zap } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import PlayerTimer from './PlayerTimer';
@@ -191,36 +190,36 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
   if (!canAct) {
     return (
-      <div className="flex items-center justify-center h-12 px-4 bg-gray-800/90 backdrop-blur-xs rounded-xl border border-gray-600">
+      <div className="flex h-10 items-center justify-center rounded-xl border border-gray-600 bg-gray-800/90 px-3 backdrop-blur-xs">
         <div className="text-center text-gray-400 text-sm">{player.folded ? '已弃牌' : player.allIn ? 'All-in' : '等待其他玩家'}</div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center space-y-3 max-w-sm mx-auto">
+    <div className="mx-auto flex max-w-sm flex-col items-center space-y-2.5">
       {canAct && proActionStats.length > 0 && theme.room.actionStatStyle === 'grid' && (
-        <div className="grid w-full grid-cols-4 gap-2 rounded-2xl border border-gray-700/70 bg-gray-900/95 p-2 shadow-xl">
+        <div className="grid w-full grid-cols-4 gap-1.5 rounded-xl border border-gray-700/70 bg-gray-900/95 p-1.5 shadow-xl">
           {proActionStats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl border border-gray-700/70 bg-black/20 px-2 py-2 text-center"
+              className="rounded-lg border border-gray-700/70 bg-black/20 px-1.5 py-1.5 text-center"
             >
               <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-gray-400">
                 {translateActionStatLabel(stat.label, effectiveDisplayMode)}
               </div>
-              <div className="mt-1 text-sm font-semibold text-white">{stat.value}</div>
+              <div className="mt-0.5 text-xs font-semibold text-white sm:text-sm">{stat.value}</div>
             </div>
           ))}
         </div>
       )}
 
       {canAct && proActionStats.length > 0 && theme.room.actionStatStyle === 'pills' && (
-        <div className="flex w-full flex-wrap justify-center gap-2 rounded-2xl border border-amber-200/15 bg-amber-200/5 px-3 py-2 shadow-xl">
+        <div className="flex w-full flex-wrap justify-center gap-1.5 rounded-xl border border-amber-200/15 bg-amber-200/5 px-2.5 py-1.5 shadow-xl">
           {proActionStats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-full border border-white/10 bg-black/25 px-3 py-1.5 text-xs font-medium text-slate-100"
+              className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 text-[11px] font-medium text-slate-100"
             >
               {translateActionStatLabel(stat.label, effectiveDisplayMode)} {stat.value}
             </div>
@@ -229,16 +228,16 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       )}
 
       {canAct && proActionStats.length > 0 && theme.room.actionStatStyle === 'annotated' && (
-        <div className="grid w-full grid-cols-2 gap-2 rounded-2xl border border-sky-300/15 bg-sky-300/5 p-3 shadow-xl">
+        <div className="grid w-full grid-cols-2 gap-1.5 rounded-xl border border-sky-300/15 bg-sky-300/5 p-2 shadow-xl">
           {proActionStats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl border border-white/10 bg-black/25 px-3 py-2"
+              className="rounded-lg border border-white/10 bg-black/25 px-2.5 py-1.5"
             >
               <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-sky-200">
                 {translateActionStatLabel(stat.label, effectiveDisplayMode)}
               </div>
-              <div className="mt-1 text-sm font-semibold text-white">{stat.value}</div>
+              <div className="mt-0.5 text-xs font-semibold text-white sm:text-sm">{stat.value}</div>
             </div>
           ))}
         </div>
@@ -258,11 +257,11 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       />
 
       {/* 主要操作按钮 - 横向排列 */}
-      <div className="flex items-center gap-2 bg-gray-900/95 backdrop-blur-xs px-3 py-2 rounded-2xl border border-gray-700/50 shadow-xl">
+      <div className="flex items-center gap-1.5 rounded-xl border border-gray-700/50 bg-gray-900/95 px-2.5 py-1.5 shadow-xl backdrop-blur-xs">
         {/* 弃牌 */}
         <button
           onClick={() => handleAction('fold')}
-          className="w-11 h-11 bg-red-600/90 hover:bg-red-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-red-500/30 transform hover:scale-105 flex items-center justify-center text-sm font-bold"
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600/90 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-red-500 hover:shadow-red-500/30"
           title="弃牌 (F)"
         >
           弃
@@ -272,18 +271,18 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         {canCheck ? (
           <button
             onClick={() => handleAction('check')}
-            className="h-11 px-4 bg-green-600/90 hover:bg-green-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-green-500/30 transform hover:scale-105 text-sm font-bold"
+            className="h-10 rounded-lg bg-green-600/90 px-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-green-500 hover:shadow-green-500/30"
             title="过牌 (C)"
           >
-            过牌
+            过
           </button>
         ) : (
           <button
             onClick={() => handleAction('call')}
-            className="h-11 px-4 bg-blue-600/90 hover:bg-blue-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-blue-500/30 transform hover:scale-105 text-sm font-bold"
+            className="h-10 rounded-lg bg-blue-600/90 px-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-blue-500 hover:shadow-blue-500/30"
             title={`跟注 ${callAmount} (C)`}
           >
-            跟{callAmount}
+            跟 {callAmount}
           </button>
         )}
 
@@ -291,9 +290,9 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         {canRaise && (
           <button
             onClick={() => setShowRaiseInput(!showRaiseInput)}
-            className={`w-11 h-11 ${
+            className={`h-10 w-10 ${
               showRaiseInput ? 'bg-yellow-500/90' : 'bg-yellow-600/90 hover:bg-yellow-500'
-            } text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-yellow-500/30 transform hover:scale-105 flex items-center justify-center text-sm font-bold`}
+            } flex items-center justify-center rounded-lg text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-yellow-500/30`}
             title="加注 (R)"
           >
             加
@@ -304,7 +303,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         {canRaise && (
           <button
             onClick={() => handleAction('allin')}
-            className="h-11 px-3 bg-purple-600/90 hover:bg-purple-500 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-purple-500/30 transform hover:scale-105 text-sm font-bold"
+            className="h-10 rounded-lg bg-purple-600/90 px-2.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-purple-500 hover:shadow-purple-500/30"
             title={`All-in ${player.chips} (A)`}
           >
             梭
@@ -314,32 +313,32 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
       {/* 自定义加注滑块和输入 */}
       {showRaiseInput && canRaise && (
-        <div className="w-full bg-gray-800/95 backdrop-blur-xs p-4 rounded-xl border border-gray-600 shadow-lg">
-          <div className="text-sm text-gray-300 text-center mb-3 font-medium">自定义加注</div>
+        <div className="w-full rounded-xl border border-gray-600 bg-gray-800/95 p-3 shadow-lg backdrop-blur-xs">
+          <div className="mb-2 text-center text-xs font-medium text-gray-300">自定义加注</div>
 
           {/* 快捷加注按钮组 */}
           {quickRaiseSizes.length > 0 && (
-            <div className="mb-4">
-              <div className="text-xs text-gray-400 text-center mb-2 font-medium">快捷加注 (底池: {potSize})</div>
-              <div className="grid grid-cols-2 gap-2">
+            <div className="mb-3">
+              <div className="mb-1.5 text-center text-xs font-medium text-gray-400">快捷加注 · 底池 {potSize}</div>
+              <div className="grid grid-cols-2 gap-1.5">
                 {quickRaiseSizes.map((raise, index) => (
                   <button
                     key={index}
                     onClick={() => handleQuickRaise(raise.amount)}
-                    className="quick-raise-btn flex flex-col items-center justify-center h-12 text-white rounded-lg border border-orange-500/30 hover:bg-orange-600/20 transition-all duration-200"
+                    className="quick-raise-btn flex h-11 flex-col items-center justify-center rounded-lg border border-orange-500/30 text-white transition-all duration-200 hover:bg-orange-600/20"
                   >
                     <div className="text-xs font-medium opacity-90">{raise.label}</div>
-                    <div className="text-sm font-bold">{raise.amount}</div>
-                    <div className="text-xs opacity-75">{Math.round(raise.amount / bigBlind)}BB</div>
+                    <div className="text-xs font-bold sm:text-sm">{raise.amount}</div>
+                    <div className="text-[10px] opacity-75">{Math.round(raise.amount / bigBlind)}BB</div>
                   </button>
                 ))}
               </div>
-              <div className="border-t border-gray-600 my-3"></div>
+              <div className="my-2.5 border-t border-gray-600"></div>
             </div>
           )}
 
           {/* 滑块 */}
-          <div className="mb-4">
+          <div className="mb-3">
             <SliderInput
               min={gameState.minRaise}
               max={maxRaiseAmount}
@@ -359,19 +358,19 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
           </div>
 
           {/* 当前加注金额显示 */}
-          <div className="text-center mb-3">
-            <div className="text-lg font-bold text-yellow-400">{sliderValue === maxRaiseAmount ? 'All-in' : `加注 ${sliderValue}`}</div>
-            <div className="text-xs text-gray-400">
+          <div className="mb-2.5 text-center">
+            <div className="text-base font-bold text-yellow-400">{sliderValue === maxRaiseAmount ? 'All-in' : `加注 ${sliderValue}`}</div>
+            <div className="text-[11px] text-gray-400">
               {sliderValue === maxRaiseAmount ? '全部筹码' : `本轮总投入: ${callAmount + sliderValue}`}
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             <button
               onClick={handleCustomRaise}
-              className={`flex-1 h-10 ${
+              className={`h-9 flex-1 ${
                 sliderValue === maxRaiseAmount ? 'bg-purple-600 hover:bg-purple-500' : 'bg-green-600 hover:bg-green-500'
-              } text-white rounded-lg text-sm font-bold transition-all duration-200 shadow-md hover:shadow-lg`}
+              } rounded-lg text-sm font-bold text-white shadow-md transition-all duration-200 hover:shadow-lg`}
             >
               {sliderValue === maxRaiseAmount ? 'All-in' : '确认加注'}
             </button>
@@ -382,33 +381,17 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
                 setRaiseAmount(alignedMinRaise.toString());
                 setSliderValue(alignedMinRaise);
               }}
-              className="flex-1 h-10 bg-gray-600 hover:bg-gray-500 text-white rounded-lg text-sm font-medium transition-all duration-200"
+              className="h-9 flex-1 rounded-lg bg-gray-600 text-sm font-medium text-white transition-all duration-200 hover:bg-gray-500"
             >
               取消
             </button>
           </div>
 
-          <div className="text-xs text-gray-400 mt-2 text-center">
+          <div className="mt-1.5 text-center text-[11px] text-gray-400">
             范围: {gameState.minRaise} - {maxRaiseAmount} 筹码
           </div>
         </div>
       )}
-
-      {/* 状态信息 */}
-      <div className="flex items-center space-x-4 text-xs text-gray-400 bg-gray-800/70 px-4 py-2 rounded-xl border border-gray-700">
-        <span className="flex items-center">
-          <div className="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
-          筹码: <span className="font-bold ml-1">{player.chips}</span>
-        </span>
-        <span className="flex items-center">
-          <div className="w-2 h-2 bg-blue-400 rounded-full mr-1"></div>
-          当前下注: <span className="font-bold ml-1">{gameState.currentBet}</span>
-        </span>
-        <span className="flex items-center">
-          <div className="w-2 h-2 bg-yellow-400 rounded-full mr-1"></div>
-          底池: <span className="font-bold ml-1">{potSize}</span>
-        </span>
-      </div>
     </div>
   );
 };

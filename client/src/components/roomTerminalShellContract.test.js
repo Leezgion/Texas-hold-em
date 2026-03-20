@@ -13,11 +13,13 @@ test('GameRoom keeps the dock inside the single-screen main stage stack', () => 
   assert.match(gameRoomSource, /const computedDockBottomPx = Number\.parseFloat\(window\.getComputedStyle\(dockElement\)\.bottom\) \|\| 0/);
   assert.match(gameRoomSource, /new ResizeObserver\(updateDockReserve\)/);
   assert.match(gameRoomSource, /'--room-terminal-dock-reserve': `\$\{measuredDockReservePx\}px`/);
+  assert.match(gameRoomSource, /data-hero-dock-style=\{shellView\.heroDockStyle\}/);
+  assert.match(gameRoomSource, /data-hero-dock-density=\{shellView\.heroDockDensity\}/);
   assert.match(gameRoomSource, /data-support-surface-policy-key=\{roomViewportLayout\.supportSurfacePolicyKey\}/);
   assert.match(gameRoomSource, /data-room-touch-scroll-model=\{/);
   assert.match(
     gameRoomSource,
-    /<div className="room-terminal-main">[\s\S]*className=\{roomShellGridClassName\}[\s\S]*<div className="room-terminal-dock"[^>]*ref=\{roomDockRef\}[^>]*>[\s\S]*<\/div>[\s\S]*<\/div>/s
+    /<div className="room-terminal-main room-terminal-main--table-coupled">[\s\S]*className=\{roomShellGridClassName\}[\s\S]*<div className="room-terminal-dock room-terminal-dock--lower-rail-coupled"[^>]*ref=\{roomDockRef\}[^>]*>[\s\S]*<\/div>[\s\S]*<\/div>/s
   );
 });
 
@@ -37,5 +39,13 @@ test('room shell css uses a two-row frame with an overlay dock reserve', () => {
   assert.match(
     globalStylesSource,
     /\.room-terminal-dock\s*\{[\s\S]*position:\s*absolute;[\s\S]*left:\s*0;[\s\S]*right:\s*0;[\s\S]*bottom:\s*0;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-main--table-coupled::after\s*\{[\s\S]*bottom:\s*max\(0px,\s*calc\(var\(--room-terminal-dock-reserve,\s*0px\)\s*-\s*1rem\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock--lower-rail-coupled\s*>\s*\.tactical-dock\s*\{[\s\S]*border-top:\s*1px solid/s
   );
 });

@@ -421,6 +421,8 @@ export function deriveTableShellView({
     shellLayout: 'single-screen-terminal',
     stageLayoutModel: 'viewport-authoritative',
     heroDockPriority: 'always-visible',
+    heroDockStyle: 'table-coupled-terminal',
+    heroDockDensity: 'high-efficiency',
     supportSurfacePolicy: TERMINAL_SUPPORT_SURFACE_POLICY,
     pendingJoinBanner: derivePendingJoinBanner(currentPlayer, roomState),
     recoveryBanner: deriveRecoveryBanner(currentPlayer, roomState),
