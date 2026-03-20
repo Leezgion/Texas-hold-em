@@ -8,10 +8,50 @@ const ModePreviewCard = ({
   surfaceVariant = 'default',
   onSelect,
 }) => {
+  const isCreateRoomTile = surfaceVariant === 'create-room-tile';
   const baseClassName = compact
     ? 'mode-preview-card mode-preview-card--compact'
     : 'mode-preview-card';
-  const variantClassName = surfaceVariant === 'create-room' ? 'mode-preview-card--create-room' : '';
+  const variantClassName = [
+    surfaceVariant === 'create-room' ? 'mode-preview-card--create-room' : '',
+    isCreateRoomTile ? 'mode-preview-card--terminal-tile' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  if (isCreateRoomTile) {
+    return (
+      <button
+        type="button"
+        onClick={onSelect}
+        className={`${baseClassName} ${variantClassName} ${card.shellClassName} ${selected ? 'mode-preview-card--selected' : ''}`}
+      >
+        <div className="mode-preview-card__tile-head">
+          <div className={`mode-preview-card__eyebrow ${card.accentClassName}`}>{card.label}</div>
+          <div className="flex items-center gap-2">
+            {selected && <span className="mode-preview-card__badge">当前偏好</span>}
+            {!selected && active && <span className="mode-preview-card__badge mode-preview-card__badge--ghost">当前生效</span>}
+          </div>
+        </div>
+
+        <div className="mode-preview-card__tile-title-row">
+          <div className="mode-preview-card__tile-title">{card.title}</div>
+          <span className="mode-preview-card__scene">{card.gatewayScene}</span>
+        </div>
+
+        <div className="mode-preview-card__tile-persona">{card.gatewayPersona}</div>
+        <div className="mode-preview-card__tile-copy">{card.tagline || card.detail}</div>
+
+        <div className="mode-preview-card__tile-chip-row">
+          {(card.highlights || []).slice(0, 3).map((item) => (
+            <span key={item} className="mode-preview-card__chip">
+              {item}
+            </span>
+          ))}
+        </div>
+      </button>
+    );
+  }
 
   return (
     <button
