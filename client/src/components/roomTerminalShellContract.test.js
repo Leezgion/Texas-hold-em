@@ -26,6 +26,8 @@ test('GameRoom keeps the dock inside the single-screen main stage stack', () => 
 test('TableHeader and ActionDock consume the terminal layout policies from the viewport helper', () => {
   assert.match(tableHeaderSource, /viewportLayout\?\.headerActionModel/);
   assert.match(actionDockSource, /data-dock-presentation=\{viewportLayout\?\.dockPresentation\}/);
+  assert.match(actionDockSource, /data-hero-dock-style=\{shellView\?\.heroDockStyle\}/);
+  assert.match(actionDockSource, /data-hero-dock-density=\{shellView\?\.heroDockDensity\}/);
   assert.match(tableHeaderSource, /data-support-surface-policy-key=\{viewportLayout\?\.supportSurfacePolicyKey\}/);
   assert.match(actionDockSource, /data-support-surface-policy-key=\{viewportLayout\?\.supportSurfacePolicyKey\}/);
 });
