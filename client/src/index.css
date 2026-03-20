@@ -1644,6 +1644,17 @@
     transform: translateY(-1px);
   }
 
+  .arena-seat-empty-trigger:focus-visible {
+    outline: 2px solid rgba(125, 211, 252, 0.92);
+    outline-offset: 2px;
+  }
+
+  .arena-seat-empty-trigger:disabled {
+    cursor: wait;
+    opacity: 0.58;
+    transform: none;
+  }
+
   .arena-seat-card__empty-text {
     @apply mt-1 text-[11px] uppercase tracking-[0.22em] text-slate-400;
   }

@@ -97,6 +97,36 @@ describe('RoomManager state vocabularies', () => {
     expect(projectedLatePlayer.tableState).toBe(TABLE_STATES.SEATED_WAIT_NEXT_HAND);
   });
 
+  it('does not serialize players who already left the room mid-hand', () => {
+    const { io, gameRooms, socketDeviceMap, roomManager } = createManager();
+    const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+    const guestSocket = registerDevice(io, socketDeviceMap, 'socket-guest', 'device-guest');
+
+    const roomId = roomManager.createRoom(hostSocket, {
+      duration: 60,
+      maxPlayers: 6,
+      allinDealCount: 1,
+    });
+
+    roomManager.joinRoom(guestSocket, roomId, 'device-guest', 'Guest');
+
+    const room = gameRooms.get(roomId);
+    room.gameStarted = true;
+    room.gameLogic = {
+      isPlayerInCurrentHand: () => false,
+      getGameState: () => ({ phase: 'preflop' }),
+      clearPlayerTimer: jest.fn(),
+      clearNextHandTimeout: jest.fn(),
+    };
+
+    roomManager.handleLeaveRoomInRoom(room, 'device-guest');
+
+    const roomState = roomManager.getRoomState(room, 'device-host');
+    expect(room.players.find((player) => player.id === 'device-guest')?.hasLeftRoom).toBe(true);
+    expect(roomState.players.some((player) => player.id === 'device-guest')).toBe(false);
+    expect(roomState.players.map((player) => player.id)).toEqual(['device-host']);
+  });
+
   it('applies configured default settleMs when the room creator does not provide one', () => {
     const { io, gameRooms, socketDeviceMap, roomManager } = createManagerWithDefaults({
       settleMs: 8000,

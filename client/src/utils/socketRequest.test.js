@@ -94,3 +94,48 @@ test('rejects with a timeout error when neither success nor error arrives', asyn
   assert.equal(socket.listenerCount('roomCreated'), 0);
   assert.equal(socket.listenerCount('createRoomError'), 0);
 });
+
+test('rejects concurrent requests that reuse the same request key on one socket', async () => {
+  const socket = new FakeSocket();
+  const firstRequest = emitWithResponse(socket, {
+    emitEvent: 'takeSeat',
+    payload: { seatIndex: 1 },
+    successEvent: 'takeSeatSuccess',
+    errorEvent: 'takeSeatError',
+    requestKey: 'takeSeat',
+    rejectConcurrent: true,
+    concurrentMessage: '入座请求处理中',
+    timeoutMs: 50,
+  });
+
+  const secondRequest = emitWithResponse(socket, {
+    emitEvent: 'takeSeat',
+    payload: { seatIndex: 2 },
+    successEvent: 'takeSeatSuccess',
+    errorEvent: 'takeSeatError',
+    requestKey: 'takeSeat',
+    rejectConcurrent: true,
+    concurrentMessage: '入座请求处理中',
+    timeoutMs: 50,
+  });
+
+  await assert.rejects(secondRequest, /入座请求处理中/);
+
+  socket.emit('takeSeatSuccess', { seatIndex: 1 });
+  await assert.doesNotReject(firstRequest);
+  assert.deepEqual(await firstRequest, { seatIndex: 1 });
+
+  const retryRequest = emitWithResponse(socket, {
+    emitEvent: 'takeSeat',
+    payload: { seatIndex: 2 },
+    successEvent: 'takeSeatSuccess',
+    errorEvent: 'takeSeatError',
+    requestKey: 'takeSeat',
+    rejectConcurrent: true,
+    concurrentMessage: '入座请求处理中',
+    timeoutMs: 50,
+  });
+
+  socket.emit('takeSeatSuccess', { seatIndex: 2 });
+  await assert.doesNotReject(retryRequest);
+});

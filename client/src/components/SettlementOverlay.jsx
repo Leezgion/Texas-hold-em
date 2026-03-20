@@ -3,9 +3,18 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 import { getDisplayModeTheme } from '../utils/productMode';
 import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
+import { deriveRequestErrorFeedback } from '../view-models/gameViewModel';
 import { getLatestHandSummary } from '../view-models/handHistoryViewModel';
 
-const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerId, onReveal, effectiveDisplayMode = 'pro' }) => {
+const SettlementOverlay = ({
+  roomState,
+  gameState,
+  currentPlayer,
+  currentPlayerId,
+  onReveal,
+  effectiveDisplayMode = 'pro',
+  revealRequestPending = false,
+}) => {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   const reducedMotion = useReducedMotion();
@@ -45,6 +54,27 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
     gameState?.revealPolicy === 'free_reveal_after_hand'
       ? Boolean(currentPlayer?.inHand)
       : gameState?.eligibleRevealPlayerIds?.includes(currentPlayerId);
+
+  const handleRevealSelection = async (mode, cardIndex = null) => {
+    if (revealRequestPending) {
+      return;
+    }
+
+    try {
+      await onReveal(mode, cardIndex);
+    } catch (error) {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      const notice = deriveRequestErrorFeedback({
+        scope: 'revealHand',
+        fallbackPrefix: '亮牌失败',
+        error,
+      });
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+    }
+  };
 
   return (
     <AnimatePresence initial={false}>
@@ -131,28 +161,32 @@ const SettlementOverlay = ({ roomState, gameState, currentPlayer, currentPlayerI
             <div className="settlement-sheet__actions">
               <button
                 type="button"
-                onClick={() => onReveal('hide')}
+                onClick={() => handleRevealSelection('hide')}
+                disabled={revealRequestPending}
                 className="settlement-sheet__button settlement-sheet__button--ghost"
               >
                 不亮牌
               </button>
               <button
                 type="button"
-                onClick={() => onReveal('show_one', 0)}
+                onClick={() => handleRevealSelection('show_one', 0)}
+                disabled={revealRequestPending}
                 className="settlement-sheet__button settlement-sheet__button--info"
               >
                 亮左牌
               </button>
               <button
                 type="button"
-                onClick={() => onReveal('show_one', 1)}
+                onClick={() => handleRevealSelection('show_one', 1)}
+                disabled={revealRequestPending}
                 className="settlement-sheet__button settlement-sheet__button--info"
               >
                 亮右牌
               </button>
               <button
                 type="button"
-                onClick={() => onReveal('show_all')}
+                onClick={() => handleRevealSelection('show_all')}
+                disabled={revealRequestPending}
                 className="settlement-sheet__button settlement-sheet__button--success"
               >
                 全亮

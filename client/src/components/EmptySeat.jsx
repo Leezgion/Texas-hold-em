@@ -15,9 +15,15 @@ const EmptySeat = ({
   anchorRole = 'ring',
   anchorSlotId = null,
 }) => {
-  const { takeSeat } = useGame();
+  const { takeSeat, seatRequestPending } = useGame();
+  const resolvedSeatLabel =
+    seatLabel || (getPositionLabel ? getPositionLabel(seatIndex) : `座位 ${seatIndex + 1}`);
 
   const handleTakeSeat = async () => {
+    if (seatRequestPending) {
+      return;
+    }
+
     try {
       const result = await takeSeat(seatIndex);
       const notice = deriveSeatTakeFeedback({ ...result, roomState });
@@ -56,17 +62,20 @@ const EmptySeat = ({
         data-anchor-role={anchorRole}
         data-anchor-slot-id={anchorSlotId}
       >
-        <div
+        <button
+          type="button"
           onClick={handleTakeSeat}
           className="arena-seat-empty-trigger group"
+          disabled={seatRequestPending}
+          aria-label={`入座 ${resolvedSeatLabel}`}
           title={`点击入座 (座位 ${seatIndex + 1})`}
         >
           <Plus
             size={18}
             className="text-slate-400 transition-colors group-hover:text-sky-300"
           />
-        </div>
-        <div className="arena-seat-card__seat-label mt-3">{seatLabel || (getPositionLabel ? getPositionLabel(seatIndex) : `座位 ${seatIndex + 1}`)}</div>
+        </button>
+        <div className="arena-seat-card__seat-label mt-3">{resolvedSeatLabel}</div>
         <div className="arena-seat-card__empty-text">Open Seat</div>
       </div>
     </div>

@@ -1045,11 +1045,12 @@ class RoomManager {
   // 获取房间状态（用于发送给客户端）
   getRoomState(room, viewerPlayerId = null) {
     this.syncRoomState(room);
+    const visiblePlayers = room.players.filter((player) => !player.hasLeftRoom);
     return {
       id: room.id,
       roomState: room.roomState,
       settings: room.settings,
-      players: room.players.map((p) => ({
+      players: visiblePlayers.map((p) => ({
         id: p.id,
         nickname: p.nickname,
         seat: p.seat,

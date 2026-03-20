@@ -70,6 +70,8 @@ const useGameStore = create((set, get) => ({
   canCheck: false,
   canRaise: false,
   minRaise: 0,
+  seatRequestPending: false,
+  revealRequestPending: false,
 
   // 模态框状态
   showCreateRoom: false,
@@ -501,6 +503,11 @@ const useGameStore = create((set, get) => ({
   // 入座
   takeSeat: (seatIndex) => {
     const { socket } = get();
+    if (get().seatRequestPending) {
+      return Promise.reject(new Error('入座请求处理中'));
+    }
+
+    set({ seatRequestPending: true });
     return emitWithResponse(socket, {
       emitEvent: 'takeSeat',
       payload: { seatIndex },
@@ -508,6 +515,11 @@ const useGameStore = create((set, get) => ({
       errorEvent: 'takeSeatError',
       timeoutMs: 5000,
       timeoutMessage: '入座请求超时',
+      requestKey: 'takeSeat',
+      rejectConcurrent: true,
+      concurrentMessage: '入座请求处理中',
+    }).finally(() => {
+      set({ seatRequestPending: false });
     });
   },
 
@@ -552,6 +564,11 @@ const useGameStore = create((set, get) => ({
   // 亮牌
   revealHand: (mode, cardIndex = null) => {
     const { socket } = get();
+    if (get().revealRequestPending) {
+      return Promise.reject(new Error('亮牌请求处理中'));
+    }
+
+    set({ revealRequestPending: true });
     return emitWithResponse(socket, {
       emitEvent: 'revealHand',
       payload: { mode, cardIndex },
@@ -559,6 +576,11 @@ const useGameStore = create((set, get) => ({
       errorEvent: 'revealHandError',
       timeoutMs: 5000,
       timeoutMessage: '亮牌请求超时',
+      requestKey: 'revealHand',
+      rejectConcurrent: true,
+      concurrentMessage: '亮牌请求处理中',
+    }).finally(() => {
+      set({ revealRequestPending: false });
     });
   },
 
@@ -612,6 +634,8 @@ const useGameStore = create((set, get) => ({
       currentPlayerView: null,
       communityCards: [],
       pot: 0,
+      seatRequestPending: false,
+      revealRequestPending: false,
       isCreatingRoom: false,
       navigationTarget: null,
       // 保留连接状态和设备ID

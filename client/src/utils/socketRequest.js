@@ -20,6 +20,18 @@ function toError(value, fallbackMessage) {
   return new Error(fallbackMessage);
 }
 
+const inFlightRequestsBySocket = new WeakMap();
+
+function getInFlightRequests(socket) {
+  let requestSet = inFlightRequestsBySocket.get(socket);
+  if (!requestSet) {
+    requestSet = new Set();
+    inFlightRequestsBySocket.set(socket, requestSet);
+  }
+
+  return requestSet;
+}
+
 export function emitWithResponse(
   socket,
   {
@@ -29,10 +41,22 @@ export function emitWithResponse(
     errorEvent = 'error',
     timeoutMs = 5000,
     timeoutMessage = '请求超时',
+    requestKey = null,
+    rejectConcurrent = false,
+    concurrentMessage = '请求处理中',
   }
 ) {
   if (!socket) {
     return Promise.reject(new Error('连接未建立'));
+  }
+
+  const normalizedRequestKey = requestKey || emitEvent;
+  if (rejectConcurrent) {
+    const inFlightRequests = getInFlightRequests(socket);
+    if (inFlightRequests.has(normalizedRequestKey)) {
+      return Promise.reject(new Error(concurrentMessage));
+    }
+    inFlightRequests.add(normalizedRequestKey);
   }
 
   return new Promise((resolve, reject) => {
@@ -42,6 +66,9 @@ export function emitWithResponse(
       socket.off(successEvent, handleSuccess);
       socket.off(errorEvent, handleError);
       clearTimeout(timeoutId);
+      if (rejectConcurrent) {
+        getInFlightRequests(socket).delete(normalizedRequestKey);
+      }
     };
 
     const handleSuccess = (response) => {

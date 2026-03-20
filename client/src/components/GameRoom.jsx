@@ -100,6 +100,7 @@ const GameRoom = () => {
     navigationTarget,
     currentPlayerView,
     revealHand,
+    revealRequestPending,
     effectiveDisplayMode,
   } = useGame();
 
@@ -716,6 +717,7 @@ const GameRoom = () => {
                         currentPlayer={currentPlayer}
                         currentPlayerId={currentPlayerId}
                         onReveal={revealHand}
+                        revealRequestPending={revealRequestPending}
                         effectiveDisplayMode={effectiveDisplayMode}
                       />
                     }
@@ -765,6 +767,7 @@ const GameRoom = () => {
                       currentPlayer={currentPlayer}
                       currentPlayerId={currentPlayerId}
                       onReveal={revealHand}
+                      revealRequestPending={revealRequestPending}
                       effectiveDisplayMode={effectiveDisplayMode}
                     />
                   }
