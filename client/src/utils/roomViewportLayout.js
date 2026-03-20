@@ -28,7 +28,7 @@ function resolveDockReservePx({ viewportModel = 'desktop-terminal', heightClass 
 const SUPPORT_SURFACE_POLICY = Object.freeze({
   phone: 'sheet',
   tablet: 'panel',
-  desktop: 'panel-or-rail',
+  desktop: 'panel',
   ultrawide: 'rail',
 });
 

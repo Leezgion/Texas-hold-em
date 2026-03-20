@@ -18,7 +18,7 @@ test('phone portrait keeps the hero dock fixed and moves support surfaces into s
   assert.deepEqual(layout.supportSurfacePolicy, {
     phone: 'sheet',
     tablet: 'panel',
-    desktop: 'panel-or-rail',
+    desktop: 'panel',
     ultrawide: 'rail',
   });
   assert.equal(layout.supportSurfacePolicyKey, 'phone');
@@ -56,11 +56,11 @@ test('desktop keeps the room terminal centered with secondary rails', () => {
   assert.deepEqual(layout.supportSurfacePolicy, {
     phone: 'sheet',
     tablet: 'panel',
-    desktop: 'panel-or-rail',
+    desktop: 'panel',
     ultrawide: 'rail',
   });
   assert.equal(layout.supportSurfacePolicyKey, 'desktop');
-  assert.equal(layout.supportSurfacePolicyValue, 'panel-or-rail');
+  assert.equal(layout.supportSurfacePolicyValue, 'panel');
   assert.equal(layout.contentMaxWidth, '1440px');
 });
 
@@ -79,7 +79,7 @@ test('ultrawide expands the same terminal without turning it into a page layout'
   assert.deepEqual(layout.supportSurfacePolicy, {
     phone: 'sheet',
     tablet: 'panel',
-    desktop: 'panel-or-rail',
+    desktop: 'panel',
     ultrawide: 'rail',
   });
   assert.equal(layout.supportSurfacePolicyKey, 'ultrawide');
@@ -117,7 +117,7 @@ test('compact desktop keeps support surfaces out of the main page flow', () => {
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
   assert.equal(layout.supportSurfacePolicyKey, 'desktop');
-  assert.equal(layout.supportSurfacePolicyValue, 'panel-or-rail');
+  assert.equal(layout.supportSurfacePolicyValue, 'panel');
   assert.equal(layout.contentMaxWidth, '1440px');
 });
 
@@ -128,7 +128,7 @@ test('phone and compact desktop expose explicit support-surface policy metadata'
   assert.deepEqual(phone.supportSurfacePolicy, {
     phone: 'sheet',
     tablet: 'panel',
-    desktop: 'panel-or-rail',
+    desktop: 'panel',
     ultrawide: 'rail',
   });
   assert.equal(phone.supportSurfacePolicyKey, 'phone');
@@ -137,11 +137,11 @@ test('phone and compact desktop expose explicit support-surface policy metadata'
   assert.deepEqual(compactDesktop.supportSurfacePolicy, {
     phone: 'sheet',
     tablet: 'panel',
-    desktop: 'panel-or-rail',
+    desktop: 'panel',
     ultrawide: 'rail',
   });
   assert.equal(compactDesktop.supportSurfacePolicyKey, 'desktop');
-  assert.equal(compactDesktop.supportSurfacePolicy[compactDesktop.supportSurfacePolicyKey], 'panel-or-rail');
+  assert.equal(compactDesktop.supportSurfacePolicy[compactDesktop.supportSurfacePolicyKey], 'panel');
 });
 
 test('short-height landscape windows switch the room terminal into a compressed stage budget', () => {
