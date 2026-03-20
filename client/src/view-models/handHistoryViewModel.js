@@ -153,6 +153,7 @@ export function buildTablePotSummary(gameState) {
   return {
     totalPot,
     items,
+    centerPriority: 'board-pot-street',
   };
 }
 

@@ -193,6 +193,7 @@ test('builds a clearer table pot summary for contested and uncontested side pots
   assert.equal(summary.items[1].detail, '2人争夺');
   assert.equal(summary.items[2].label, '待匹配差额');
   assert.equal(summary.items[2].detail, '仍需其他玩家补齐');
+  assert.equal(summary.centerPriority, 'board-pot-street');
 });
 
 test('derives an event-rail summary from the latest hand history and live table pot state', () => {

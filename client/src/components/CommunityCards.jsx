@@ -66,14 +66,18 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
   if (!gameState || !gameState.communityCards) {
     return (
       <div
-        className={`community-cards-area community-cards-area--${resolvedTableProfile} ${
+        className={`community-cards-area community-cards-center-shell community-cards-area--${resolvedTableProfile} ${
           compactBoardLayout ? 'community-cards-area--compact' : 'community-cards-area--spacious'
         }`}
         data-table-profile={resolvedTableProfile}
         data-card-density={resolvedBoardLayout.cardDensity}
+        data-center-priority="board-pot-street"
       >
-        <div className="community-cards-area__tray" data-table-profile={resolvedTableProfile}>
-          <div className="community-cards-area__rail" style={{ gap: `${resolvedBoardLayout.gap}px` }}>
+        <div
+          className="community-cards-center-shell__tray community-cards-area__tray"
+          data-table-profile={resolvedTableProfile}
+        >
+          <div className="community-cards-center-shell__rail community-cards-area__rail" style={{ gap: `${resolvedBoardLayout.gap}px` }}>
             {[1, 2, 3, 4, 5].map((index) => (
               <div key={index} className="poker-card community back" style={cardStyle}></div>
             ))}
@@ -129,26 +133,27 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
 
   return (
     <div
-      className={`community-cards-area community-cards-area--${resolvedTableProfile} ${
+      className={`community-cards-area community-cards-center-shell community-cards-area--${resolvedTableProfile} ${
         compactBoardLayout ? 'community-cards-area--compact' : 'community-cards-area--spacious'
       }`}
       data-table-profile={resolvedTableProfile}
       data-card-density={resolvedBoardLayout.cardDensity}
+      data-center-priority="board-pot-street"
     >
       {resolvedBoardLayout.phaseVisible && (
-        <div className="community-cards-area__phase">
-          <div className="mb-1 text-sm font-bold text-yellow-400 sm:text-lg">{getPhaseText()}</div>
-          <div className="mx-auto h-1 w-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 sm:w-16"></div>
+        <div className="community-cards-center-shell__phase community-cards-area__phase">
+          <div className="community-cards-center-shell__phase-label">{getPhaseText()}</div>
+          <div className="community-cards-center-shell__phase-rule" />
         </div>
       )}
 
       <div
-        className="community-cards-area__tray"
+        className="community-cards-center-shell__tray community-cards-area__tray"
         data-table-profile={resolvedTableProfile}
         data-card-density={resolvedBoardLayout.cardDensity}
         style={trayStyle}
       >
-        <div className="community-cards-area__rail" style={{ gap: `${resolvedBoardLayout.gap}px` }}>
+        <div className="community-cards-center-shell__rail community-cards-area__rail" style={{ gap: `${resolvedBoardLayout.gap}px` }}>
           {[0, 1, 2, 3, 4].map((cardIndex) => {
             const card = communityCards[cardIndex];
             const isVisible = cardIndex < visibleCards.length;
@@ -186,7 +191,7 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
         </div>
 
         {gameState.pot > 0 && resolvedBoardLayout.phaseVisible && (
-          <div className="community-cards-area__pot">
+          <div className="community-cards-center-shell__pot community-cards-area__pot">
             <div className="text-sm text-gray-300">底池</div>
             <div className="text-lg font-bold text-green-400">{gameState.pot}</div>
           </div>

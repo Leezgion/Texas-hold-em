@@ -56,6 +56,7 @@ const TableStage = ({
   const tableFeltTone = tableSurfaceLayout.material?.feltTone || 'deep-green-velvet';
   const tableRailTone = tableSurfaceLayout.material?.railTone || 'black-gold';
   const centerSurfaceModel = tableSurfaceLayout.centerSurfaceModel || 'broadcast-clean-center';
+  const centerPriority = tablePotSummary.centerPriority || 'board-pot-street';
 
   return (
     <section
@@ -102,109 +103,25 @@ const TableStage = ({
       >
         <div className="table-stage-atmosphere" aria-hidden="true" />
 
-        <AnimatePresence initial={false} mode="popLayout">
-          {primaryPotItem && (
-            <motion.div
-              key={`${primaryPotItem.label}-${primaryPotItem.amount}-${secondaryPotItems.map((item) => item.amount).join('-')}`}
-              className="table-stage-pot-capsule"
-              data-table-family={tableSurfaceLayout.family}
-              data-center-surface-model={centerSurfaceModel}
-              data-table-material-felt-tone={tableFeltTone}
-              data-table-material-rail-tone={tableRailTone}
-              initial={motionProfile.stage.initial}
-              animate={motionProfile.stage.animate}
-              exit={motionProfile.stage.exit}
-              transition={motionProfile.stage.transition}
-            >
-              <div className="table-stage-pot-capsule__kicker">{primaryPotItem.label}</div>
-              <div className="table-stage-pot-capsule__amount">{primaryPotItem.amount}</div>
-              {secondaryPotItems.length > 0 && (
-                <div className="table-stage-pot-capsule__rail">
-                  {secondaryPotItems.map((item) => (
-                    <span key={item.label} className="table-stage-pot-capsule__rail-item">
-                      {item.label} {item.amount}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <motion.div
-          className="table-stage-beacon"
-          initial={motionProfile.cue.initial}
-          animate={motionProfile.cue.animate}
-          exit={motionProfile.cue.exit}
-          transition={motionProfile.cue.transition}
-        >
-          <span className="table-stage-beacon__mode">{shellView.modeLabel}</span>
-          <span className="table-stage-beacon__state">{shellView.roomStateLabel}</span>
-          {shellView.phaseLabel && <span className="table-stage-beacon__phase">{shellView.phaseLabel}</span>}
-          {shellView.currentTurnSeatLabel && <span className="table-stage-beacon__turn-seat">{shellView.currentTurnSeatLabel}</span>}
-          <AnimatePresence initial={false} mode="wait">
-            {shellView.stageActionLabel && (
-              <motion.span
-                key={`stage-cue-${shellView.stageActionLabel}`}
-                className="table-stage-beacon__cue"
-                initial={motionProfile.cue.initial}
-                animate={motionProfile.cue.animate}
-                exit={motionProfile.cue.exit}
-                transition={motionProfile.cue.transition}
-              >
-                {shellView.stageActionLabel}
-              </motion.span>
-            )}
-          </AnimatePresence>
-          <AnimatePresence initial={false} mode="wait">
-            {shellView.lastActionLabel && (
-              <motion.span
-                key={`last-action-${shellView.lastActionLabel}`}
-                className="table-stage-beacon__last-action"
-                initial={motionProfile.cue.initial}
-                animate={motionProfile.cue.animate}
-                exit={motionProfile.cue.exit}
-                transition={motionProfile.cue.transition}
-              >
-                {shellView.lastActionLabel}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        <div
-          className="table-stage-core"
-          data-table-profile={tableSurfaceLayout.profile}
-          data-height-class={tableSurfaceLayout.heightClass}
-          data-stage-density={tableSurfaceLayout.stageDensity}
-          data-table-family={tableSurfaceLayout.family}
-          data-center-surface-model={centerSurfaceModel}
-          data-table-material-felt-tone={tableFeltTone}
-          data-table-material-rail-tone={tableRailTone}
-        >
-          <TableStageChrome
-            seatGuides={seatGuides}
-            geometryContract={runtimeGeometry}
-            roomShellLayout={resolvedRoomShellLayout}
-            tableProfile={tableSurfaceLayout.profile}
-          />
+        <div className="table-stage-center-shell" data-center-priority={centerPriority}>
           <div
-            className="poker-table table-stage-table-shell relative z-10"
+            className="table-stage-center-shell__board table-stage-core"
             data-table-profile={tableSurfaceLayout.profile}
-            data-table-shell-orientation={tableSurfaceLayout.shellOrientation}
             data-height-class={tableSurfaceLayout.heightClass}
             data-stage-density={tableSurfaceLayout.stageDensity}
             data-table-family={tableSurfaceLayout.family}
             data-center-surface-model={centerSurfaceModel}
             data-table-material-felt-tone={tableFeltTone}
             data-table-material-rail-tone={tableRailTone}
-            style={{
-              width: `${tableSurfaceLayout.tableWidth}px`,
-              height: `${tableSurfaceLayout.tableHeight}px`,
-            }}
           >
+            <TableStageChrome
+              seatGuides={seatGuides}
+              geometryContract={runtimeGeometry}
+              roomShellLayout={resolvedRoomShellLayout}
+              tableProfile={tableSurfaceLayout.profile}
+            />
             <div
-              className="table-stage-board-tray absolute inset-0 flex items-center justify-center"
+              className="poker-table table-stage-table-shell relative z-10"
               data-table-profile={tableSurfaceLayout.profile}
               data-table-shell-orientation={tableSurfaceLayout.shellOrientation}
               data-height-class={tableSurfaceLayout.heightClass}
@@ -214,14 +131,100 @@ const TableStage = ({
               data-table-material-felt-tone={tableFeltTone}
               data-table-material-rail-tone={tableRailTone}
               style={{
-                width: `${boardLayout.trayWidth}px`,
-                height: `${boardLayout.trayHeight}px`,
-                borderRadius: tableSurfaceLayout.profile === 'phone-oval' ? '1.5rem' : '999px',
+                width: `${tableSurfaceLayout.tableWidth}px`,
+                height: `${tableSurfaceLayout.tableHeight}px`,
               }}
             >
-              <CommunityCards boardLayout={boardLayout} tableProfile={tableSurfaceLayout.profile} />
+              <div
+                className="table-stage-center-shell__board-tray table-stage-board-tray absolute inset-0 flex items-center justify-center"
+                data-table-profile={tableSurfaceLayout.profile}
+                data-table-shell-orientation={tableSurfaceLayout.shellOrientation}
+                data-height-class={tableSurfaceLayout.heightClass}
+                data-stage-density={tableSurfaceLayout.stageDensity}
+                data-table-family={tableSurfaceLayout.family}
+                data-center-surface-model={centerSurfaceModel}
+                data-table-material-felt-tone={tableFeltTone}
+                data-table-material-rail-tone={tableRailTone}
+                style={{
+                  width: `${boardLayout.trayWidth}px`,
+                  height: `${boardLayout.trayHeight}px`,
+                  borderRadius: tableSurfaceLayout.profile === 'phone-oval' ? '1.5rem' : '999px',
+                }}
+              >
+                <CommunityCards boardLayout={boardLayout} tableProfile={tableSurfaceLayout.profile} />
+              </div>
             </div>
           </div>
+
+          <AnimatePresence initial={false} mode="popLayout">
+            {primaryPotItem && (
+              <motion.div
+                key={`${primaryPotItem.label}-${primaryPotItem.amount}-${secondaryPotItems.map((item) => item.amount).join('-')}`}
+                className="table-stage-center-shell__pot table-stage-pot-capsule"
+                data-table-family={tableSurfaceLayout.family}
+                data-center-surface-model={centerSurfaceModel}
+                data-table-material-felt-tone={tableFeltTone}
+                data-table-material-rail-tone={tableRailTone}
+                initial={motionProfile.stage.initial}
+                animate={motionProfile.stage.animate}
+                exit={motionProfile.stage.exit}
+                transition={motionProfile.stage.transition}
+              >
+                <div className="table-stage-pot-capsule__kicker">{primaryPotItem.label}</div>
+                <div className="table-stage-pot-capsule__amount">{primaryPotItem.amount}</div>
+                {secondaryPotItems.length > 0 && (
+                  <div className="table-stage-pot-capsule__rail">
+                    {secondaryPotItems.map((item) => (
+                      <span key={item.label} className="table-stage-pot-capsule__rail-item">
+                        {item.label} {item.amount}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.div
+            className="table-stage-center-shell__street table-stage-beacon"
+            initial={motionProfile.cue.initial}
+            animate={motionProfile.cue.animate}
+            exit={motionProfile.cue.exit}
+            transition={motionProfile.cue.transition}
+          >
+            <span className="table-stage-beacon__mode">{shellView.modeLabel}</span>
+            <span className="table-stage-beacon__state">{shellView.roomStateLabel}</span>
+            {shellView.phaseLabel && <span className="table-stage-beacon__phase">{shellView.phaseLabel}</span>}
+            {shellView.currentTurnSeatLabel && <span className="table-stage-beacon__turn-seat">{shellView.currentTurnSeatLabel}</span>}
+            <AnimatePresence initial={false} mode="wait">
+              {shellView.stageActionLabel && (
+                <motion.span
+                  key={`stage-cue-${shellView.stageActionLabel}`}
+                  className="table-stage-beacon__cue"
+                  initial={motionProfile.cue.initial}
+                  animate={motionProfile.cue.animate}
+                  exit={motionProfile.cue.exit}
+                  transition={motionProfile.cue.transition}
+                >
+                  {shellView.stageActionLabel}
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <AnimatePresence initial={false} mode="wait">
+              {shellView.lastActionLabel && (
+                <motion.span
+                  key={`last-action-${shellView.lastActionLabel}`}
+                  className="table-stage-beacon__last-action"
+                  initial={motionProfile.cue.initial}
+                  animate={motionProfile.cue.animate}
+                  exit={motionProfile.cue.exit}
+                  transition={motionProfile.cue.transition}
+                >
+                  {shellView.lastActionLabel}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
 
         {settlementOverlay}

@@ -81,7 +81,7 @@ const SettlementOverlay = ({
       {roomState === 'settling' ? (
         <motion.div
           key={`settlement-${latestSummary?.handNumber || 'latest'}`}
-          className="settlement-sheet"
+          className="settlement-sheet settlement-sheet--table-center-subordinate"
           initial={motionProfile.settlement.initial}
           animate={motionProfile.settlement.animate}
           exit={motionProfile.settlement.exit}
@@ -106,7 +106,7 @@ const SettlementOverlay = ({
 
           {latestSummary?.headlineLine && (
             <motion.div
-              className="settlement-sheet__spotlight"
+              className="settlement-sheet__spotlight settlement-sheet__spotlight--subtle"
               initial={motionProfile.cue.initial}
               animate={motionProfile.cue.animate}
               transition={motionProfile.cue.transition}
@@ -140,7 +140,7 @@ const SettlementOverlay = ({
 
           {latestSummary?.lines?.length > 0 && (
             <div className="settlement-sheet__lines">
-              {[...latestSummary.scoreboardLines.slice(1, 5), ...latestSummary.detailLines.slice(0, 2)].map((line, index) => (
+              {[...latestSummary.scoreboardLines.slice(1, 4), ...latestSummary.detailLines.slice(0, 1)].map((line, index) => (
                 <motion.div
                   key={`${latestSummary.handNumber}-${index}`}
                   className="settlement-sheet__line"

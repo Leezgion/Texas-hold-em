@@ -26,8 +26,9 @@ const EventRail = ({
   });
   const roomCopy = theme.room;
   const historyItems = buildHandHistoryView(records).slice(0, roomCopy.historyPreviewCount);
-  const summaryLineLimit = effectiveDisplayMode === 'study' ? 6 : effectiveDisplayMode === 'club' ? 2 : 4;
+  const summaryLineLimit = effectiveDisplayMode === 'study' ? 5 : effectiveDisplayMode === 'club' ? 2 : 3;
   const historyLineLimit = effectiveDisplayMode === 'study' ? 6 : 4;
+  const centerPriority = eventRailView.livePotSummary?.centerPriority || 'board-pot-street';
   const ContainerTag = presentation === 'rail' ? 'aside' : 'div';
 
   return (
@@ -53,7 +54,8 @@ const EventRail = ({
           {eventRailView.latestSummary && (
           <motion.div
             key={`latest-hand-${eventRailView.latestSummary.handNumber}`}
-            className="tactical-event-card"
+            className="tactical-event-card tactical-event-card--supportive"
+            data-center-priority={centerPriority}
             initial={motionProfile.eventCard.initial}
             animate={motionProfile.eventCard.animate}
             exit={motionProfile.eventCard.exit}
@@ -68,16 +70,18 @@ const EventRail = ({
                 <div className="tactical-event-card__reason">{eventRailView.latestSummary.reason}</div>
               )}
             </div>
-            {eventRailView.headlineLine && (
-              <div className="tactical-event-card__spotlight">{eventRailView.headlineLine}</div>
-            )}
-            {eventRailView.latestSummary.totalLine && (
-              <div className="tactical-event-card__total">{eventRailView.latestSummary.totalLine}</div>
-            )}
             {eventRailView.boardLabel && (
               <div className="tactical-event-card__board">
                 <span className="tactical-event-card__board-label">Board</span>
                 <span>{eventRailView.boardLabel}</span>
+              </div>
+            )}
+            {eventRailView.latestSummary.totalLine && (
+              <div className="tactical-event-card__total">{eventRailView.latestSummary.totalLine}</div>
+            )}
+            {eventRailView.headlineLine && (
+              <div className="tactical-event-card__spotlight tactical-event-card__spotlight--subtle">
+                {eventRailView.headlineLine}
               </div>
             )}
             <div className="tactical-event-card__tape">

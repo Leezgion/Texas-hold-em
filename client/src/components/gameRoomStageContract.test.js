@@ -13,6 +13,8 @@ const require = createRequire(import.meta.url);
 const source = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 'utf8');
 const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 'utf8');
 const seatCardSource = readFileSync(new URL('./SeatCard.jsx', import.meta.url), 'utf8');
+const communityCardsSource = readFileSync(new URL('./CommunityCards.jsx', import.meta.url), 'utf8');
+const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
 const bundledModuleCache = new Map();
 const bundledTempDirs = [];
 const bundledExternal = [
@@ -159,8 +161,24 @@ test('TableStage threads broadcast center material hooks through the pot capsule
     })
   );
 
-  assert.match(stage, /class="table-stage-pot-capsule"/);
+  assert.match(stage, /table-stage-center-shell/);
+  assert.match(stage, /table-stage-center-shell__pot/);
+  assert.match(stage, /table-stage-center-shell__board/);
+  assert.match(stage, /table-stage-center-shell__street/);
+  assert.match(stage, /table-stage-pot-capsule/);
   assert.match(stage, /data-center-surface-model="broadcast-clean-center"/);
   assert.match(stage, /data-table-material-felt-tone="deep-green-velvet"/);
   assert.match(stage, /data-table-material-rail-tone="black-gold"/);
+});
+
+test('CommunityCards and TableStage use the cleaned center-shell naming and avoid HUD-ring language', () => {
+  assert.match(communityCardsSource, /community-cards-center-shell/);
+  assert.match(communityCardsSource, /community-cards-center-shell__phase/);
+  assert.match(communityCardsSource, /community-cards-center-shell__tray/);
+  assert.match(tableStageSource, /table-stage-center-shell/);
+  assert.match(tableStageSource, /table-stage-center-shell__pot/);
+  assert.match(tableStageSource, /table-stage-center-shell__board/);
+  assert.match(tableStageSource, /table-stage-center-shell__street/);
+  assert.doesNotMatch(communityCardsSource, /shell-orbit|orbitRingPath|guide-ring|hud-ring|hud ring/i);
+  assert.doesNotMatch(tableStageSource, /shell-orbit|orbitRingPath|guide-ring|hud-ring|hud ring/i);
 });
