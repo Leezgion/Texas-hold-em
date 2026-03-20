@@ -993,3 +993,50 @@ This is a client preference. It should not change server truth or give one playe
 - UI density changes can reintroduce mobile regressions if they are only validated on desktop
 - study-mode feature ideas can bloat the live-play product if not constrained
 - shell-level geometry can invalidate previously safe seat layouts because the old table lived in a full-screen canvas, not inside nested panels
+
+## 2026-03-20 Broadcast Tactical Table Evidence Rerun
+
+This rerun closed the browser-evidence task for the new broadcast-tactical table family on the reused local-dev pair (`3001 / 5173`) without restarting the user-owned `pnpm dev` servers.
+
+- fresh room:
+  - `LVLO1D`
+- fresh screenshots:
+  - `.runlogs/broadcast-tactical-create-room-desktop.png`
+  - `.runlogs/broadcast-tactical-room-desktop-waiting.png`
+  - `.runlogs/broadcast-tactical-room-desktop-live.png`
+  - `.runlogs/broadcast-tactical-room-phone-waiting.png`
+  - `.runlogs/broadcast-tactical-room-phone-roster-sheet.png`
+- create-room desktop:
+  - the mode chooser stayed horizontally readable instead of collapsing into vertical single-character columns
+  - the `club / pro / study` surfaces remained visibly distinct before room creation
+- desktop waiting state (`1366x900`):
+  - `scrollHeight = clientHeight = 900`
+  - `coupledMain = true`
+  - `dockBottom = 2.4px`
+  - `dockTransform = none`
+  - hero plaque text remained readable
+  - open-seat plaque text remained readable
+  - `data-center-priority = board-pot-street`
+- desktop live-hand state (`1366x900`):
+  - `scrollHeight = clientHeight = 900`
+  - `coupledMain = true`
+  - `dockBottom = 2.4px`
+  - `dockTransform = none`
+  - `hasActionButtons = true`
+  - live cue: `轮到 座2 · TO CALL 10`
+  - center shell remained `board-pot-street`
+  - the board shell and pot capsule stayed visually separated, confirming the clean-center hierarchy instead of collapsing into a HUD-like center stack
+- phone portrait waiting state (`390x844`):
+  - `scrollHeight = clientHeight = 844`
+  - support launcher buttons stayed readable and tap-sized
+  - `dockBottom = 0`
+  - `dockTransform = none`
+  - the same broadcast-tactical family still read as a vertical capsule instead of a different table product
+- phone portrait roster sheet (`390x844`):
+  - `sheetOpen = true`
+  - `sheetTitle = Roster`
+  - `scrollHeight = clientHeight = 844`
+  - the page stayed locked to the single-screen shell while the sheet owned the overflow
+- fresh blocker discovered and fixed during evidence capture:
+  - starting a new hand briefly flipped `gameStarted = true` before the action-state payload was fully present, so `ActionButtons` tried to read `gameState.currentBet` and blanked the page
+  - fix landed by keeping the live-hand action frame mounted, then making `ActionButtons` fail-closed with `等待牌局状态同步` until the authoritative `gameState` arrived

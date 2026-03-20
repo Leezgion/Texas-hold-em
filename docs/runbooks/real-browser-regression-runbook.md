@@ -148,6 +148,18 @@ For Poker OS shell work, add these spot checks explicitly:
 
 - gateway desktop: three readable mode cards plus create/join controls
 - gateway mobile: cards stack cleanly without overlap
+- broadcast tactical evidence: capture all of:
+  - create-room desktop
+  - room desktop waiting
+  - room desktop live-hand
+  - room phone portrait waiting
+  - room phone portrait support sheet open
+- broadcast tactical evidence: for both waiting and live-hand captures, verify:
+  - `document.scrollingElement.scrollHeight === document.scrollingElement.clientHeight`
+  - `.room-terminal-main--table-coupled` exists
+  - `.room-terminal-dock` keeps `transform = none`
+  - `[data-center-priority="board-pot-street"]` is still present
+  - open-seat and hero plaques remain readable after the layout settles
 - room shell desktop: seat ring stays inside the stage panel and the hero dock remains readable
 - room shell desktop: in-hand current-turn verification must include the stage beacon, not only the hero dock; confirm the beacon shows the active seat and, after one real action, a last-action cue
 - settlement hierarchy: when validating settlement UI, prefer a long-settlement room such as `-SettleMs 15000` so the overlay, countdown, and winner-first ordering can be captured before the next hand starts
@@ -217,6 +229,8 @@ For split-stage desktop checks, do not trust the visual plaque body height. Meas
 Do not trust guessed mobile footprints from unit tests alone; the first broken phone pass under-budgeted the real seat-card height by roughly half and only browser rects exposed it.
 
 When capturing live-hand browser evidence, do not wait only on hero action buttons. The host can be in-hand without being first to act; hole cards or the `preflop` stage beacon are a safer readiness signal.
+
+If `startGame` leaves the room route visually blank, inspect console before assuming the dev server died; in this repo a transient `gameStarted = true` plus missing `gameState` can surface as an `ActionButtons` null-state regression during hand-start sync.
 
 Update both of these after the run:
 
