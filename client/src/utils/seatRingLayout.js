@@ -40,11 +40,11 @@ function resolveTableFootprint({ tableDiameter = 0, profile = 'desktop-oval' } =
 }
 
 const SUPPORTS_2_TO_9_OCCUPANCY = {
-  2: ['hero', 'top-left'],
+  2: ['hero', 'top'],
   3: ['hero', 'upper-left', 'upper-right'],
-  4: ['hero', 'lower-left', 'lower-right', 'top-left'],
+  4: ['hero', 'lower-left', 'top', 'lower-right'],
   5: ['hero', 'lower-left', 'lower-right', 'upper-left', 'upper-right'],
-  6: ['hero', 'lower-left', 'lower-right', 'middle-left', 'middle-right', 'top-left'],
+  6: ['hero', 'lower-left', 'upper-left', 'top', 'upper-right', 'lower-right'],
   7: ['hero', 'lower-left', 'lower-right', 'middle-left', 'middle-right', 'upper-left', 'upper-right'],
   8: ['hero', 'lower-left', 'lower-right', 'middle-left', 'middle-right', 'upper-left', 'upper-right', 'top-left'],
   9: ['hero', 'lower-left', 'lower-right', 'middle-left', 'middle-right', 'upper-left', 'upper-right', 'top-left', 'top-right'],
@@ -60,6 +60,7 @@ const CANONICAL_SLOT_MODELS = {
     { slotId: 'upper-left', anchorRole: 'upper-left', anchorZone: 'table-flank', normalized: { x: -1, y: -0.48 } },
     { slotId: 'upper-right', anchorRole: 'upper-right', anchorZone: 'table-flank', normalized: { x: 1, y: -0.48 } },
     { slotId: 'top-left', anchorRole: 'top-left', anchorZone: 'table-flank', normalized: { x: -1, y: -1 } },
+    { slotId: 'top', anchorRole: 'top', anchorZone: 'stage-band-clear', normalized: { x: 0, y: -1 } },
     { slotId: 'top-right', anchorRole: 'top-right', anchorZone: 'table-flank', normalized: { x: 1, y: -1 } },
   ],
   'phone-oval': [
@@ -71,6 +72,7 @@ const CANONICAL_SLOT_MODELS = {
     { slotId: 'upper-left', anchorRole: 'upper-left', anchorZone: 'table-flank', normalized: { x: -1, y: -0.48 } },
     { slotId: 'upper-right', anchorRole: 'upper-right', anchorZone: 'table-flank', normalized: { x: 1, y: -0.48 } },
     { slotId: 'top-left', anchorRole: 'top-left', anchorZone: 'table-flank', normalized: { x: -1, y: -1 } },
+    { slotId: 'top', anchorRole: 'top', anchorZone: 'stage-band-clear', normalized: { x: 0, y: -1 } },
     { slotId: 'top-right', anchorRole: 'top-right', anchorZone: 'table-flank', normalized: { x: 1, y: -1 } },
   ],
 };

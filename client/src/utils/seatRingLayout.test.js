@@ -373,6 +373,96 @@ test('phone 9-max canonical anchors stay mirrored around the center line', () =>
   assert.equal(layout[7].y, layout[8].y);
 });
 
+test('short-handed canonical occupancy uses the documented opposite top seat semantics', () => {
+  const cases = [
+    {
+      label: 'desktop heads-up',
+      playerCount: 2,
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      profile: 'desktop-oval',
+      expectedSlots: ['hero', 'top'],
+      expectedHeroZone: 'table-edge',
+    },
+    {
+      label: 'desktop four-handed',
+      playerCount: 4,
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      profile: 'desktop-oval',
+      expectedSlots: ['hero', 'lower-left', 'top', 'lower-right'],
+      expectedHeroZone: 'table-edge',
+    },
+    {
+      label: 'desktop six-handed',
+      playerCount: 6,
+      viewportWidth: 1440,
+      roomShellLayout: 'split-stage',
+      tableDiameter: 352,
+      profile: 'desktop-oval',
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top', 'upper-right', 'lower-right'],
+      expectedHeroZone: 'table-edge',
+    },
+    {
+      label: 'phone heads-up',
+      playerCount: 2,
+      viewportWidth: 390,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      profile: 'phone-oval',
+      expectedSlots: ['hero', 'top'],
+      expectedHeroZone: 'dock-edge',
+    },
+    {
+      label: 'phone four-handed',
+      playerCount: 4,
+      viewportWidth: 390,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      profile: 'phone-oval',
+      expectedSlots: ['hero', 'lower-left', 'top', 'lower-right'],
+      expectedHeroZone: 'dock-edge',
+    },
+    {
+      label: 'phone six-handed',
+      playerCount: 6,
+      viewportWidth: 390,
+      roomShellLayout: 'stacked',
+      tableDiameter: 208,
+      profile: 'phone-oval',
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top', 'upper-right', 'lower-right'],
+      expectedHeroZone: 'dock-edge',
+    },
+  ];
+
+  for (const config of cases) {
+    const layout = buildSeatRingPositions({
+      playerCount: config.playerCount,
+      viewportWidth: config.viewportWidth,
+      roomShellLayout: config.roomShellLayout,
+      tableDiameter: config.tableDiameter,
+      profile: config.profile,
+    });
+
+    assert.deepEqual(
+      layout.map((seat) => seat.slotId),
+      config.expectedSlots,
+      `${config.label} slot semantics`
+    );
+    assert.equal(layout[0].anchorZone, config.expectedHeroZone, `${config.label} hero zone`);
+
+    const topSeat = layout.find((seat) => seat.slotId === 'top');
+    assert.ok(topSeat, `${config.label} top seat`);
+    assert.equal(topSeat.x, 0, `${config.label} top seat should stay centered`);
+    assert.equal(topSeat.anchorRole, 'top', `${config.label} top seat role`);
+    assert.equal(topSeat.anchorZone, 'stage-band-clear', `${config.label} top seat zone`);
+    assert.equal(layout.overlaps.tableBody, 0, `${config.label} table overlap`);
+    assert.equal(layout.overlaps.stageBand, 0, `${config.label} stage overlap`);
+  }
+});
+
 test('desktop canonical slots keep normalized coordinates stable across active footprints', () => {
   const splitStage = buildSeatRingPositions({
     playerCount: 9,
@@ -462,7 +552,7 @@ test('supported 2-9 player rooms keep the canonical table body and stage band cl
   ];
 
   for (const config of cases) {
-    for (const playerCount of [2, 6, 9]) {
+    for (const playerCount of [2, 4, 6, 9]) {
       const layout = buildSeatRingPositions({
         playerCount,
         viewportWidth: config.viewportWidth,
