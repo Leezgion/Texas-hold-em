@@ -10,6 +10,10 @@ test('phone portrait keeps the hero dock fixed and moves support surfaces into s
   assert.equal(layout.viewportModel, 'phone-terminal');
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+  assert.equal(layout.dockPresentation, 'overlay-terminal');
+  assert.equal(layout.headerDensity, 'compact');
+  assert.equal(layout.headerActionModel, 'room-sheet-first');
+  assert.equal(layout.dockReservePx, 224);
   assert.equal(layout.supportSurfaceModel, 'bottom-sheets');
   assert.equal(layout.supportSurfacePolicy, 'bottom-sheets');
   assert.equal(layout.contentMaxWidth, '100%');
@@ -22,6 +26,10 @@ test('tablet keeps the room terminal in a split but single-screen form', () => {
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+  assert.equal(layout.dockPresentation, 'overlay-terminal');
+  assert.equal(layout.headerDensity, 'regular');
+  assert.equal(layout.headerActionModel, 'toolbar');
+  assert.equal(layout.dockReservePx, 208);
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
   assert.equal(layout.contentMaxWidth, '100%');
 });
@@ -33,6 +41,10 @@ test('desktop keeps the room terminal centered with secondary rails', () => {
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+  assert.equal(layout.dockPresentation, 'overlay-terminal');
+  assert.equal(layout.headerDensity, 'regular');
+  assert.equal(layout.headerActionModel, 'toolbar');
+  assert.equal(layout.dockReservePx, 196);
   assert.equal(layout.supportSurfaceModel, 'slide-panels');
   assert.equal(layout.supportSurfacePolicy, 'slide-panels');
   assert.equal(layout.contentMaxWidth, '1440px');
@@ -45,9 +57,24 @@ test('ultrawide expands the same terminal without turning it into a page layout'
   assert.equal(layout.pageScroll, 'locked');
   assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+  assert.equal(layout.dockPresentation, 'overlay-terminal');
+  assert.equal(layout.headerDensity, 'regular');
+  assert.equal(layout.headerActionModel, 'toolbar');
+  assert.equal(layout.dockReservePx, 208);
   assert.equal(layout.supportSurfaceModel, 'rails-and-overlays');
   assert.equal(layout.supportSurfacePolicy, 'rails-and-overlays');
   assert.equal(layout.contentMaxWidth, '1600px');
+});
+
+test('short-height ultrawide keeps toolbar actions while compressing the stage budget', () => {
+  const layout = resolveRoomViewportLayout({ width: 1720, height: 680 });
+
+  assert.equal(layout.viewportModel, 'ultrawide-terminal');
+  assert.equal(layout.heightClass, 'short-height');
+  assert.equal(layout.stageDensity, 'compressed');
+  assert.equal(layout.headerDensity, 'compact');
+  assert.equal(layout.headerActionModel, 'toolbar');
+  assert.equal(layout.supportSurfaceModel, 'rails-and-overlays');
 });
 
 test('tablet landscape still keeps the room terminal single-screen', () => {
@@ -80,6 +107,10 @@ test('short-height landscape windows switch the room terminal into a compressed 
   assert.equal(layout.stageDensity, 'compressed');
   assert.equal(layout.roomScrollContract, 'single-screen');
   assert.equal(layout.heroDockPlacement, 'fixed-bottom');
+  assert.equal(layout.dockPresentation, 'overlay-terminal');
+  assert.equal(layout.headerDensity, 'compact');
+  assert.equal(layout.headerActionModel, 'room-sheet-first');
+  assert.equal(layout.dockReservePx, 192);
   assert.equal(layout.minStageBudgetPx, 180);
 });
 

@@ -35,6 +35,7 @@ const ActionDock = ({
   });
   const roomCopy = theme.room;
   const supportLabels = theme.sheetLabels || {};
+  const isCompactDock = viewportLayout?.headerDensity === 'compact';
   const dockView = deriveActionDockView({
     currentPlayer,
     currentPlayerView,
@@ -45,6 +46,9 @@ const ActionDock = ({
     roomState,
   });
   const handCards = dockView?.handCards || [];
+  const showsDecisionCenter = Boolean(
+    dockView.startButtonLabel || handCards.length > 0 || gameStarted
+  );
   const supportsSecondaryPanels =
     typeof onToggleSupportPanel === 'function' &&
     viewportLayout?.supportSurfaceModel &&
@@ -59,11 +63,16 @@ const ActionDock = ({
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
       data-hero-dock-placement={viewportLayout?.heroDockPlacement}
       data-hero-dock-priority={shellView?.heroDockPriority}
+      data-dock-presentation={viewportLayout?.dockPresentation}
+      data-header-density={viewportLayout?.headerDensity}
+      data-has-center-stage={showsDecisionCenter ? 'true' : 'false'}
     >
       <div className="tactical-dock__grid">
         <div className="min-w-0">
           <div className="poker-shell-kicker">{roomCopy.actionTitle}</div>
-          <div className="mt-2 text-sm leading-6 text-slate-300">{roomCopy.actionCaption}</div>
+          {!isCompactDock ? (
+            <div className="tactical-dock__intro-copy mt-2 text-sm leading-6 text-slate-300">{roomCopy.actionCaption}</div>
+          ) : null}
 
           <motion.div
             className="tactical-dock__hero-panel"
@@ -127,7 +136,7 @@ const ActionDock = ({
             </div>
           </motion.div>
 
-          {supportsSecondaryPanels ? (
+              {supportsSecondaryPanels ? (
             <div className="room-support-launcher">
               {[
                 { key: 'players', label: supportLabels.players || 'Players' },
@@ -149,42 +158,44 @@ const ActionDock = ({
           ) : null}
         </div>
 
-        <div className="tactical-dock__center">
-          {gameStarted && handCards.length > 0 && (
-            <div className="tactical-dock__cards">
-              {handCards.map((card, index) => (
-                <Card key={index} card={card} size="large" />
-              ))}
-            </div>
-          )}
+        {showsDecisionCenter ? (
+          <div className="tactical-dock__center">
+            {gameStarted && handCards.length > 0 && (
+              <div className="tactical-dock__cards">
+                {handCards.map((card, index) => (
+                  <Card key={index} card={card} size="large" />
+                ))}
+              </div>
+            )}
 
-          {dockView.startButtonLabel && (
-            <button
-              type="button"
-              onClick={onStartGame}
-              className="mode-primary-button w-auto min-w-[14rem] px-8 py-4 text-lg"
-            >
-              {roomCopy.startButtonLabel || dockView.startButtonLabel}
-            </button>
-          )}
+            {dockView.startButtonLabel && (
+              <button
+                type="button"
+                onClick={onStartGame}
+                className="mode-primary-button w-auto min-w-[14rem] px-8 py-4 text-lg"
+              >
+                {roomCopy.startButtonLabel || dockView.startButtonLabel}
+              </button>
+            )}
 
-          {gameStarted && (
-            <motion.div
-              className="tactical-dock__action-frame"
-              initial={motionProfile.stage.initial}
-              animate={motionProfile.stage.animate}
-              transition={motionProfile.stage.transition}
-            >
-              <ActionButtons
-                player={currentPlayer}
-                gameState={gameState}
-                currentPlayerId={currentPlayerId}
-                players={players}
-                effectiveDisplayMode={effectiveDisplayMode}
-              />
-            </motion.div>
-          )}
-        </div>
+            {gameStarted && (
+              <motion.div
+                className="tactical-dock__action-frame"
+                initial={motionProfile.stage.initial}
+                animate={motionProfile.stage.animate}
+                transition={motionProfile.stage.transition}
+              >
+                <ActionButtons
+                  player={currentPlayer}
+                  gameState={gameState}
+                  currentPlayerId={currentPlayerId}
+                  players={players}
+                  effectiveDisplayMode={effectiveDisplayMode}
+                />
+              </motion.div>
+            )}
+          </div>
+        ) : null}
       </div>
     </section>
   );

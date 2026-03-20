@@ -9,6 +9,22 @@ function resolveHeightClass({ width = 0, height = 0 } = {}) {
   return 'regular-height';
 }
 
+function resolveDockReservePx({ viewportModel = 'desktop-terminal', heightClass = 'regular-height' } = {}) {
+  const isShortHeight = heightClass === 'short-height';
+
+  switch (viewportModel) {
+    case 'phone-terminal':
+      return isShortHeight ? 208 : 224;
+    case 'tablet-terminal':
+      return isShortHeight ? 192 : 208;
+    case 'ultrawide-terminal':
+      return isShortHeight ? 192 : 208;
+    case 'desktop-terminal':
+    default:
+      return isShortHeight ? 184 : 196;
+  }
+}
+
 export function resolveStageViewportContract({ width = 0, height = 0 } = {}) {
   const safeWidth = Number(width) || 0;
   const heightClass = resolveHeightClass({ width: safeWidth, height });
@@ -29,12 +45,25 @@ function buildViewportLayout({
   height = 0,
 } = {}) {
   const stageViewportContract = resolveStageViewportContract({ width, height });
+  const headerDensity =
+    viewportModel === 'phone-terminal' || stageViewportContract.heightClass === 'short-height'
+      ? 'compact'
+      : 'regular';
+  const prefersToolbarActions =
+    viewportModel === 'ultrawide-terminal' || headerDensity !== 'compact';
 
   return {
     viewportModel,
     pageScroll: 'locked',
     roomScrollContract: 'single-screen',
     heroDockPlacement: 'fixed-bottom',
+    dockPresentation: 'overlay-terminal',
+    headerDensity,
+    headerActionModel: prefersToolbarActions ? 'toolbar' : 'room-sheet-first',
+    dockReservePx: resolveDockReservePx({
+      viewportModel,
+      heightClass: stageViewportContract.heightClass,
+    }),
     supportSurfaceModel,
     supportSurfacePolicy,
     contentMaxWidth,

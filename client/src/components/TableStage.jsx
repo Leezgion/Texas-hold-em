@@ -14,6 +14,7 @@ const TableStage = ({
   settlementOverlay = null,
   effectiveDisplayMode = 'pro',
   roomShellLayout = 'stacked',
+  viewportLayout = null,
   viewportWidth = 1280,
   viewportHeight = 0,
   tableDiameter = 320,
@@ -41,6 +42,8 @@ const TableStage = ({
   const boardLayout = runtimeGeometry.communityCardLayout;
   const resolvedRoomShellLayout = runtimeGeometry.roomShellLayout || roomShellLayout;
   const isCompressedStage = tableSurfaceLayout.heightClass === 'short-height';
+  const isCompactStageHeader =
+    viewportLayout?.headerDensity === 'compact' || tableSurfaceLayout.heightClass === 'short-height';
   const stageLayoutClassName =
     resolvedRoomShellLayout === 'three-column'
       ? 'table-stage-surface table-stage-surface--three-column'
@@ -52,24 +55,34 @@ const TableStage = ({
     : 'table-stage-surface--idle';
 
   return (
-    <section className="poker-shell-panel poker-shell-panel--accent relative rounded-[2rem] px-4 py-5 sm:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
+    <section
+      className="table-stage-panel poker-shell-panel poker-shell-panel--accent relative rounded-[2rem] px-4 py-5 sm:px-6"
+      data-stage-header-density={isCompactStageHeader ? 'compact' : 'regular'}
+      data-viewport-model={viewportLayout?.viewportModel}
+    >
+      <div className="table-stage-panel__header mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="table-stage-panel__title-block">
           <div className="poker-shell-kicker">{roomCopy.stageLabel}</div>
           <div className="mt-2 text-lg font-semibold text-white">{shellView.roomStateLabel}</div>
-          <div className="mt-2 max-w-xl text-sm leading-6 text-slate-300">{roomCopy.stageCaption}</div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {tablePotSummary.items.map((item, index) => (
-            <div
-              key={`${item.label}-${index}`}
-              className="poker-shell-stat-card rounded-2xl px-3 py-2 text-sm text-slate-100"
-            >
-              <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">{item.label}</div>
-              <div className="mt-1 font-semibold">{item.amount}</div>
+          {!isCompactStageHeader ? (
+            <div className="table-stage-panel__caption mt-2 max-w-xl text-sm leading-6 text-slate-300">
+              {roomCopy.stageCaption}
             </div>
-          ))}
+          ) : null}
         </div>
+        {!isCompactStageHeader ? (
+          <div className="table-stage-panel__summary flex flex-wrap items-center gap-2">
+            {tablePotSummary.items.map((item, index) => (
+              <div
+                key={`${item.label}-${index}`}
+                className="poker-shell-stat-card rounded-2xl px-3 py-2 text-sm text-slate-100"
+              >
+                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">{item.label}</div>
+                <div className="mt-1 font-semibold">{item.amount}</div>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div

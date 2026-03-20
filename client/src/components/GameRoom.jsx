@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import ActionDock from './ActionDock';
@@ -105,6 +105,7 @@ const GameRoom = () => {
 
   const [showShareLink, setShowShareLink] = useState(false);
   const windowSize = useWindowSize();
+  const roomViewportLayout = resolveRoomViewportLayout(windowSize);
   const [showRebuy, setShowRebuy] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -114,12 +115,13 @@ const GameRoom = () => {
   const [showExitRoom, setShowExitRoom] = useState(false);
   const [activeSupportPanel, setActiveSupportPanel] = useState(null);
   const [gameLogs, setGameLogs] = useState([]);
+  const [measuredDockReservePx, setMeasuredDockReservePx] = useState(roomViewportLayout.dockReservePx);
   const lastLoggedActionKeyRef = useRef(null);
+  const roomDockRef = useRef(null);
   const playersList = Array.isArray(players) ? players : EMPTY_PLAYERS;
   const activeRoomState = roomState || 'idle';
   const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
   const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
-  const roomViewportLayout = resolveRoomViewportLayout(windowSize);
   const stageShellLayout = mapViewportModelToStageShellLayout(roomViewportLayout.viewportModel);
   const usesSideRails = roomViewportLayout.viewportModel === 'ultrawide-terminal';
   const usesSupportPanels = roomViewportLayout.supportSurfaceModel !== 'rails-and-overlays';
@@ -278,6 +280,37 @@ const GameRoom = () => {
   useEffect(() => {
     setActiveSupportPanel(null);
   }, [roomId]);
+
+  useLayoutEffect(() => {
+    const dockElement = roomDockRef.current;
+
+    if (!dockElement) {
+      setMeasuredDockReservePx(roomViewportLayout.dockReservePx);
+      return undefined;
+    }
+
+    const updateDockReserve = () => {
+      const measuredHeight = Math.ceil(dockElement.getBoundingClientRect().height);
+      const computedDockBottomPx = Number.parseFloat(window.getComputedStyle(dockElement).bottom) || 0;
+      const occupiedDockHeightPx = measuredHeight + Math.ceil(Math.max(0, computedDockBottomPx));
+      const nextDockReservePx = Math.max(roomViewportLayout.dockReservePx, occupiedDockHeightPx);
+
+      setMeasuredDockReservePx((currentValue) =>
+        currentValue === nextDockReservePx ? currentValue : nextDockReservePx
+      );
+    };
+
+    updateDockReserve();
+
+    if (typeof ResizeObserver === 'function') {
+      const observer = new ResizeObserver(updateDockReserve);
+      observer.observe(dockElement);
+      return () => observer.disconnect();
+    }
+
+    window.addEventListener('resize', updateDockReserve);
+    return () => window.removeEventListener('resize', updateDockReserve);
+  }, [roomViewportLayout.dockReservePx, roomViewportLayout.viewportModel]);
 
   // 监听游戏状态变化，更新日志
   useEffect(() => {
@@ -608,7 +641,10 @@ const GameRoom = () => {
     >
       <div
         className="room-terminal-frame mx-auto w-full"
-        style={{ maxWidth: roomViewportLayout.contentMaxWidth }}
+        style={{
+          maxWidth: roomViewportLayout.contentMaxWidth,
+          '--room-terminal-dock-reserve': `${measuredDockReservePx}px`,
+        }}
       >
         <div className="room-terminal-header-stack">
           <TableHeader
@@ -666,6 +702,7 @@ const GameRoom = () => {
                     tableDiameter={tableDiameter}
                     effectiveDisplayMode={effectiveDisplayMode}
                     roomShellLayout={stageShellLayout}
+                    viewportLayout={roomViewportLayout}
                     seatGuides={seatRingEntries}
                     geometryContract={roomGeometryContract}
                     settlementOverlay={
@@ -704,62 +741,61 @@ const GameRoom = () => {
                 </div>
               </>
             ) : (
-              <>
-                <div className="room-shell-grid__stage">
-                  <TableStage
-                    shellView={shellView}
-                    tablePotSummary={tablePotSummary}
-                    tableSizeClassName={tableSizeClassName}
-                    viewportWidth={windowSize.width}
-                    viewportHeight={windowSize.height}
-                    tableDiameter={tableDiameter}
-                    effectiveDisplayMode={effectiveDisplayMode}
-                    roomShellLayout={stageShellLayout}
-                    seatGuides={seatRingEntries}
-                    geometryContract={roomGeometryContract}
-                    settlementOverlay={
-                      <SettlementOverlay
-                        roomState={activeRoomState}
-                        gameState={safeGameState}
-                        currentPlayer={currentPlayer}
-                        currentPlayerId={currentPlayerId}
-                        onReveal={revealHand}
-                        effectiveDisplayMode={effectiveDisplayMode}
-                      />
-                    }
-                    seatRing={
-                      <SeatRing
-                        seats={seatRingEntries}
-                        roomState={activeRoomState}
-                        gameState={safeGameState}
-                        gameStarted={gameStarted}
-                        geometryContract={roomGeometryContract}
-                      />
-                    }
-                  />
-                </div>
-              </>
+              <div className="room-shell-grid__stage">
+                <TableStage
+                  shellView={shellView}
+                  tablePotSummary={tablePotSummary}
+                  tableSizeClassName={tableSizeClassName}
+                  viewportWidth={windowSize.width}
+                  viewportHeight={windowSize.height}
+                  tableDiameter={tableDiameter}
+                  effectiveDisplayMode={effectiveDisplayMode}
+                  roomShellLayout={stageShellLayout}
+                  viewportLayout={roomViewportLayout}
+                  seatGuides={seatRingEntries}
+                  geometryContract={roomGeometryContract}
+                  settlementOverlay={
+                    <SettlementOverlay
+                      roomState={activeRoomState}
+                      gameState={safeGameState}
+                      currentPlayer={currentPlayer}
+                      currentPlayerId={currentPlayerId}
+                      onReveal={revealHand}
+                      effectiveDisplayMode={effectiveDisplayMode}
+                    />
+                  }
+                  seatRing={
+                    <SeatRing
+                      seats={seatRingEntries}
+                      roomState={activeRoomState}
+                      gameState={safeGameState}
+                      gameStarted={gameStarted}
+                      geometryContract={roomGeometryContract}
+                    />
+                  }
+                />
+              </div>
             )}
           </div>
-        </div>
 
-        <div className="room-terminal-dock">
-          <ActionDock
-            currentPlayer={currentPlayer}
-            currentPlayerView={currentPlayerStateView}
-            gameStarted={gameStarted}
-            canStartGame={canStartGame}
-            onStartGame={handleStartGame}
-            gameState={safeGameState}
-            currentPlayerId={currentPlayerId}
-            players={playersList}
-            effectiveDisplayMode={effectiveDisplayMode}
-            roomState={activeRoomState}
-            viewportLayout={roomViewportLayout}
-            shellView={shellView}
-            activeSupportPanel={activeSupportPanel}
-            onToggleSupportPanel={toggleSupportPanel}
-          />
+          <div className="room-terminal-dock" ref={roomDockRef}>
+            <ActionDock
+              currentPlayer={currentPlayer}
+              currentPlayerView={currentPlayerStateView}
+              gameStarted={gameStarted}
+              canStartGame={canStartGame}
+              onStartGame={handleStartGame}
+              gameState={safeGameState}
+              currentPlayerId={currentPlayerId}
+              players={playersList}
+              effectiveDisplayMode={effectiveDisplayMode}
+              roomState={activeRoomState}
+              viewportLayout={roomViewportLayout}
+              shellView={shellView}
+              activeSupportPanel={activeSupportPanel}
+              onToggleSupportPanel={toggleSupportPanel}
+            />
+          </div>
         </div>
 
         {usesSupportPanels && (
