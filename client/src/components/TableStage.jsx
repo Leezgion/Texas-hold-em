@@ -218,7 +218,7 @@ const TableStage = ({
               {shellView.lastActionLabel && (
                 <motion.span
                   key={`last-action-${shellView.lastActionLabel}`}
-                  className="table-stage-beacon__last-action table-stage-beacon__last-action--broadcast-confirmation"
+                  className="table-stage-beacon__last-action"
                   initial={motionProfile.cue.initial}
                   animate={motionProfile.cue.animate}
                   exit={motionProfile.cue.exit}

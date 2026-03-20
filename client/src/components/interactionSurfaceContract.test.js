@@ -42,4 +42,5 @@ test('ActionDock includes restrained broadcast cue hooks', () => {
 test('TableStage includes restrained broadcast cue hooks for turn and settlement surfaces', () => {
   assert.match(tableStageSource, /table-stage-pot-capsule--broadcast-confirmation/);
   assert.match(tableStageSource, /table-stage-beacon__cue--broadcast-turn/);
+  assert.doesNotMatch(tableStageSource, /table-stage-beacon__last-action--broadcast-confirmation/);
 });

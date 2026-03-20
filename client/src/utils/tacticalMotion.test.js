@@ -32,6 +32,24 @@ test('exposes restrained broadcast-tactical visual style fields on desktop termi
   assert.equal(profile.viewportShellStyle, 'restrained-competition');
 });
 
+test('sets restrained broadcast cue timing baselines for desktop tactical surfaces', () => {
+  const profile = buildTacticalMotionProfile('pro', { viewport: 'desktop-terminal' });
+
+  assert.equal(profile.cueTiming.turnEmphasisMs, 2400);
+  assert.equal(profile.cueTiming.plaqueResponseMs, 166);
+  assert.equal(profile.cueTiming.dockCueMs, 213);
+  assert.equal(profile.cueTiming.settlementConfirmMs, 234);
+});
+
+test('caps broadcast cue timing family on phone terminals', () => {
+  const phone = buildTacticalMotionProfile('pro', { viewport: 'phone-terminal' });
+
+  assert.equal(phone.cueTiming.turnEmphasisMs, 900);
+  assert.equal(phone.cueTiming.plaqueResponseMs, 120);
+  assert.equal(phone.cueTiming.dockCueMs, 160);
+  assert.equal(phone.cueTiming.settlementConfirmMs, 180);
+});
+
 test('collapses tactical motion transforms when reduced motion is requested', () => {
   const reduced = buildTacticalMotionProfile('pro', { reducedMotion: true });
 
@@ -45,6 +63,10 @@ test('collapses tactical motion transforms when reduced motion is requested', ()
   assert.equal(reduced.handTape.staggerChildren, 0);
   assert.equal(reduced.durations.enter, 0.01);
   assert.equal(reduced.durations.emphasis, 0.01);
+  assert.equal(reduced.cueTiming.turnEmphasisMs, 10);
+  assert.equal(reduced.cueTiming.plaqueResponseMs, 10);
+  assert.equal(reduced.cueTiming.dockCueMs, 10);
+  assert.equal(reduced.cueTiming.settlementConfirmMs, 10);
 });
 
 test('enforces the stricter phone-terminal motion contract', () => {
