@@ -1,6 +1,7 @@
 import React, { useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
-import useModalSurface from '../hooks/useModalSurface.js';
+import useModalSurface, { resolveModalPortalHost } from '../hooks/useModalSurface.js';
 
 const RoomPanelSheet = ({
   open = false,
@@ -26,7 +27,13 @@ const RoomPanelSheet = ({
     return null;
   }
 
-  return (
+  const portalHost = resolveModalPortalHost();
+
+  if (!portalHost) {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="room-panel-sheet"
       data-room-panel-presentation={presentation}
@@ -63,7 +70,8 @@ const RoomPanelSheet = ({
 
         <div className="room-panel-sheet__body">{children}</div>
       </div>
-    </div>
+    </div>,
+    portalHost
   );
 };
 

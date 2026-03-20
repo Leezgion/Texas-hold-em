@@ -46,6 +46,25 @@ function setRootInteractionState(rootElement, inert = false) {
   }
 }
 
+export function resolveModalPortalHost(
+  documentRef = typeof document !== 'undefined' ? document : null,
+  modalRootId = 'modal-root'
+) {
+  if (!documentRef) {
+    return null;
+  }
+
+  if (typeof documentRef.getElementById === 'function') {
+    const modalRoot = documentRef.getElementById(modalRootId);
+
+    if (modalRoot) {
+      return modalRoot;
+    }
+  }
+
+  return documentRef.body || null;
+}
+
 export function createModalSurfaceController({
   documentRef = typeof document !== 'undefined' ? document : null,
   rootSelector = '#root',

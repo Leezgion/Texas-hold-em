@@ -1,6 +1,7 @@
 import React, { useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
-import useModalSurface from '../hooks/useModalSurface.js';
+import useModalSurface, { resolveModalPortalHost } from '../hooks/useModalSurface.js';
 
 const Modal = ({
   show,
@@ -40,6 +41,11 @@ const Modal = ({
   };
 
   if (!show) return null;
+  const portalHost = resolveModalPortalHost();
+
+  if (!portalHost) {
+    return null;
+  }
 
   const dialogProps = {
     role: 'dialog',
@@ -70,7 +76,7 @@ const Modal = ({
     ) : null;
 
   if (layout === 'scrollable') {
-    return (
+    return createPortal(
       <div
         className="modal-overlay"
         data-modal-surface={surface}
@@ -104,12 +110,13 @@ const Modal = ({
             </div>
           )}
         </div>
-      </div>
+      </div>,
+      portalHost
     );
   }
 
   // 默认布局
-  return (
+  return createPortal(
     <div
       className="modal-overlay"
       data-modal-surface={surface}
@@ -137,7 +144,8 @@ const Modal = ({
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    portalHost
   );
 };
 
