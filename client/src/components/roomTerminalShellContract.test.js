@@ -36,6 +36,7 @@ test('GameRoom keeps the dock inside the single-screen main stage stack', () => 
 
 test('TableHeader and ActionDock consume the terminal layout policies from the viewport helper', () => {
   assert.match(tableHeaderSource, /viewportLayout\?\.headerActionModel/);
+  assert.match(tableHeaderSource, /房间/);
   assert.match(actionDockSource, /data-dock-presentation=\{viewportLayout\?\.dockPresentation\}/);
   assert.match(actionDockSource, /data-hero-dock-style=\{shellView\?\.heroDockStyle\}/);
   assert.match(actionDockSource, /data-hero-dock-density=\{shellView\?\.heroDockDensity\}/);
@@ -43,6 +44,76 @@ test('TableHeader and ActionDock consume the terminal layout policies from the v
   assert.match(tableHeaderSource, /data-stage-spacing=\{shellView\?\.stageSpacing\}/);
   assert.match(tableHeaderSource, /data-support-surface-policy-key=\{viewportLayout\?\.supportSurfacePolicyKey\}/);
   assert.match(actionDockSource, /data-support-surface-policy-key=\{viewportLayout\?\.supportSurfacePolicyKey\}/);
+});
+
+test('TableHeader renders as a thin single-line status spine with badge-like room identity', () => {
+  assert.match(tableHeaderSource, /className="room-terminal-header__spine/);
+  assert.match(tableHeaderSource, /room-terminal-header__track/);
+  assert.match(tableHeaderSource, /room-terminal-header__badge--room-code/);
+  assert.match(tableHeaderSource, /room-terminal-header__badge--mode/);
+  assert.match(tableHeaderSource, /room-terminal-header__badge--state/);
+  assert.match(tableHeaderSource, /room-terminal-header__badge--connection/);
+  assert.match(tableHeaderSource, /room-terminal-header__toolbar/);
+  assert.match(tableHeaderSource, /data-header-action-model=\{viewportLayout\?\.headerActionModel\}/);
+  assert.doesNotMatch(tableHeaderSource, /rounded-\[1\.75rem\]/);
+  assert.doesNotMatch(tableHeaderSource, /shadow-\[0_24px_60px_rgba\(0,0,0,0\.28\)\]/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__spine\s*\{[\s\S]*display:\s*flex;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*space-between;[\s\S]*overflow:\s*hidden;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__track\s*\{[\s\S]*display:\s*flex;[\s\S]*overflow-x:\s*auto;[\s\S]*flex-wrap:\s*nowrap;[\s\S]*white-space:\s*nowrap;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__track::-webkit-scrollbar\s*\{[\s\S]*display:\s*none;/s
+  );
+});
+
+test('TableHeader collapses room identity into a single-line status spine', () => {
+  assert.match(tableHeaderSource, /room-terminal-header__spine/);
+  assert.match(tableHeaderSource, /room-terminal-header__track/);
+  assert.match(tableHeaderSource, /room-terminal-header__toolbar/);
+  assert.match(tableHeaderSource, /room-terminal-header__badge--room-code/);
+  assert.doesNotMatch(tableHeaderSource, /text-2xl/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__spine\s*\{[\s\S]*display:\s*flex;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*space-between;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__track\s*\{[\s\S]*overflow-x:\s*auto;[\s\S]*flex-wrap:\s*nowrap;[\s\S]*white-space:\s*nowrap;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__track::-webkit-scrollbar\s*\{[\s\S]*display:\s*none;/s
+  );
+});
+
+test('ActionDock exposes primary quick actions when header actions collapse into room-sheet-first mode', () => {
+  assert.match(actionDockSource, /const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout\?\.headerActionModel !== 'toolbar'/);
+  assert.match(actionDockSource, /tactical-dock__quick-actions/);
+  assert.match(actionDockSource, /onOpenRebuy/);
+  assert.match(actionDockSource, /onLeaveSeat/);
+  assert.match(actionDockSource, /onShare/);
+  assert.match(actionDockSource, /onLeaveRoom/);
+  assert.match(actionDockSource, /快速操作/);
+});
+
+test('ActionDock collapses waiting-state hero info into a denser strip so the table keeps more visible depth', () => {
+  assert.match(actionDockSource, /const isWaitingDockState = !gameStarted;/);
+  assert.match(actionDockSource, /data-dock-state=\{isWaitingDockState \? 'waiting' : 'live'\}/);
+  assert.match(actionDockSource, /isWaitingDockState \? \(\s*<div className="tactical-dock__waiting-strip">/s);
+  assert.match(actionDockSource, /tactical-dock__waiting-metric/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-dock-state="waiting"\]\s+\.tactical-dock__quick-actions\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.tactical-dock__waiting-strip\s*\{[\s\S]*display:\s*flex;[\s\S]*flex-wrap:\s*wrap;/s
+  );
 });
 
 test('room shell css uses a two-row frame with an overlay dock reserve', () => {
@@ -70,6 +141,14 @@ test('room shell css uses a two-row frame with an overlay dock reserve', () => {
   assert.doesNotMatch(
     globalStylesSource,
     /\.room-terminal-dock--lower-rail-coupled\s*\{[^}]*transform:/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.tactical-dock__hero-stats\s*\{[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.tactical-dock__stat\s*\{[\s\S]*min-width:\s*0;/s
   );
 });
 
