@@ -69,7 +69,10 @@ const CreateRoomModal = () => {
   const selectedModeTheme = getDisplayModeTheme(settings.roomMode);
   const createRoomCopy = selectedModeTheme.createRoom;
   const selectedModeMeta = ROOM_MODE_META[settings.roomMode];
-  const selectedHighlights = selectedModeMeta.highlights || [];
+  const selectedHighlights = (selectedModeMeta.highlights || []).slice(0, 2);
+  const tableSnapshotLabel = `${settings.maxPlayers}人 · 1000筹码 · 10/20`;
+  const ruleSnapshotLabel = settings.allowStraddle ? 'Straddle 开' : 'Straddle 关';
+  const allinSnapshotLabel = `All-in ${settings.allinDealCount}次`;
 
   const footerContent = (
     <div className="create-room-modal__footer-actions">
@@ -149,26 +152,35 @@ const CreateRoomModal = () => {
             </div>
 
             <div className="create-room-modal__mode-sidebar">
-              <div className="create-room-modal__mode-summary">
-                <div className="create-room-modal__mode-summary-label">
-                  {selectedModeMeta.gatewayScene} · {selectedModeMeta.gatewayPersona}
-                </div>
-                <p className="create-room-modal__mode-summary-copy">{selectedModeMeta.detail}</p>
-              </div>
+              <div className="create-room-modal__quick-summary">
+                <div className="create-room-modal__quick-summary-headline">开桌速览</div>
 
-              <div className="create-room-modal__mode-facts">
-                <div className="create-room-modal__mode-fact">
-                  <span className="create-room-modal__mode-fact-label">推荐体验</span>
-                  <span className="create-room-modal__mode-fact-value">{selectedModeMeta.tagline}</span>
-                </div>
-                <div className="create-room-modal__mode-fact">
-                  <span className="create-room-modal__mode-fact-label">信息重点</span>
-                  <div className="create-room-modal__mode-fact-chips">
-                    {selectedHighlights.map((item) => (
-                      <span key={item} className="mode-preview-card__chip">
-                        {item}
-                      </span>
-                    ))}
+                <div className="create-room-modal__summary-grid">
+                  <div className="create-room-modal__summary-stat">
+                    <span className="create-room-modal__summary-stat-label">信息重点</span>
+                    <div className="create-room-modal__summary-stat-chips">
+                      {selectedHighlights.map((item) => (
+                        <span key={item} className="mode-preview-card__chip">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="create-room-modal__summary-stat">
+                    <span className="create-room-modal__summary-stat-label">桌面参数</span>
+                    <div className="create-room-modal__summary-stat-value create-room-modal__summary-stat-value--stacked">
+                      <span>{settings.duration} 分钟</span>
+                      <span>{tableSnapshotLabel}</span>
+                    </div>
+                  </div>
+
+                  <div className="create-room-modal__summary-stat">
+                    <span className="create-room-modal__summary-stat-label">规则状态</span>
+                    <div className="create-room-modal__summary-stat-value create-room-modal__summary-stat-value--stacked">
+                      <span>{ruleSnapshotLabel}</span>
+                      <span>{allinSnapshotLabel}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -206,6 +218,8 @@ const CreateRoomModal = () => {
                 <div className="create-room-modal__field">
                   <label className="form-label">游戏人数</label>
                   <SliderInput
+                    className="create-room-modal__player-count-slider"
+                    density="compact"
                     min={2}
                     max={9}
                     value={settings.maxPlayers}
@@ -219,16 +233,6 @@ const CreateRoomModal = () => {
                     formatValue={(value) => `${value} 人`}
                   />
                 </div>
-              </div>
-
-              <div className="create-room-modal__preset-note">
-                <h4 className="font-semibold text-poker-gold mb-2 text-sm sm:text-base">当前开桌快照</h4>
-                <ul className="text-xs sm:text-sm text-gray-300 space-y-1">
-                  <li>• 房间模式：{selectedModeMeta.title}</li>
-                  <li>• 游戏时长：{settings.duration} 分钟</li>
-                  <li>• 最大人数：{settings.maxPlayers} 人</li>
-                  <li>• 初始筹码：1000，盲注：10 / 20</li>
-                </ul>
               </div>
             </section>
 

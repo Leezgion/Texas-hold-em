@@ -481,7 +481,7 @@
   }
 
   .mode-preview-card--terminal-tile-short {
-    min-height: 7.65rem;
+    min-height: 6.6rem;
   }
 
   .mode-preview-card__tile-head,
@@ -510,7 +510,7 @@
   }
 
   .mode-preview-card--terminal-tile-compact .mode-preview-card__tile-copy {
-    @apply text-[11px] leading-4 text-slate-300 line-clamp-2;
+    @apply text-[11px] leading-4 text-slate-300 line-clamp-1;
   }
 
   .mode-preview-card--terminal-tile-compact .mode-preview-card__chip {
@@ -4742,7 +4742,7 @@
   }
 
   .create-room-modal__body {
-    @apply px-4 py-2 sm:px-5;
+    @apply px-4 py-1.5 sm:px-5;
   }
 
   .create-room-modal__form {
@@ -4808,7 +4808,7 @@
   }
 
   .create-room-modal__quick-summary {
-    @apply grid gap-2 rounded-[1rem] border border-white/10 bg-black/25 p-2.5;
+    @apply grid gap-1.5 rounded-[1rem] border border-white/10 bg-black/25 p-2;
   }
 
   .create-room-modal__quick-summary-headline {
@@ -4820,7 +4820,7 @@
   }
 
   .create-room-modal__summary-grid {
-    @apply grid gap-1.5 md:grid-cols-3;
+    @apply grid gap-1 md:grid-cols-3;
   }
 
   .create-room-modal__summary-stat {
@@ -4860,7 +4860,7 @@
   }
 
   .create-room-modal__section-toggle {
-    @apply flex w-full items-center justify-between gap-3.5 rounded-[1.15rem] border border-white/10 bg-black/20 px-3.5 py-2.5 text-left transition hover:border-amber-400/30 hover:bg-black/30;
+    @apply flex w-full items-center justify-between gap-3 rounded-[1.05rem] border border-white/10 bg-black/20 px-3 py-2 text-left transition hover:border-amber-400/30 hover:bg-black/30;
   }
 
   .create-room-modal__section-toggle-label {
@@ -4888,7 +4888,7 @@
   }
 
   .create-room-modal__footer {
-    @apply px-4 py-2.5 sm:px-5 sm:py-3;
+    @apply px-4 py-2 sm:px-5 sm:py-2.5;
   }
 
   .create-room-modal__footer-actions {
