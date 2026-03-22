@@ -18,7 +18,7 @@ const ActionIconButton = ({ title, onClick, icon: Icon, tone = 'default' }) => {
       title={title}
       className={`room-terminal-header__toolbar-button ${toneClassName}`}
     >
-      <Icon size={18} />
+      <Icon size={16} />
     </button>
   );
 };
@@ -53,7 +53,6 @@ const TableHeader = ({
       <div className="room-terminal-header__content">
         <div className="room-terminal-header__track" aria-label="房间状态">
           <div className="room-terminal-header__badge room-terminal-header__badge--room-code">
-            <span className="room-terminal-header__badge-label">房间</span>
             <span className="room-terminal-header__badge-value room-terminal-header__badge-value--code">
               {shellView.roomCode}
             </span>

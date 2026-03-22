@@ -92,6 +92,43 @@ test('TableHeader collapses room identity into a single-line status spine', () =
   );
 });
 
+test('TableHeader trims room chrome down to a low-profile badge spine', () => {
+  assert.match(tableHeaderSource, /room-terminal-header__badge-value--code/);
+  assert.doesNotMatch(tableHeaderSource, /room-terminal-header__badge-label/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header-stack\s*\{[\s\S]*gap:\s*0\.35rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__spine\s*\{[\s\S]*gap:\s*0\.55rem;[\s\S]*border-radius:\s*0\.95rem;[\s\S]*padding:\s*0\.38rem 0\.65rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__content\s*\{[\s\S]*gap:\s*0\.4rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__track\s*\{[\s\S]*gap:\s*0\.32rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__badge\s*\{[\s\S]*gap:\s*0\.32rem;[\s\S]*padding:\s*0\.34rem 0\.56rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__badge--room-code \.room-terminal-header__badge-value\s*\{[\s\S]*font-size:\s*0\.92rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__badge--mode,\s*\.room-terminal-header__badge--state,\s*\.room-terminal-header__badge--connection\s*\{[\s\S]*font-size:\s*0\.74rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-header__toolbar-button\s*\{[\s\S]*height:\s*2rem;[\s\S]*width:\s*2rem;[\s\S]*border-radius:\s*0\.78rem;/s
+  );
+});
+
 test('ActionDock exposes primary quick actions when header actions collapse into room-sheet-first mode', () => {
   assert.match(actionDockSource, /const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout\?\.headerActionModel !== 'toolbar'/);
   assert.match(
