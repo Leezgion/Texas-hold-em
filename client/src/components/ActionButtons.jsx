@@ -68,14 +68,17 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     resolvedGameState.currentPlayerIndex !== undefined &&
     resolvedGameState.currentPlayerIndex === safePlayers.findIndex((p) => p.id === currentPlayerId);
 
-  const canAct = hasResolvedActionState && isCurrentTurn && !resolvedPlayer.folded && !resolvedPlayer.allIn && !isSubmitting;
-  const canCheck = canAct && resolvedPlayer.currentBet >= resolvedGameState.currentBet;
+  const showsDecisionConsole =
+    hasResolvedActionState && isCurrentTurn && !resolvedPlayer.folded && !resolvedPlayer.allIn;
+  const canAct = showsDecisionConsole && !isSubmitting;
+  const canCheck = showsDecisionConsole && resolvedPlayer.currentBet >= resolvedGameState.currentBet;
   const potSize = resolvedGameState.pot || 0;
   const callAmount = Math.max(0, resolvedGameState.currentBet - resolvedPlayer.currentBet);
   const maxRaiseAmount = Math.max(0, resolvedPlayer.chips - callAmount);
-  const canRaise = canAct && maxRaiseAmount >= resolvedGameState.minRaise;
+  const canRaise = showsDecisionConsole && maxRaiseAmount >= resolvedGameState.minRaise;
   const bigBlind = resolvedGameState.bigBlind || resolvedGameState.minRaise || 20;
   const theme = getDisplayModeTheme(effectiveDisplayMode);
+  const actionConsoleState = !hasResolvedActionState ? 'sync' : showsDecisionConsole ? 'decision' : 'watch';
   const proActionSummary = hasResolvedActionState
     ? deriveProActionSummary({
         currentPlayer: resolvedPlayer,
@@ -193,17 +196,34 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
   if (!hasResolvedActionState) {
     return (
-      <div className="table-action-console table-action-console--inactive">
+      <div
+        className="table-action-console table-action-console--inactive"
+        data-action-console-state={actionConsoleState}
+      >
         <div className="table-action-console__empty-state">等待牌局状态同步</div>
       </div>
     );
   }
 
-  if (!canAct) {
+  if (!showsDecisionConsole) {
+    const watchLabel = resolvedPlayer.folded
+      ? '本手已弃牌'
+      : resolvedPlayer.allIn
+      ? '本手已全下'
+      : '等待其他玩家行动';
+    const watchMeta =
+      resolvedPlayer.folded || resolvedPlayer.allIn
+        ? '继续关注桌面结算与轮转'
+        : `需跟注 ${callAmount.toLocaleString()} · 底池 ${potSize.toLocaleString()}`;
+
     return (
-      <div className="table-action-console table-action-console--inactive">
-        <div className="table-action-console__empty-state">
-          {resolvedPlayer.folded ? '本手已弃牌' : resolvedPlayer.allIn ? '本手已全下' : '等待其他玩家行动'}
+      <div
+        className="table-action-console table-action-console--watch"
+        data-action-console-state={actionConsoleState}
+      >
+        <div className="table-action-console__watch-state">
+          <div className="table-action-console__watch-label">{watchLabel}</div>
+          <div className="table-action-console__watch-meta">{watchMeta}</div>
         </div>
       </div>
     );
@@ -227,6 +247,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       className={`table-action-console ${showRaiseInput ? 'table-action-console--raise-open' : ''} ${
         isSubmitting ? 'table-action-console--submitting' : ''
       }`}
+      data-action-console-state={actionConsoleState}
     >
       {proActionStats.length > 0 && (
         <div
@@ -261,6 +282,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
             onClick={() => handleAction('fold')}
             className={buildActionCommandClass('fold')}
             title="弃牌 (F)"
+            disabled={isSubmitting}
           >
             <span className="table-action-command__label">弃牌</span>
             <span className="table-action-command__meta">放弃本手</span>
@@ -272,6 +294,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
               onClick={() => handleAction('check')}
               className={buildActionCommandClass('check')}
               title="过牌 (C)"
+              disabled={isSubmitting}
             >
               <span className="table-action-command__label">过牌</span>
               <span className="table-action-command__meta">{primaryActionMeta}</span>
@@ -282,6 +305,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
               onClick={() => handleAction('call')}
               className={buildActionCommandClass('call')}
               title={`跟注 ${callAmount} (C)`}
+              disabled={isSubmitting}
             >
               <span className="table-action-command__label">{primaryActionLabel}</span>
               <span className="table-action-command__meta">{primaryActionMeta}</span>
@@ -295,6 +319,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
               className={buildActionCommandClass('raise', showRaiseInput ? 'table-action-command--selected' : '')}
               aria-pressed={showRaiseInput}
               title="加注 (R)"
+              disabled={isSubmitting}
             >
               <span className="table-action-command__label">{raiseLabel}</span>
               <span className="table-action-command__meta">{raiseMeta}</span>
@@ -307,6 +332,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
               onClick={() => handleAction('allin')}
               className={buildActionCommandClass('allin')}
               title={`All-in ${resolvedPlayer.chips} (A)`}
+              disabled={isSubmitting}
             >
               <span className="table-action-command__label">全下</span>
               <span className="table-action-command__meta">{allInMeta}</span>
@@ -338,6 +364,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
                   type="button"
                   onClick={() => handleQuickRaise(raise.amount)}
                   className="table-action-quick"
+                  disabled={isSubmitting}
                 >
                   <span className="table-action-quick__label">{raise.label}</span>
                   <span className="table-action-quick__value">{raise.amount.toLocaleString()}</span>
@@ -374,6 +401,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
                 sliderValue === maxRaiseAmount ? 'allin' : 'confirm',
                 'table-action-command--wide'
               )}
+              disabled={isSubmitting}
             >
               <span className="table-action-command__label">{confirmRaiseLabel}</span>
               <span className="table-action-command__meta">{confirmRaiseMeta}</span>
@@ -386,6 +414,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
                 setSliderValue(alignedMinRaise);
               }}
               className={buildActionCommandClass('cancel', 'table-action-command--wide')}
+              disabled={isSubmitting}
             >
               <span className="table-action-command__label">取消</span>
               <span className="table-action-command__meta">返回主动作区</span>

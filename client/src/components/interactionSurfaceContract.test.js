@@ -65,6 +65,7 @@ test('ActionDock includes restrained broadcast cue hooks', () => {
 
 test('ActionButtons exposes a table-integrated action console instead of utility-only button rows', () => {
   assert.match(actionButtonsSource, /table-action-console/);
+  assert.match(actionButtonsSource, /table-action-console--watch/);
   assert.match(actionButtonsSource, /table-action-console__command-row/);
   assert.match(actionButtonsSource, /buildActionCommandClass\('fold'\)/);
   assert.match(actionButtonsSource, /buildActionCommandClass\('check'\)/);
@@ -74,6 +75,8 @@ test('ActionButtons exposes a table-integrated action console instead of utility
   assert.match(actionButtonsSource, /table-action-console__raise-surface/);
   assert.match(actionButtonsSource, /table-action-console__quick-grid/);
   assert.match(actionButtonsSource, /table-action-console__raise-actions/);
+  assert.match(actionButtonsSource, /data-action-console-state=\{actionConsoleState\}/);
+  assert.match(actionButtonsSource, /table-action-console__watch-state/);
 });
 
 test('PlayerTimer shares the table-action console language', () => {
@@ -109,6 +112,7 @@ test('broadcast tactical css stays aligned with scoped cue usage and phone confi
   assert.match(cssSource, /\.arena-seat-plaque--compact-secondary\s*\{/);
   assert.match(cssSource, /\.arena-seat-plaque__empty-trigger--compact\s*\{/);
   assert.match(cssSource, /\.table-action-console\s*\{/);
+  assert.match(cssSource, /\.table-action-console--watch\s*\{/);
   assert.match(cssSource, /\.table-action-command--fold\s*\{/);
   assert.match(cssSource, /\.table-action-console__raise-surface\s*\{/);
   assert.match(cssSource, /\.table-action-timer__dial\s*\{/);

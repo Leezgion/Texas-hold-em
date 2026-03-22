@@ -113,8 +113,11 @@ test('ActionDock exposes primary quick actions when header actions collapse into
 
 test('ActionDock collapses waiting-state hero info into a denser strip so the table keeps more visible depth', () => {
   assert.match(actionDockSource, /const isWaitingDockState = !gameStarted;/);
+  assert.match(actionDockSource, /const heroPanelLayout = isWaitingDockState \? 'waiting-strip' : 'live-ribbon';/);
   assert.match(actionDockSource, /data-dock-state=\{isWaitingDockState \? 'waiting' : 'live'\}/);
+  assert.match(actionDockSource, /data-hero-panel-layout=\{heroPanelLayout\}/);
   assert.match(actionDockSource, /isWaitingDockState \? \(\s*<div className="tactical-dock__waiting-strip">/s);
+  assert.match(actionDockSource, /: \(\s*<>\s*<div className="tactical-dock__hero-ribbon">/s);
   assert.match(actionDockSource, /tactical-dock__waiting-metric/);
   assert.match(
     globalStylesSource,
@@ -123,6 +126,14 @@ test('ActionDock collapses waiting-state hero info into a denser strip so the ta
   assert.match(
     globalStylesSource,
     /\.tactical-dock__waiting-strip\s*\{[\s\S]*display:\s*flex;[\s\S]*flex-wrap:\s*wrap;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-dock-state="live"\]\[data-hero-panel-layout="live-ribbon"\]\s+\.tactical-dock__hero-panel\s*\{[\s\S]*padding:\s*0\.58rem 0\.72rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.tactical-dock__hero-ribbon\s*\{[\s\S]*display:\s*flex;[\s\S]*flex-wrap:\s*wrap;/s
   );
 });
 
@@ -220,7 +231,7 @@ test('ActionButtons fail-closes when player or gameState is temporarily unavaila
   );
   assert.match(
     actionButtonsSource,
-    /const hasResolvedActionState = Boolean\(player && gameState\);[\s\S]*useKeyboardShortcuts\(\{[\s\S]*\}\);\s*if \(!hasResolvedActionState\) \{\s*return \(\s*<div className="table-action-console table-action-console--inactive">[\s\S]*等待牌局状态同步[\s\S]*\);\s*\}/s
+    /const hasResolvedActionState = Boolean\(player && gameState\);[\s\S]*useKeyboardShortcuts\(\{[\s\S]*\}\);\s*if \(!hasResolvedActionState\) \{\s*return \(\s*<div[\s\S]*className="table-action-console table-action-console--inactive"[\s\S]*data-action-console-state=\{actionConsoleState\}[\s\S]*等待牌局状态同步[\s\S]*\);\s*\}/s
   );
 });
 
@@ -236,5 +247,16 @@ test('phone-terminal live hand collapses the dock stack back toward the table', 
   assert.match(
     globalStylesSource,
     /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__command-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
+  );
+});
+
+test('desktop live ribbon aligns timer and primary commands into a single decision strip', () => {
+  assert.match(
+    globalStylesSource,
+    /@media \(min-width: 1280px\) \{[\s\S]*\.room-terminal-dock-panel\[data-dock-state="live"\]\[data-hero-panel-layout="live-ribbon"\]\s+\.tactical-dock__center\s*\{[\s\S]*gap:\s*0\.45rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(min-width: 1280px\) \{[\s\S]*\.room-terminal-dock-panel\[data-dock-state="live"\]\[data-hero-panel-layout="live-ribbon"\]\s+\.table-action-console\[data-action-console-state="decision"\]\s+\.table-action-console__main\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0,\s*1fr\);/s
   );
 });

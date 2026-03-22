@@ -64,6 +64,7 @@ const ActionDock = ({
     showsPrimaryQuickActions && !(gameStarted && viewportLayout?.viewportModel === 'phone-terminal');
   const showsApronRail = showsPrimaryQuickActions || supportsSecondaryPanels;
   const dockLayout = !showsDecisionCenter && showsApronRail ? 'waiting-apron' : showsApronRail ? 'decision-apron' : 'core-only';
+  const heroPanelLayout = isWaitingDockState ? 'waiting-strip' : 'live-ribbon';
   const handCardSize = viewportLayout?.viewportModel === 'phone-terminal' ? 'small' : 'large';
   const quickActions = [
     canRequestRebuy && typeof onOpenRebuy === 'function'
@@ -95,23 +96,24 @@ const ActionDock = ({
       data-header-density={viewportLayout?.headerDensity}
       data-dock-state={isWaitingDockState ? 'waiting' : 'live'}
       data-dock-layout={dockLayout}
+      data-hero-panel-layout={heroPanelLayout}
       data-has-center-stage={showsDecisionCenter ? 'true' : 'false'}
     >
       <div className="tactical-dock__grid">
         <div className="min-w-0 tactical-dock__hero-column">
-          <div className="poker-shell-kicker">{roomCopy.actionTitle}</div>
+          {isWaitingDockState ? <div className="poker-shell-kicker">{roomCopy.actionTitle}</div> : null}
 
           <motion.div
-            className="tactical-dock__hero-panel tactical-dock__hero-panel--broadcast-cue"
+            className={`tactical-dock__hero-panel tactical-dock__hero-panel--broadcast-cue tactical-dock__hero-panel--${heroPanelLayout}`}
             initial={motionProfile.stage.initial}
             animate={motionProfile.stage.animate}
             transition={motionProfile.stage.transition}
           >
             <div className="tactical-dock__hero-header">
               <div className="min-w-0">
-                <div className="truncate text-xl font-semibold text-white">{dockView.heroName}</div>
+                <div className="tactical-dock__hero-name">{dockView.heroName}</div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="tactical-dock__hero-badges">
                 {dockView.seatLabel && <span className="tactical-dock__chip">{dockView.seatLabel}</span>}
                 {dockView.positionLabel && <span className="tactical-dock__chip">{dockView.positionLabel}</span>}
                 {dockView.isHost && <span className="tactical-dock__chip tactical-dock__chip--accent">房主</span>}
@@ -134,44 +136,47 @@ const ActionDock = ({
                 </div>
               </div>
             ) : (
-              <div className="tactical-dock__hero-stats">
-                <div className="tactical-dock__stat">
-                  <span className="tactical-dock__stat-label">筹码</span>
-                  <span className="tactical-dock__stat-value">{dockView.chipsLabel}</span>
+              <>
+                <div className="tactical-dock__hero-ribbon">
+                  <div className="tactical-dock__hero-metric-chip">
+                    <span className="tactical-dock__hero-metric-label">筹码</span>
+                    <span className="tactical-dock__hero-metric-value">{dockView.chipsLabel}</span>
+                  </div>
+                  <div className="tactical-dock__hero-metric-chip">
+                    <span className="tactical-dock__hero-metric-label">下注</span>
+                    <span className="tactical-dock__hero-metric-value">{dockView.betLabel}</span>
+                  </div>
+                  <div className="tactical-dock__hero-metric-chip">
+                    <span className="tactical-dock__hero-metric-label">净额</span>
+                    <span className="tactical-dock__hero-metric-value">{dockView.netLabel}</span>
+                  </div>
+                  <div className="tactical-dock__hero-metric-chip tactical-dock__hero-metric-chip--status">
+                    <span className="tactical-dock__hero-metric-value">{dockView.statusLabel}</span>
+                  </div>
+                  <AnimatePresence initial={false} mode="wait">
+                    {dockView.turnContextLabel && (
+                      <motion.span
+                        key={dockView.turnContextLabel}
+                        className="tactical-dock__chip tactical-dock__turn-chip tactical-dock__turn-chip--broadcast-cue"
+                        initial={motionProfile.turnChip.initial}
+                        animate={motionProfile.turnChip.animate}
+                        exit={motionProfile.turnChip.exit}
+                        transition={motionProfile.turnChip.transition}
+                      >
+                        {dockView.turnContextLabel}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </div>
-                <div className="tactical-dock__stat">
-                  <span className="tactical-dock__stat-label">下注</span>
-                  <span className="tactical-dock__stat-value">{dockView.betLabel}</span>
-                </div>
-                <div className="tactical-dock__stat">
-                  <span className="tactical-dock__stat-label">净额</span>
-                  <span className="tactical-dock__stat-value">{dockView.netLabel}</span>
-                </div>
-              </div>
-            )}
 
-            <div className="tactical-dock__status-row">
-              <span className="tactical-dock__status">{dockView.statusLabel}</span>
-              <AnimatePresence initial={false} mode="wait">
-                {dockView.turnContextLabel && (
-                  <motion.span
-                    key={dockView.turnContextLabel}
-                    className="tactical-dock__chip tactical-dock__turn-chip tactical-dock__turn-chip--broadcast-cue"
-                    initial={motionProfile.turnChip.initial}
-                    animate={motionProfile.turnChip.animate}
-                    exit={motionProfile.turnChip.exit}
-                    transition={motionProfile.turnChip.transition}
-                  >
-                    {dockView.turnContextLabel}
-                  </motion.span>
+                {dockView.actionSummary && (
+                  <div className="tactical-dock__hero-meta-strip">
+                    <span>需跟注 {dockView.actionSummary.toCall.toLocaleString()}</span>
+                    <span>底池 {dockView.actionSummary.pot.toLocaleString()}</span>
+                  </div>
                 )}
-              </AnimatePresence>
-              {dockView.actionSummary && (
-                <span className="tactical-dock__status-meta">
-                  需跟注 {dockView.actionSummary.toCall.toLocaleString()} · 底池 {dockView.actionSummary.pot.toLocaleString()}
-                </span>
-              )}
-            </div>
+              </>
+            )}
           </motion.div>
         </div>
 
