@@ -101,8 +101,6 @@ const ActionDock = ({
     >
       <div className="tactical-dock__grid">
         <div className="min-w-0 tactical-dock__hero-column">
-          {isWaitingDockState ? <div className="poker-shell-kicker">{roomCopy.actionTitle}</div> : null}
-
           <motion.div
             className={`tactical-dock__hero-panel tactical-dock__hero-panel--broadcast-cue tactical-dock__hero-panel--${heroPanelLayout}`}
             initial={motionProfile.stage.initial}

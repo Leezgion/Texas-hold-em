@@ -77,6 +77,8 @@ test('ActionButtons exposes a table-integrated action console instead of utility
   assert.match(actionButtonsSource, /table-action-console__raise-actions/);
   assert.match(actionButtonsSource, /data-action-console-state=\{actionConsoleState\}/);
   assert.match(actionButtonsSource, /table-action-console__watch-state/);
+  assert.match(actionButtonsSource, /table-action-command__label/);
+  assert.match(actionButtonsSource, /table-action-command__meta/);
 });
 
 test('PlayerTimer shares the table-action console language', () => {
@@ -113,7 +115,9 @@ test('broadcast tactical css stays aligned with scoped cue usage and phone confi
   assert.match(cssSource, /\.arena-seat-plaque__empty-trigger--compact\s*\{/);
   assert.match(cssSource, /\.table-action-console\s*\{/);
   assert.match(cssSource, /\.table-action-console--watch\s*\{/);
+  assert.match(cssSource, /\.table-action-console__command-row\s*\{[\s\S]*gap:\s*0\.42rem;/);
   assert.match(cssSource, /\.table-action-command--fold\s*\{/);
+  assert.match(cssSource, /\.table-action-command\s*\{[\s\S]*min-height:\s*3\.65rem;[\s\S]*justify-content:\s*space-between;[\s\S]*border-radius:\s*1\.12rem;[\s\S]*padding:\s*0\.62rem 0\.72rem;/);
   assert.match(cssSource, /\.table-action-console__raise-surface\s*\{/);
   assert.match(cssSource, /\.table-action-timer__dial\s*\{/);
 });

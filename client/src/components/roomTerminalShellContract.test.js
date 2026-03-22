@@ -153,6 +153,7 @@ test('ActionDock collapses waiting-state hero info into a denser strip so the ta
   assert.match(actionDockSource, /const heroPanelLayout = isWaitingDockState \? 'waiting-strip' : 'live-ribbon';/);
   assert.match(actionDockSource, /data-dock-state=\{isWaitingDockState \? 'waiting' : 'live'\}/);
   assert.match(actionDockSource, /data-hero-panel-layout=\{heroPanelLayout\}/);
+  assert.doesNotMatch(actionDockSource, /roomCopy\.actionTitle/);
   assert.match(actionDockSource, /isWaitingDockState \? \(\s*<div className="tactical-dock__waiting-strip">/s);
   assert.match(actionDockSource, /: \(\s*<>\s*<div className="tactical-dock__hero-ribbon">/s);
   assert.match(actionDockSource, /tactical-dock__waiting-metric/);
@@ -162,7 +163,11 @@ test('ActionDock collapses waiting-state hero info into a denser strip so the ta
   );
   assert.match(
     globalStylesSource,
-    /\.tactical-dock__waiting-strip\s*\{[\s\S]*display:\s*flex;[\s\S]*flex-wrap:\s*wrap;/s
+    /\.tactical-dock__waiting-strip\s*\{[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);[\s\S]*gap:\s*0\.35rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-dock-state="waiting"\]\s+\.tactical-dock__hero-panel\s*\{[\s\S]*margin-top:\s*0;[\s\S]*padding:\s*0\.56rem 0\.62rem;[\s\S]*border-radius:\s*1\.12rem;/s
   );
   assert.match(
     globalStylesSource,
@@ -280,7 +285,7 @@ test('ActionButtons preserves 44px touch targets for primary and commit actions'
     actionButtonsSource,
     /className=\{buildActionCommandClass\('cancel', 'table-action-command--wide'\)\}/
   );
-  assert.match(globalStylesSource, /\.table-action-command\s*\{[\s\S]*min-height:\s*4rem;/s);
+  assert.match(globalStylesSource, /\.table-action-command\s*\{[\s\S]*min-height:\s*3\.65rem;/s);
 });
 
 test('ActionDock keeps the live-hand action frame wired to ActionButtons', () => {

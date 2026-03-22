@@ -2684,9 +2684,9 @@
 
   .tactical-dock__waiting-strip {
     margin-top: 0.55rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
   }
 
   .tactical-dock__waiting-metric {
@@ -3007,23 +3007,23 @@
   .table-action-console__command-row {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.55rem;
+    gap: 0.42rem;
   }
 
   .table-action-command {
-    min-height: 4rem;
+    min-height: 3.65rem;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     align-items: flex-start;
     gap: 0.18rem;
-    border-radius: 1rem;
+    border-radius: 1.12rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background:
       linear-gradient(180deg, rgba(10, 17, 32, 0.96), rgba(3, 7, 18, 0.92)),
       radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 70%);
-    padding: 0.72rem 0.84rem;
+    padding: 0.62rem 0.72rem;
     text-align: left;
     transition:
       transform 160ms ease,
@@ -3405,8 +3405,9 @@
   }
 
   .room-terminal-dock-panel[data-dock-state="waiting"] .tactical-dock__hero-panel {
-    margin-top: 0.32rem;
-    padding: 0.62rem;
+    margin-top: 0;
+    padding: 0.56rem 0.62rem;
+    border-radius: 1.12rem;
   }
 
   .room-terminal-dock-panel[data-dock-state="waiting"] .tactical-dock__status-row {
