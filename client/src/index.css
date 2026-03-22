@@ -2481,11 +2481,22 @@
     min-width: 0;
   }
 
+  .tactical-dock__decision-cockpit {
+    display: grid;
+    gap: 0.4rem;
+  }
+
   .tactical-dock__apron-rail {
     display: grid;
     gap: 0.65rem;
     align-content: end;
     min-width: 0;
+  }
+
+  .tactical-dock__utility-ribbon {
+    display: grid;
+    gap: 0.5rem;
+    align-content: end;
   }
 
   .room-terminal-dock-panel[data-stage-density="compressed"] .tactical-dock__grid {
@@ -3418,6 +3429,10 @@
     gap: 0.5rem;
   }
 
+  .room-terminal-dock-panel[data-dock-state="live"][data-hero-panel-layout="live-ribbon"] .tactical-dock__decision-cockpit {
+    gap: 0.28rem;
+  }
+
   .room-terminal-dock-panel[data-dock-state="live"][data-hero-panel-layout="live-ribbon"] .tactical-dock__hero-panel {
     margin-top: 0;
     padding: 0.58rem 0.72rem;
@@ -3450,9 +3465,13 @@
     font-size: 0.64rem;
   }
 
-  .room-terminal-dock-panel[data-dock-state="live"][data-hero-panel-layout="live-ribbon"] .tactical-dock__action-frame {
-    padding: 0.72rem;
-    border-radius: 1.1rem;
+    .room-terminal-dock-panel[data-dock-state="live"][data-hero-panel-layout="live-ribbon"] .tactical-dock__action-frame {
+      padding: 0.64rem;
+      border-radius: 0.98rem;
+    }
+
+  .room-terminal-dock-panel[data-dock-state="live"][data-hero-panel-layout="live-ribbon"] .tactical-dock__quick-actions-block .poker-shell-kicker {
+    display: none;
   }
 
   .room-terminal-dock-panel[data-dock-state="live"][data-hero-panel-layout="live-ribbon"] .table-action-console--watch .table-action-console__watch-state {
@@ -4148,7 +4167,7 @@
     }
 
     .room-terminal-dock-panel[data-dock-layout="decision-apron"] .tactical-dock__grid {
-      grid-template-columns: minmax(0, 0.82fr) minmax(19rem, 1.08fr) minmax(18rem, 0.78fr);
+      grid-template-columns: minmax(0, 0.78fr) minmax(21rem, 1.18fr) minmax(14rem, 0.54fr);
       align-items: end;
     }
 
@@ -4162,7 +4181,8 @@
     }
 
     .room-terminal-dock-panel[data-dock-state="live"][data-hero-panel-layout="live-ribbon"] .tactical-dock__cards {
-      gap: 0.42rem;
+      gap: 0.3rem;
+      margin-bottom: -0.06rem;
     }
 
     .room-terminal-dock-panel[data-dock-state="live"][data-hero-panel-layout="live-ribbon"] .table-action-console[data-action-console-state="decision"] {

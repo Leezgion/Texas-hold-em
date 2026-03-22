@@ -174,6 +174,39 @@ test('ActionDock collapses waiting-state hero info into a denser strip so the ta
   );
 });
 
+test('ActionDock couples live cards and commands into a tighter table-apron decision cockpit', () => {
+  assert.match(actionDockSource, /className="tactical-dock__decision-cockpit"/);
+  assert.match(actionDockSource, /className="tactical-dock__utility-ribbon"/);
+  assert.match(
+    globalStylesSource,
+    /\.tactical-dock__decision-cockpit\s*\{[\s\S]*display:\s*grid;[\s\S]*gap:\s*0\.4rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.tactical-dock__utility-ribbon\s*\{[\s\S]*display:\s*grid;[\s\S]*gap:\s*0\.5rem;[\s\S]*align-content:\s*end;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(min-width: 1280px\) \{[\s\S]*\.room-terminal-dock-panel\[data-dock-layout="decision-apron"\]\s+\.tactical-dock__grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*0\.78fr\)\s*minmax\(21rem,\s*1\.18fr\)\s*minmax\(14rem,\s*0\.54fr\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-dock-state="live"\]\[data-hero-panel-layout="live-ribbon"\]\s+\.tactical-dock__decision-cockpit\s*\{[\s\S]*gap:\s*0\.28rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-dock-state="live"\]\[data-hero-panel-layout="live-ribbon"\]\s+\.tactical-dock__cards\s*\{[\s\S]*gap:\s*0\.3rem;[\s\S]*margin-bottom:\s*-0\.06rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-dock-state="live"\]\[data-hero-panel-layout="live-ribbon"\]\s+\.tactical-dock__action-frame\s*\{[\s\S]*padding:\s*0\.64rem;[\s\S]*border-radius:\s*0\.98rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-dock-state="live"\]\[data-hero-panel-layout="live-ribbon"\]\s+\.tactical-dock__quick-actions-block \.poker-shell-kicker\s*\{\s*display:\s*none;/s
+  );
+});
+
 test('room shell css uses a two-row frame with an overlay dock reserve', () => {
   assert.match(globalStylesSource, /\.room-terminal-frame\s*\{[\s\S]*grid-template-rows:\s*auto minmax\(0, 1fr\);/s);
   assert.match(

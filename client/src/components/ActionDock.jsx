@@ -79,7 +79,7 @@ const ActionDock = ({
 
   return (
     <section
-      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock tactical-dock--broadcast-cue tactical-dock--table-apron rounded-[1.45rem] px-3 py-3"
+      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock tactical-dock--broadcast-cue tactical-dock--table-apron rounded-[1.35rem] px-2.5 py-2.5 sm:px-3"
       data-viewport-model={viewportLayout?.viewportModel}
       data-height-class={viewportLayout?.heightClass}
       data-stage-density={viewportLayout?.stageDensity}
@@ -182,83 +182,87 @@ const ActionDock = ({
 
         {showsDecisionCenter ? (
           <div className="tactical-dock__center">
-            {gameStarted && handCards.length > 0 && (
-              <div className="tactical-dock__cards">
-                {handCards.map((card, index) => (
-                  <Card key={index} card={card} size={handCardSize} />
-                ))}
-              </div>
-            )}
+            <div className="tactical-dock__decision-cockpit">
+              {gameStarted && handCards.length > 0 && (
+                <div className="tactical-dock__cards">
+                  {handCards.map((card, index) => (
+                    <Card key={index} card={card} size={handCardSize} />
+                  ))}
+                </div>
+              )}
 
-            {dockView.startButtonLabel && (
-              <button
-                type="button"
-                onClick={onStartGame}
-                className="mode-primary-button w-auto min-w-[12rem] px-6 py-3 text-base"
-              >
-                {roomCopy.startButtonLabel || dockView.startButtonLabel}
-              </button>
-            )}
+              {dockView.startButtonLabel && (
+                <button
+                  type="button"
+                  onClick={onStartGame}
+                  className="mode-primary-button w-auto min-w-[12rem] px-6 py-3 text-base"
+                >
+                  {roomCopy.startButtonLabel || dockView.startButtonLabel}
+                </button>
+              )}
 
-            {gameStarted && (
-              <motion.div
-                className="tactical-dock__action-frame tactical-dock__action-frame--table-console"
-                initial={motionProfile.stage.initial}
-                animate={motionProfile.stage.animate}
-                transition={motionProfile.stage.transition}
-              >
-                <ActionButtons
-                  player={currentPlayer}
-                  gameState={gameState}
-                  currentPlayerId={currentPlayerId}
-                  players={players}
-                  effectiveDisplayMode={effectiveDisplayMode}
-                />
-              </motion.div>
-            )}
+              {gameStarted && (
+                <motion.div
+                  className="tactical-dock__action-frame tactical-dock__action-frame--table-console"
+                  initial={motionProfile.stage.initial}
+                  animate={motionProfile.stage.animate}
+                  transition={motionProfile.stage.transition}
+                >
+                  <ActionButtons
+                    player={currentPlayer}
+                    gameState={gameState}
+                    currentPlayerId={currentPlayerId}
+                    players={players}
+                    effectiveDisplayMode={effectiveDisplayMode}
+                  />
+                </motion.div>
+              )}
+            </div>
           </div>
         ) : null}
 
         {showsApronRail ? (
           <div className="tactical-dock__apron-rail">
-            {showsInlineQuickActions && quickActions.length > 0 ? (
-              <div className="tactical-dock__quick-actions-block">
-                <div className="poker-shell-kicker">快速操作</div>
-                <div className="tactical-dock__quick-actions">
-                  {quickActions.map((item) => (
+            <div className="tactical-dock__utility-ribbon">
+              {showsInlineQuickActions && quickActions.length > 0 ? (
+                <div className="tactical-dock__quick-actions-block">
+                  <div className="poker-shell-kicker">快速操作</div>
+                  <div className="tactical-dock__quick-actions">
+                    {quickActions.map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        className={`tactical-dock__quick-action tactical-dock__quick-action--${item.tone}`}
+                        onClick={item.onClick}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {supportsSecondaryPanels ? (
+                <div className="room-support-launcher">
+                  {[
+                    { key: 'players', label: supportLabels.players || '成员' },
+                    { key: 'history', label: supportLabels.history || '牌局' },
+                    { key: 'room', label: supportLabels.room || '房间' },
+                  ].map((item) => (
                     <button
                       key={item.key}
                       type="button"
-                      className={`tactical-dock__quick-action tactical-dock__quick-action--${item.tone}`}
-                      onClick={item.onClick}
+                      className={`room-support-launcher__button ${
+                        activeSupportPanel === item.key ? 'room-support-launcher__button--active' : ''
+                      }`}
+                      onClick={() => onToggleSupportPanel(item.key)}
                     >
                       {item.label}
                     </button>
                   ))}
                 </div>
-              </div>
-            ) : null}
-
-            {supportsSecondaryPanels ? (
-              <div className="room-support-launcher">
-                {[
-                  { key: 'players', label: supportLabels.players || '成员' },
-                  { key: 'history', label: supportLabels.history || '牌局' },
-                  { key: 'room', label: supportLabels.room || '房间' },
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    className={`room-support-launcher__button ${
-                      activeSupportPanel === item.key ? 'room-support-launcher__button--active' : ''
-                    }`}
-                    onClick={() => onToggleSupportPanel(item.key)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
         ) : null}
       </div>
