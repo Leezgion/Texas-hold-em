@@ -258,10 +258,10 @@ const GameRoom = () => {
   });
   const isTableCoupledHeroDock = shellView.heroDockStyle === 'table-coupled-terminal';
   const roomTerminalMainClassName = isTableCoupledHeroDock
-    ? 'room-terminal-main room-terminal-main--table-coupled'
+    ? 'room-terminal-main room-terminal-main--table-apron'
     : 'room-terminal-main';
   const roomTerminalDockClassName = isTableCoupledHeroDock
-    ? 'room-terminal-dock room-terminal-dock--lower-rail-coupled'
+    ? 'room-terminal-dock room-terminal-dock--table-apron'
     : 'room-terminal-dock';
   const intelRailView = deriveIntelRailView({
     roomState: activeRoomState,
@@ -617,10 +617,12 @@ const GameRoom = () => {
   const seatRingEntries = deriveSeatRingView({
     players: playersList,
     maxPlayers,
+    visualSeatCount: roomGeometryContract.visualSeatCount,
     currentPlayerId,
     roomState: activeRoomState,
     gameState: safeGameState,
     canonicalSlots: roomGeometryContract.canonicalSlots,
+    roomSeatSlotIds: roomGeometryContract.roomSeatSlotIds,
   }).map((seat) => {
     const isCurrentTurn = Boolean(seat.player && currentTurnPlayer && seat.player.id === currentTurnPlayer.id);
 
@@ -738,6 +740,7 @@ const GameRoom = () => {
                         gameState={safeGameState}
                         gameStarted={gameStarted}
                         geometryContract={roomGeometryContract}
+                        hideHeroSeat={isTableCoupledHeroDock}
                       />
                     }
                   />
@@ -788,6 +791,7 @@ const GameRoom = () => {
                       gameState={safeGameState}
                       gameStarted={gameStarted}
                       geometryContract={roomGeometryContract}
+                      hideHeroSeat={isTableCoupledHeroDock}
                     />
                   }
                 />
@@ -802,6 +806,12 @@ const GameRoom = () => {
               gameStarted={gameStarted}
               canStartGame={canStartGame}
               onStartGame={handleStartGame}
+              canLeaveSeat={Boolean(currentPlayerStateView?.canLeaveSeat)}
+              canRequestRebuy={Boolean(currentPlayerStateView?.canRequestRebuy)}
+              onOpenRebuy={() => setShowRebuy(true)}
+              onLeaveSeat={handleLeaveSeat}
+              onShare={() => setShowShareLink(true)}
+              onLeaveRoom={handleExitRoom}
               gameState={safeGameState}
               currentPlayerId={currentPlayerId}
               players={playersList}
@@ -861,14 +871,14 @@ const GameRoom = () => {
 
             <RoomPanelSheet
               open={activeSupportPanel === 'room'}
-              title={supportLabels.room || 'Room'}
-              subtitle={`${shellView.modeLabel} · ${shellView.modeTitle}`}
+              title={supportLabels.room || '房间'}
+              subtitle={shellView.modeTitle}
               presentation={supportPanelPresentation}
               onClose={closeSupportPanel}
             >
               <div className="room-tool-panel">
                 <section className="room-tool-panel__section">
-                  <div className="room-tool-panel__kicker">Room State</div>
+                  <div className="room-tool-panel__kicker">牌桌状态</div>
                   <div className="room-tool-panel__headline">{shellView.roomStateLabel}</div>
                   <div className="room-tool-panel__copy">
                     {shellView.connectedLabel} · {intelRailView.occupancyLabel} 在桌
@@ -895,7 +905,7 @@ const GameRoom = () => {
                 </section>
 
                 <section className="room-tool-panel__section">
-                  <div className="room-tool-panel__kicker">Tools</div>
+                  <div className="room-tool-panel__kicker">房间操作</div>
                   <div className="room-tool-panel__actions">
                     <button
                       type="button"

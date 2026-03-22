@@ -2,8 +2,9 @@ import React from 'react';
 
 import SeatCard from './SeatCard';
 
-const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContract = null }) => {
+const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContract = null, hideHeroSeat = false }) => {
   const tableProfile = geometryContract?.tableSurfaceLayout?.profile || seats[0]?.position?.profile || 'desktop-oval';
+  const visibleSeats = hideHeroSeat ? seats.filter((seat) => seat.anchorRole !== 'hero') : seats;
 
   return (
     <div
@@ -11,7 +12,7 @@ const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContr
       data-table-profile={tableProfile}
       data-seat-visual-role="embedded-plaque"
     >
-      {seats.map((seat) => (
+      {visibleSeats.map((seat) => (
         <SeatCard
           key={seat.anchorSlotId || `seat-${seat.seatIndex}`}
           seat={seat}

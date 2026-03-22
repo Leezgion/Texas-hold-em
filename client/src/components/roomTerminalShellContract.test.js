@@ -20,14 +20,15 @@ test('GameRoom keeps the dock inside the single-screen main stage stack', () => 
   assert.match(gameRoomSource, /const isTableCoupledHeroDock = shellView\.heroDockStyle === 'table-coupled-terminal'/);
   assert.match(
     gameRoomSource,
-    /const roomTerminalMainClassName = isTableCoupledHeroDock\s*\?\s*'room-terminal-main room-terminal-main--table-coupled'\s*:\s*'room-terminal-main';/
+    /const roomTerminalMainClassName = isTableCoupledHeroDock\s*\?\s*'room-terminal-main room-terminal-main--table-apron'\s*:\s*'room-terminal-main';/
   );
   assert.match(
     gameRoomSource,
-    /const roomTerminalDockClassName = isTableCoupledHeroDock\s*\?\s*'room-terminal-dock room-terminal-dock--lower-rail-coupled'\s*:\s*'room-terminal-dock';/
+    /const roomTerminalDockClassName = isTableCoupledHeroDock\s*\?\s*'room-terminal-dock room-terminal-dock--table-apron'\s*:\s*'room-terminal-dock';/
   );
   assert.match(gameRoomSource, /data-support-surface-policy-key=\{roomViewportLayout\.supportSurfacePolicyKey\}/);
   assert.match(gameRoomSource, /data-room-touch-scroll-model=\{/);
+  assert.match(gameRoomSource, /hideHeroSeat=\{isTableCoupledHeroDock\}/);
   assert.match(
     gameRoomSource,
     /<div className=\{roomTerminalMainClassName\}>[\s\S]*className=\{roomShellGridClassName\}[\s\S]*<div className=\{roomTerminalDockClassName\}[^>]*ref=\{roomDockRef\}[^>]*>[\s\S]*<\/div>[\s\S]*<\/div>/s
@@ -93,6 +94,11 @@ test('TableHeader collapses room identity into a single-line status spine', () =
 
 test('ActionDock exposes primary quick actions when header actions collapse into room-sheet-first mode', () => {
   assert.match(actionDockSource, /const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout\?\.headerActionModel !== 'toolbar'/);
+  assert.match(actionDockSource, /const showsApronRail = showsPrimaryQuickActions \|\| supportsSecondaryPanels;/);
+  assert.match(actionDockSource, /const dockLayout = !showsDecisionCenter && showsApronRail \? 'waiting-apron' : showsApronRail \? 'decision-apron' : 'core-only';/);
+  assert.match(actionDockSource, /tactical-dock--table-apron/);
+  assert.match(actionDockSource, /tactical-dock__apron-rail/);
+  assert.match(actionDockSource, /data-dock-layout=\{dockLayout\}/);
   assert.match(actionDockSource, /tactical-dock__quick-actions/);
   assert.match(actionDockSource, /onOpenRebuy/);
   assert.match(actionDockSource, /onLeaveSeat/);
@@ -128,19 +134,19 @@ test('room shell css uses a two-row frame with an overlay dock reserve', () => {
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-main--table-coupled::after\s*\{[\s\S]*bottom:\s*max\(0px,\s*calc\(var\(--room-terminal-dock-reserve,\s*0px\)\s*-\s*1rem\)\);/s
+    /\.room-terminal-main--table-apron::after\s*\{[\s\S]*bottom:\s*max\(0px,\s*calc\(var\(--room-terminal-dock-reserve,\s*0px\)\s*-\s*0\.7rem\)\);/s
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-dock--lower-rail-coupled\s*>\s*\.tactical-dock\s*\{[\s\S]*border-top:\s*1px solid/s
+    /\.room-terminal-dock--table-apron\s*>\s*\.tactical-dock\s*\{[\s\S]*border-top:\s*1px solid/s
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-dock--lower-rail-coupled\s*\{[^}]*bottom:\s*0\.15rem;/s
+    /\.room-terminal-dock--table-apron\s*\{[^}]*bottom:\s*0;/s
   );
   assert.doesNotMatch(
     globalStylesSource,
-    /\.room-terminal-dock--lower-rail-coupled\s*\{[^}]*transform:/s
+    /\.room-terminal-dock--table-apron\s*\{[^}]*transform:/s
   );
   assert.match(
     globalStylesSource,
@@ -149,6 +155,14 @@ test('room shell css uses a two-row frame with an overlay dock reserve', () => {
   assert.match(
     globalStylesSource,
     /\.tactical-dock__stat\s*\{[\s\S]*min-width:\s*0;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.tactical-dock__apron-rail\s*\{[\s\S]*display:\s*grid;[\s\S]*align-content:\s*end;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-dock-layout="waiting-apron"\]\s+\.tactical-dock__grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1\.05fr\)\s*minmax\(19rem,\s*0\.95fr\);/s
   );
 });
 
