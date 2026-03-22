@@ -86,6 +86,7 @@ test.after(() => {
 
 test('GameRoom threads canonical slots into the seat ring view', () => {
   assert.match(source, /canonicalSlots:\s*roomGeometryContract\.canonicalSlots/);
+  assert.match(source, /visualSeatCount:\s*roomGeometryContract\.visualSeatCount/);
 });
 
 test('GameRoom drives both stage chrome and seat ring from the live seat entries', () => {
@@ -176,6 +177,76 @@ test('TableStage threads broadcast center material hooks through the pot capsule
   assert.match(stage, /data-table-material-rail-tone="black-gold"/);
 });
 
+test('TableStage keeps pro mode board-first by dropping the duplicate summary rail and explanatory caption copy', async () => {
+  const { module } = await loadBundledModule('./TableStage.jsx');
+  const stage = renderComponent(
+    React.createElement(module.default, {
+      shellView: {
+        stagePulseTone: 'idle',
+        roomStateLabel: '等待开始',
+        stageCaption: '这段解释不应该出现在职业桌主舞台里',
+        modeLabel: '职业',
+        phaseLabel: null,
+        currentTurnSeatLabel: null,
+        stageActionLabel: null,
+        lastActionLabel: null,
+      },
+      tablePotSummary: {
+        centerPriority: 'board-pot-street',
+        items: [{ label: '底池', amount: '0' }],
+      },
+      seatRing: React.createElement('div', { 'data-seat-ring': 'true' }),
+      effectiveDisplayMode: 'pro',
+      viewportWidth: 1280,
+      viewportHeight: 900,
+      tableDiameter: 352,
+      seatGuides: [],
+    })
+  );
+
+  assert.doesNotMatch(stage, /这段解释不应该出现在职业桌主舞台里/);
+  assert.doesNotMatch(stage, /poker-shell-stat-card/);
+});
+
+test('TableStage turns compact and pro layouts into an overlay badge row instead of a standalone headline block', async () => {
+  const { module } = await loadBundledModule('./TableStage.jsx');
+  const stage = renderComponent(
+    React.createElement(module.default, {
+      shellView: {
+        stagePulseTone: 'idle',
+        roomStateLabel: '牌局进行中',
+        stageLabel: '牌桌主舞台',
+        stageCaption: '这段说明不该再占走桌面高度',
+        modeLabel: '职业',
+        phaseLabel: 'PREFLOP',
+        currentTurnSeatLabel: '座1',
+        stageActionLabel: '轮到 座1 · 需跟注 10',
+        lastActionLabel: null,
+      },
+      tablePotSummary: {
+        centerPriority: 'board-pot-street',
+        items: [{ label: '底池', amount: '30' }],
+      },
+      seatRing: React.createElement('div', { 'data-seat-ring': 'true' }),
+      effectiveDisplayMode: 'pro',
+      viewportLayout: {
+        headerDensity: 'compact',
+      },
+      viewportWidth: 390,
+      viewportHeight: 844,
+      tableDiameter: 320,
+      seatGuides: [],
+    })
+  );
+
+  assert.match(stage, /table-stage-panel__overlay-row/);
+  assert.match(stage, /table-stage-panel__overlay-track/);
+  assert.match(stage, /table-stage-panel__overlay-badge/);
+  assert.doesNotMatch(stage, /牌桌主舞台/);
+  assert.doesNotMatch(stage, /table-stage-panel__header/);
+  assert.doesNotMatch(stage, /这段说明不该再占走桌面高度/);
+});
+
 test('Settlement sheet stays above center-shell layers to preserve reveal-button interactions', () => {
   assert.match(stageStylesSource, /\.table-stage-center-shell__pot\s*\{[\s\S]*?z-index:\s*21;/);
   assert.match(stageStylesSource, /\.settlement-sheet\s*\{[\s\S]*?z-index:\s*22;/);
@@ -186,6 +257,11 @@ test('CommunityCards and TableStage use the cleaned center-shell naming and avoi
   assert.match(communityCardsSource, /community-cards-center-shell--compact-density/);
   assert.match(communityCardsSource, /community-cards-center-shell__phase/);
   assert.match(communityCardsSource, /community-cards-center-shell__tray/);
+  assert.match(communityCardsSource, /community-cards-area__slot/);
+  assert.match(communityCardsSource, /const showsIdleBoardSlots = !gameState \|\| !gameState\.communityCards;/);
+  assert.match(communityCardsSource, /const showsIdleBoardSlot = !isVisible && !isAnimating;/);
+  assert.doesNotMatch(communityCardsSource, /community-cards-center-shell__pot/);
+  assert.doesNotMatch(communityCardsSource, /if \(!gameState \|\| !gameState\.communityCards\)[\s\S]*poker-card community back/s);
   assert.match(tableStageSource, /table-stage-center-shell/);
   assert.match(tableStageSource, /data-center-shell-density=\{centerShellDensity\}/);
   assert.match(tableStageSource, /table-stage-center-shell__pot/);
@@ -198,6 +274,12 @@ test('CommunityCards and TableStage use the cleaned center-shell naming and avoi
 test('center-shell css encodes a compact board-first density pass', () => {
   assert.match(stageStylesSource, /\.table-stage-center-shell\[data-center-shell-density="compact"\]\s*\{/);
   assert.match(stageStylesSource, /\.community-cards-center-shell--compact-density\s+\.community-cards-area__tray\s*\{/);
+  assert.match(stageStylesSource, /\.community-cards-area__slot\s*\{/);
+  assert.match(stageStylesSource, /\.community-cards-area__slot--idle\s*\{/);
+  assert.match(stageStylesSource, /\.table-stage-panel__overlay-row\s*\{[\s\S]*position:\s*absolute;[\s\S]*top:\s*0\.72rem;[\s\S]*left:\s*0\.72rem;[\s\S]*right:\s*0\.72rem;/);
+  assert.match(stageStylesSource, /\.table-stage-panel__overlay-track\s*\{[\s\S]*display:\s*flex;[\s\S]*gap:\s*0\.35rem;[\s\S]*flex-wrap:\s*wrap;/);
+  assert.match(stageStylesSource, /\.table-stage-panel__overlay-badge\s*\{[\s\S]*border-radius:\s*999px;[\s\S]*padding:\s*0\.3rem 0\.55rem;/);
+  assert.match(stageStylesSource, /\.table-stage-panel\[data-stage-header-density="compact"\]\s*\{[\s\S]*padding-block:\s*0\.72rem;/);
 });
 
 test('ActionDock renders a sync placeholder instead of blanking the center during live-hand state transitions', async () => {

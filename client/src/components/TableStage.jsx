@@ -44,6 +44,16 @@ const TableStage = ({
   const isCompressedStage = tableSurfaceLayout.heightClass === 'short-height';
   const isCompactStageHeader =
     viewportLayout?.headerDensity === 'compact' || tableSurfaceLayout.heightClass === 'short-height';
+  const usesMinimalProHeader = effectiveDisplayMode === 'pro';
+  const showsStagePanelHeader = !isCompactStageHeader && !usesMinimalProHeader;
+  const showsStageOverlayRow = !showsStagePanelHeader;
+  const showsStageCaption = showsStagePanelHeader;
+  const showsStageSummary = showsStagePanelHeader && tablePotSummary.items.length > 1;
+  const overlayBadges = [
+    shellView.modeLabel,
+    shellView.roomStateLabel,
+    shellView.phaseLabel,
+  ].filter(Boolean);
   const stageLayoutClassName =
     resolvedRoomShellLayout === 'three-column'
       ? 'table-stage-surface table-stage-surface--three-column'
@@ -65,30 +75,32 @@ const TableStage = ({
       data-stage-header-density={isCompactStageHeader ? 'compact' : 'regular'}
       data-viewport-model={viewportLayout?.viewportModel}
     >
-      <div className="table-stage-panel__header mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="table-stage-panel__title-block">
-          <div className="poker-shell-kicker">{roomCopy.stageLabel}</div>
-          <div className="mt-2 text-lg font-semibold text-white">{shellView.roomStateLabel}</div>
-          {!isCompactStageHeader ? (
-            <div className="table-stage-panel__caption mt-2 max-w-xl text-sm leading-6 text-slate-300">
-              {roomCopy.stageCaption}
+      {showsStagePanelHeader ? (
+        <div className="table-stage-panel__header mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="table-stage-panel__title-block">
+            <div className="poker-shell-kicker">{roomCopy.stageLabel}</div>
+            <div className="mt-2 text-lg font-semibold text-white">{shellView.roomStateLabel}</div>
+            {showsStageCaption ? (
+              <div className="table-stage-panel__caption mt-2 max-w-xl text-sm leading-6 text-slate-300">
+                {roomCopy.stageCaption}
+              </div>
+            ) : null}
+          </div>
+          {showsStageSummary ? (
+            <div className="table-stage-panel__summary flex flex-wrap items-center gap-2">
+              {tablePotSummary.items.map((item, index) => (
+                <div
+                  key={`${item.label}-${index}`}
+                  className="poker-shell-stat-card rounded-2xl px-3 py-2 text-sm text-slate-100"
+                >
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">{item.label}</div>
+                  <div className="mt-1 font-semibold">{item.amount}</div>
+                </div>
+              ))}
             </div>
           ) : null}
         </div>
-        {!isCompactStageHeader ? (
-          <div className="table-stage-panel__summary flex flex-wrap items-center gap-2">
-            {tablePotSummary.items.map((item, index) => (
-              <div
-                key={`${item.label}-${index}`}
-                className="poker-shell-stat-card rounded-2xl px-3 py-2 text-sm text-slate-100"
-              >
-                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">{item.label}</div>
-                <div className="mt-1 font-semibold">{item.amount}</div>
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </div>
+      ) : null}
 
       <div
         className={`${stageLayoutClassName} ${stagePulseClassName} table-stage-surface--${theme.mode} relative flex items-center justify-center rounded-[2rem] px-4 py-6 ${isCompressedStage ? 'overflow-hidden' : 'overflow-visible'}`}
@@ -102,6 +114,17 @@ const TableStage = ({
         data-table-material-rail-tone={tableRailTone}
         style={{ minHeight: `${tableSurfaceLayout.stageBudget.minStageBudgetPx}px` }}
       >
+        {showsStageOverlayRow ? (
+          <div className="table-stage-panel__overlay-row">
+            <div className="table-stage-panel__overlay-track">
+              {overlayBadges.map((badge) => (
+                <span key={badge} className="table-stage-panel__overlay-badge">
+                  {badge}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
         <div className="table-stage-atmosphere" aria-hidden="true" />
 
         <div

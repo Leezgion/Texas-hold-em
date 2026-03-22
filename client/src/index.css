@@ -4402,7 +4402,7 @@
   }
 
   .table-stage-panel[data-stage-header-density="compact"] {
-    padding-block: 0.85rem;
+    padding-block: 0.72rem;
   }
 
   .table-stage-panel[data-stage-header-density="compact"] .table-stage-panel__header {
@@ -4412,6 +4412,39 @@
   .table-stage-panel[data-stage-header-density="compact"] .table-stage-panel__summary,
   .table-stage-panel[data-stage-header-density="compact"] .table-stage-panel__caption {
     display: none;
+  }
+
+  .table-stage-panel__overlay-row {
+    position: absolute;
+    top: 0.72rem;
+    left: 0.72rem;
+    right: 0.72rem;
+    z-index: 17;
+    pointer-events: none;
+  }
+
+  .table-stage-panel__overlay-track {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .table-stage-panel__overlay-badge {
+    border-radius: 999px;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(4, 11, 19, 0.78), rgba(6, 15, 25, 0.62));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      0 10px 22px rgba(2, 6, 12, 0.18);
+    color: rgb(226 232 240 / 0.92);
+    font-size: 0.62rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .room-terminal-dock-panel[data-header-density="compact"] {
