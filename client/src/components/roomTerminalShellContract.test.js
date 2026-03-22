@@ -94,6 +94,10 @@ test('TableHeader collapses room identity into a single-line status spine', () =
 
 test('ActionDock exposes primary quick actions when header actions collapse into room-sheet-first mode', () => {
   assert.match(actionDockSource, /const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout\?\.headerActionModel !== 'toolbar'/);
+  assert.match(
+    actionDockSource,
+    /const showsInlineQuickActions =\s*showsPrimaryQuickActions && !\(gameStarted && viewportLayout\?\.viewportModel === 'phone-terminal'\);/s
+  );
   assert.match(actionDockSource, /const showsApronRail = showsPrimaryQuickActions \|\| supportsSecondaryPanels;/);
   assert.match(actionDockSource, /const dockLayout = !showsDecisionCenter && showsApronRail \? 'waiting-apron' : showsApronRail \? 'decision-apron' : 'core-only';/);
   assert.match(actionDockSource, /tactical-dock--table-apron/);
@@ -169,39 +173,43 @@ test('room shell css uses a two-row frame with an overlay dock reserve', () => {
 test('ActionButtons preserves 44px touch targets for primary and commit actions', () => {
   assert.match(
     actionButtonsSource,
-    /className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-600\/90/
+    /className=\{buildActionCommandClass\('fold'\)\}/
   );
   assert.match(
     actionButtonsSource,
-    /className="h-11 rounded-lg bg-green-600\/90 px-3\.5 text-sm font-bold text-white/
+    /className=\{buildActionCommandClass\('check'\)\}/
   );
   assert.match(
     actionButtonsSource,
-    /className="h-11 rounded-lg bg-blue-600\/90 px-3\.5 text-sm font-bold text-white/
+    /className=\{buildActionCommandClass\('call'\)\}/
   );
   assert.match(
     actionButtonsSource,
-    /className=\{`h-11 w-11 \$\{/
+    /className=\{buildActionCommandClass\('raise', showRaiseInput \? 'table-action-command--selected' : ''\)\}/
   );
   assert.match(
     actionButtonsSource,
-    /className="h-11 rounded-lg bg-purple-600\/90 px-2\.5 text-sm font-bold text-white/
+    /className=\{buildActionCommandClass\('allin'\)\}/
   );
   assert.match(
     actionButtonsSource,
-    /className=\{`h-11 flex-1 \$\{/
+    /className=\{buildActionCommandClass\(\s*sliderValue === maxRaiseAmount \? 'allin' : 'confirm',\s*'table-action-command--wide'\s*\)\}/s
   );
   assert.match(
     actionButtonsSource,
-    /className="h-11 flex-1 rounded-lg bg-gray-600 text-sm font-medium text-white/
+    /className=\{buildActionCommandClass\('cancel', 'table-action-command--wide'\)\}/
   );
-  assert.doesNotMatch(actionButtonsSource, /className=\{`h-9 flex-1 \$\{/);
+  assert.match(globalStylesSource, /\.table-action-command\s*\{[\s\S]*min-height:\s*4rem;/s);
 });
 
 test('ActionDock keeps the live-hand action frame wired to ActionButtons', () => {
   assert.match(
     actionDockSource,
     /gameStarted && \(\s*<motion\.div[\s\S]*<ActionButtons/s
+  );
+  assert.match(
+    actionDockSource,
+    /const handCardSize = viewportLayout\?\.viewportModel === 'phone-terminal' \? 'small' : 'large';/
   );
 });
 
@@ -212,6 +220,21 @@ test('ActionButtons fail-closes when player or gameState is temporarily unavaila
   );
   assert.match(
     actionButtonsSource,
-    /const hasResolvedActionState = Boolean\(player && gameState\);[\s\S]*useKeyboardShortcuts\(\{[\s\S]*\}\);\s*if \(!hasResolvedActionState\) \{\s*return \(\s*<div className="flex h-10 items-center justify-center rounded-xl border border-gray-600 bg-gray-800\/90 px-3 backdrop-blur-xs">[\s\S]*等待牌局状态同步[\s\S]*\);\s*\}/s
+    /const hasResolvedActionState = Boolean\(player && gameState\);[\s\S]*useKeyboardShortcuts\(\{[\s\S]*\}\);\s*if \(!hasResolvedActionState\) \{\s*return \(\s*<div className="table-action-console table-action-console--inactive">[\s\S]*等待牌局状态同步[\s\S]*\);\s*\}/s
+  );
+});
+
+test('phone-terminal live hand collapses the dock stack back toward the table', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.tactical-dock__quick-actions-block\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__stats\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__command-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
   );
 });

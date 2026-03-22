@@ -5,16 +5,13 @@ import SliderInput from './SliderInput';
 import { useGame } from '../contexts/GameContext';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { getDisplayModeTheme } from '../utils/productMode';
-import { buildProActionStatRows, deriveProActionSummary, deriveRequestErrorFeedback } from '../view-models/gameViewModel';
+import {
+  buildProActionStatRows,
+  deriveProActionSummary,
+  deriveRequestErrorFeedback,
+} from '../view-models/gameViewModel';
 
 function translateActionStatLabel(label, effectiveDisplayMode) {
-  const labelMap = {
-    'To Call': effectiveDisplayMode === 'study' ? '需跟注' : 'TO CALL',
-    'Min Raise': effectiveDisplayMode === 'study' ? '最小加注' : 'MIN RAISE',
-    Pot: effectiveDisplayMode === 'study' ? '底池' : 'POT',
-    Eff: effectiveDisplayMode === 'study' ? '有效后手' : 'EFF',
-  };
-
   if (effectiveDisplayMode === 'club') {
     return {
       'To Call': '跟注',
@@ -24,12 +21,29 @@ function translateActionStatLabel(label, effectiveDisplayMode) {
     }[label] || label;
   }
 
-  return labelMap[label] || label;
+  if (effectiveDisplayMode === 'study') {
+    return {
+      'To Call': '需跟注',
+      'Min Raise': '最小加注',
+      Pot: '底池',
+      Eff: '有效后手',
+    }[label] || label;
+  }
+
+  return {
+    'To Call': '需跟注',
+    'Min Raise': '最小加',
+    Pot: '底池',
+    Eff: '后手',
+  }[label] || label;
+}
+
+function buildActionCommandClass(tone, extra = '') {
+  return ['table-action-command', `table-action-command--${tone}`, extra].filter(Boolean).join(' ');
 }
 
 const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveDisplayMode = 'pro' }) => {
   const { playerAction } = useGame();
-  const [raiseAmount, setRaiseAmount] = useState('');
   const [showRaiseInput, setShowRaiseInput] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,58 +64,36 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     timeRemaining: 0,
   };
 
-  // 检查是否是当前玩家的回合
   const isCurrentTurn =
     resolvedGameState.currentPlayerIndex !== undefined &&
     resolvedGameState.currentPlayerIndex === safePlayers.findIndex((p) => p.id === currentPlayerId);
 
-  // 检查玩家是否可以操作（添加isSubmitting检查防止重复提交）
   const canAct = hasResolvedActionState && isCurrentTurn && !resolvedPlayer.folded && !resolvedPlayer.allIn && !isSubmitting;
-
-  // 检查是否可以过牌
   const canCheck = canAct && resolvedPlayer.currentBet >= resolvedGameState.currentBet;
-
-  // 计算底池大小
   const potSize = resolvedGameState.pot || 0;
-
-  // 计算需要跟注的金额
   const callAmount = Math.max(0, resolvedGameState.currentBet - resolvedPlayer.currentBet);
   const maxRaiseAmount = Math.max(0, resolvedPlayer.chips - callAmount);
-
-  // 检查是否可以加注
   const canRaise = canAct && maxRaiseAmount >= resolvedGameState.minRaise;
-
-  // 获取大盲注作为步进单位
   const bigBlind = resolvedGameState.bigBlind || resolvedGameState.minRaise || 20;
-  const stepSize = bigBlind;
   const theme = getDisplayModeTheme(effectiveDisplayMode);
-  const proActionSummary =
-    hasResolvedActionState
-      ? deriveProActionSummary({
-          currentPlayer: resolvedPlayer,
-          players: safePlayers,
-          gameState: resolvedGameState,
-        })
-      : null;
+  const proActionSummary = hasResolvedActionState
+    ? deriveProActionSummary({
+        currentPlayer: resolvedPlayer,
+        players: safePlayers,
+        gameState: resolvedGameState,
+      })
+    : null;
   const proActionStats = buildProActionStatRows(proActionSummary);
 
-  // 辅助函数：将值对齐到大盲的倍数
   const alignToBigBlind = (value) => {
     if (!bigBlind || bigBlind <= 0) return value;
-
-    // 确保不低于最小加注
     const minValue = Math.max(resolvedGameState.minRaise, bigBlind);
     if (value < minValue) return minValue;
-
-    // 对齐到大盲的倍数
     const remainder = value % bigBlind;
     if (remainder === 0) return value;
-
-    // 向上舍入到最近的大盲倍数
     return value + (bigBlind - remainder);
   };
 
-  // 计算快捷加注金额（对齐到大盲倍数）
   const quickRaiseSizes = [
     { label: '1/3池', amount: alignToBigBlind(Math.max(resolvedGameState.minRaise, Math.floor(potSize / 3))) },
     { label: '1/2池', amount: alignToBigBlind(Math.max(resolvedGameState.minRaise, Math.floor(potSize / 2))) },
@@ -109,12 +101,9 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     { label: '1.2x池', amount: alignToBigBlind(Math.max(resolvedGameState.minRaise, Math.floor(potSize * 1.2))) },
   ].filter((raise) => raise.amount <= maxRaiseAmount);
 
-  // 初始化滑块值为最小加注（对齐到大盲）
   useEffect(() => {
     if (canRaise && resolvedGameState.minRaise && sliderValue === 0) {
-      const alignedMinRaise = alignToBigBlind(resolvedGameState.minRaise);
-      setSliderValue(alignedMinRaise);
-      setRaiseAmount(alignedMinRaise.toString());
+      setSliderValue(alignToBigBlind(resolvedGameState.minRaise));
     }
   }, [canRaise, resolvedGameState.minRaise, sliderValue, bigBlind]);
 
@@ -127,34 +116,32 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
     if (sliderValue > maxRaiseAmount) {
       setSliderValue(maxRaiseAmount);
-      setRaiseAmount(maxRaiseAmount.toString());
     }
   }, [canRaise, sliderValue, maxRaiseAmount]);
 
-  // 收到新游戏状态时解锁UI
   useEffect(() => {
     if (gameState) {
       setIsSubmitting(false);
     }
   }, [gameState]);
 
-  // 超时保护（防止卡死）
   useEffect(() => {
     if (isSubmitting) {
       const timeout = setTimeout(() => {
         console.warn('操作超时，自动解锁UI');
         setIsSubmitting(false);
-      }, 5000); // 5秒超时
+      }, 5000);
 
       return () => clearTimeout(timeout);
     }
+
+    return undefined;
   }, [isSubmitting]);
 
   const handleAction = async (action, amount = 0) => {
     if (canAct && !isSubmitting) {
-      setIsSubmitting(true);  // 立即锁定UI
+      setIsSubmitting(true);
       setShowRaiseInput(false);
-      setRaiseAmount('');
       setSliderValue(canRaise ? resolvedGameState.minRaise || 0 : 0);
 
       try {
@@ -173,7 +160,6 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
   const handleSliderChange = (value) => {
     setSliderValue(value);
-    setRaiseAmount(value.toString());
   };
 
   const handleQuickRaise = async (amount) => {
@@ -193,7 +179,6 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     }
   };
 
-  // 键盘快捷键
   useKeyboardShortcuts({
     canAct,
     canCheck,
@@ -208,213 +193,203 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
   if (!hasResolvedActionState) {
     return (
-      <div className="flex h-10 items-center justify-center rounded-xl border border-gray-600 bg-gray-800/90 px-3 backdrop-blur-xs">
-        <div className="text-center text-gray-400 text-sm">等待牌局状态同步</div>
+      <div className="table-action-console table-action-console--inactive">
+        <div className="table-action-console__empty-state">等待牌局状态同步</div>
       </div>
     );
   }
 
   if (!canAct) {
     return (
-      <div className="flex h-10 items-center justify-center rounded-xl border border-gray-600 bg-gray-800/90 px-3 backdrop-blur-xs">
-        <div className="text-center text-gray-400 text-sm">{resolvedPlayer.folded ? '已弃牌' : resolvedPlayer.allIn ? 'All-in' : '等待其他玩家'}</div>
+      <div className="table-action-console table-action-console--inactive">
+        <div className="table-action-console__empty-state">
+          {resolvedPlayer.folded ? '本手已弃牌' : resolvedPlayer.allIn ? '本手已全下' : '等待其他玩家行动'}
+        </div>
       </div>
     );
   }
 
+  const primaryActionLabel = canCheck ? '过牌' : '跟注';
+  const primaryActionMeta = canCheck ? '无需补码' : `${callAmount.toLocaleString()} 筹码`;
+  const raiseLabel = showRaiseInput ? '收起加注' : '加注';
+  const raiseMeta = showRaiseInput
+    ? `当前 ${sliderValue.toLocaleString()}`
+    : `最小 ${resolvedGameState.minRaise.toLocaleString()}`;
+  const allInMeta = `${resolvedPlayer.chips.toLocaleString()} 筹码`;
+  const confirmRaiseLabel = sliderValue === maxRaiseAmount ? '确认全下' : '确认加注';
+  const confirmRaiseMeta =
+    sliderValue === maxRaiseAmount
+      ? `投入 ${resolvedPlayer.chips.toLocaleString()}`
+      : `总投入 ${(callAmount + sliderValue).toLocaleString()}`;
+
   return (
-    <div className="mx-auto flex max-w-sm flex-col items-center space-y-2.5">
-      {canAct && proActionStats.length > 0 && theme.room.actionStatStyle === 'grid' && (
-        <div className="grid w-full grid-cols-4 gap-1.5 rounded-xl border border-gray-700/70 bg-gray-900/95 p-1.5 shadow-xl">
-          {proActionStats.map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-lg border border-gray-700/70 bg-black/20 px-1.5 py-1.5 text-center"
-            >
-              <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-gray-400">
-                {translateActionStatLabel(stat.label, effectiveDisplayMode)}
-              </div>
-              <div className="mt-0.5 text-xs font-semibold text-white sm:text-sm">{stat.value}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {canAct && proActionStats.length > 0 && theme.room.actionStatStyle === 'pills' && (
-        <div className="flex w-full flex-wrap justify-center gap-1.5 rounded-xl border border-amber-200/15 bg-amber-200/5 px-2.5 py-1.5 shadow-xl">
-          {proActionStats.map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 text-[11px] font-medium text-slate-100"
-            >
-              {translateActionStatLabel(stat.label, effectiveDisplayMode)} {stat.value}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {canAct && proActionStats.length > 0 && theme.room.actionStatStyle === 'annotated' && (
-        <div className="grid w-full grid-cols-2 gap-1.5 rounded-xl border border-sky-300/15 bg-sky-300/5 p-2 shadow-xl">
-          {proActionStats.map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-lg border border-white/10 bg-black/25 px-2.5 py-1.5"
-            >
-              <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-sky-200">
-                {translateActionStatLabel(stat.label, effectiveDisplayMode)}
-              </div>
-              <div className="mt-0.5 text-xs font-semibold text-white sm:text-sm">{stat.value}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 提交状态提示 */}
-      {isSubmitting && (
-        <div className="text-xs text-yellow-400 animate-pulse font-medium">
-          处理中...
-        </div>
-      )}
-
-      {/* 玩家计时器 */}
-      <PlayerTimer
-        timeRemaining={resolvedGameState.timeRemaining || 0}
-        isCurrentTurn={isCurrentTurn}
-      />
-
-      {/* 主要操作按钮 - 横向排列 */}
-      <div className="flex items-center gap-1.5 rounded-xl border border-gray-700/50 bg-gray-900/95 px-2.5 py-1.5 shadow-xl backdrop-blur-xs">
-        {/* 弃牌 */}
-        <button
-          onClick={() => handleAction('fold')}
-          className="flex h-11 w-11 items-center justify-center rounded-lg bg-red-600/90 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-red-500 hover:shadow-red-500/30"
-          title="弃牌 (F)"
+    <div
+      className={`table-action-console ${showRaiseInput ? 'table-action-console--raise-open' : ''} ${
+        isSubmitting ? 'table-action-console--submitting' : ''
+      }`}
+    >
+      {proActionStats.length > 0 && (
+        <div
+          className={`table-action-console__stats table-action-console__stats--${
+            theme.room.actionStatStyle || 'grid'
+          }`}
         >
-          弃
-        </button>
+          {proActionStats.map((stat) => (
+            <div key={stat.label} className="table-action-console__stat">
+              <span className="table-action-console__stat-label">
+                {translateActionStatLabel(stat.label, effectiveDisplayMode)}
+              </span>
+              <span className="table-action-console__stat-value">{stat.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
-        {/* 过牌/跟注 */}
-        {canCheck ? (
-          <button
-            onClick={() => handleAction('check')}
-            className="h-11 rounded-lg bg-green-600/90 px-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-green-500 hover:shadow-green-500/30"
-            title="过牌 (C)"
-          >
-            过
-          </button>
-        ) : (
-          <button
-            onClick={() => handleAction('call')}
-            className="h-11 rounded-lg bg-blue-600/90 px-3.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-blue-500 hover:shadow-blue-500/30"
-            title={`跟注 ${callAmount} (C)`}
-          >
-            跟 {callAmount}
-          </button>
-        )}
+      {isSubmitting && <div className="table-action-console__notice">动作已发送，等待牌局确认</div>}
 
-        {/* 加注 */}
-        {canRaise && (
-          <button
-            onClick={() => setShowRaiseInput(!showRaiseInput)}
-            className={`h-11 w-11 ${
-              showRaiseInput ? 'bg-yellow-500/90' : 'bg-yellow-600/90 hover:bg-yellow-500'
-            } flex items-center justify-center rounded-lg text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-yellow-500/30`}
-            title="加注 (R)"
-          >
-            加
-          </button>
-        )}
+      <div className="table-action-console__main">
+        <div className="table-action-console__timer-shell">
+          <PlayerTimer
+            timeRemaining={resolvedGameState.timeRemaining || 0}
+            isCurrentTurn={isCurrentTurn}
+          />
+        </div>
 
-        {/* All-in */}
-        {canRaise && (
+        <div className="table-action-console__command-row" data-command-count={canRaise ? '4' : '2'}>
           <button
-            onClick={() => handleAction('allin')}
-            className="h-11 rounded-lg bg-purple-600/90 px-2.5 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-purple-500 hover:shadow-purple-500/30"
-            title={`All-in ${resolvedPlayer.chips} (A)`}
+            type="button"
+            onClick={() => handleAction('fold')}
+            className={buildActionCommandClass('fold')}
+            title="弃牌 (F)"
           >
-            梭
+            <span className="table-action-command__label">弃牌</span>
+            <span className="table-action-command__meta">放弃本手</span>
           </button>
-        )}
+
+          {canCheck ? (
+            <button
+              type="button"
+              onClick={() => handleAction('check')}
+              className={buildActionCommandClass('check')}
+              title="过牌 (C)"
+            >
+              <span className="table-action-command__label">过牌</span>
+              <span className="table-action-command__meta">{primaryActionMeta}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleAction('call')}
+              className={buildActionCommandClass('call')}
+              title={`跟注 ${callAmount} (C)`}
+            >
+              <span className="table-action-command__label">{primaryActionLabel}</span>
+              <span className="table-action-command__meta">{primaryActionMeta}</span>
+            </button>
+          )}
+
+          {canRaise && (
+            <button
+              type="button"
+              onClick={() => setShowRaiseInput((value) => !value)}
+              className={buildActionCommandClass('raise', showRaiseInput ? 'table-action-command--selected' : '')}
+              aria-pressed={showRaiseInput}
+              title="加注 (R)"
+            >
+              <span className="table-action-command__label">{raiseLabel}</span>
+              <span className="table-action-command__meta">{raiseMeta}</span>
+            </button>
+          )}
+
+          {canRaise && (
+            <button
+              type="button"
+              onClick={() => handleAction('allin')}
+              className={buildActionCommandClass('allin')}
+              title={`All-in ${resolvedPlayer.chips} (A)`}
+            >
+              <span className="table-action-command__label">全下</span>
+              <span className="table-action-command__meta">{allInMeta}</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* 自定义加注滑块和输入 */}
       {showRaiseInput && canRaise && (
-        <div className="w-full rounded-xl border border-gray-600 bg-gray-800/95 p-3 shadow-lg backdrop-blur-xs">
-          <div className="mb-2 text-center text-xs font-medium text-gray-300">自定义加注</div>
-
-          {/* 快捷加注按钮组 */}
-          {quickRaiseSizes.length > 0 && (
-            <div className="mb-3">
-              <div className="mb-1.5 text-center text-xs font-medium text-gray-400">快捷加注 · 底池 {potSize}</div>
-              <div className="grid grid-cols-2 gap-1.5">
-                {quickRaiseSizes.map((raise, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuickRaise(raise.amount)}
-                    className="quick-raise-btn flex h-11 flex-col items-center justify-center rounded-lg border border-orange-500/30 text-white transition-all duration-200 hover:bg-orange-600/20"
-                  >
-                    <div className="text-xs font-medium opacity-90">{raise.label}</div>
-                    <div className="text-xs font-bold sm:text-sm">{raise.amount}</div>
-                    <div className="text-[10px] opacity-75">{Math.round(raise.amount / bigBlind)}BB</div>
-                  </button>
-                ))}
+        <div className="table-action-console__raise-surface">
+          <div className="table-action-console__raise-header">
+            <div>
+              <div className="table-action-console__raise-kicker">加注控制台</div>
+              <div className="table-action-console__raise-title">
+                {sliderValue === maxRaiseAmount ? '全下线' : `加注 ${sliderValue.toLocaleString()}`}
               </div>
-              <div className="my-2.5 border-t border-gray-600"></div>
+            </div>
+            <div className="table-action-console__raise-summary">
+              <span>总投入</span>
+              <strong>{(callAmount + sliderValue).toLocaleString()}</strong>
+            </div>
+          </div>
+
+          {quickRaiseSizes.length > 0 && (
+            <div className="table-action-console__quick-grid">
+              {quickRaiseSizes.map((raise) => (
+                <button
+                  key={raise.label}
+                  type="button"
+                  onClick={() => handleQuickRaise(raise.amount)}
+                  className="table-action-quick"
+                >
+                  <span className="table-action-quick__label">{raise.label}</span>
+                  <span className="table-action-quick__value">{raise.amount.toLocaleString()}</span>
+                  <span className="table-action-quick__meta">{Math.round(raise.amount / bigBlind)}BB</span>
+                </button>
+              ))}
             </div>
           )}
 
-          {/* 滑块 */}
-          <div className="mb-3">
-            <SliderInput
-              min={resolvedGameState.minRaise}
-              max={maxRaiseAmount}
-              value={sliderValue}
-              step={stepSize}
-              onChange={handleSliderChange}
-              colorScheme={sliderValue === resolvedPlayer.chips ? 'purple' : 'gold'}
-              label={`步进: ${stepSize} (1大盲) | 大盲: ${bigBlind}`}
-              quickButtons={[]}
-              showQuickButtons={false}
-              showMinMaxLabels={true}
-              minLabel={`最小: ${resolvedGameState.minRaise}`}
-              maxLabel={`All-in: ${maxRaiseAmount}`}
-              formatValue={(value) => (value === maxRaiseAmount ? 'All-in' : value)}
-            />
-            {sliderValue === maxRaiseAmount && <div className="text-center text-purple-400 text-sm font-bold mt-1 animate-pulse">🚀 全押！</div>}
+          <SliderInput
+            min={resolvedGameState.minRaise}
+            max={maxRaiseAmount}
+            value={sliderValue}
+            step={bigBlind}
+            onChange={handleSliderChange}
+            density="compact"
+            showValue={false}
+            showSteps={false}
+            colorScheme={sliderValue === maxRaiseAmount ? 'purple' : 'gold'}
+            className="table-action-console__slider"
+            formatLabel={(value) => value.toLocaleString()}
+          />
+
+          <div className="table-action-console__raise-range">
+            <span>最小 {resolvedGameState.minRaise.toLocaleString()}</span>
+            <span>{sliderValue === maxRaiseAmount ? '触发全下' : `后手 ${maxRaiseAmount.toLocaleString()}`}</span>
           </div>
 
-          {/* 当前加注金额显示 */}
-          <div className="mb-2.5 text-center">
-            <div className="text-base font-bold text-yellow-400">{sliderValue === maxRaiseAmount ? 'All-in' : `加注 ${sliderValue}`}</div>
-            <div className="text-[11px] text-gray-400">
-              {sliderValue === maxRaiseAmount ? '全部筹码' : `本轮总投入: ${callAmount + sliderValue}`}
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-1.5">
+          <div className="table-action-console__raise-actions">
             <button
+              type="button"
               onClick={handleCustomRaise}
-              className={`h-11 flex-1 ${
-                sliderValue === maxRaiseAmount ? 'bg-purple-600 hover:bg-purple-500' : 'bg-green-600 hover:bg-green-500'
-              } rounded-lg text-sm font-bold text-white shadow-md transition-all duration-200 hover:shadow-lg`}
+              className={buildActionCommandClass(
+                sliderValue === maxRaiseAmount ? 'allin' : 'confirm',
+                'table-action-command--wide'
+              )}
             >
-              {sliderValue === maxRaiseAmount ? 'All-in' : '确认加注'}
+              <span className="table-action-command__label">{confirmRaiseLabel}</span>
+              <span className="table-action-command__meta">{confirmRaiseMeta}</span>
             </button>
             <button
+              type="button"
               onClick={() => {
                 const alignedMinRaise = alignToBigBlind(resolvedGameState.minRaise || 0);
                 setShowRaiseInput(false);
-                setRaiseAmount(alignedMinRaise.toString());
                 setSliderValue(alignedMinRaise);
               }}
-              className="h-11 flex-1 rounded-lg bg-gray-600 text-sm font-medium text-white transition-all duration-200 hover:bg-gray-500"
+              className={buildActionCommandClass('cancel', 'table-action-command--wide')}
             >
-              取消
+              <span className="table-action-command__label">取消</span>
+              <span className="table-action-command__meta">返回主动作区</span>
             </button>
-          </div>
-
-          <div className="mt-1.5 text-center text-[11px] text-gray-400">
-            范围: {resolvedGameState.minRaise} - {maxRaiseAmount} 筹码
           </div>
         </div>
       )}

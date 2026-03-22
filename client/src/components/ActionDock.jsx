@@ -60,8 +60,11 @@ const ActionDock = ({
     viewportLayout?.supportSurfacePolicyKey &&
     viewportLayout.supportSurfacePolicyKey !== 'ultrawide';
   const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout?.headerActionModel !== 'toolbar';
+  const showsInlineQuickActions =
+    showsPrimaryQuickActions && !(gameStarted && viewportLayout?.viewportModel === 'phone-terminal');
   const showsApronRail = showsPrimaryQuickActions || supportsSecondaryPanels;
   const dockLayout = !showsDecisionCenter && showsApronRail ? 'waiting-apron' : showsApronRail ? 'decision-apron' : 'core-only';
+  const handCardSize = viewportLayout?.viewportModel === 'phone-terminal' ? 'small' : 'large';
   const quickActions = [
     canRequestRebuy && typeof onOpenRebuy === 'function'
       ? { key: 'rebuy', label: '补码', tone: 'success', onClick: onOpenRebuy }
@@ -177,7 +180,7 @@ const ActionDock = ({
             {gameStarted && handCards.length > 0 && (
               <div className="tactical-dock__cards">
                 {handCards.map((card, index) => (
-                  <Card key={index} card={card} size="large" />
+                  <Card key={index} card={card} size={handCardSize} />
                 ))}
               </div>
             )}
@@ -194,7 +197,7 @@ const ActionDock = ({
 
             {gameStarted && (
               <motion.div
-                className="tactical-dock__action-frame"
+                className="tactical-dock__action-frame tactical-dock__action-frame--table-console"
                 initial={motionProfile.stage.initial}
                 animate={motionProfile.stage.animate}
                 transition={motionProfile.stage.transition}
@@ -213,7 +216,7 @@ const ActionDock = ({
 
         {showsApronRail ? (
           <div className="tactical-dock__apron-rail">
-            {showsPrimaryQuickActions && quickActions.length > 0 ? (
+            {showsInlineQuickActions && quickActions.length > 0 ? (
               <div className="tactical-dock__quick-actions-block">
                 <div className="poker-shell-kicker">快速操作</div>
                 <div className="tactical-dock__quick-actions">
