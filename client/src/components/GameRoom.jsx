@@ -108,7 +108,6 @@ const GameRoom = () => {
   const windowSize = useWindowSize();
   const roomViewportLayout = resolveRoomViewportLayout(windowSize);
   const [showRebuy, setShowRebuy] = useState(false);
-  const [currentPlayer, setCurrentPlayer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [needsJoin, setNeedsJoin] = useState(false);
   const [roomError, setRoomError] = useState(null);
@@ -120,6 +119,7 @@ const GameRoom = () => {
   const lastLoggedActionKeyRef = useRef(null);
   const roomDockRef = useRef(null);
   const playersList = Array.isArray(players) ? players : EMPTY_PLAYERS;
+  const currentPlayer = playersList.find((player) => player.id === currentPlayerId) || null;
   const activeRoomState = roomState || 'idle';
   const safeGameState = gameState && typeof gameState === 'object' ? gameState : null;
   const maxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
@@ -214,7 +214,6 @@ const GameRoom = () => {
         // 重置客户端状态
         resetGame();
         setNeedsJoin(false);
-        setCurrentPlayer(null);
 
         // 延迟重新验证，避免无限循环
         setTimeout(() => {
@@ -227,18 +226,12 @@ const GameRoom = () => {
   }, [currentRoomId, roomId, navigate, setShowJoinRoom, connected, checkRoom, currentPlayerId, isCreatingRoom, navigationTarget, socket, resetGame, playersList.length]);
 
   useEffect(() => {
-    if (currentPlayerId && playersList.length > 0) {
-      const player = playersList.find((p) => p.id === currentPlayerId);
-      setCurrentPlayer(player);
-
-      // 如果找到了玩家且房间ID匹配，停止加载并重置加入状态
-      if (player && currentRoomId === roomId) {
-        setIsLoading(false);
-        setNeedsJoin(false);
-        setRoomError(null);
-      }
+    if (currentPlayer && currentRoomId === roomId) {
+      setIsLoading(false);
+      setNeedsJoin(false);
+      setRoomError(null);
     }
-  }, [currentPlayerId, playersList, currentRoomId, roomId]);
+  }, [currentPlayer, currentRoomId, roomId]);
 
   const currentPlayerStateView = currentPlayer
     ? derivePlayerStateView(currentPlayer, activeRoomState)

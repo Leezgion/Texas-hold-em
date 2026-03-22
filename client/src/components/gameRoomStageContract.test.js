@@ -100,6 +100,12 @@ test('GameRoom derives current-turn styling from the authoritative current playe
   assert.doesNotMatch(source, /playersList\.indexOf\(seat\.player\)/);
 });
 
+test('GameRoom derives currentPlayer directly from the authoritative room players list', () => {
+  assert.match(source, /const currentPlayer = playersList\.find\(\(player\) => player\.id === currentPlayerId\) \|\| null;/);
+  assert.doesNotMatch(source, /const \[currentPlayer, setCurrentPlayer\] = useState\(null\);/);
+  assert.doesNotMatch(source, /setCurrentPlayer\(/);
+});
+
 test('SeatRing and SeatCard expose canonical slot metadata instead of count-driven fallbacks', () => {
   assert.match(
     seatRingSource,
