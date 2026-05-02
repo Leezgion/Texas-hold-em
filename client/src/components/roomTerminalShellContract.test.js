@@ -550,6 +550,13 @@ test('short-height phone live hand uses micro opponent plaques for crowded 6-max
   );
 });
 
+test('short-height phone live hand keeps current-turn plaques from jumping into the header', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque--current-turn\s*\{\s*transform:\s*none;/s
+  );
+});
+
 test('community cards support a micro density for short phone boards', () => {
   assert.match(cardSource, /const isMicroCommunity = size === 'community' && density === 'micro';/);
   assert.match(cardSource, /poker-card--micro/);

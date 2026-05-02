@@ -3946,6 +3946,10 @@
     line-height: 0.58rem;
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque--current-turn {
+    transform: none;
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque {
     width: clamp(3.8rem, 17vw, 4.2rem);
     min-height: 2.45rem;

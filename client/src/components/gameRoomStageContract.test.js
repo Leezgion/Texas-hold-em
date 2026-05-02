@@ -311,6 +311,11 @@ test('CommunityCards and TableStage use the cleaned center-shell naming and avoi
   assert.doesNotMatch(tableStageSource, /shell-orbit|orbitRingPath|guide-ring|hud-ring|hud ring/i);
 });
 
+test('CommunityCards sizes animated card containers from the resolved board layout', () => {
+  assert.match(communityCardsSource, /const cardFrameStyle = \{\s*\.\.\.cardStyle,\s*perspective:\s*'1000px',\s*\};/s);
+  assert.match(communityCardsSource, /className=\{`card-container \$\{isAnimating \? 'flip-animation' : ''\}`\}\s*style=\{cardFrameStyle\}/s);
+});
+
 test('center-shell css encodes a compact board-first density pass', () => {
   assert.match(stageStylesSource, /\.table-stage-center-shell\[data-center-shell-density="compact"\]\s*\{/);
   assert.match(stageStylesSource, /\.community-cards-center-shell--compact-density\s+\.community-cards-area__tray\s*\{/);

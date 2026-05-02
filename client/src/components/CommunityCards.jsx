@@ -22,6 +22,10 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
     width: `${resolvedBoardLayout.cardWidth}px`,
     height: `${resolvedBoardLayout.cardHeight}px`,
   };
+  const cardFrameStyle = {
+    ...cardStyle,
+    perspective: '1000px',
+  };
   const showsIdleBoardSlots = !gameState || !gameState.communityCards;
 
   const renderIdleBoardSlots = () =>
@@ -184,9 +188,7 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
               <div
                 key={cardIndex}
                 className={`card-container ${isAnimating ? 'flip-animation' : ''}`}
-                style={{
-                  perspective: '1000px',
-                }}
+                style={cardFrameStyle}
               >
                 <div className={`card-flipper ${isVisible && !isAnimating ? 'flipped' : ''}`}>
                   <div className="card-face card-back">

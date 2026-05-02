@@ -31,8 +31,25 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
   - short phone reported `stageOverflow = visible` and `mainOverflow = visible`
   - short phone board bounds stayed inside the table lane: `left = 134`, `right = 251`
 
+## Street Audit Addendum
+
+- Browser audit: `.runlogs/2026-05-02-phone-multiseat-visual-audit.json` (`runId = mookhv3c`)
+- Fresh rooms:
+  - `6max-full 390x844`: `4T7U10`
+  - `6max-full 375x667`: `5Y6Q1G`
+  - `9max-full 390x844`: `G9MGLS`
+  - `9max-full 375x667`: `QU13X9`
+- Key metrics:
+  - every room advanced through `flop`, `turn`, `river`, and `showdown`
+  - community card counts/frame counts matched each street: `3/3`, `4/4`, `5/5`, `5/5`
+  - `clippedBoardCards = 0` across every street and viewport
+  - `seatPairs = 0`, `seatHeader = 0`, and `seatBoard = 0` across every street and viewport
+  - short phone retained `stageOverflow = visible` and `mainOverflow = visible`
+- Fixes from this addendum:
+  - short-height current-turn opponent plaques no longer translate upward into the header
+  - animated community-card frames now inherit the resolved board card width/height, so micro cards are not clipped by the tray
+
 ## Next Queue
 
-- `[todo]` Run the same 6-max/9-max phone audit through flop, turn, river, and showdown so the micro board is verified with actual community cards.
 - `[todo]` Review short-phone current-turn marker and hero-position communication; after hiding duplicate guides, the current actor's position should remain obvious but not noisy.
 - `[todo]` Continue live-hand action dock polish after board/seat geometry is stable, especially raise drawer readability and one-thumb reach.
