@@ -2493,4 +2493,34 @@ This pass fixed timer-driven room closure so a duration-expired game produces a 
   - `cd client && pnpm exec node --test`: `262/262`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-a7fc3c01.js` 538.41 kB)
 - next queue:
-  - `[todo]` validate stale room tabs and direct `/game/:roomId` refresh after a timer-ended room is deleted, so users see a clear room-closed or return-home path instead of generic missing-room behavior
+  - `[done]` validate stale room tabs and direct `/game/:roomId` refresh after a timer-ended room is deleted, so users see a clear room-closed or return-home path instead of generic missing-room behavior
+
+## 2026-05-03 Phone Stale Closed-Room Access Recovery
+
+This pass fixed stale room access after a timer-ended room has already been deleted.
+
+- root cause:
+  - direct `/game/:roomId` access to a deleted room showed the old generic `无法访问房间 / 房间不存在` screen
+  - reconnect-time `joinRoom` is emitted outside `emitWithResponse`, so `joinRoomError` could be unhandled when a tab missed `gameEnded` while offline
+  - stale tabs could therefore keep old table state instead of getting a clear room-closed recovery path
+- change:
+  - added `deriveRoomAccessErrorView` for product-facing closed-room copy
+  - added `roomAccessError` to the game store and a global `joinRoomError` listener for reconnect-only stale room failures
+  - `GameRoom` now renders a compact `ROOM CLOSED` recovery state with a return-home action instead of the old error page
+  - returning home resets the stale game state, clears the access error, and keeps the route stable
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-stale-room-access-audit.json` (`runId = moowfbvg`)
+  - fresh room `R55JCY`
+  - screenshots:
+    - `.runlogs/2026-05-03-phone-stale-room-reconnect.png`
+    - `.runlogs/2026-05-03-phone-stale-room-direct.png`
+  - stale tab path: phone went offline during a live preflop decision, missed the debug end-game event, then reconnected into `ROOM CLOSED`
+  - direct path: a fresh phone context opened `/game/R55JCY` after deletion and got the same closed-room recovery state
+  - both paths had no old `.room-terminal-shell`, no dialog, `rootInert = false`, filtered console errors empty, and body stayed single-screen at `390x844`
+- final verification:
+  - red tests before implementation: missing `deriveRoomAccessErrorView`, missing `GameRoom` recovery state, and missing reconnect `joinRoomError` cleanup
+  - `cd client && pnpm exec node --test src/view-models/gameViewModel.test.js src/components/interactionSurfaceContract.test.js`: `68/68`
+  - `cd client && pnpm exec node --test`: `265/265`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-e7aca36e.js` 540.51 kB)
+- next queue:
+  - `[todo]` validate post-closed-room recovery continuation: after returning home from a closed stale room, creating or joining a new room should not carry stale room errors, stale room codes, or blocked navigation

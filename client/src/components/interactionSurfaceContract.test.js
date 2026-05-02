@@ -134,6 +134,22 @@ test('HandResultModal renders a final ranking instead of staying a null shell', 
   assert.doesNotMatch(handResultModalSource, /const HandResultModal = \(\) => null/);
 });
 
+test('GameRoom renders stale closed-room URLs as a product recovery state', () => {
+  assert.match(gameRoomSource, /deriveRoomAccessErrorView/);
+  assert.match(gameRoomSource, /roomAccessError/);
+  assert.match(gameRoomSource, /data-room-access-state/);
+  assert.match(gameRoomSource, /room-access-state/);
+  assert.doesNotMatch(gameRoomSource, /text-red-500 text-6xl/);
+});
+
+test('GameContext clears stale room state when reconnecting into a deleted room', () => {
+  assert.match(gameContextSource, /roomAccessError/);
+  assert.match(gameContextSource, /socket\.on\('joinRoomError'/);
+  assert.match(gameContextSource, /ROOM_NOT_FOUND/);
+  assert.match(gameContextSource, /房间已关闭/);
+  assert.match(gameContextSource, /resetGame\(\)/);
+});
+
 test('RebuyModal clears stale warning context before showing confirmed rebuy success', () => {
   assert.match(rebuyModalSource, /deriveRebuySuccessFeedback/);
   assert.match(rebuyModalSource, /game-clear-toasts/);

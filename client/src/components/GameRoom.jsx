@@ -28,6 +28,7 @@ import {
   derivePendingJoinBanner,
   derivePlayerStateView,
   deriveRequestErrorFeedback,
+  deriveRoomAccessErrorView,
   deriveSeatRingView,
   deriveTableShellView,
   deriveRecoveryBanner,
@@ -99,6 +100,9 @@ const GameRoom = () => {
     leaveSeat,
     isCreatingRoom,
     navigationTarget,
+    roomAccessError,
+    setRoomAccessError,
+    clearRoomAccessError,
     currentPlayerView,
     revealHand,
     revealRequestPending,
@@ -160,6 +164,7 @@ const GameRoom = () => {
         console.log('已经连接到房间:', roomId);
         setNeedsJoin(false);
         setRoomError(null);
+        clearRoomAccessError();
         setIsLoading(false);
         return;
       }
@@ -181,6 +186,7 @@ const GameRoom = () => {
           console.log('验证房间结果:', roomData);
 
           if (roomData.exists) {
+            clearRoomAccessError();
             // 支持观战模式：即使游戏已开始或座位已满，也允许加入
             try {
               console.log('自动加入房间:', roomId);
@@ -193,12 +199,20 @@ const GameRoom = () => {
               setIsLoading(false);
             }
           } else {
-            setRoomError('房间不存在');
+            const accessError = { code: 'ROOM_NOT_FOUND', message: '房间不存在', roomId };
+            setRoomError(accessError);
+            setRoomAccessError(accessError);
             setIsLoading(false);
           }
         } catch (error) {
           console.log('房间验证失败:', error);
-          setRoomError(error.message || '房间不存在');
+          const accessError = {
+            code: error.code || 'ROOM_NOT_FOUND',
+            message: error.message || '房间不存在',
+            roomId,
+          };
+          setRoomError(accessError);
+          setRoomAccessError(accessError);
           setIsLoading(false);
         }
       } else {
@@ -231,15 +245,16 @@ const GameRoom = () => {
     };
 
     verifyRoom();
-  }, [currentRoomId, roomId, navigate, setShowJoinRoom, connected, checkRoom, currentPlayerId, isCreatingRoom, navigationTarget, socket, resetGame, playersList.length]);
+  }, [currentRoomId, roomId, navigate, setShowJoinRoom, connected, checkRoom, currentPlayerId, isCreatingRoom, navigationTarget, socket, resetGame, playersList.length, setRoomAccessError, clearRoomAccessError]);
 
   useEffect(() => {
     if (currentPlayer && currentRoomId === roomId) {
       setIsLoading(false);
       setNeedsJoin(false);
       setRoomError(null);
+      clearRoomAccessError();
     }
-  }, [currentPlayer, currentRoomId, roomId]);
+  }, [currentPlayer, currentRoomId, roomId, clearRoomAccessError]);
 
   const currentPlayerStateView = currentPlayer
     ? derivePlayerStateView(currentPlayer, activeRoomState)
@@ -387,23 +402,31 @@ const GameRoom = () => {
     }
   }, [safeGameState?.handNumber, safeGameState?.lastAction, playersList]);
 
-  // 如果有房间错误，显示错误信息
-  if (roomError) {
+  const roomAccessView = roomAccessError || roomError
+    ? deriveRoomAccessErrorView(roomAccessError || roomError, roomId)
+    : null;
+
+  const handleRoomAccessReturn = () => {
+    resetGame();
+    setRoomError(null);
+    clearRoomAccessError();
+    navigate('/', { replace: true });
+  };
+
+  // 如果有房间错误，显示可恢复的产品状态
+  if (roomAccessView) {
     return (
-      <div className="min-h-screen bg-poker-dark flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-white mb-4">无法访问房间</h2>
-          <p className="text-xl text-red-400 mb-6">{roomError}</p>
-          <div className="space-y-4">
-            <button
-              onClick={() => navigate('/')}
-              className=" primary px-8 py-3"
-            >
-              返回主页
-            </button>
-            {roomId && <p className="text-sm text-gray-400">房间ID: {roomId}</p>}
-          </div>
+      <div className="room-access-state" data-room-access-state={roomAccessView.reason}>
+        <div className="room-access-state__panel">
+          <div className="room-access-state__kicker">{roomAccessView.kicker}</div>
+          <h2 className="room-access-state__title">{roomAccessView.title}</h2>
+          <p className="room-access-state__detail">{roomAccessView.detail}</p>
+          {roomAccessView.roomCodeLabel ? (
+            <div className="room-access-state__badge">{roomAccessView.roomCodeLabel}</div>
+          ) : null}
+          <button type="button" onClick={handleRoomAccessReturn} className="mode-primary-button room-access-state__action">
+            {roomAccessView.actionLabel}
+          </button>
         </div>
       </div>
     );

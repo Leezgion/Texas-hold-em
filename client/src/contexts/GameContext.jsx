@@ -39,6 +39,22 @@ function deriveEffectiveDisplayMode(roomSettings, displayModePreference) {
   return resolveDisplayMode(roomSettings?.roomMode, displayModePreference);
 }
 
+function isMissingRoomError(error = null) {
+  const message =
+    typeof error === 'string' ? error : typeof error?.message === 'string' ? error.message : '';
+  return error?.code === 'ROOM_NOT_FOUND' || message.includes('房间不存在') || message.includes('房间已关闭');
+}
+
+function createRoomAccessError(error = null, roomId = null) {
+  const message =
+    typeof error === 'string' ? error : typeof error?.message === 'string' ? error.message : '房间已关闭';
+  return {
+    code: error?.code || (isMissingRoomError(error) ? 'ROOM_NOT_FOUND' : 'ROOM_ACCESS_ERROR'),
+    message,
+    roomId,
+  };
+}
+
 // 创建Zustand store
 const useGameStore = create((set, get) => ({
   // 连接状态
@@ -84,6 +100,7 @@ const useGameStore = create((set, get) => ({
 
   // 导航状态
   navigationTarget: null,
+  roomAccessError: null,
   intentionalJoin: false, // 标记是否是主动加入房间
   displayModePreference: readStoredDisplayModePreference(),
   effectiveDisplayMode: 'pro',
@@ -153,7 +170,36 @@ const useGameStore = create((set, get) => ({
 
     socket.on('roomCreated', ({ roomId }) => {
       // 房间创建成功，保持使用设备ID
-      set({ roomId, isCreatingRoom: false, navigationTarget: `/game/${roomId}` });
+      set({ roomId, isCreatingRoom: false, navigationTarget: `/game/${roomId}`, roomAccessError: null });
+    });
+
+    socket.on('joinRoomError', (error) => {
+      const { intentionalJoin, roomId: activeRoomId } = get();
+      const message =
+        typeof error === 'string' ? error : typeof error?.message === 'string' ? error.message : '加入房间失败';
+
+      // Active join requests are handled by emitWithResponse. This listener covers
+      // reconnect-time joins that are emitted outside a request/response promise.
+      if (intentionalJoin) {
+        return;
+      }
+
+      if (activeRoomId && isMissingRoomError(error)) {
+        const staleRoomId = activeRoomId;
+        const normalizedError =
+          error && typeof error === 'object'
+            ? { ...error, code: error.code || 'ROOM_NOT_FOUND', message: '房间已关闭' }
+            : { code: 'ROOM_NOT_FOUND', message: '房间已关闭' };
+        get().resetGame();
+        set({
+          roomAccessError: createRoomAccessError(normalizedError, staleRoomId),
+          showJoinRoom: false,
+        });
+        window.dispatchEvent(new CustomEvent('game-info', { detail: '房间已关闭，牌桌状态已清理。' }));
+        return;
+      }
+
+      window.dispatchEvent(new CustomEvent('game-error', { detail: message }));
     });
 
     // 监听房间更新事件
@@ -188,6 +234,7 @@ const useGameStore = create((set, get) => ({
         players: roomData.players,
         gameStarted: roomData.gameStarted,
         roomSettings: roomData.settings,
+        roomAccessError: null,
         effectiveDisplayMode: deriveEffectiveDisplayMode(
           roomData.settings,
           get().displayModePreference
@@ -248,6 +295,7 @@ const useGameStore = create((set, get) => ({
         gameStarted: gameState.gameStarted,
         gameState: gameState.gameState,
         roomSettings: gameState.settings,
+        roomAccessError: null,
         effectiveDisplayMode: deriveEffectiveDisplayMode(
           gameState.settings,
           get().displayModePreference
@@ -328,6 +376,7 @@ const useGameStore = create((set, get) => ({
         showJoinRoom: false,
         gameStarted: false,
         roomState: 'idle',
+        roomAccessError: null,
         gameState: null,
         playerHand: [],
         canCheck: false,
@@ -410,7 +459,10 @@ const useGameStore = create((set, get) => ({
         return roomData;
       } else {
         const error = await response.json();
-        throw new Error(error.error || '房间不存在');
+        const roomError = new Error(error.error || '房间不存在');
+        roomError.code = error.code || 'ROOM_NOT_FOUND';
+        roomError.roomId = roomId;
+        throw roomError;
       }
     } catch (error) {
       throw error;
@@ -446,6 +498,7 @@ const useGameStore = create((set, get) => ({
           roomId,
           showJoinRoom: false,
           intentionalJoin: false,
+          roomAccessError: null,
           navigationTarget: currentPath === targetPath ? null : targetPath,
         });
 
@@ -627,6 +680,8 @@ const useGameStore = create((set, get) => ({
   setShowJoinRoom: (show) => set({ showJoinRoom: show }),
   setShowHandResult: (show) =>
     set(show ? { showHandResult: true } : { showHandResult: false, handResult: null }),
+  setRoomAccessError: (error) => set({ roomAccessError: error }),
+  clearRoomAccessError: () => set({ roomAccessError: null }),
   setDisplayModePreference: (mode) => {
     const normalizedMode = normalizeDisplayModePreference(mode);
     persistDisplayModePreference(normalizedMode);
@@ -671,6 +726,7 @@ const useGameStore = create((set, get) => ({
       effectiveDisplayMode: deriveEffectiveDisplayMode(null, get().displayModePreference),
       showHandResult: false,
       handResult: null,
+      roomAccessError: null,
     });
   },
 }));

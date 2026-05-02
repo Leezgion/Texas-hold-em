@@ -11,6 +11,7 @@ import {
   deriveProPlayerSummary,
   deriveCanStartGame,
   deriveStartGameFeedback,
+  deriveRoomAccessErrorView,
   deriveGameEndedSummary,
   deriveLeaveSeatFeedback,
   deriveLeaveRoomFeedback,
@@ -687,6 +688,20 @@ test('derives a compact final ranking summary for ended games', () => {
     { rank: 1, name: '房主', chipsLabel: '1,250', profitLabel: '+250', isWinner: true },
     { rank: 2, name: 'Guest', chipsLabel: '750', profitLabel: '-250', isWinner: false },
   ]);
+});
+
+test('derives a clear closed-room access state for stale room URLs', () => {
+  const view = deriveRoomAccessErrorView(
+    { code: 'ROOM_NOT_FOUND', message: '房间不存在', roomId: 'M7394U' },
+    'M7394U'
+  );
+
+  assert.equal(view.kicker, 'ROOM CLOSED');
+  assert.equal(view.title, '房间已关闭');
+  assert.equal(view.detail, '这个牌桌已经结束或被关闭。请返回主页创建新房间，或加入仍在进行的房间。');
+  assert.equal(view.actionLabel, '返回主页');
+  assert.equal(view.roomCodeLabel, '房间 M7394U');
+  assert.equal(view.reason, 'closed');
 });
 
 test('derives the post-success seat notice from the authoritative room state', () => {

@@ -860,6 +860,38 @@ export function deriveGameEndedSummary(result = {}) {
   };
 }
 
+export function deriveRoomAccessErrorView(error = null, fallbackRoomId = null) {
+  const rawMessage =
+    typeof error === 'string' ? error : typeof error?.message === 'string' ? error.message : '房间访问失败';
+  const code = typeof error?.code === 'string' ? error.code : null;
+  const roomId = error?.roomId || fallbackRoomId || null;
+  const isClosedRoom =
+    code === 'ROOM_NOT_FOUND' ||
+    code === 'ROOM_CLOSED' ||
+    rawMessage.includes('房间不存在') ||
+    rawMessage.includes('房间已关闭');
+
+  if (isClosedRoom) {
+    return {
+      reason: 'closed',
+      kicker: 'ROOM CLOSED',
+      title: '房间已关闭',
+      detail: '这个牌桌已经结束或被关闭。请返回主页创建新房间，或加入仍在进行的房间。',
+      actionLabel: '返回主页',
+      roomCodeLabel: roomId ? `房间 ${roomId}` : null,
+    };
+  }
+
+  return {
+    reason: 'error',
+    kicker: 'ROOM ACCESS',
+    title: '无法访问房间',
+    detail: rawMessage,
+    actionLabel: '返回主页',
+    roomCodeLabel: roomId ? `房间 ${roomId}` : null,
+  };
+}
+
 export function deriveSeatChangeFeedback(result = {}) {
   const safeSeat = Math.max(0, Number(result?.toSeat) || 0);
   return {

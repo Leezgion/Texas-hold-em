@@ -5723,6 +5723,44 @@
     @apply p-3;
   }
 
+  .room-access-state {
+    min-height: 100dvh;
+    @apply grid place-items-center overflow-hidden bg-slate-950 px-4 py-6 text-white;
+    background:
+      radial-gradient(circle at 50% 22%, rgba(16, 185, 129, 0.18), transparent 34rem),
+      radial-gradient(circle at 22% 78%, rgba(245, 158, 11, 0.14), transparent 26rem),
+      linear-gradient(180deg, #06110d 0%, #020617 100%);
+  }
+
+  .room-access-state__panel {
+    @apply relative w-full max-w-md overflow-hidden rounded-[1.8rem] border border-white/10 bg-slate-950/82 p-6 text-center shadow-[0_28px_90px_rgba(0,0,0,0.48)];
+  }
+
+  .room-access-state__panel::before {
+    content: '';
+    @apply pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/70 to-transparent;
+  }
+
+  .room-access-state__kicker {
+    @apply text-[0.7rem] font-black uppercase tracking-[0.34em] text-amber-200/80;
+  }
+
+  .room-access-state__title {
+    @apply mt-3 text-3xl font-black text-white;
+  }
+
+  .room-access-state__detail {
+    @apply mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-300;
+  }
+
+  .room-access-state__badge {
+    @apply mx-auto mt-5 inline-flex rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-emerald-100;
+  }
+
+  .room-access-state__action {
+    @apply mt-6 w-full;
+  }
+
   .create-room-modal {
     background:
       linear-gradient(180deg, rgba(10, 17, 32, 0.98), rgba(4, 8, 18, 0.98)),
