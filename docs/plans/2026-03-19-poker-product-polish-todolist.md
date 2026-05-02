@@ -2178,4 +2178,22 @@ This pass validated the existing same-device room cleanup path in a real browser
   - current server behavior is correct: `createRoom` and `joinRoom` both call `leaveOtherRoomsForDevice`, so a device has one authoritative room membership
   - no production code change is needed for this stage
 - next queue:
-  - `[todo]` continue broader product polish from the next highest-risk workflow: post-switch stale page actions and multi-tab same-device ownership messaging
+  - `[done]` continue broader product polish from the next highest-risk workflow: post-switch stale page actions and multi-tab same-device ownership messaging
+
+## 2026-05-03 Multi-Tab Same-Device Ownership Audit
+
+This pass validated stale same-device tab messaging after room-switch cleanup.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-stale-same-device-ownership-audit.json` (`runId = moosa0p2`)
+  - stale home-create path on `390x844`: old page attempted `创建新游戏 -> 创建房间` after a newer same-device page registered the device
+  - stale room-exit path on `375x667`: old room page attempted `退出` after a newer same-device page registered the device and became the authoritative socket
+- result:
+  - both stale actions surfaced `当前页面身份已失效，请刷新页面后重试。`
+  - neither path exposed raw `设备未注册` nor a generic `创建房间失败/退出房间失败：设备未注册`
+  - stale home remained on `/` with the create-room modal still open for recovery
+  - stale room remained on `/game/H9N7CM`; the server room still had the player attached to the newer socket, so the stale tab did not accidentally leave the room
+- product decision:
+  - current error mapping is acceptable for this stage: stale ownership is a recoverable warning, not a destructive room action
+- next queue:
+  - `[todo]` continue product hardening around room-end / empty-room lifecycle and post-hand navigation ergonomics
