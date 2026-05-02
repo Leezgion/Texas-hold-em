@@ -70,14 +70,14 @@
   - `cd server && npm test -- --runInBand`
     - `114/114` passed on `2026-05-02`
 - Browser evidence status:
-  - `[in_progress]` live browser evidence is now available for the desktop gateway, create-room modal, and a fresh desktop waiting room on the dedicated `3101 / 5173` regression pair
+  - `[done]` live browser evidence is now available for the desktop gateway, create-room modal, desktop waiting/live, phone waiting, phone roster sheet, phone live-hand, 6-max / 9-max occupied live hands, and phone raise-drawer recovery on the dedicated `3101 / 5173` regression pair.
   - latest desktop waiting screenshot: `.runlogs/2026-05-02-room-desktop-waiting-closed-plaques-hidden.png`
-  - current measured waiting-room state: page `scrollHeight = clientHeight = 900`, zero-pot capsule hidden, closed-seat plaques hidden from the SeatRing, open-seat plaques remain readable
-  - do not claim visual completion from automated tests alone; phone waiting, phone roster sheet, and live-hand co-visibility still need fresh browser evidence
+  - latest phone live-hand screenshots include `.runlogs/2026-05-02-room-phone-live-hand-9max-after-rail-badges.png` and `.runlogs/2026-05-02-room-phone-live-hand-9max-raise-open-after-sticky-footer.png`
+  - follow-up browser gameplay smoke also covers 2-max settlement and 9-max first-action raise drawer recovery.
 - Next immediate queue:
-  - `[in_progress]` rerun live browser screenshots and metrics for create-room desktop, desktop waiting/live, phone waiting, and phone roster sheet
-  - `[in_progress]` fix remaining visual overlap or density regressions found by that browser pass
-  - `[todo]` then continue gameplay validation for supported room sizes and edge flows
+  - `[done]` reran live browser screenshots and metrics for create-room desktop, desktop waiting/live, phone waiting, and phone roster sheet.
+  - `[done]` fixed the visual overlap and density regressions found by that browser pass.
+  - `[done]` continued gameplay validation for supported room sizes and edge flows.
 
 ## 2026-05-02 Compact Waiting-Table Follow-up
 
@@ -118,7 +118,7 @@
 - Remaining queue for this phase:
   - `[done]` rerun phone portrait waiting-room browser evidence
   - `[done]` rerun phone roster sheet evidence
-  - `[todo]` rerun live-hand desktop and phone evidence for action dock / table co-visibility
+  - `[done]` rerun live-hand desktop and phone evidence for action dock / table co-visibility
 
 ## 2026-05-02 Phone Waiting And Roster Follow-up
 
