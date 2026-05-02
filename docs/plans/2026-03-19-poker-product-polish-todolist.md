@@ -599,7 +599,37 @@
     - both viewports reported no beacon/board, beacon/cards, beacon/action, beacon/dock, dock/table, dock/board, raise/beacon, raise/board, or raise/cards collision
     - final rendered cue text became `PREFLOP 轮到 座1 · 需跟注 10`
 - Product note:
-  - visual review still exposed duplicated status chrome in the phone header/table layer (`职业 / 牌局进行中`), so the next polish phase should compress or remove that duplicated room-state chrome rather than changing gameplay logic
+  - the duplicated status chrome exposed here was removed in the follow-up phase below
+
+## 2026-05-02 Phone Live Chrome Compression Follow-up
+
+- Status: `[done]` Phone live-hand header and table overlay chrome now stop duplicating room mode/state.
+- Root cause:
+  - after the clean-center pass, the phone screen still rendered `职业 / 牌局进行中` in both the header and the table overlay layer
+  - the duplicated chrome competed with the actual poker information and made the first screen feel status-first instead of table-first
+- Local fixes:
+  - phone live-hand header keeps only room code and connection state visible
+  - phone live-hand hides the table overlay status row
+  - phone live-hand header padding, badge padding, font size, and shadow are reduced under a parent `data-room-play-state="live-hand"` scope
+- Fresh evidence:
+  - focused client contract tests:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js src/utils/roomViewportLayout.test.js src/utils/tableStageLayout.test.js src/components/roomShellScrollContract.test.js`
+    - `67/67` passed on `2026-05-02`
+  - full client node suite:
+    - `227/227` passed on `2026-05-02`
+  - client production build:
+    - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - browser audit:
+    - `.runlogs/2026-05-02-phone-clean-center-audit.json`
+    - `390x844` room `6P1AMF`, `375x667` room `A9KX4O`
+    - header height is `37.41px` on both measured phone heights
+    - header mode/state badges report `display = none`
+    - table overlay status row reports `display = none`
+    - both viewports stayed `scrollHeight = clientHeight`
+    - both viewports reported `clippedViewport = []`
+    - both viewports still reported no beacon/board, beacon/cards, beacon/action, beacon/dock, dock/table, dock/board, raise/beacon, raise/board, or raise/cards collision
+- Remaining queue:
+  - `[todo]` rework the phone live-hand pot capsule / board-area hierarchy; screenshots still show the pot capsule too close to the top seat/top rail even though geometry checks pass
 
 ## Product Mode Model
 

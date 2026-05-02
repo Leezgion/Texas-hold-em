@@ -146,6 +146,21 @@ test('TableHeader uses compact connection copy on phone terminals', () => {
   assert.match(tableHeaderSource, /\{connectionLabel\}/);
 });
 
+test('phone-terminal live hand removes duplicated room chrome around the table', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.room-terminal-header__spine\s*\{[\s\S]*padding:\s*0\.24rem 0\.42rem;[\s\S]*border-radius:\s*0\.78rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.room-terminal-header__badge\s*\{[\s\S]*padding:\s*0\.22rem 0\.38rem;[\s\S]*font-size:\s*0\.64rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.room-terminal-header__badge--mode,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.room-terminal-header__badge--state,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-panel__overlay-row\s*\{\s*display:\s*none;/s
+  );
+});
+
 test('ActionDock exposes primary quick actions when header actions collapse into room-sheet-first mode', () => {
   assert.match(actionDockSource, /const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout\?\.headerActionModel !== 'toolbar'/);
   assert.match(

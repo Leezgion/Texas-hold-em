@@ -2329,6 +2329,49 @@
     gap: 0.45rem;
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header-stack {
+    gap: 0.16rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header__spine {
+    gap: 0.32rem;
+    padding: 0.24rem 0.42rem;
+    border-radius: 0.78rem;
+    background: linear-gradient(180deg, rgba(7, 12, 20, 0.78), rgba(4, 8, 14, 0.88));
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header__content {
+    gap: 0.26rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header__track {
+    gap: 0.22rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header__badge {
+    padding: 0.22rem 0.38rem;
+    font-size: 0.64rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header__badge--room-code .room-terminal-header__badge-value {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header__badge--connection {
+    gap: 0.22rem;
+    color: rgba(226, 232, 240, 0.82);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header__badge--mode,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header__badge--state,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-panel__overlay-row {
+    display: none;
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-panel {
     padding: 0.55rem;
     border-radius: 1.35rem;
