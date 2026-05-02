@@ -178,6 +178,8 @@
   - `SeatRing` hides open seats only for `phone-oval` live hands; occupied opponents remain visible
   - `SeatCard` applies phone live-hand nudges for flank/lower plaques and compacts opponent plaques into table badges
   - phone top-row canonical anchors move from `-1` to `-0.91`, staying below the compact header while preserving table and stage-band clearance
+  - 6-max / 9-max occupied phone live-hand evidence exposed a right-side plaque collision between `lower-right` and `near-hero-right`
+  - the follow-up fix turns phone live-hand opponent plaques into shorter rail badges, hides the non-essential net chip on phone, and separates `lower-right` from `near-hero-right`
 - Automated evidence:
   - red test before the seat fix: `top-left y=-272 should stay below the compact header apron`
   - red contract before the live-hand fix: missing `data-room-play-state` and phone live-stage / dock rules
@@ -216,8 +218,30 @@
   - `clippedViewport = []`
   - `dockTableGap = 9.73px`
   - `dockBoardGap = 124.73px`
+  - `.runlogs/2026-05-02-room-phone-live-hand-6max-after-rail-badges.png`
+  - room `W6CTAW`
+  - `scrollHeight = clientHeight = bodyHeight = 844`
+  - `plaqueCount = 5`
+  - `dockTable = false`
+  - `dockBoard = false`
+  - `actionCards = false`
+  - `plaqueDock = []`
+  - `plaqueBoard = []`
+  - `plaquePairs = []`
+  - `clippedViewport = []`
+  - `.runlogs/2026-05-02-room-phone-live-hand-9max-after-rail-badges.png`
+  - room `0EMFC5`
+  - `scrollHeight = clientHeight = bodyHeight = 844`
+  - `plaqueCount = 8`
+  - `dockTable = false`
+  - `dockBoard = false`
+  - `actionCards = false`
+  - `plaqueDock = []`
+  - `plaqueBoard = []`
+  - `plaquePairs = []`
+  - `clippedViewport = []`
 - Remaining queue:
-  - `[todo]` validate phone live-hand with 6-max and 9-max occupied seats, including lower-flank and near-hero occupied opponents
+  - `[done]` validate phone live-hand with 6-max and 9-max occupied seats, including lower-flank and near-hero occupied opponents
   - `[todo]` validate raise-slider open state on phone live-hand so expanded bet sizing does not reintroduce scroll or table overlap
   - `[todo]` continue gameplay validation for supported room sizes and edge flows
 

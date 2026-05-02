@@ -191,6 +191,10 @@ For Poker OS shell work, add these spot checks explicitly:
   - `plaqueBoard = []`
   - `clippedViewport = []`
   - open-seat plaques are intentionally suppressed on phone live-hand; validate occupied plaques, not waiting-seat affordances
+- phone live-hand occupied-density evidence must also record:
+  - at least one `6-max` and one `9-max` room with all seats occupied after changing phone plaque size or transforms
+  - `plaquePairs = []`; page scroll and dock/table metrics do not prove opponent badges are readable
+  - the `9-max` `lower-right` and `near-hero-right` badges, because blind/action badges can become taller than stack-only badges
 - broadcast tactical density evidence: record the exact artifacts and measurements:
   - treat the following as a dated sample capture set from `2026-03-20`, not as fixed future inputs
   - for future reruns, use a naming pattern like `density-<date>-<surface>.png` and substitute the current room IDs instead of reusing `SBJV6M` / `0G3HEY`
@@ -386,3 +390,4 @@ Expected final state:
 - In waiting-room density checks, verify that `0` pot capsules and closed-seat plaques are not consuming the top-stage budget. Closed seats should remain visible as subtle table guides, not as full actionable SeatRing plaques.
 - For phone waiting-room checks, measure lower flank plaques against the dock, not only against the table and board. The `2026-05-02` phone pass looked acceptable until rects showed lower seats entering the dock by about `9.4px`.
 - For phone header checks, inspect `.room-terminal-header__track.scrollWidth <= clientWidth`; a single clipped connection badge is still a product defect even if the page has no vertical scroll.
+- For phone live-hand 9-max checks, measure occupied plaque-to-plaque collisions. The `2026-05-02` pass had no page scroll and no dock/table/board collision, but `near-hero-right` still visually stacked on top of `lower-right` until `plaquePairs` was added to the evidence script.

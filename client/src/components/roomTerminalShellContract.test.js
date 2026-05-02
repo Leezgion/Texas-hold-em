@@ -376,6 +376,14 @@ test('SeatCard nudges live phone flank plaques away from viewport and dock edges
   assert.match(seatCardSource, /const PHONE_LIVE_PLAQUE_TRANSFORMS = Object\.freeze\(\{/);
   assert.match(
     seatCardSource,
+    /'lower-right':\s*'translate\(calc\(-50% - 0\.45rem\), calc\(-50% - 8\.5rem\)\)'/
+  );
+  assert.match(
+    seatCardSource,
+    /'near-hero-right':\s*'translate\(calc\(-50% \+ 0\.45rem\), calc\(-50% - 13\.25rem\)\)'/
+  );
+  assert.match(
+    seatCardSource,
     /const livePhonePlaqueTransform =\s*gameStarted && resolvedTableProfile === 'phone-oval'\s*\? PHONE_LIVE_PLAQUE_TRANSFORMS\[anchorRole\]\s*\|\|\s*'translate\(-50%, -50%\)'\s*:\s*'translate\(-50%, -50%\)';/s
   );
   assert.match(seatCardSource, /transform:\s*livePhonePlaqueTransform,/);
@@ -384,7 +392,15 @@ test('SeatCard nudges live phone flank plaques away from viewport and dock edges
 test('phone-terminal live hand compacts opponent plaques to table badges', () => {
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque\s*\{[\s\S]*width:\s*clamp\(3\.6rem,\s*16vw,\s*4\.25rem\);[\s\S]*min-height:\s*4\.45rem;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque\s*\{[\s\S]*width:\s*clamp\(4\.1rem,\s*18vw,\s*4\.75rem\);[\s\S]*min-height:\s*3\.65rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque__status-strip\s*\{[\s\S]*flex-wrap:\s*nowrap;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque__net\s*\{\s*display:\s*none;/s
   );
   assert.match(
     globalStylesSource,

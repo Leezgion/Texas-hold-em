@@ -5,10 +5,10 @@ import { getPlayerDisplayName } from '../utils/playerIdentity';
 
 const PHONE_LIVE_PLAQUE_TRANSFORMS = Object.freeze({
   'upper-left': 'translate(calc(-50% + 0.45rem), -50%)',
-  'lower-left': 'translate(calc(-50% + 0.45rem), calc(-50% - 5.75rem))',
+  'lower-left': 'translate(calc(-50% + 0.45rem), calc(-50% - 8.5rem))',
   'upper-right': 'translate(calc(-50% - 0.45rem), -50%)',
-  'lower-right': 'translate(calc(-50% - 0.45rem), calc(-50% - 5.75rem))',
-  'near-hero-right': 'translate(calc(-50% - 0.7rem), calc(-50% - 15rem))',
+  'lower-right': 'translate(calc(-50% - 0.45rem), calc(-50% - 8.5rem))',
+  'near-hero-right': 'translate(calc(-50% + 0.45rem), calc(-50% - 13.25rem))',
 });
 
 const SeatCard = ({
