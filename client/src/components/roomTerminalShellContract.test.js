@@ -37,6 +37,13 @@ test('GameRoom keeps the dock inside the single-screen main stage stack', () => 
   );
 });
 
+test('room route clears gateway page padding so phone terminals fit inside 100dvh', () => {
+  assert.match(
+    globalStylesSource,
+    /\.mode-shell\[data-shell-route="room"\]\s+\.mode-shell__content,\s*\.mode-shell\[data-shell-route="room"\]\s+\.mode-app-shell\s*\{[^}]*padding:\s*0;/s
+  );
+});
+
 test('TableHeader and ActionDock consume the terminal layout policies from the viewport helper', () => {
   assert.match(tableHeaderSource, /viewportLayout\?\.headerActionModel/);
   assert.match(tableHeaderSource, /房间/);

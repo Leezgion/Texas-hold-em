@@ -420,6 +420,38 @@
     - phone modal open: `bodyOverflowY = hidden`, `htmlOverflowY = hidden`, modal body still `overflowY = auto`
     - desktop modal open: `bodyOverflowY = hidden`, `htmlOverflowY = hidden`
 
+## 2026-05-02 Create-Room Submit Shell-Fit Follow-up
+
+- Status: `[done]` Create-room submit-to-room shell fit is implemented and verified locally.
+- Root cause:
+  - after creating a room from the phone modal, scroll-lock restored correctly and the page stayed single-screen
+  - fresh browser metrics still showed the room shell at `top = 10.39`, `bottom = 854.39`, so the shell itself extended about `10px` below the viewport
+  - the cause was double vertical padding: the room route kept gateway `.mode-shell__content` padding while `room-terminal-shell` also had `py-3`
+- Local fixes:
+  - room routes now clear `.mode-shell__content` / `.mode-app-shell` padding
+  - the room terminal keeps its own internal shell padding, so the table still has breathing room without exceeding `100dvh`
+- Fresh evidence:
+  - red before implementation:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js`
+    - failed at `room route clears gateway page padding so phone terminals fit inside 100dvh`
+  - green focused test:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js`
+    - `21/21` passed on `2026-05-02`
+  - full client suite:
+    - `cd client && node --test <all src/**/*.test.js>`
+    - `220/220` passed on `2026-05-02`
+  - client build:
+    - `cd client && npm run build`
+    - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - browser evidence:
+    - `.runlogs/2026-05-02-create-room-submit-phone-after-shell-padding.png`
+    - room `B58VUN`
+    - `bodyHeight = clientHeight = scrollHeight = 844`
+    - `roomScrollContract = single-screen`
+    - `shellRect.top = 0`, `shellRect.bottom = 844`, `shellRect.height = 844`
+    - `frameRect.top = 12`, `frameRect.bottom = 832`, `frameRect.height = 820`
+    - `clipped = []`
+
 ## Product Mode Model
 
 ### Shared Room Mode

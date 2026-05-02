@@ -90,6 +90,7 @@
     min-height: 100dvh;
     height: 100dvh;
     overflow: hidden;
+    padding: 0;
   }
 
   .mode-app-shell {
