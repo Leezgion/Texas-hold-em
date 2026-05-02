@@ -91,6 +91,7 @@ const GameRoom = () => {
     setShowJoinRoom,
     setShowHandResult,
     showHandResult,
+    handResult,
     startGame,
     recoverRoom,
     resetGame,
@@ -305,6 +306,18 @@ const GameRoom = () => {
     }
   }, [safeGameState?.handNumber]);
 
+  useEffect(() => {
+    if (!handResult?.isGameEnded) {
+      return;
+    }
+
+    setActiveSupportPanel(null);
+    setShowLeaveSeat(false);
+    setShowExitRoom(false);
+    setShowRebuy(false);
+    setShowShareLink(false);
+  }, [handResult?.isGameEnded]);
+
   useLayoutEffect(() => {
     const dockElement = roomDockRef.current;
 
@@ -483,6 +496,16 @@ const GameRoom = () => {
         error,
       });
       window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
+    }
+  };
+
+  const handleHandResultClose = () => {
+    setShowHandResult(false);
+
+    if (handResult?.isGameEnded) {
+      isExitingRoomRef.current = true;
+      resetGame();
+      navigate('/', { replace: true });
     }
   };
 
@@ -991,7 +1014,8 @@ const GameRoom = () => {
 
         <HandResultModal
           show={showHandResult}
-          onClose={() => setShowHandResult(false)}
+          result={handResult}
+          onClose={handleHandResultClose}
         />
 
         <LeaveSeatModal

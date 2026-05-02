@@ -2462,4 +2462,35 @@ This pass verified that reveal history remains recoverable after the settlement 
 - product observation:
   - hidden/mucked reveal choices are currently not surfaced in `detailLines`; this avoids noisy default `盖牌` lines, but a future study-mode-only option could explicitly show confirmed muck decisions if we start tracking explicit hide selections separately from default hidden state
 - next queue:
-  - `[todo]` continue professional-player hardening with room/game lifecycle edge cases beyond normal hand flow: game-duration expiry, end-game summary visibility, and whether active dialogs/toasts cleanly reset when a room is closed by timer
+  - `[done]` continue professional-player hardening with room/game lifecycle edge cases beyond normal hand flow: game-duration expiry, end-game summary visibility, and whether active dialogs/toasts cleanly reset when a room is closed by timer
+
+## 2026-05-03 Phone Game-End Summary / Unresolved Pot Return
+
+This pass fixed timer-driven room closure so a duration-expired game produces a visible final ranking instead of silently deleting the room.
+
+- root cause:
+  - `RoomManager.endGame` emitted `gameEnded` and deleted the room, but the client did not listen for `gameEnded`
+  - `HandResultModal` was a null shell, so even a delivered summary would not be visible
+  - ending a game mid-hand ranked players by `chips` only, which lost chips currently committed in `totalBet`
+- change:
+  - duration expiry now calls `endGame(roomId, 'duration_expired')`
+  - `endGame` clears room/gameplay timers, settlement state, pending next-hand timers, and disconnect timers before deleting the room
+  - final ranking returns unresolved live-hand bets to each player by using `chips + totalBet`, and exposes `unsettledBetReturned` plus `unsettledPotReturned`
+  - the client listens for `gameEnded`, closes active room overlays, opens a compact final-ranking modal, and returns home when the summary is dismissed
+  - a debug-only `/api/debug/rooms/:roomId/end-game` route supports deterministic browser lifecycle audits
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-game-ended-summary-audit.json` (`runId = moovypco`)
+  - fresh room `M7394U`
+  - screenshot: `.runlogs/2026-05-03-phone-game-ended-summary.png`
+  - active support panel was open before end-game and was closed by the summary flow
+  - final modal showed total chips `2,000` and `未完成底池已退回 30`
+  - end payload returned both players to `1,000`, profit `0`, and `unsettledPotReturned = 30`
+  - dismissing the modal returned to `/`, cleared inert state, and both debug/client room checks returned `404`
+- final verification:
+  - `cd server && pnpm jest tests/gameLogic/RoomState.test.js --runInBand`: `20/20`
+  - `cd server && pnpm test --runInBand`: `130/130`
+  - `cd client && pnpm exec node --test src/view-models/gameViewModel.test.js src/components/interactionSurfaceContract.test.js`: `65/65`
+  - `cd client && pnpm exec node --test`: `262/262`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-a7fc3c01.js` 538.41 kB)
+- next queue:
+  - `[todo]` validate stale room tabs and direct `/game/:roomId` refresh after a timer-ended room is deleted, so users see a clear room-closed or return-home path instead of generic missing-room behavior

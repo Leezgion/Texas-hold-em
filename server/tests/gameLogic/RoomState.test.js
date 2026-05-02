@@ -127,6 +127,104 @@ describe('RoomManager state vocabularies', () => {
     expect(roomState.players.map((player) => player.id)).toEqual(['device-host']);
   });
 
+  it('emits a final ranking and clears gameplay timers when a room ends', () => {
+    const emitted = [];
+    const io = {
+      to: jest.fn(() => ({
+        emit: (event, payload) => emitted.push({ event, payload }),
+      })),
+      sockets: {
+        sockets: new Map(),
+      },
+    };
+    const gameRooms = new Map();
+    const socketDeviceMap = new Map();
+    const roomManager = new RoomManager(io, gameRooms, socketDeviceMap);
+    const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+    const guestSocket = registerDevice(io, socketDeviceMap, 'socket-guest', 'device-guest');
+
+    const roomId = roomManager.createRoom(hostSocket, {
+      duration: 60,
+      maxPlayers: 2,
+      allinDealCount: 1,
+    });
+    roomManager.joinRoom(guestSocket, roomId, 'device-guest', 'Guest');
+
+    const room = gameRooms.get(roomId);
+    room.players[0].chips = 1250;
+    room.players[1].chips = 750;
+    room.gameLogic = {
+      clearPlayerTimer: jest.fn(),
+      clearNextHandTimeout: jest.fn(),
+      clearSettlementState: jest.fn(),
+    };
+
+    const result = roomManager.endGame(roomId, 'duration_expired');
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        roomId,
+        reason: 'duration_expired',
+        finalRanking: [
+          expect.objectContaining({ nickname: room.players[0].nickname, chips: 1250, profit: 250 }),
+          expect.objectContaining({ nickname: 'Guest', chips: 750, profit: -250 }),
+        ],
+      })
+    );
+    expect(emitted).toContainEqual({
+      event: 'gameEnded',
+      payload: expect.objectContaining({
+        roomId,
+        reason: 'duration_expired',
+        finalRanking: result.finalRanking,
+      }),
+    });
+    expect(room.gameLogic.clearPlayerTimer).toHaveBeenCalled();
+    expect(room.gameLogic.clearNextHandTimeout).toHaveBeenCalled();
+    expect(room.gameLogic.clearSettlementState).toHaveBeenCalled();
+    expect(gameRooms.has(roomId)).toBe(false);
+  });
+
+  it('returns unresolved live-hand bets in the final ranking when a room ends mid-hand', () => {
+    const emitted = [];
+    const io = {
+      to: jest.fn(() => ({
+        emit: (event, payload) => emitted.push({ event, payload }),
+      })),
+      sockets: {
+        sockets: new Map(),
+      },
+    };
+    const gameRooms = new Map();
+    const socketDeviceMap = new Map();
+    const roomManager = new RoomManager(io, gameRooms, socketDeviceMap);
+    const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+    const guestSocket = registerDevice(io, socketDeviceMap, 'socket-guest', 'device-guest');
+
+    const roomId = roomManager.createRoom(hostSocket, {
+      duration: 60,
+      maxPlayers: 2,
+      allinDealCount: 1,
+    });
+    roomManager.joinRoom(guestSocket, roomId, 'device-guest', 'Guest');
+
+    const room = gameRooms.get(roomId);
+    room.players[0].chips = 990;
+    room.players[0].totalBet = 10;
+    room.players[0].ledger = roomManager.createPlayerLedger(1000, 990);
+    room.players[1].chips = 980;
+    room.players[1].totalBet = 20;
+    room.players[1].ledger = roomManager.createPlayerLedger(1000, 980);
+
+    const result = roomManager.endGame(roomId, 'duration_expired');
+
+    expect(result.unsettledPotReturned).toBe(30);
+    expect(result.finalRanking).toEqual([
+      expect.objectContaining({ nickname: room.players[0].nickname, chips: 1000, profit: 0 }),
+      expect.objectContaining({ nickname: 'Guest', chips: 1000, profit: 0 }),
+    ]);
+  });
+
   it('applies configured default settleMs when the room creator does not provide one', () => {
     const { io, gameRooms, socketDeviceMap, roomManager } = createManagerWithDefaults({
       settleMs: 8000,

@@ -813,6 +813,53 @@ export function deriveRebuySuccessFeedback(result = {}) {
   };
 }
 
+function mapGameEndedReason(reason = null) {
+  switch (reason) {
+    case 'duration_expired':
+      return '房间时长已到';
+    case 'debug_end_game':
+      return '调试结束牌局';
+    default:
+      return '牌局已结束';
+  }
+}
+
+export function deriveGameEndedSummary(result = {}) {
+  const finalRanking = Array.isArray(result?.finalRanking) ? result.finalRanking : [];
+  const rankingRows = finalRanking.map((entry, index) => {
+    const chips = Number(entry?.chips) || 0;
+    const profit = Number(entry?.profit) || 0;
+    const name = getPlayerDisplayName(
+      {
+        nickname: entry?.nickname,
+        isHost: typeof entry?.nickname === 'string' && entry.nickname.startsWith('房主-'),
+      },
+      { fallback: '玩家' }
+    );
+
+    return {
+      rank: index + 1,
+      name,
+      chipsLabel: chips.toLocaleString(),
+      profitLabel: formatSignedChips(profit),
+      isWinner: index === 0 && finalRanking.length > 0,
+    };
+  });
+
+  const totalChips = finalRanking.reduce((sum, entry) => sum + (Number(entry?.chips) || 0), 0);
+  const unsettledPotReturned = Number(result?.unsettledPotReturned) || 0;
+
+  return {
+    title: '牌局已结束',
+    reasonLabel: mapGameEndedReason(result?.reason),
+    playerCountLabel: `${finalRanking.length} 人`,
+    totalChipsLabel: totalChips.toLocaleString(),
+    unsettledReturnLabel:
+      unsettledPotReturned > 0 ? `未完成底池已退回 ${unsettledPotReturned.toLocaleString()}` : null,
+    rankingRows,
+  };
+}
+
 export function deriveSeatChangeFeedback(result = {}) {
   const safeSeat = Math.max(0, Number(result?.toSeat) || 0);
   return {

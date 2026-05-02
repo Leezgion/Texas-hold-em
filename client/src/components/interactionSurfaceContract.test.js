@@ -9,6 +9,8 @@ const modeShellSource = readFileSync(new URL('./ModeShell.jsx', import.meta.url)
 const actionDockSource = readFileSync(new URL('./ActionDock.jsx', import.meta.url), 'utf8');
 const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.meta.url), 'utf8');
 const gameContextSource = readFileSync(new URL('../contexts/GameContext.jsx', import.meta.url), 'utf8');
+const gameRoomSource = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 'utf8');
+const handResultModalSource = readFileSync(new URL('./HandResultModal.jsx', import.meta.url), 'utf8');
 const playerTimerSource = readFileSync(new URL('./PlayerTimer.jsx', import.meta.url), 'utf8');
 const settlementOverlaySource = readFileSync(new URL('./SettlementOverlay.jsx', import.meta.url), 'utf8');
 const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
@@ -105,6 +107,31 @@ test('GameContext guards player actions against duplicate socket submissions', (
   assert.match(gameContextSource, /requestKey:\s*'playerAction'/);
   assert.match(gameContextSource, /rejectConcurrent:\s*true/);
   assert.match(gameContextSource, /concurrentMessage:\s*'玩家操作请求处理中'/);
+});
+
+test('GameContext preserves timer-ended game summaries for the room UI', () => {
+  assert.match(gameContextSource, /socket\.on\('gameEnded'/);
+  assert.match(gameContextSource, /isGameEnded:\s*true/);
+  assert.match(gameContextSource, /showHandResult:\s*true/);
+  assert.match(gameContextSource, /handResult:\s*\{\s*\.\.\.summary,\s*isGameEnded:\s*true\s*\}/s);
+  assert.match(gameContextSource, /!get\(\)\.handResult\?\.isGameEnded/);
+});
+
+test('GameRoom clears active overlays when a timer-ended summary opens', () => {
+  assert.match(gameRoomSource, /handResult/);
+  assert.match(gameRoomSource, /handResult\?\.isGameEnded/);
+  assert.match(gameRoomSource, /setActiveSupportPanel\(null\)/);
+  assert.match(gameRoomSource, /setShowLeaveSeat\(false\)/);
+  assert.match(gameRoomSource, /setShowExitRoom\(false\)/);
+  assert.match(gameRoomSource, /result=\{handResult\}/);
+});
+
+test('HandResultModal renders a final ranking instead of staying a null shell', () => {
+  assert.match(handResultModalSource, /deriveGameEndedSummary/);
+  assert.match(handResultModalSource, /game-ended-summary/);
+  assert.match(handResultModalSource, /data-game-ended-summary/);
+  assert.match(handResultModalSource, /finalRanking/);
+  assert.doesNotMatch(handResultModalSource, /const HandResultModal = \(\) => null/);
 });
 
 test('RebuyModal clears stale warning context before showing confirmed rebuy success', () => {

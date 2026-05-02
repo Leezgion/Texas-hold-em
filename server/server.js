@@ -336,6 +336,17 @@ app.get('/api/debug/rooms/:roomId', (req, res) => {
   });
 });
 
+app.post('/api/debug/rooms/:roomId/end-game', (req, res) => {
+  const { roomId } = req.params;
+  const result = roomManager.endGame(roomId, req.body?.reason || 'debug_end_game');
+
+  if (!result) {
+    return res.status(404).json({ error: '房间不存在' });
+  }
+
+  return res.json(result);
+});
+
 // 调试端点 - 查看设备映射
 app.get('/api/debug/devices', (req, res) => {
   const deviceMappings = listSocketDeviceMappings(socketDeviceMap);

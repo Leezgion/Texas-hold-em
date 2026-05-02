@@ -255,7 +255,7 @@ const useGameStore = create((set, get) => ({
       });
 
       // 新一手开始后自动关闭上一手的结果弹窗，避免遮挡后续操作
-      if (get().showHandResult && previousGameState && nextPhase !== 'showdown') {
+      if (get().showHandResult && !get().handResult?.isGameEnded && previousGameState && nextPhase !== 'showdown') {
         set({ showHandResult: false, handResult: null });
       }
 
@@ -318,6 +318,22 @@ const useGameStore = create((set, get) => ({
 
     socket.on('allinResult', (result) => {
       set({ showHandResult: true, handResult: { ...result, isAllin: true } });
+    });
+
+    socket.on('gameEnded', (summary) => {
+      set({
+        showHandResult: true,
+        handResult: { ...summary, isGameEnded: true },
+        showCreateRoom: false,
+        showJoinRoom: false,
+        gameStarted: false,
+        roomState: 'idle',
+        gameState: null,
+        playerHand: [],
+        canCheck: false,
+        canRaise: false,
+        minRaise: 0,
+      });
     });
 
     // 观战模式通知

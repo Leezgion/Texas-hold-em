@@ -661,7 +661,7 @@ class RoomManager {
     const timer = setInterval(() => {
       const now = Date.now();
       if (now >= endTime) {
-        this.endGame(roomId);
+        this.endGame(roomId, 'duration_expired');
         clearInterval(timer);
       } else {
         // 发送剩余时间
@@ -674,27 +674,55 @@ class RoomManager {
   }
 
   // 结束游戏
-  endGame(roomId) {
+  endGame(roomId, reason = 'duration_expired') {
     const room = this.gameRooms.get(roomId);
-    if (!room) return;
+    if (!room) return null;
 
     if (room.timer) {
       clearInterval(room.timer);
+      room.timer = null;
     }
 
-    // 计算最终排名
-    const finalRanking = room.players
-      .map((p) => ({
-        nickname: p.nickname,
-        chips: p.chips,
-        profit: p.chips - room.settings.initialChips,
-      }))
-      .sort((a, b) => b.chips - a.chips);
+    if (room.gameLogic) {
+      room.gameLogic.clearPlayerTimer?.();
+      room.gameLogic.clearNextHandTimeout?.();
+      room.gameLogic.clearSettlementState?.();
+    }
 
-    this.io.to(roomId).emit('gameEnded', { finalRanking });
+    const finalRanking = room.players
+      .map((p) => {
+        const unsettledBet = Math.max(0, Number(p.totalBet) || 0);
+        const finalChips = (Number(p.chips) || 0) + unsettledBet;
+        const totalBuyIn = Number(p.ledger?.totalBuyIn ?? room.settings.initialChips) || 0;
+
+        return {
+          nickname: p.nickname,
+          chips: finalChips,
+          profit: finalChips - totalBuyIn,
+          unsettledBetReturned: unsettledBet,
+        };
+      })
+      .sort((a, b) => b.chips - a.chips);
+    const unsettledPotReturned = finalRanking.reduce(
+      (sum, entry) => sum + (Number(entry.unsettledBetReturned) || 0),
+      0
+    );
+
+    const payload = {
+      roomId,
+      reason,
+      endedAt: Date.now(),
+      finalRanking,
+      unsettledPotReturned,
+    };
+
+    this.io.to(roomId).emit('gameEnded', payload);
+
+    room.players.forEach((player) => this.clearDisconnectGraceTimer(player.id));
 
     // 清理房间
     this.gameRooms.delete(roomId);
+    return payload;
   }
 
   // 处理玩家动作

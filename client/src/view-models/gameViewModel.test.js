@@ -11,6 +11,7 @@ import {
   deriveProPlayerSummary,
   deriveCanStartGame,
   deriveStartGameFeedback,
+  deriveGameEndedSummary,
   deriveLeaveSeatFeedback,
   deriveLeaveRoomFeedback,
   derivePendingJoinBanner,
@@ -665,6 +666,27 @@ test('derives explicit rebuy success feedback from the confirmed chip result', (
       detail: '已补码 1,000，当前筹码 2,000。',
     }
   );
+});
+
+test('derives a compact final ranking summary for ended games', () => {
+  const summary = deriveGameEndedSummary({
+    reason: 'duration_expired',
+    finalRanking: [
+      { nickname: '房主-device_final_host', chips: 1250, profit: 250 },
+      { nickname: 'Guest', chips: 750, profit: -250 },
+    ],
+    unsettledPotReturned: 30,
+  });
+
+  assert.equal(summary.title, '牌局已结束');
+  assert.equal(summary.reasonLabel, '房间时长已到');
+  assert.equal(summary.playerCountLabel, '2 人');
+  assert.equal(summary.totalChipsLabel, '2,000');
+  assert.equal(summary.unsettledReturnLabel, '未完成底池已退回 30');
+  assert.deepEqual(summary.rankingRows, [
+    { rank: 1, name: '房主', chipsLabel: '1,250', profitLabel: '+250', isWinner: true },
+    { rank: 2, name: 'Guest', chipsLabel: '750', profitLabel: '-250', isWinner: false },
+  ]);
 });
 
 test('derives the post-success seat notice from the authoritative room state', () => {
