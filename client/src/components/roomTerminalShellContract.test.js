@@ -369,6 +369,25 @@ test('phone-terminal live hand reserves a compact stage above a bounded betting 
   );
 });
 
+test('phone-terminal live hand uses a clean-center table cue instead of a large state card', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-beacon\s*\{[\s\S]*bottom:\s*auto;[\s\S]*top:\s*clamp\(16\.8rem,\s*34dvh,\s*18rem\);[\s\S]*width:\s*fit-content;[\s\S]*max-width:\s*min\(15\.5rem,\s*calc\(100% - 5rem\)\);[\s\S]*padding:\s*0\.24rem 0\.48rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-beacon__mode,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-beacon__state,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-beacon__turn-seat,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-beacon__last-action\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-beacon__cue\s*\{[\s\S]*width:\s*auto;[\s\S]*max-width:\s*8\.5rem;[\s\S]*white-space:\s*nowrap;[\s\S]*text-overflow:\s*ellipsis;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-beacon\s*\{[\s\S]*top:\s*clamp\(10\.5rem,\s*28dvh,\s*11\.9rem\);/s
+  );
+});
+
 test('short-height phone live hand switches to a micro table-and-dock contract', () => {
   assert.match(
     globalStylesSource,

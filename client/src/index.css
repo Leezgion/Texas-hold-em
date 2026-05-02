@@ -2348,6 +2348,48 @@
     transform: translateY(-4.25rem);
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon {
+    bottom: auto;
+    top: clamp(16.8rem, 34dvh, 18rem);
+    width: fit-content;
+    max-width: min(15.5rem, calc(100% - 5rem));
+    flex-wrap: nowrap;
+    gap: 0.22rem;
+    padding: 0.24rem 0.48rem;
+    border-radius: 999px;
+    border-color: rgba(247, 229, 173, 0.1);
+    background: rgba(3, 8, 14, 0.28);
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon__mode,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon__state,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon__turn-seat,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon__last-action {
+    display: none;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon__phase,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon__turn-seat {
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon__cue {
+    width: auto;
+    max-width: 8.5rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.56rem;
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque {
     width: clamp(4.1rem, 18vw, 4.75rem);
     min-height: 3.65rem;
@@ -3737,6 +3779,12 @@
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-center-shell {
     transform: translateY(-4.75rem);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-beacon {
+    top: clamp(10.5rem, 28dvh, 11.9rem);
+    max-width: min(13rem, calc(100% - 4rem));
+    padding: 0.2rem 0.42rem;
   }
 
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-dock-state="live"] {

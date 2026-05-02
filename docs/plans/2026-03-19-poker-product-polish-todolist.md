@@ -530,7 +530,8 @@
 - Remaining queue:
   - `[done]` audit phone live-hand support panels (`成员 / 牌局 / 房间`) on short-height and regular phone viewports
   - `[done]` run real phone action execution flow through quick actions, raise confirm/cancel, and post-action state transitions
-  - `[todo]` continue visual density polish only after the single-screen action path remains stable on both phone heights
+  - `[done]` compress the phone live-hand center cue after the single-screen action path stayed stable on both phone heights
+  - `[todo]` remove duplicated phone live-hand chrome from the table/header layer so the table owns more of the first screen
 
 ## 2026-05-02 Phone Support Panel Audit Follow-up
 
@@ -570,6 +571,35 @@
   - guest `跟注` changed pot to `80` and advanced the hand to `flop`
 - Product note:
   - after the guest call, the guest correctly remains the postflop actor in this heads-up setup and sees `过牌 / 加注 / 全下` without reintroducing scroll or clipping
+
+## 2026-05-02 Clean-Center Phone Live-Table Follow-up
+
+- Status: `[done]` Phone live-hand center state is now a low-profile felt cue instead of a large state card.
+- Root cause:
+  - the prior center beacon was geometrically compacted but still sat inside the community-card tray on real phone browsers
+  - the independent `座1` turn-seat badge duplicated the cue text and wrapped vertically on narrow phone widths
+  - hidden/missing last-action content must be treated differently in browser audits; a missing optional element is not a visible regression
+- Local fixes:
+  - phone live-hand `.table-stage-beacon` now moves below the board tray, uses a single-line pill, and hides mode/state/turn-seat/last-action chrome
+  - short-height phones use a separate beacon offset so `375x667` keeps the cue between the board tray and dock
+  - the browser audit now reads `innerText` for rendered copy and only fails last-action when an existing element is visible
+- Fresh evidence:
+  - focused client contract tests:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js src/utils/roomViewportLayout.test.js src/utils/tableStageLayout.test.js src/components/roomShellScrollContract.test.js`
+    - `66/66` passed on `2026-05-02`
+  - full client node suite:
+    - `226/226` passed on `2026-05-02`
+  - client production build:
+    - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - browser audit:
+    - `.runlogs/2026-05-02-phone-clean-center-audit.json`
+    - `390x844` room `BQ9CK9`, `375x667` room `ORP4MM`
+    - both viewports stayed `scrollHeight = clientHeight`
+    - both viewports reported `clippedViewport = []`
+    - both viewports reported no beacon/board, beacon/cards, beacon/action, beacon/dock, dock/table, dock/board, raise/beacon, raise/board, or raise/cards collision
+    - final rendered cue text became `PREFLOP 轮到 座1 · 需跟注 10`
+- Product note:
+  - visual review still exposed duplicated status chrome in the phone header/table layer (`职业 / 牌局进行中`), so the next polish phase should compress or remove that duplicated room-state chrome rather than changing gameplay logic
 
 ## Product Mode Model
 
