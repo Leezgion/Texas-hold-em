@@ -1,8 +1,9 @@
 function resolveHeightClass({ width = 0, height = 0 } = {}) {
   const safeWidth = Number(width) || 0;
   const safeHeight = Number(height) || 0;
+  const isCompactPhonePortrait = safeWidth > 0 && safeWidth < 768 && safeHeight >= 520 && safeHeight < 700;
 
-  if (safeHeight > 0 && (safeHeight < 520 || (safeWidth >= 768 && safeHeight < 720))) {
+  if (safeHeight > 0 && (safeHeight < 520 || isCompactPhonePortrait || (safeWidth >= 768 && safeHeight < 720))) {
     return 'short-height';
   }
 

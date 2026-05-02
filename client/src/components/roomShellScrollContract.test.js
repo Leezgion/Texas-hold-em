@@ -6,6 +6,7 @@ import { resolveRoomViewportLayout } from '../utils/roomViewportLayout.js';
 test('room viewport layouts keep the single-screen scroll contract across supported viewports', () => {
   const cases = [
     { width: 390, height: 844, expectedHeightClass: 'regular-height' },
+    { width: 375, height: 667, expectedHeightClass: 'short-height' },
     { width: 844, height: 390, expectedHeightClass: 'short-height' },
     { width: 1280, height: 900, expectedHeightClass: 'regular-height' },
     { width: 1720, height: 1000, expectedHeightClass: 'regular-height' },

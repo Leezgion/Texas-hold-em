@@ -146,6 +146,27 @@ test('compresses short-height landscape stage layout without changing the family
   assert.ok(shortLandscape.stageMinHeightPx < regularLandscape.stageMinHeightPx);
 });
 
+test('compresses compact phone portrait table geometry before the dock can overlap the felt', () => {
+  const compactPhone = resolveTableSurfaceLayout({
+    viewportWidth: 375,
+    viewportHeight: 667,
+    tableDiameter: 208,
+  });
+  const regularPhone = resolveTableSurfaceLayout({
+    viewportWidth: 390,
+    viewportHeight: 844,
+    tableDiameter: 208,
+  });
+
+  assert.equal(compactPhone.profile, 'phone-oval');
+  assert.equal(compactPhone.heightClass, 'short-height');
+  assert.equal(compactPhone.stageDensity, 'compressed');
+  assert.equal(compactPhone.stageBudget.minStageBudgetPx, 180);
+  assert.ok(compactPhone.stageScale < regularPhone.stageScale);
+  assert.ok(compactPhone.tableHeight <= 230);
+  assert.ok(compactPhone.tableHeight < regularPhone.tableHeight);
+});
+
 test('builds one shared desktop-oval runtime geometry contract for short-height landscape rooms above phone width', () => {
   const contract = resolveRoomGeometryContract({
     viewportWidth: 844,

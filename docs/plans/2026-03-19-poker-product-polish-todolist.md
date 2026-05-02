@@ -495,6 +495,43 @@
     - `actionsDock = false`
     - `clippedViewport = []`
 
+## 2026-05-02 Short Phone Live-Hand Layout Follow-up
+
+- Status: `[done]` Short phone live-hand table, dock, and raise drawer constraints are implemented and verified locally.
+- Root cause:
+  - `375x667` phone portrait was still classified as `regular-height`, so it inherited the `390x844` live-hand table and action-dock spacing
+  - the live dock measured too tall for that viewport and overlapped the table and public board even though page scrolling remained locked
+  - the raise drawer inherited the same vertical budget problem and could collide with the table or hero-card row
+- Local fixes:
+  - compact phone portrait viewports from `520px` to `<700px` tall now enter the `short-height` room contract
+  - short phone live hands use a micro table-stage contract and tighter live dock spacing
+  - non-critical hero-column duplicate information is hidden only in the short-height live dock
+  - the short-height raise drawer is bounded independently and remains internally scrollable
+- Fresh evidence:
+  - focused client contract tests:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js src/utils/roomViewportLayout.test.js src/utils/tableStageLayout.test.js src/components/roomShellScrollContract.test.js`
+    - `65/65` passed on `2026-05-02`
+  - browser rerun at `390x844`:
+    - room `M2SL71`
+    - `dockTable = false`, `dockBoard = false`
+    - `raiseTable = false`, `raiseBoard = false`, `raiseCards = false`
+    - page scroll remained locked
+  - browser rerun at `375x667`:
+    - room `QG9F7O`
+    - `bodyHeight = clientHeight = scrollHeight = 667`
+    - shell rect: `bottom = 667`, `clippedViewport = []`
+    - stage rect: `top = 90.58`, `bottom = 428.58`, `height = 338`
+    - table rect: `top = 95.08`, `bottom = 272.08`, `height = 177`
+    - dock rect: `top = 403.73`, `bottom = 663`, `height = 259.27`
+    - live metrics: `dockTable = false`, `dockBoard = false`, `cardsCommandRow = false`
+    - raise drawer rect: `top = 470.06`, `bottom = 622.06`, `height = 152`
+    - raise metrics: `raiseTable = false`, `raiseBoard = false`, `raiseCards = false`
+    - `raiseScroll.canScroll = true`
+- Remaining queue:
+  - `[todo]` audit phone live-hand support panels (`成员 / 牌局 / 房间`) on short-height and regular phone viewports
+  - `[todo]` run real phone action execution flow through quick actions, raise confirm/cancel, and post-action state transitions
+  - `[todo]` continue visual density polish only after the single-screen action path remains stable on both phone heights
+
 ## Product Mode Model
 
 ### Shared Room Mode

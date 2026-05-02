@@ -27,6 +27,19 @@ test('phone portrait keeps the hero dock fixed and moves support surfaces into s
   assert.equal(layout.contentMaxWidth, '100%');
 });
 
+test('compact phone portrait switches to a short-height compressed table contract', () => {
+  const layout = resolveRoomViewportLayout({ width: 375, height: 667 });
+
+  assert.equal(layout.viewportModel, 'phone-terminal');
+  assert.equal(layout.heightClass, 'short-height');
+  assert.equal(layout.stageDensity, 'compressed');
+  assert.equal(layout.headerDensity, 'compact');
+  assert.equal(layout.headerActionModel, 'room-sheet-first');
+  assert.equal(layout.dockReservePx, 208);
+  assert.equal(layout.minStageBudgetPx, 180);
+  assert.equal(layout.roomScrollContract, 'single-screen');
+});
+
 test('tablet keeps the room terminal in a split but single-screen form', () => {
   const layout = resolveRoomViewportLayout({ width: 1024, height: 1366 });
 

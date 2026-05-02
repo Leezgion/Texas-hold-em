@@ -369,6 +369,33 @@ test('phone-terminal live hand reserves a compact stage above a bounded betting 
   );
 });
 
+test('short-height phone live hand switches to a micro table-and-dock contract', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\s*\{[\s\S]*height:\s*100dvh;[\s\S]*min-height:\s*100dvh;[\s\S]*padding-block:\s*0\.5rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-surface\s*\{[\s\S]*min-height:\s*min\(20rem,\s*calc\(100dvh - 21rem\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-core\s*\{[\s\S]*min-height:\s*18rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-dock-state="live"\]\s+\.tactical-dock__hero-column\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-dock-state="live"\]\s+\.room-support-launcher__button\s*\{[\s\S]*min-height:\s*1\.9rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-surface\s*\{[\s\S]*top:\s*auto;[\s\S]*max-height:\s*clamp\(7\.5rem,\s*calc\(100dvh - 31\.5rem\),\s*9\.5rem\);/s
+  );
+});
+
 test('SeatRing suppresses empty phone seats during live hands so action space stays readable', () => {
   assert.match(
     seatRingSource,
