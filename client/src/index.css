@@ -3129,14 +3129,15 @@
   }
 
   .table-action-command--allin {
-    border-color: rgba(192, 132, 252, 0.28);
+    border-color: rgba(248, 113, 113, 0.3);
     background:
-      linear-gradient(180deg, rgba(49, 18, 76, 0.96), rgba(23, 8, 38, 0.94)),
-      radial-gradient(circle at top, rgba(192, 132, 252, 0.2), transparent 70%);
+      linear-gradient(180deg, rgba(73, 16, 18, 0.96), rgba(28, 8, 10, 0.94)),
+      radial-gradient(circle at top, rgba(248, 113, 113, 0.18), transparent 62%),
+      radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.16), transparent 70%);
   }
 
   .table-action-command--allin .table-action-command__meta {
-    color: rgb(233 213 255 / 0.9);
+    color: rgb(254 202 202 / 0.92);
   }
 
   .table-action-command--cancel {
@@ -5106,28 +5107,28 @@
 
   /* All-in状态的滑块样式 */
   .all-in-slider::-webkit-slider-thumb {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    background: linear-gradient(135deg, #ef4444, #f59e0b);
     border: 3px solid #ffffff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.3);
-    animation: pulse-purple 1.5s ease-in-out infinite;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(248, 113, 113, 0.38), 0 0 20px rgba(245, 158, 11, 0.24);
+    animation: pulse-risk 1.5s ease-in-out infinite;
   }
 
   .all-in-slider::-moz-range-thumb {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    background: linear-gradient(135deg, #ef4444, #f59e0b);
     border: 3px solid #ffffff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(168, 85, 247, 0.4);
-    animation: pulse-purple 1.5s ease-in-out infinite;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(248, 113, 113, 0.38);
+    animation: pulse-risk 1.5s ease-in-out infinite;
   }
 
-  @keyframes pulse-purple {
+  @keyframes pulse-risk {
 
     0%,
     100% {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.3);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(248, 113, 113, 0.38), 0 0 20px rgba(245, 158, 11, 0.24);
     }
 
     50% {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.5);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(248, 113, 113, 0.52), 0 0 30px rgba(245, 158, 11, 0.34);
     }
   }
 

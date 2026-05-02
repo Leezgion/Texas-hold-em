@@ -8,16 +8,20 @@ const SliderInput = ({
   onChange,
   disabled = false,
   className = '',
+  density = 'default',
   showLabels = true,
   showSteps = true,
   showValue = true,
-  colorScheme = 'gold', // 'gold', 'blue', 'green'
+  colorScheme = 'gold', // 'gold', 'blue', 'green', 'risk'
   formatValue = (val) => val,
   formatLabel = (val) => val,
   quickButtons = [],
   onQuickSelect = null,
 }) => {
   const percentage = ((value - min) / (max - min)) * 100;
+  const isCompact = density === 'compact';
+  const rootClassName = isCompact ? 'space-y-2.5' : 'space-y-4';
+  const valueClassName = isCompact ? 'text-xl' : 'text-2xl';
   
   const getColorScheme = () => {
     switch (colorScheme) {
@@ -33,11 +37,11 @@ const SliderInput = ({
           button: 'border-green-500 bg-green-500/20 text-green-400',
           buttonHover: 'hover:border-green-400 hover:bg-green-500/30'
         };
-      case 'purple':
+      case 'risk':
         return {
-          track: '#a855f7',
-          button: 'border-purple-500 bg-purple-500/20 text-purple-400',
-          buttonHover: 'hover:border-purple-400 hover:bg-purple-500/30'
+          track: '#ef4444',
+          button: 'border-red-500 bg-red-500/20 text-red-300',
+          buttonHover: 'hover:border-amber-300 hover:bg-red-500/30'
         };
       default: // gold
         return {
@@ -51,7 +55,7 @@ const SliderInput = ({
   const colors = getColorScheme();
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`${rootClassName} ${className}`}>
       {/* 滑块 */}
       <div className="relative">
         <input
@@ -62,7 +66,7 @@ const SliderInput = ({
           value={value}
           onChange={(e) => onChange(parseInt(e.target.value))}
           disabled={disabled}
-          className="w-full h-3 rounded-lg appearance-none cursor-pointer slider"
+          className={`w-full rounded-lg appearance-none cursor-pointer slider ${isCompact ? 'h-2.5' : 'h-3'}`}
           style={{
             background: `linear-gradient(to right, ${colors.track} 0%, ${colors.track} ${percentage}%, #374151 ${percentage}%, #374151 100%)`,
           }}
@@ -70,7 +74,7 @@ const SliderInput = ({
         
         {/* 刻度标签 */}
         {showLabels && (
-          <div className="flex justify-between text-xs text-gray-400 mt-2">
+          <div className={`flex justify-between text-gray-400 ${isCompact ? 'mt-1.5 text-[11px]' : 'mt-2 text-xs'}`}>
             <span>{formatLabel(min)}</span>
             {showSteps && max > min * 2 && (
               <span>{formatLabel(Math.floor((min + max) / 2))}</span>
@@ -81,7 +85,7 @@ const SliderInput = ({
         
         {/* 步进说明 */}
         {showSteps && step > 1 && (
-          <div className="text-center text-xs text-gray-500 mt-2">
+          <div className={`text-center text-gray-500 ${isCompact ? 'mt-1.5 text-[11px]' : 'mt-2 text-xs'}`}>
             步进: {formatLabel(step)}
           </div>
         )}
@@ -90,7 +94,7 @@ const SliderInput = ({
       {/* 当前值显示 */}
       {showValue && (
         <div className="text-center">
-          <div className="text-2xl font-bold text-poker-gold mb-1">
+          <div className={`${valueClassName} mb-1 font-bold text-poker-gold`}>
             {formatValue(value)}
           </div>
         </div>

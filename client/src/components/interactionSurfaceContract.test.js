@@ -11,6 +11,7 @@ const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.m
 const playerTimerSource = readFileSync(new URL('./PlayerTimer.jsx', import.meta.url), 'utf8');
 const settlementOverlaySource = readFileSync(new URL('./SettlementOverlay.jsx', import.meta.url), 'utf8');
 const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
+const sliderInputSource = readFileSync(new URL('./SliderInput.jsx', import.meta.url), 'utf8');
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
 test('EmptySeat exposes a real button trigger with disabled semantics and an accessible label', () => {
@@ -128,4 +129,15 @@ test('broadcast tactical css stays aligned with scoped cue usage and phone confi
   assert.match(cssSource, /\.table-action-command\s*\{[\s\S]*min-height:\s*3\.65rem;[\s\S]*justify-content:\s*space-between;[\s\S]*border-radius:\s*1\.12rem;[\s\S]*padding:\s*0\.62rem 0\.72rem;/);
   assert.match(cssSource, /\.table-action-console__raise-surface\s*\{/);
   assert.match(cssSource, /\.table-action-timer__dial\s*\{/);
+});
+
+test('all-in controls use broadcast risk colors instead of purple gaming colors', () => {
+  assert.match(actionButtonsSource, /colorScheme=\{sliderValue === maxRaiseAmount \? 'risk' : 'gold'\}/);
+  assert.match(sliderInputSource, /case 'risk':/);
+  assert.match(cssSource, /\.table-action-command--allin\s*\{[\s\S]*rgba\(248,\s*113,\s*113,\s*0\.3\)/);
+  assert.match(cssSource, /\.all-in-slider::-webkit-slider-thumb\s*\{[\s\S]*#ef4444[\s\S]*#f59e0b/);
+  assert.doesNotMatch(cssSource, /rgba\(192,\s*132,\s*252/);
+  assert.doesNotMatch(cssSource, /rgb\(233 213 255/);
+  assert.doesNotMatch(cssSource, /pulse-purple/);
+  assert.doesNotMatch(sliderInputSource, /case 'purple':/);
 });

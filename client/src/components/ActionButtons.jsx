@@ -383,7 +383,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
             density="compact"
             showValue={false}
             showSteps={false}
-            colorScheme={sliderValue === maxRaiseAmount ? 'purple' : 'gold'}
+            colorScheme={sliderValue === maxRaiseAmount ? 'risk' : 'gold'}
             className="table-action-console__slider"
             formatLabel={(value) => value.toLocaleString()}
           />
