@@ -1,4 +1,8 @@
 // 设备ID管理工具
+export function isDeviceId(deviceId) {
+  return deviceId && typeof deviceId === 'string' && deviceId.startsWith('device_');
+}
+
 class DeviceIdManager {
   constructor() {
     this.STORAGE_KEY = 'texas-holdem-device-id';
@@ -55,7 +59,7 @@ class DeviceIdManager {
 
   // 验证设备ID格式
   isValidDeviceId(deviceId) {
-    return deviceId && typeof deviceId === 'string' && deviceId.startsWith('device_');
+    return isDeviceId(deviceId);
   }
 }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 
 import EmptySeat from './EmptySeat';
+import { getPlayerDisplayName } from '../utils/playerIdentity';
 
 const SeatCard = ({
   seat,
@@ -16,6 +17,7 @@ const SeatCard = ({
   const densityTier = seat.densityTier || 'compact-secondary';
   const visualRole = seat.visualRole || 'embedded-plaque';
   const plaqueDensityModel = seat.plaqueDensityModel || 'broadcast-compact';
+  const plaqueMaterialModel = seat.plaqueMaterialModel || 'embedded-rail-display';
 
   if (!seat.occupied) {
     return (
@@ -23,6 +25,8 @@ const SeatCard = ({
         seatIndex={seat.seatIndex}
         position={seat.position}
         seatLabel={seat.seatLabel}
+        seatAvailability={seat.seatAvailability}
+        emptyText={seat.emptyText}
         seatTone={seat.seatTone}
         roomState={roomState}
         tableProfile={resolvedTableProfile}
@@ -32,12 +36,18 @@ const SeatCard = ({
         visualRole={visualRole}
         densityTier={densityTier}
         plaqueDensityModel={plaqueDensityModel}
+        plaqueMaterialModel={plaqueMaterialModel}
       />
     );
   }
 
   const player = seat.player || {};
-  const displayName = player.nickname || player.id || (seat.isCurrentPlayer ? 'Hero' : '玩家');
+  const displayName = seat.isCurrentPlayer
+    ? '我'
+    : getPlayerDisplayName(player, {
+        fallback: player.isHost ? '房主' : '玩家',
+      });
+  const showHostBadge = Boolean(player.isHost) && displayName !== '房主';
   const currentBet = Number(player.currentBet) || 0;
   const hasNet = typeof seat.netLabel === 'string' && seat.netLabel !== '0';
   const seatToneClassName = `arena-seat-plaque--${seat.seatTone || 'occupied-live'}`;
@@ -55,6 +65,7 @@ const SeatCard = ({
       data-visual-role={visualRole}
       data-density-tier={densityTier}
       data-plaque-density-model={plaqueDensityModel}
+      data-plaque-material-model={plaqueMaterialModel}
       data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
       style={{
         left: `calc(50% + ${seat.position.x}px)`,
@@ -63,7 +74,7 @@ const SeatCard = ({
       }}
     >
       <div
-        className={`arena-seat-plaque arena-seat-plaque--broadcast-response ${seatToneClassName} arena-seat-plaque--${densityTier} ${
+        className={`arena-seat-plaque arena-seat-plaque--broadcast-response arena-seat-plaque--${plaqueMaterialModel} ${seatToneClassName} arena-seat-plaque--${densityTier} ${
           seat.isCurrentTurn ? 'arena-seat-plaque--current-turn arena-seat-plaque--broadcast-turn-cue' : ''
         } ${seat.isActiveTimer ? 'arena-seat-plaque--active-timer' : ''} ${player.folded ? 'arena-seat-plaque--folded' : ''}`}
         data-table-profile={resolvedTableProfile}
@@ -74,6 +85,7 @@ const SeatCard = ({
         data-visual-role={visualRole}
         data-density-tier={densityTier}
         data-plaque-density-model={plaqueDensityModel}
+        data-plaque-material-model={plaqueMaterialModel}
         data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
       >
         <div className="arena-seat-plaque__header">
@@ -83,18 +95,18 @@ const SeatCard = ({
               {seat.positionLabel && <span className="arena-seat-plaque__badge arena-seat-plaque__badge--ghost">{seat.positionLabel}</span>}
             </div>
             <div className="arena-seat-plaque__name" title={displayName}>
-              {seat.isCurrentPlayer ? 'Hero' : displayName}
+              {displayName}
             </div>
           </div>
           <div className="arena-seat-plaque__badge-row">
-            {player.isHost && <span className="arena-seat-plaque__badge">HOST</span>}
+            {showHostBadge && <span className="arena-seat-plaque__badge">房主</span>}
           </div>
         </div>
 
         <div className="arena-seat-plaque__stack-row">
           <span className="arena-seat-plaque__stack">{seat.chipsLabel || '0'}</span>
           <div className="arena-seat-plaque__status-strip">
-            {currentBet > 0 && <span className="arena-seat-plaque__bet">BET {currentBet}</span>}
+            {currentBet > 0 && <span className="arena-seat-plaque__bet">下注 {currentBet}</span>}
             {hasNet && <span className="arena-seat-plaque__net">{seat.netLabel}</span>}
           </div>
         </div>

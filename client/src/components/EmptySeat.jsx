@@ -8,6 +8,8 @@ const EmptySeat = ({
   position,
   getPositionLabel,
   seatLabel,
+  seatAvailability = 'open',
+  emptyText = null,
   seatTone = 'open-seat',
   roomState,
   tableProfile = 'desktop-oval',
@@ -17,10 +19,17 @@ const EmptySeat = ({
   visualRole = 'embedded-plaque',
   densityTier = 'compact-secondary',
   plaqueDensityModel = 'broadcast-compact',
+  plaqueMaterialModel = 'embedded-rail-display',
 }) => {
   const { takeSeat, seatRequestPending } = useGame();
   const resolvedSeatLabel =
-    seatLabel || (getPositionLabel ? getPositionLabel(seatIndex) : `座位 ${seatIndex + 1}`);
+    seatLabel ||
+    (seatAvailability === 'closed'
+      ? '保留位'
+      : getPositionLabel
+      ? getPositionLabel(seatIndex)
+      : `座位 ${seatIndex + 1}`);
+  const resolvedEmptyText = emptyText || (seatAvailability === 'closed' ? '本桌未开放' : '可入座');
 
   const handleTakeSeat = async () => {
     if (seatRequestPending) {
@@ -55,6 +64,7 @@ const EmptySeat = ({
       data-visual-role={visualRole}
       data-density-tier={densityTier}
       data-plaque-density-model={plaqueDensityModel}
+      data-plaque-material-model={plaqueMaterialModel}
       style={{
         left: `calc(50% + ${position.x}px)`,
         top: `calc(50% + ${position.y}px)`,
@@ -62,7 +72,7 @@ const EmptySeat = ({
       }}
     >
       <div
-        className={`arena-seat-plaque arena-seat-plaque--empty arena-seat-plaque--${seatTone} arena-seat-plaque--${densityTier}`}
+        className={`arena-seat-plaque arena-seat-plaque--empty arena-seat-plaque--${plaqueMaterialModel} arena-seat-plaque--${seatTone} arena-seat-plaque--${densityTier}`}
         data-table-profile={tableProfile}
         data-anchor-zone={anchorZone}
         data-anchor-role={anchorRole}
@@ -70,23 +80,34 @@ const EmptySeat = ({
         data-visual-role={visualRole}
         data-density-tier={densityTier}
         data-plaque-density-model={plaqueDensityModel}
+        data-plaque-material-model={plaqueMaterialModel}
       >
-        <button
-          type="button"
-          onClick={handleTakeSeat}
-          className="arena-seat-plaque__empty-trigger arena-seat-plaque__empty-trigger--compact group"
-          disabled={seatRequestPending}
-          aria-label={`入座 ${resolvedSeatLabel}`}
-          title={`点击入座 (座位 ${seatIndex + 1})`}
+        {seatAvailability === 'closed' ? (
+          <div className="arena-seat-plaque__empty-seal" aria-hidden="true">
+            -
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleTakeSeat}
+            className="arena-seat-plaque__empty-trigger arena-seat-plaque__empty-trigger--compact group"
+            disabled={seatRequestPending}
+            aria-label={`入座 ${resolvedSeatLabel}`}
+            title={`点击入座 (座位 ${seatIndex + 1})`}
+          >
+            <Plus
+              size={18}
+              className="text-slate-400 transition-colors group-hover:text-sky-300"
+            />
+          </button>
+        )}
+        <div
+          className={`arena-seat-plaque__empty-copy${
+            seatAvailability === 'closed' ? ' arena-seat-plaque__empty-copy--closed' : ''
+          }`}
         >
-          <Plus
-            size={18}
-            className="text-slate-400 transition-colors group-hover:text-sky-300"
-          />
-        </button>
-        <div className="arena-seat-plaque__empty-copy">
           <div className="arena-seat-plaque__seat-label">{resolvedSeatLabel}</div>
-          <div className="arena-seat-plaque__empty-text">Open Seat</div>
+          <div className="arena-seat-plaque__empty-text">{resolvedEmptyText}</div>
         </div>
       </div>
     </div>

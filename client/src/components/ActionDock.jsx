@@ -79,7 +79,9 @@ const ActionDock = ({
 
   return (
     <section
-      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock tactical-dock--broadcast-cue tactical-dock--table-apron rounded-[1.35rem] px-2.5 py-2.5 sm:px-3"
+      className="room-terminal-dock-panel poker-shell-panel poker-shell-panel--accent tactical-dock tactical-dock--broadcast-cue tactical-dock--table-apron tactical-dock--integrated-rail-apron rounded-[1.35rem] px-2.5 py-2.5 sm:px-3"
+      data-apron-material-model="black-gold-table-rail"
+      data-apron-coupling="table-rail"
       data-viewport-model={viewportLayout?.viewportModel}
       data-height-class={viewportLayout?.heightClass}
       data-stage-density={viewportLayout?.stageDensity}

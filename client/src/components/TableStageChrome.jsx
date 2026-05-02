@@ -51,6 +51,10 @@ const TableStageChrome = ({
   const transitionRadius = Math.min(Math.min(transitionRail.width, transitionRail.height) / 2, Math.max(railRadius - 10, 0));
   const feltRadius = Math.min(Math.min(feltSurface.width, feltSurface.height) / 2, Math.max(transitionRadius - 8, 0));
   const frameRadius = Math.min(Math.min(centerFrame.width, centerFrame.height) / 2, Math.max(chrome.boardTray.rx + 6, 18));
+  const materialIdSuffix = `${chrome.profile}-${Math.round(chrome.width)}-${Math.round(chrome.height)}`;
+  const railSpecularId = `broadcast-rail-specular-${materialIdSuffix}`;
+  const feltGrainId = `broadcast-felt-grain-${materialIdSuffix}`;
+  const feltVignetteId = `broadcast-felt-vignette-${materialIdSuffix}`;
 
   return (
     <svg
@@ -60,10 +64,29 @@ const TableStageChrome = ({
       data-center-surface-model={centerSurfaceModel}
       data-table-material-felt-tone={feltTone}
       data-table-material-rail-tone={railTone}
+      data-stage-chrome-material="deep-green-black-gold"
       viewBox={`0 0 ${chrome.width} ${chrome.height}`}
       style={{ width: `${chrome.width}px`, height: `${chrome.height}px` }}
       aria-hidden="true"
     >
+      <defs className="table-stage-chrome__defs">
+        <linearGradient id={railSpecularId} x1="0%" x2="100%" y1="0%" y2="100%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.24)" />
+          <stop offset="26%" stopColor="rgba(247,229,173,0.14)" />
+          <stop offset="50%" stopColor="rgba(0,0,0,0)" />
+          <stop offset="72%" stopColor="rgba(191,143,45,0.18)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.22)" />
+        </linearGradient>
+        <pattern id={feltGrainId} width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M0 2 H10 M0 7 H10" stroke="rgba(255,255,255,0.045)" strokeWidth="0.7" />
+          <path d="M2 0 V10 M7 0 V10" stroke="rgba(0,0,0,0.08)" strokeWidth="0.6" />
+        </pattern>
+        <radialGradient id={feltVignetteId} cx="50%" cy="46%" r="68%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.08)" />
+          <stop offset="58%" stopColor="rgba(255,255,255,0)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.34)" />
+        </radialGradient>
+      </defs>
       <g className="table-stage-chrome__rail-stack">
         <rect
           className="table-stage-chrome__outer-rail"
@@ -73,6 +96,16 @@ const TableStageChrome = ({
           height={outerRail.height}
           rx={railRadius}
           ry={railRadius}
+        />
+        <rect
+          className="table-stage-chrome__rail-specular"
+          x={outerRail.x + 5}
+          y={outerRail.y + 5}
+          width={Math.max(0, outerRail.width - 10)}
+          height={Math.max(0, outerRail.height - 10)}
+          rx={Math.max(0, railRadius - 4)}
+          ry={Math.max(0, railRadius - 4)}
+          fill={`url(#${railSpecularId})`}
         />
         <rect
           className="table-stage-chrome__transition-rail"
@@ -91,6 +124,26 @@ const TableStageChrome = ({
           height={feltSurface.height}
           rx={feltRadius}
           ry={feltRadius}
+        />
+        <rect
+          className="table-stage-chrome__felt-grain"
+          x={feltSurface.x}
+          y={feltSurface.y}
+          width={feltSurface.width}
+          height={feltSurface.height}
+          rx={feltRadius}
+          ry={feltRadius}
+          fill={`url(#${feltGrainId})`}
+        />
+        <rect
+          className="table-stage-chrome__felt-vignette"
+          x={feltSurface.x}
+          y={feltSurface.y}
+          width={feltSurface.width}
+          height={feltSurface.height}
+          rx={feltRadius}
+          ry={feltRadius}
+          fill={`url(#${feltVignetteId})`}
         />
       </g>
 
@@ -117,6 +170,8 @@ const TableStageChrome = ({
         {chrome.seatGuides.map((guide) => {
           const toneClassName = guide.isCurrentTurn
             ? 'table-stage-chrome__seat-node--current-turn'
+            : guide.seatAvailability === 'closed'
+            ? 'table-stage-chrome__seat-node--closed'
             : guide.occupied
             ? 'table-stage-chrome__seat-node--occupied'
             : 'table-stage-chrome__seat-node--open';

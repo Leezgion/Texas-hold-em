@@ -37,8 +37,11 @@ test('SeatCard renders embedded plaque class names instead of floating card clas
   assert.match(seatCardSource, /arena-seat-plaque/);
   assert.match(seatCardSource, /arena-seat-plaque--current-turn/);
   assert.match(seatCardSource, /arena-seat-plaque--broadcast-response/);
+  assert.match(seatCardSource, /plaqueMaterialModel = seat\.plaqueMaterialModel \|\| 'embedded-rail-display'/);
+  assert.match(seatCardSource, /arena-seat-plaque--\$\{plaqueMaterialModel\}/);
   assert.match(seatCardSource, /arena-seat-plaque__meta-row/);
   assert.match(seatCardSource, /data-plaque-density-model/);
+  assert.match(seatCardSource, /data-plaque-material-model/);
   assert.match(seatCardSource, /arena-seat-plaque__turn-glow--broadcast-turn-cue/);
   assert.doesNotMatch(seatCardSource, /arena-seat-card/);
 });
@@ -58,8 +61,11 @@ test('EmptySeat uses embedded plaque trigger classes', () => {
 
 test('ActionDock includes restrained broadcast cue hooks', () => {
   assert.match(actionDockSource, /tactical-dock--broadcast-cue/);
+  assert.match(actionDockSource, /tactical-dock--integrated-rail-apron/);
   assert.match(actionDockSource, /tactical-dock__action-frame tactical-dock__action-frame--table-console/);
   assert.match(actionDockSource, /tactical-dock__turn-chip--broadcast-cue/);
+  assert.match(actionDockSource, /data-apron-material-model="black-gold-table-rail"/);
+  assert.match(actionDockSource, /data-apron-coupling="table-rail"/);
   assert.doesNotMatch(actionDockSource, /tactical-dock__action-frame--broadcast-confirmation/);
 });
 
@@ -112,9 +118,11 @@ test('broadcast tactical css stays aligned with scoped cue usage and phone confi
     /mode-shell\[data-shell-reduced-motion="true"\][\s\S]*tactical-dock__turn-chip--broadcast-cue[\s\S]*animation:\s*none/
   );
   assert.match(cssSource, /\.arena-seat-plaque--compact-secondary\s*\{/);
+  assert.match(cssSource, /\.arena-seat-plaque--embedded-rail-display\s*\{/);
   assert.match(cssSource, /\.arena-seat-plaque__empty-trigger--compact\s*\{/);
   assert.match(cssSource, /\.table-action-console\s*\{/);
   assert.match(cssSource, /\.table-action-console--watch\s*\{/);
+  assert.match(cssSource, /\.tactical-dock--integrated-rail-apron\s*\{/);
   assert.match(cssSource, /\.table-action-console__command-row\s*\{[\s\S]*gap:\s*0\.42rem;/);
   assert.match(cssSource, /\.table-action-command--fold\s*\{/);
   assert.match(cssSource, /\.table-action-command\s*\{[\s\S]*min-height:\s*3\.65rem;[\s\S]*justify-content:\s*space-between;[\s\S]*border-radius:\s*1\.12rem;[\s\S]*padding:\s*0\.62rem 0\.72rem;/);

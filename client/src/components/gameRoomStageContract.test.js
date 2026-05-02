@@ -132,12 +132,16 @@ test('TableStageChrome renders the broadcast material contract and rail structur
   assert.match(chrome, /data-center-surface-model="broadcast-clean-center"/);
   assert.match(chrome, /data-table-material-felt-tone="deep-green-velvet"/);
   assert.match(chrome, /data-table-material-rail-tone="black-gold"/);
+  assert.match(chrome, /data-stage-chrome-material="deep-green-black-gold"/);
+  assert.match(chrome, /table-stage-chrome__defs/);
   assert.match(chrome, /table-stage-chrome__outer-rail/);
+  assert.match(chrome, /table-stage-chrome__rail-specular/);
   assert.match(chrome, /table-stage-chrome__transition-rail/);
   assert.match(chrome, /table-stage-chrome__felt/);
+  assert.match(chrome, /table-stage-chrome__felt-grain/);
+  assert.match(chrome, /table-stage-chrome__felt-vignette/);
   assert.match(chrome, /table-stage-chrome__center-frame-shell/);
   assert.doesNotMatch(chrome, /data-table-rail-flow/);
-  assert.doesNotMatch(chrome, /<defs>/);
 });
 
 test('TableStage threads broadcast center material hooks through the pot capsule render', async () => {
