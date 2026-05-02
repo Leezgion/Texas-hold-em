@@ -852,7 +852,7 @@
     - client build: passed; Vite still reports the existing `>500 kB` chunk-size warning
     - server Jest suite: `12/12` suites and `120/120` tests passed
 - Remaining queue:
-  - `[todo]` continue professional-player gameplay validation around multi-street betting, min-raise/all-in edge cases, and post-hand replay accuracy
+  - `[done]` continue professional-player gameplay validation around multi-street betting, min-raise/all-in edge cases, and post-hand replay accuracy
 
 ## Product Mode Model
 
@@ -2093,4 +2093,28 @@ This pass closed the highest-risk invalid-action feedback gap found after replay
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-26d201e2.js` 533.65 kB)
   - `cd server && pnpm test --runInBand`: `125/125`
 - next queue:
-  - continue invalid-action coverage for stale/out-of-turn requests and recovery-required room actions in real browser flows
+  - `[done]` continue invalid-action coverage for stale/out-of-turn requests and recovery-required room actions in real browser flows
+
+## 2026-05-03 Invalid Action And Recovery Browser Coverage
+
+This pass closed the remaining invalid-action browser-coverage gap without changing production code.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-invalid-action-recovery-audit.json` (`runId = mooqv5ok`)
+  - stale-device UI flow:
+    - `390x844` fresh room `DWCFN8`: the real action button returned `当前页面身份已失效，请刷新页面后重试。`, did not show the generic `操作失败：设备未注册`, and left the page single-screen
+    - `375x667` fresh room `PHPBGH`: same stale-device feedback and single-screen metrics
+  - out-of-turn socket flow:
+    - `390x844` fresh room `HFWMQX`: after host called and action moved to P2, a stale host socket frame received `playerActionError` with `不是你的回合`
+    - `375x667` fresh room `EI594A`: same out-of-turn server rejection while the browser stayed in the watch-state action console
+  - recovery-required flow:
+    - isolated browser harness room `JBXZOP` on `390x844`: host saw `房间状态异常`, clicked `恢复房间`, and received `房间已恢复，可以重新开始游戏。`
+    - isolated browser harness room `B2KX9H` on `375x667`: same recovery banner and recover-button flow
+- product decision:
+  - stale-device is a real UI action failure and must surface as a refresh hint, not as a generic operation failure
+  - out-of-turn is normally prevented by the watch-state action console, so browser coverage verifies the authoritative socket rejection frame rather than forcing a fake UI button
+  - recovery-required is a dirty-state guard; browser coverage uses an isolated local harness instead of adding unsafe mutation endpoints to the product server
+- next queue:
+  - `[todo]` validate live-hand refresh/reconnect on phone and desktop so hero hand, action state, and room membership recover without stale UI
+  - `[todo]` validate leave-seat / leave-room confirmations during an active hand, including forced-fold feedback and single-screen phone layout
+  - `[todo]` validate same-device room switching in a real browser so old room cleanup does not leave phantom membership or stale hand state
