@@ -105,6 +105,40 @@ test('create-room quick-open desktop contract further compresses tiles, summary,
   );
 });
 
+test('create-room phone contract collapses mode choice into a compact selector instead of tall profile cards', () => {
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__mode-strip\s*\{\s*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);[\s\S]*gap:\s*0\.45rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__mode-panel\s+\.create-room-modal__section-copy\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__mode-strip\s+\.mode-preview-card--terminal-tile\s*\{[\s\S]*min-height:\s*4\.75rem;[\s\S]*padding:\s*0\.55rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__mode-strip\s+\.mode-preview-card__tile-persona,[\s\S]*\.create-room-modal__mode-strip\s+\.mode-preview-card__tile-copy,[\s\S]*\.create-room-modal__mode-strip\s+\.mode-preview-card__tile-chip-row\s*\{\s*display:\s*none;/s
+  );
+});
+
+test('create-room phone summary uses compact metric columns instead of stacked large cards', () => {
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__summary-grid\s*\{\s*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);[\s\S]*gap:\s*0\.35rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__summary-stat\s*\{\s*padding:\s*0\.45rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__summary-stat-value\s*\{\s*font-size:\s*0\.72rem;[\s\S]*line-height:\s*0\.92rem;/s
+  );
+});
+
 test('CreateRoomModal uses a compact slider density for the player-count field', () => {
   assert.match(createRoomModalSource, /<SliderInput[\s\S]*className=\"create-room-modal__player-count-slider\"/s);
   assert.match(createRoomModalSource, /<SliderInput[\s\S]*density=\"compact\"/s);

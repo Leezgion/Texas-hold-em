@@ -359,6 +359,38 @@
     - `cd server && npm test -- --runInBand`
     - `120/120` passed on `2026-05-02`
 
+## 2026-05-02 Mobile Create-Room Density Follow-up
+
+- Status: `[done]` Mobile create-room modal density is implemented and verified locally.
+- Root cause:
+  - desktop create-room cards were acceptable, but the phone full-screen sheet still rendered three large profile cards and stacked summary cards
+  - fresh browser metrics showed phone `modePanel = 844.97px`, `modeStrip = 477.97px`, and body `scrollHeight = 1267px`
+  - this recreated the original user-reported issue where room creation felt like scrolling through marketing panels instead of setting up a table
+- Local fixes:
+  - phone create-room mode choice collapses into a three-column compact selector
+  - phone mode selector hides persona/copy/chip prose and keeps only mode identity plus selected state
+  - phone quick summary uses three compact metric columns instead of three stacked large cards
+  - desktop create-room layout remains unchanged
+- Fresh evidence:
+  - red before implementation:
+    - `cd client && node --test src/components/createRoomSurfaceContract.test.js`
+    - failed at `create-room phone contract collapses mode choice into a compact selector instead of tall profile cards`
+    - failed at `create-room phone summary uses compact metric columns instead of stacked large cards`
+  - green focused test:
+    - `cd client && node --test src/components/createRoomSurfaceContract.test.js`
+    - `11/11` passed on `2026-05-02`
+  - full client suite:
+    - `cd client && node --test <all src/**/*.test.js>`
+    - `218/218` passed on `2026-05-02`
+  - client build:
+    - `cd client && npm run build`
+    - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - browser evidence:
+    - `.runlogs/2026-05-02-create-room-modal-phone.png`
+    - `.runlogs/2026-05-02-create-room-modal-desktop.png`
+    - phone after fix: `modePanel = 283.70px`, `modeStrip = 81.53px`, `body.clientHeight = 672`, `body.scrollHeight = 685`, `footerVisible = true`, `clipped = []`
+    - desktop after fix: still `tileCount = 3`, `bodyOwnsOverflow = false`, `clipped = []`
+
 ## Product Mode Model
 
 ### Shared Room Mode
