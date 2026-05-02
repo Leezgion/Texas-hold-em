@@ -529,7 +529,7 @@
     - `raiseScroll.canScroll = true`
 - Remaining queue:
   - `[done]` audit phone live-hand support panels (`成员 / 牌局 / 房间`) on short-height and regular phone viewports
-  - `[todo]` run real phone action execution flow through quick actions, raise confirm/cancel, and post-action state transitions
+  - `[done]` run real phone action execution flow through quick actions, raise confirm/cancel, and post-action state transitions
   - `[todo]` continue visual density polish only after the single-screen action path remains stable on both phone heights
 
 ## 2026-05-02 Phone Support Panel Audit Follow-up
@@ -551,6 +551,25 @@
   - after `Escape`, every panel returned to `dialogCount = 0`, `rootInert = false`, and `clippedViewport = []`
 - Product note:
   - support panels intentionally cover the lower table/dock while open because they are explicit modal bottom sheets; the hard requirement is that the underlying table does not regain scroll or focus while a support panel is active
+
+## 2026-05-02 Phone Action Execution Audit Follow-up
+
+- Status: `[done]` Phone live-hand action execution is verified through raise cancel, confirmed raise, turn transfer, and next-player call on regular and short phone viewports.
+- Method:
+  - seeded a fresh `2-max` live hand for each viewport
+  - opened the actual current-player browser, opened the raise drawer, canceled it, reopened it, and clicked `确认加注`
+  - opened the next-player browser after the raise, verified decision state, and clicked `跟注`
+  - verified the room advanced from `preflop` to `flop`
+- Fresh evidence:
+  - `.runlogs/2026-05-02-phone-action-execution-audit.json`
+  - `390x844` room `VLN8XJ`, `375x667` room `GCVIH2`
+  - both viewports stayed `scrollHeight = clientHeight` through every measured step
+  - both viewports reported `clippedViewport = []` through every measured step
+  - both viewports reported no dock/table, dock/board, cards/command, raise/table, raise/board, or raise/cards collision
+  - `确认加注` changed pot from `30` to `60`, current bet to `40`, and action to the guest
+  - guest `跟注` changed pot to `80` and advanced the hand to `flop`
+- Product note:
+  - after the guest call, the guest correctly remains the postflop actor in this heads-up setup and sees `过牌 / 加注 / 全下` without reintroducing scroll or clipping
 
 ## Product Mode Model
 
