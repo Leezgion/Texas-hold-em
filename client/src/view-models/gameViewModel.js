@@ -789,6 +789,30 @@ export function deriveSeatTakeFeedback(result = {}) {
   return deriveSeatSelectionNotice(result?.roomState || 'idle', result?.seatIndex || 0);
 }
 
+export function deriveRebuySuccessFeedback(result = {}) {
+  const amount = Number(result?.amount) || 0;
+  const chips = Number(result?.chips) || 0;
+
+  if (amount > 0 && chips > 0) {
+    return {
+      channel: 'game-success',
+      detail: `已补码 ${amount.toLocaleString()}，当前筹码 ${chips.toLocaleString()}。`,
+    };
+  }
+
+  if (amount > 0) {
+    return {
+      channel: 'game-success',
+      detail: `已补码 ${amount.toLocaleString()}。`,
+    };
+  }
+
+  return {
+    channel: 'game-success',
+    detail: '补码成功。',
+  };
+}
+
 export function deriveSeatChangeFeedback(result = {}) {
   const safeSeat = Math.max(0, Number(result?.toSeat) || 0);
   return {

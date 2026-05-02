@@ -13,6 +13,8 @@ const playerTimerSource = readFileSync(new URL('./PlayerTimer.jsx', import.meta.
 const settlementOverlaySource = readFileSync(new URL('./SettlementOverlay.jsx', import.meta.url), 'utf8');
 const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
 const sliderInputSource = readFileSync(new URL('./SliderInput.jsx', import.meta.url), 'utf8');
+const rebuyModalSource = readFileSync(new URL('./RebuyModal.jsx', import.meta.url), 'utf8');
+const appSource = readFileSync(new URL('../App.jsx', import.meta.url), 'utf8');
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
 test('EmptySeat exposes a real button trigger with disabled semantics and an accessible label', () => {
@@ -94,6 +96,17 @@ test('GameContext guards player actions against duplicate socket submissions', (
   assert.match(gameContextSource, /requestKey:\s*'playerAction'/);
   assert.match(gameContextSource, /rejectConcurrent:\s*true/);
   assert.match(gameContextSource, /concurrentMessage:\s*'玩家操作请求处理中'/);
+});
+
+test('RebuyModal clears stale warning context before showing confirmed rebuy success', () => {
+  assert.match(rebuyModalSource, /deriveRebuySuccessFeedback/);
+  assert.match(rebuyModalSource, /game-clear-toasts/);
+  assert.match(rebuyModalSource, /requestRebuy\(amount\)/);
+});
+
+test('ToastHandler supports clearing stale toasts for state-correction flows', () => {
+  assert.match(appSource, /game-clear-toasts/);
+  assert.match(appSource, /toast\.clearAll\(\)/);
 });
 
 test('PlayerTimer shares the table-action console language', () => {

@@ -16,6 +16,7 @@ import {
   derivePendingJoinBanner,
   deriveRequestErrorFeedback,
   deriveRecoverRoomFeedback,
+  deriveRebuySuccessFeedback,
   deriveSeatChangeFeedback,
   deriveSeatTakeFeedback,
   deriveLeaveSeatDialog,
@@ -649,6 +650,19 @@ test('derives a warning instead of a success toast when a zero-chip player still
     {
       channel: 'game-warning',
       detail: '当前筹码不足，已保留观战状态，请先补码后再入座。',
+    }
+  );
+});
+
+test('derives explicit rebuy success feedback from the confirmed chip result', () => {
+  assert.deepEqual(
+    deriveRebuySuccessFeedback({
+      amount: 1000,
+      chips: 2000,
+    }),
+    {
+      channel: 'game-success',
+      detail: '已补码 1,000，当前筹码 2,000。',
     }
   );
 });

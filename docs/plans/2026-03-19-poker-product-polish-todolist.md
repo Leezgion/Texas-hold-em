@@ -2282,4 +2282,28 @@ This pass verified the phone recovery path for a zero-chip spectator returning t
 - product observation:
   - the flow is functionally correct, but the earlier zero-chip warning toast remains visible briefly after successful rebuy and seating; this is a feedback-polish issue, not a state or layout blocker
 - next queue:
-  - `[todo]` polish rebuy success feedback so the user gets an explicit confirmation after chips are restored and stale warning context does not dominate the next action
+  - `[done]` polish rebuy success feedback so the user gets an explicit confirmation after chips are restored and stale warning context does not dominate the next action
+
+## 2026-05-03 Rebuy Success Feedback Polish
+
+This pass tightened the feedback loop after a state-correction rebuy.
+
+- change:
+  - added `deriveRebuySuccessFeedback` so confirmed rebuy results produce `已补码 1,000，当前筹码 1,000。`
+  - `RebuyModal` now dispatches `game-clear-toasts` before the success toast, so the old zero-chip warning does not stay as the dominant message after chips are restored
+  - `ToastHandler` now supports the `game-clear-toasts` event for state-correction flows
+- automated evidence:
+  - red tests before implementation: missing `deriveRebuySuccessFeedback`, missing `game-clear-toasts` dispatch, and missing `toast.clearAll()`
+  - `cd client && pnpm exec node --test src/view-models/gameViewModel.test.js`: `43/43`
+  - `cd client && pnpm exec node --test src/components/interactionSurfaceContract.test.js`: `17/17`
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-rebuy-recovery-390x844-audit.json` (`runId = moot8hrm`, fresh room `X3L3VX`)
+  - `.runlogs/2026-05-03-phone-rebuy-recovery-375x667-audit.json` (`runId = moot8rhv`, fresh room `G7Y3PJ`)
+  - after rebuy, both viewports showed `已补码 1,000，当前筹码 1,000。`
+  - after rebuy, both viewports no longer contained the stale `当前筹码不足...` warning text
+  - seating and host-start participation remained intact after the feedback change
+- final verification:
+  - `cd client && pnpm exec node --test`: `257/257`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-2190225f.js` 534.65 kB)
+- next queue:
+  - `[todo]` continue professional product hardening with timer-expiry browser behavior: verify a live phone decision times out into the correct forced action, feedback remains clear, and the next player/next hand state does not create scroll or stale controls

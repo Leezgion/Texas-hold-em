@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
-import { derivePlayerStateView, deriveRequestErrorFeedback } from '../view-models/gameViewModel';
+import {
+  derivePlayerStateView,
+  deriveRebuySuccessFeedback,
+  deriveRequestErrorFeedback,
+} from '../view-models/gameViewModel';
 import SliderInput from './SliderInput';
 import Modal from './Modal';
 
@@ -25,7 +29,10 @@ const RebuyModal = ({ show, onClose }) => {
 
     setIsSubmitting(true);
     try {
-      await requestRebuy(amount);
+      const result = await requestRebuy(amount);
+      const notice = deriveRebuySuccessFeedback(result || { amount, chips: currentChips + amount });
+      window.dispatchEvent(new CustomEvent('game-clear-toasts'));
+      window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
       onClose();
     } catch (error) {
       const notice = deriveRequestErrorFeedback({

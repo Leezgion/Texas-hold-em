@@ -46,16 +46,22 @@ function ToastHandler() {
       toast.info(e.detail);
     };
 
+    const handleClearToasts = () => {
+      toast.clearAll();
+    };
+
     window.addEventListener('game-error', handleError);
     window.addEventListener('game-success', handleSuccess);
     window.addEventListener('game-warning', handleWarning);
     window.addEventListener('game-info', handleInfo);
+    window.addEventListener('game-clear-toasts', handleClearToasts);
 
     return () => {
       window.removeEventListener('game-error', handleError);
       window.removeEventListener('game-success', handleSuccess);
       window.removeEventListener('game-warning', handleWarning);
       window.removeEventListener('game-info', handleInfo);
+      window.removeEventListener('game-clear-toasts', handleClearToasts);
     };
   }, [toast]);
 
