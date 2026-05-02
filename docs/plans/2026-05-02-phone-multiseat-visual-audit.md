@@ -52,4 +52,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 ## Next Queue
 
 - `[todo]` Review short-phone current-turn marker and hero-position communication; after hiding duplicate guides, the current actor's position should remain obvious but not noisy.
-- `[todo]` Continue live-hand action dock polish after board/seat geometry is stable, especially raise drawer readability and one-thumb reach.
+- `[done]` Continue live-hand action dock polish after board/seat geometry is stable; decision buttons now stretch to the available phone dock width.
+- `[todo]` Continue raise-drawer hierarchy review for larger blind structures and deeper stacks.

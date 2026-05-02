@@ -3634,6 +3634,15 @@
     gap: 0.36rem;
   }
 
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__center {
+    align-items: stretch;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__decision-cockpit {
+    width: min(100%, 21.5rem);
+    margin-inline: auto;
+  }
+
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__hero-panel {
     display: grid;
     grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);

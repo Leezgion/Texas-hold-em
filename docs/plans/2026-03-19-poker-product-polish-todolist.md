@@ -722,7 +722,31 @@
   - `9max-full 375x667`: room `QU13X9`, streets `3/3`, `4/4`, `5/5`, `5/5`, `clippedBoardCards = 0`
 - Remaining queue:
   - `[todo]` review whether current-turn position communication is still strong enough after hiding duplicate chrome guides
-  - `[todo]` continue short-phone action dock and raise-drawer polish now that board/seat geometry is stable
+  - `[done]` continue short-phone action dock and raise-drawer polish now that board/seat geometry is stable
+
+## 2026-05-02 Phone Live Decision-Cockpit Follow-up
+
+- Status: `[done]` Phone live-hand decision controls now use the available dock width instead of shrinking to the hero-card row.
+- Root cause:
+  - the phone live-hand decision cockpit was centered as shrink-to-content, so its `width: 100%` action frame inherited the hand-card row width
+  - real-browser metrics showed short phone command buttons were only about `52-56px` wide; this passed 44px touch minimums but was not acceptable for a real money-style decision surface
+- Local fixes:
+  - phone live-hand `.tactical-dock__center` now stretches its decision cockpit
+  - phone live-hand `.tactical-dock__decision-cockpit` is bounded to `min(100%, 21.5rem)` and centered, giving actions the full bottom-rail width without affecting desktop or waiting-room layouts
+  - added a contract test so future mobile dock changes cannot accidentally return to shrink-wrapped action buttons
+- Fresh evidence:
+  - red/green contract:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js`
+    - new test failed before the CSS fix and passed after it; final focused run `33/33` passed on `2026-05-02`
+  - browser audit:
+    - `node .runlogs\2026-05-02-phone-action-execution-audit.cjs` (`runId = mookwxxk`)
+    - `390x844` room `BWO20K`, min command button width `128.89px`
+    - `375x667` room `OFW1BV`, min command button width `130.59px`
+    - both viewports stayed `scrollHeight = clientHeight`
+    - both viewports reported no dock/table, dock/board, cards/command-row, raise/table, or raise/board collision
+- Remaining queue:
+  - `[todo]` decide whether the phone live-hand center cue should be reduced further into a thinner chip-level HUD after action controls are now readable
+  - `[todo]` continue raise-drawer hierarchy review for larger blind structures and deeper stacks
 
 ## Product Mode Model
 

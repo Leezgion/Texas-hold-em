@@ -358,6 +358,17 @@ test('phone-terminal live hand collapses the dock stack back toward the table', 
   );
 });
 
+test('phone-terminal live hand stretches the decision cockpit for reachable action targets', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.tactical-dock__center\s*\{[\s\S]*align-items:\s*stretch;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.tactical-dock__decision-cockpit\s*\{[\s\S]*width:\s*min\(100%,\s*21\.5rem\);[\s\S]*margin-inline:\s*auto;/s
+  );
+});
+
 test('phone-terminal live hand reserves a compact stage above a bounded betting dock', () => {
   assert.match(
     gameRoomSource,
