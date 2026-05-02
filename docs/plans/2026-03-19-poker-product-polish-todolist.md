@@ -2074,4 +2074,23 @@ This pass improved dense post-hand review readability without changing replay da
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-365edde4.js` 533.49 kB)
   - `cd server && pnpm test --runInBand`: `125/125`
 - next queue:
-  - continue product polish with the next highest-risk professional workflow after replay: invalid action/error feedback and fast recovery states in real browser flows
+  - `[done]` continue product polish with the next highest-risk professional workflow after replay: invalid action/error feedback and fast recovery states in real browser flows
+
+## 2026-05-03 Duplicate Player-Action Guard
+
+This pass closed the highest-risk invalid-action feedback gap found after replay polish.
+
+- change:
+  - `GameContext.playerAction` now uses socket request-key concurrency protection, matching the existing `takeSeat` and `revealHand` request pattern
+  - duplicate action submissions are rejected on the client before a second `playerAction` socket frame is emitted
+  - duplicate action feedback now uses an informational toast: `动作已发送，正在等待牌局确认，请勿重复点击。`
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-playeraction-duplicate-guard-audit.json` (`runId = mooqcsq5`)
+  - `390x844` fresh room `U7E0F2`: duplicate fold produced `playerActionFrameCount = 1`, `hostFoldActionCount = 1`, no generic action failure, `shellScrollHeight = shellClientHeight = 844`
+  - `375x667` fresh room `0AG8V4`: duplicate fold produced `playerActionFrameCount = 1`, `hostFoldActionCount = 1`, no generic action failure, `shellScrollHeight = shellClientHeight = 667`
+- final verification:
+  - `cd client && pnpm exec node --test`: `251/251`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-26d201e2.js` 533.65 kB)
+  - `cd server && pnpm test --runInBand`: `125/125`
+- next queue:
+  - continue invalid-action coverage for stale/out-of-turn requests and recovery-required room actions in real browser flows

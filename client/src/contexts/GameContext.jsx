@@ -484,6 +484,9 @@ const useGameStore = create((set, get) => ({
       errorEvent: 'playerActionError',
       timeoutMs: 5000,
       timeoutMessage: '玩家操作请求超时',
+      requestKey: 'playerAction',
+      rejectConcurrent: true,
+      concurrentMessage: '玩家操作请求处理中',
     });
   },
 

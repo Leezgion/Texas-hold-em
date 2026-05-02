@@ -8,6 +8,7 @@ const leaderboardSource = readFileSync(new URL('./Leaderboard.jsx', import.meta.
 const modeShellSource = readFileSync(new URL('./ModeShell.jsx', import.meta.url), 'utf8');
 const actionDockSource = readFileSync(new URL('./ActionDock.jsx', import.meta.url), 'utf8');
 const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.meta.url), 'utf8');
+const gameContextSource = readFileSync(new URL('../contexts/GameContext.jsx', import.meta.url), 'utf8');
 const playerTimerSource = readFileSync(new URL('./PlayerTimer.jsx', import.meta.url), 'utf8');
 const settlementOverlaySource = readFileSync(new URL('./SettlementOverlay.jsx', import.meta.url), 'utf8');
 const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
@@ -86,6 +87,13 @@ test('ActionButtons exposes a table-integrated action console instead of utility
   assert.match(actionButtonsSource, /table-action-console__watch-state/);
   assert.match(actionButtonsSource, /table-action-command__label/);
   assert.match(actionButtonsSource, /table-action-command__meta/);
+});
+
+test('GameContext guards player actions against duplicate socket submissions', () => {
+  assert.match(gameContextSource, /emitEvent:\s*'playerAction'/);
+  assert.match(gameContextSource, /requestKey:\s*'playerAction'/);
+  assert.match(gameContextSource, /rejectConcurrent:\s*true/);
+  assert.match(gameContextSource, /concurrentMessage:\s*'玩家操作请求处理中'/);
 });
 
 test('PlayerTimer shares the table-action console language', () => {

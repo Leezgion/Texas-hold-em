@@ -913,6 +913,13 @@ export function deriveRequestErrorFeedback({ scope = 'generic', fallbackPrefix =
   if (scope === 'playerAction') {
     const minRaiseMatch = normalizedMessage.match(/加注金额必须至少为\s*([0-9,]+)/);
 
+    if (normalizedMessage.includes('玩家操作请求处理中')) {
+      return {
+        channel: 'game-info',
+        detail: '动作已发送，正在等待牌局确认，请勿重复点击。',
+      };
+    }
+
     if (normalizedMessage.includes('不是你的回合')) {
       return {
         channel: 'game-warning',

@@ -1086,6 +1086,20 @@ test('maps message-only player action errors to actionable warning feedback', ()
       scope: 'playerAction',
       fallbackPrefix: '操作失败',
       error: {
+        message: '玩家操作请求处理中',
+      },
+    }),
+    {
+      channel: 'game-info',
+      detail: '动作已发送，正在等待牌局确认，请勿重复点击。',
+    }
+  );
+
+  assert.deepEqual(
+    deriveRequestErrorFeedback({
+      scope: 'playerAction',
+      fallbackPrefix: '操作失败',
+      error: {
         message: '不是你的回合',
       },
     }),
