@@ -2405,4 +2405,29 @@ This pass verified the existing bet-facing disconnect behavior in a real phone b
   - `.runlogs/2026-05-03-phone-disconnect-fold-audit.json`: `ok = true`
   - latest full verification still applies from the preceding disconnect code pass: server `128/128`, client `258/258`, and client build passed
 - next queue:
-  - `[todo]` continue product hardening with showdown / settlement interruption cases: refresh or reconnect during reveal windows should preserve result visibility, reveal eligibility, and support-panel ergonomics
+  - `[done]` continue product hardening with showdown / settlement interruption cases: refresh or reconnect during reveal windows should preserve result visibility, reveal eligibility, and support-panel ergonomics
+
+## 2026-05-03 Phone Settlement Refresh / Reveal Recovery Audit
+
+This pass verified the settlement-window refresh and reveal recovery path in a real phone browser without requiring production code changes.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-settlement-reconnect-audit.json` (`runId = moouq6rx`)
+  - fresh room `DBWR4D`
+  - screenshot: `.runlogs/2026-05-03-phone-settlement-reconnect.png`
+- verified contract:
+  - the phone host refreshed during the settlement window and stayed on `/game/DBWR4D`
+  - the settlement sheet survived refresh with result text, `不亮牌 / 亮左牌 / 亮右牌 / 全亮`, and the same hand-history count
+  - after refresh, `亮左牌` wrote `show_one` into the latest hand history and displayed exactly one revealed card for the host
+  - opening the `牌局` support panel after reveal kept `dialogCount = 1`, `#root.inert = true`, and included `最近手牌` plus the revealed-card line
+  - every captured state kept `shellScrollHeight = shellClientHeight = 844` and `bodyScrollHeight = bodyClientHeight = 844`
+  - only the known favicon `404` appeared in raw console errors; `filteredConsoleErrors = []`
+- audit script adjustment:
+  - the first run (`moouplw9`, room `9KMKNH`) failed only because the script asserted the settlement sheet must contain `最新一手`
+  - the actual compact settlement sheet intentionally shows `第 1 手`, while the support panel uses `最近一手`
+  - the assertion was changed to the stable hand label before rerunning
+- product result:
+  - no production code change was needed in this pass
+  - settlement refresh, reveal action recovery, and support-panel ergonomics are currently stable on the phone viewport
+- next queue:
+  - `[todo]` validate post-settlement reveal/history persistence across the automatic next hand and longer reveal sequences, including whether revealed/mucked details remain easy to recover after the settlement sheet disappears
