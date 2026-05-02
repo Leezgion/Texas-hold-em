@@ -531,7 +531,7 @@
   - `[done]` audit phone live-hand support panels (`成员 / 牌局 / 房间`) on short-height and regular phone viewports
   - `[done]` run real phone action execution flow through quick actions, raise confirm/cancel, and post-action state transitions
   - `[done]` compress the phone live-hand center cue after the single-screen action path stayed stable on both phone heights
-  - `[todo]` remove duplicated phone live-hand chrome from the table/header layer so the table owns more of the first screen
+  - `[done]` remove duplicated phone live-hand chrome from the table/header layer so the table owns more of the first screen
 
 ## 2026-05-02 Phone Support Panel Audit Follow-up
 
@@ -630,7 +630,7 @@
     - both viewports still reported no beacon/board, beacon/cards, beacon/action, beacon/dock, dock/table, dock/board, raise/beacon, raise/board, or raise/cards collision
 - Remaining queue:
   - `[done]` rework the phone live-hand pot capsule / board-area hierarchy; screenshots had shown the pot capsule too close to the top seat/top rail even though geometry checks passed
-  - `[todo]` continue phone live-hand visual polish on the board tray / seat rail density after pot, center cue, and header chrome are stable
+  - `[done]` continue phone live-hand visual polish on the board tray / seat rail density after pot, center cue, and header chrome are stable
 
 ## 2026-05-02 Phone Live Pot-Pill Follow-up
 
