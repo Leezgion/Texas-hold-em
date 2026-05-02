@@ -325,7 +325,7 @@ describe('Gameplay smoke regression', () => {
     );
   });
 
-  it('force-folds a disconnected call-only current player and records the disconnect reason', () => {
+  it('force-folds a disconnected call-only current player after the grace window and records the disconnect reason', () => {
     const { roomManager, room } = createRoomWithPlayers({
       maxPlayers: 3,
       seatedPlayers: 3,
@@ -335,6 +335,10 @@ describe('Gameplay smoke regression', () => {
     putHostInNonFullAllInCallOnlySpot(roomManager, room);
 
     roomManager.handlePlayerDisconnect('device-host');
+
+    expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
+
+    jest.advanceTimersByTime(roomManager.disconnectGraceMs);
 
     expect(room.roomState).toBe(ROOM_STATES.SETTLING);
     expect(room.gameLogic.handHistory.at(-1).actionsByStreet.preflop.at(-1)).toEqual(

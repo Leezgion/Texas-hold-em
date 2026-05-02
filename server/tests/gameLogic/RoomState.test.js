@@ -443,6 +443,53 @@ describe('RoomManager state vocabularies', () => {
     }
   });
 
+  it('keeps a briefly disconnected current player in hand when the device reconnects before grace expires', () => {
+    jest.useFakeTimers();
+    try {
+      const { io, gameRooms, socketDeviceMap, roomManager } = createManager();
+      const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
+      const guestSocket = registerDevice(io, socketDeviceMap, 'socket-guest', 'device-guest');
+      const thirdSocket = registerDevice(io, socketDeviceMap, 'socket-third', 'device-third');
+
+      const roomId = roomManager.createRoom(hostSocket, {
+        duration: 60,
+        maxPlayers: 6,
+        allinDealCount: 1,
+      });
+
+      roomManager.joinRoom(guestSocket, roomId, 'device-guest', 'Guest');
+      roomManager.joinRoom(thirdSocket, roomId, 'device-third', 'Third');
+      roomManager.startGame(roomId, 'device-host');
+
+      const room = gameRooms.get(roomId);
+      const host = room.players.find((player) => player.id === 'device-host');
+
+      expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-host');
+
+      roomManager.handlePlayerDisconnect('device-host');
+
+      expect(host.disconnected).toBe(true);
+      expect(host.inHand).toBe(true);
+      expect(host.folded).toBe(false);
+      expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-host');
+
+      const reconnectSocket = registerDevice(io, socketDeviceMap, 'socket-host-reconnect', 'device-host');
+      roomManager.handleDeviceReconnect('device-host', reconnectSocket);
+
+      jest.advanceTimersByTime(5000);
+
+      expect(host.socketId).toBe('socket-host-reconnect');
+      expect(host.disconnected).toBe(false);
+      expect(host.inHand).toBe(true);
+      expect(host.folded).toBe(false);
+      expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-host');
+      expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
+    } finally {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    }
+  });
+
   it('rejects recoverRoom when the room is not dirty', () => {
     const { io, socketDeviceMap, roomManager } = createManager();
     const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');

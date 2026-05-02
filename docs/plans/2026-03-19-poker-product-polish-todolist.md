@@ -2115,6 +2115,26 @@ This pass closed the remaining invalid-action browser-coverage gap without chang
   - out-of-turn is normally prevented by the watch-state action console, so browser coverage verifies the authoritative socket rejection frame rather than forcing a fake UI button
   - recovery-required is a dirty-state guard; browser coverage uses an isolated local harness instead of adding unsafe mutation endpoints to the product server
 - next queue:
-  - `[todo]` validate live-hand refresh/reconnect on phone and desktop so hero hand, action state, and room membership recover without stale UI
+  - `[done]` validate live-hand refresh/reconnect on phone and desktop so hero hand, action state, and room membership recover without stale UI
+  - `[todo]` validate leave-seat / leave-room confirmations during an active hand, including forced-fold feedback and single-screen phone layout
+  - `[todo]` validate same-device room switching in a real browser so old room cleanup does not leave phantom membership or stale hand state
+
+## 2026-05-03 Live-Hand Refresh/Reconnect Grace
+
+This pass fixed the highest-risk reconnect failure: refreshing or briefly losing the socket during a live decision no longer immediately auto-folds the player.
+
+- change:
+  - `RoomManager` now schedules a short disconnect grace timer before applying the old disconnect forced-fold path
+  - `joinRoom`, `handleDeviceReconnect`, recovery, leave-room, and room cleanup clear pending disconnect timers so stale timers cannot fold a recovered or departed player later
+  - if the grace window expires and the player is still disconnected, the existing forced-fold path still records `reason: disconnect`
+- automated evidence:
+  - red test before the fix: `keeps a briefly disconnected current player in hand when the device reconnects before grace expires` failed because `host.folded` became `true` immediately after disconnect
+  - `cd server && pnpm jest tests/gameLogic/RoomState.test.js --runInBand`: `18/18` passed after the fix
+  - `cd server && pnpm jest tests/gameLogic/GameplaySmoke.test.js --runInBand`: `8/8` passed after updating the disconnect test to assert fold after grace expiry
+- browser evidence:
+  - `.runlogs/2026-05-03-live-refresh-reconnect-audit.json` (`runId = moorek12`)
+  - desktop `1366x900` fresh room `NNSLC6`: refresh changed socket id, kept `currentPlayerId` on host, kept `holeCardCount = 2`, kept action console `decision`, and stayed single-screen
+  - phone `390x844` fresh room `HNC2YF`: same reconnect outcome with `shellScrollHeight = shellClientHeight = 844`
+- next queue:
   - `[todo]` validate leave-seat / leave-room confirmations during an active hand, including forced-fold feedback and single-screen phone layout
   - `[todo]` validate same-device room switching in a real browser so old room cleanup does not leave phantom membership or stale hand state

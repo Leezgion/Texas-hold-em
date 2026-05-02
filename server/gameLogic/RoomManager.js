@@ -7,6 +7,8 @@ class RoomManager {
     this.gameRooms = gameRooms;
     this.socketDeviceMap = socketDeviceMap;
     this.roomDefaults = options.roomDefaults || {};
+    this.disconnectGraceMs = options.disconnectGraceMs ?? 3000;
+    this.disconnectGraceTimers = new Map();
   }
 
   deriveRoomState(room) {
@@ -186,6 +188,43 @@ class RoomManager {
     return error;
   }
 
+  clearDisconnectGraceTimer(playerId) {
+    const timer = this.disconnectGraceTimers.get(playerId);
+    if (!timer) {
+      return;
+    }
+
+    clearTimeout(timer);
+    this.disconnectGraceTimers.delete(playerId);
+  }
+
+  scheduleDisconnectGrace(room, playerId) {
+    this.clearDisconnectGraceTimer(playerId);
+
+    if (!room?.gameStarted || !room.gameLogic || this.disconnectGraceMs <= 0) {
+      room?.gameLogic?.handlePlayerDisconnect(playerId);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      this.disconnectGraceTimers.delete(playerId);
+      const currentRoom = this.findRoomByPlayerId(playerId);
+      if (!currentRoom || currentRoom.id !== room.id || !currentRoom.gameLogic) {
+        return;
+      }
+
+      const player = currentRoom.players.find((entry) => entry.id === playerId);
+      if (!player?.disconnected) {
+        return;
+      }
+
+      currentRoom.gameLogic.handlePlayerDisconnect(playerId);
+      this.broadcastRoomState(currentRoom);
+    }, this.disconnectGraceMs);
+
+    this.disconnectGraceTimers.set(playerId, timer);
+  }
+
   createPlayerLedger(initialBuyIn, currentChips = initialBuyIn) {
     return {
       initialBuyIn,
@@ -301,6 +340,7 @@ class RoomManager {
     room.gameLogic = null;
 
     room.players.forEach((entry) => {
+      this.clearDisconnectGraceTimer(entry.id);
       this.resetPlayerAfterRecovery(entry);
       this.syncPlayerLedger(entry);
     });
@@ -454,6 +494,7 @@ class RoomManager {
     const existingPlayer = room.players.find((p) => p.id === deviceId);
     if (existingPlayer) {
       // 设备重连，更新Socket ID和名称
+      this.clearDisconnectGraceTimer(deviceId);
       existingPlayer.socketId = socket.id;
       existingPlayer.hasLeftRoom = false;
       existingPlayer.disconnected = false;
@@ -892,7 +933,7 @@ class RoomManager {
     player.socketId = null; // 清除socket ID
 
     if (room.gameStarted && room.gameLogic) {
-      room.gameLogic.handlePlayerDisconnect(playerId);
+      this.scheduleDisconnectGrace(room, playerId);
     }
 
     this.broadcastRoomState(room);
@@ -905,6 +946,7 @@ class RoomManager {
       const player = room.players.find((p) => p.id === deviceId && !p.hasLeftRoom);
       if (player) {
         // 更新Socket ID并恢复连接状态
+        this.clearDisconnectGraceTimer(deviceId);
         player.socketId = socket.id;
         player.disconnected = false;
         player.hasLeftRoom = false;
@@ -966,6 +1008,7 @@ class RoomManager {
 
     const playerSocket = player.socketId ? this.io.sockets.sockets.get(player.socketId) : null;
     playerSocket?.leave(room.id);
+    this.clearDisconnectGraceTimer(playerId);
     let forcedFold = false;
 
     if (room.gameStarted) {
@@ -1038,6 +1081,8 @@ class RoomManager {
       room.gameLogic.clearPlayerTimer();
       room.gameLogic.clearNextHandTimeout();
     }
+
+    room.players.forEach((player) => this.clearDisconnectGraceTimer(player.id));
 
     this.gameRooms.delete(roomId);
   }
