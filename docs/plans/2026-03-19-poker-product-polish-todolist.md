@@ -662,6 +662,38 @@
 - Product note:
   - the table now has a cleaner hierarchy: header identity, opponent badge, micro pot, board tray, center action cue, hero/dock action surface
 
+## 2026-05-02 Short Phone Top-Seat Plaque Follow-up
+
+- Status: `[done]` Short-height phone live-hand top opponent plaque is compacted and no longer clipped or overlapped by header/pot/table containers.
+- Root cause:
+  - after the pot pill pass, `375x667` geometry exposed that the top opponent plaque still used regular phone live-hand height
+  - moving the plaque down alone would have collided with the micro pot pill, so the fix needed a smaller short-height plaque footprint
+  - the first geometric fix passed rectangle collision checks, but screenshot review showed the top plaque could still be visually clipped by the stage container chain
+- Local fixes:
+  - short-height phone live-hand top opponent uses a micro plaque with seat, blind/position, stack, and bet
+  - the opponent nickname is hidden only in that short-height top slot because it is lower priority than stack/bet/position
+  - short-height phone live-hand `.room-terminal-main`, `.table-stage-panel`, and `.table-stage-surface` allow visible overflow so the top badge can sit on the table edge without being cropped
+  - the browser audit now fails `seatHeader` collisions in addition to pot/header/seat/board/cue checks
+- Fresh evidence:
+  - focused client contract tests:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js src/utils/roomViewportLayout.test.js src/utils/tableStageLayout.test.js src/components/roomShellScrollContract.test.js`
+    - `69/69` passed on `2026-05-02`
+  - full client node suite:
+    - `229/229` passed on `2026-05-02`
+  - client production build:
+    - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - browser audit:
+    - `.runlogs/2026-05-02-phone-clean-center-audit.json`
+    - `390x844` room `XN5V04`, `375x667` room `D0273H`
+    - short phone top opponent rect: `top = 51.40`, `bottom = 90.59`, `width = 63.75`, `height = 39.19`
+    - short phone header rect: `bottom = 49.41`
+    - short phone pot rect: `top = 93.28`, `bottom = 112.86`
+    - both viewports reported `seatHeader = false`, `potSeat = false`, `potHeader = false`, `potBoard = false`, and `potBeacon = false`
+    - both viewports stayed `scrollHeight = clientHeight` with `clippedViewport = []`
+- Product note:
+  - short phone live-hand now follows a strict information hierarchy: room identity, top opponent micro badge, pot, board, cue, hero cards, action dock
+  - short-screen plaques should remove lower-priority copy before moving critical poker data into another layer
+
 ## Product Mode Model
 
 ### Shared Room Mode

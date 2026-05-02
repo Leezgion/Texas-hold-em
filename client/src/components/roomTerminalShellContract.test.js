@@ -496,6 +496,33 @@ test('phone-terminal live hand compacts opponent plaques to table badges', () =>
   );
 });
 
+test('short-height phone live hand uses a micro top opponent plaque below the header', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.room-terminal-main\s*\{[\s\S]*overflow:\s*visible;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-panel\s*\{[\s\S]*overflow:\s*visible;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-surface\s*\{[\s\S]*overflow:\s*visible;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque-anchor\[data-anchor-role="top"\]\s*\{[\s\S]*transform:\s*translate\(-50%,\s*calc\(-50% \+ 0\.9rem\)\)\s*!important;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque-anchor\[data-anchor-role="top"\]\s+\.arena-seat-plaque\s*\{[\s\S]*width:\s*clamp\(3\.8rem,\s*17vw,\s*4\.2rem\);[\s\S]*min-height:\s*2\.45rem;[\s\S]*padding:\s*0\.16rem 0\.24rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque-anchor\[data-anchor-role="top"\]\s+\.arena-seat-plaque__name\s*\{\s*display:\s*none;/s
+  );
+});
+
 test('phone-terminal raise sizing opens as a bounded drawer instead of growing over the table', () => {
   assert.match(actionButtonsSource, /table-action-console--raise-open/);
   assert.match(

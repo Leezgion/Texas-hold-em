@@ -3845,9 +3845,18 @@
     padding-block: 0.5rem;
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .room-terminal-main {
+    overflow: visible;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-panel {
+    overflow: visible;
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-surface {
     min-height: min(20rem, calc(100dvh - 21rem));
     padding: 0.42rem 0.35rem;
+    overflow: visible;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-core {
@@ -3868,6 +3877,60 @@
     top: clamp(10.5rem, 28dvh, 11.9rem);
     max-width: min(13rem, calc(100% - 4rem));
     padding: 0.2rem 0.42rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] {
+    transform: translate(-50%, calc(-50% + 0.9rem)) !important;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque {
+    width: clamp(3.8rem, 17vw, 4.2rem);
+    min-height: 2.45rem;
+    padding: 0.16rem 0.24rem;
+    border-radius: 0.72rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque::before {
+    inset: 0.09rem;
+    border-radius: 0.56rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__header,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__stack-row {
+    gap: 0.16rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__meta-row {
+    gap: 0.18rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__seat-label {
+    font-size: 0.46rem;
+    line-height: 0.7rem;
+    letter-spacing: 0.12em;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__name {
+    display: none;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__badge-row {
+    display: none;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__stack-row {
+    margin-top: 0.16rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__stack {
+    font-size: 0.58rem;
+    line-height: 0.76rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque__bet {
+    padding: 0.08rem 0.18rem;
+    font-size: 0.44rem;
+    line-height: 0.58rem;
   }
 
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-dock-state="live"] {
