@@ -2387,4 +2387,22 @@ This pass aligned disconnect behavior with real poker check/fold expectations.
   - `cd client && pnpm exec node --test`: `258/258`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-86407b81.js` 535.44 kB)
 - next queue:
-  - `[todo]` validate bet-facing disconnect auto-fold feedback in a real phone browser, including `断线自动弃牌`, call-only preservation, and no stale action controls
+  - `[done]` validate bet-facing disconnect auto-fold feedback in a real phone browser, including `断线自动弃牌`, call-only preservation, and no stale action controls
+
+## 2026-05-03 Phone Bet-Facing Disconnect Auto-Fold Audit
+
+This pass verified the existing bet-facing disconnect behavior in a real phone browser after the disconnect copy and no-call rules were tightened.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-disconnect-fold-audit.json` (`runId = mooujiy6`)
+  - normal facing-bet fresh room `G9B132`: host phone was facing a `20` preflop call, closed past grace, then reconnected into `watch` with `断线自动弃牌`; old action controls were gone and action handed to P2
+  - call-only fresh room `HWBOYP`: host phone was in `currentPlayerActionMode = call_only` with only `弃牌 / 跟注`; after disconnect past grace, the server recorded host `fold` with `reason = disconnect`, and the reconnected phone showed `断线自动弃牌`
+  - both phone paths stayed single-screen with no dialog and `rootInert = false`
+- product result:
+  - no production code change was needed in this pass
+  - the previous `ActionButtons` disconnect copy and existing call-only server fold behavior covered the browser path
+- verification:
+  - `.runlogs/2026-05-03-phone-disconnect-fold-audit.json`: `ok = true`
+  - latest full verification still applies from the preceding disconnect code pass: server `128/128`, client `258/258`, and client build passed
+- next queue:
+  - `[todo]` continue product hardening with showdown / settlement interruption cases: refresh or reconnect during reveal windows should preserve result visibility, reveal eligibility, and support-panel ergonomics

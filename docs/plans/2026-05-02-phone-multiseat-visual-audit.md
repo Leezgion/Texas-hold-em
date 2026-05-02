@@ -77,4 +77,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Validate timer-expiry browser behavior on phone; browser audit `mootivlx` verified timeout auto-fold metadata, current-player handoff, explicit `超时自动弃牌` copy, no stale action controls, and no shell scroll.
 - `[done]` Validate no-call timeout behavior on phone; browser audit `mootxidq` verified timeout auto-check metadata, explicit `超时自动过牌` copy, no stale action controls, flop-to-turn advancement after all players checked, and no shell scroll.
 - `[done]` Continue professional-player hardening around disconnect / reconnect in no-call check spots; browser audit `mooucfgj` verified quick reconnect before grace, disconnect auto-check after grace, sustained disconnect auto-check on the next street, and explicit `断线自动过牌` feedback.
-- `[todo]` Validate bet-facing disconnect auto-fold feedback in a real phone browser.
+- `[done]` Validate bet-facing disconnect auto-fold feedback in a real phone browser; browser audit `mooujiy6` verified normal facing-bet and call-only disconnects show `断线自动弃牌`, remove stale action controls, and keep the phone shell single-screen.
+- `[todo]` Continue showdown / settlement interruption validation around refresh, reconnect, reveal eligibility, and support-panel ergonomics.
