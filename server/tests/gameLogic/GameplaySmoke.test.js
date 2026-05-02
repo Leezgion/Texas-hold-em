@@ -91,6 +91,18 @@ function putHostInNonFullAllInCallOnlySpot(roomManager, room) {
   expect(room.gameLogic.getGameState().currentPlayerActionMode).toBe('call_only');
 }
 
+function putSmallBlindInFlopCheckSpot(roomManager, room) {
+  roomManager.startGame(room.id, 'device-host');
+
+  roomManager.handlePlayerAction('device-host', 'call');
+  roomManager.handlePlayerAction('device-p2', 'call');
+  roomManager.handlePlayerAction('device-p3', 'check');
+
+  expect(room.gameLogic.getGameState().phase).toBe('flop');
+  expect(room.gameLogic.getGameState().currentBet).toBe(0);
+  expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-p2');
+}
+
 describe('Gameplay smoke regression', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -348,6 +360,79 @@ describe('Gameplay smoke regression', () => {
         amount: 0,
         auto: true,
         reason: 'disconnect',
+      })
+    );
+  });
+
+  it('auto-checks a disconnected no-call current player after the grace window', () => {
+    const { roomManager, room } = createRoomWithPlayers({
+      maxPlayers: 3,
+      seatedPlayers: 3,
+      settleMs: 10,
+    });
+
+    putSmallBlindInFlopCheckSpot(roomManager, room);
+    const smallBlind = room.players.find((player) => player.id === 'device-p2');
+
+    roomManager.handlePlayerDisconnect('device-p2');
+
+    expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
+    expect(smallBlind.disconnected).toBe(true);
+    expect(smallBlind.folded).toBe(false);
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-p2');
+
+    jest.advanceTimersByTime(roomManager.disconnectGraceMs);
+
+    const gameState = room.gameLogic.getGameState();
+    expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
+    expect(gameState.phase).toBe('flop');
+    expect(gameState.currentPlayerId).toBe('device-p3');
+    expect(gameState.lastAction).toEqual(
+      expect.objectContaining({
+        playerId: 'device-p2',
+        action: 'check',
+        amount: 0,
+        auto: true,
+        reason: 'disconnect',
+      })
+    );
+    expect(smallBlind.inHand).toBe(true);
+    expect(smallBlind.folded).toBe(false);
+  });
+
+  it('keeps auto-checking a still-disconnected player on later no-call streets without another full timer', () => {
+    const { roomManager, room } = createRoomWithPlayers({
+      maxPlayers: 3,
+      seatedPlayers: 3,
+      settleMs: 10,
+    });
+
+    putSmallBlindInFlopCheckSpot(roomManager, room);
+    roomManager.handlePlayerDisconnect('device-p2');
+    jest.advanceTimersByTime(roomManager.disconnectGraceMs);
+
+    expect(room.gameLogic.getGameState().lastAction).toEqual(
+      expect.objectContaining({
+        playerId: 'device-p2',
+        action: 'check',
+        reason: 'disconnect',
+      })
+    );
+
+    roomManager.handlePlayerAction('device-p3', 'check');
+    roomManager.handlePlayerAction('device-host', 'check');
+
+    const gameState = room.gameLogic.getGameState();
+    expect(gameState.phase).toBe('turn');
+    expect(gameState.currentPlayerId).toBe('device-p3');
+    expect(gameState.lastAction).toEqual(
+      expect.objectContaining({
+        playerId: 'device-p2',
+        action: 'check',
+        amount: 0,
+        auto: true,
+        reason: 'disconnect',
+        street: 'turn',
       })
     );
   });

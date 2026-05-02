@@ -2356,4 +2356,35 @@ This pass closed the no-call timeout path for live phone decisions.
   - `cd client && pnpm exec node --test`: `258/258`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-0382b9d2.js` 535.05 kB)
 - next queue:
-  - `[todo]` continue professional-player hardening around disconnect / reconnect in no-call check spots, so temporary refresh does not create misleading forced-action feedback and sustained disconnect semantics stay explicit
+  - `[done]` continue professional-player hardening around disconnect / reconnect in no-call check spots, so temporary refresh does not create misleading forced-action feedback and sustained disconnect semantics stay explicit
+
+## 2026-05-03 Phone No-Call Disconnect Auto-Check
+
+This pass aligned disconnect behavior with real poker check/fold expectations.
+
+- root cause:
+  - timeout already used check/fold semantics: no-call spots auto-check, bet-facing spots auto-fold
+  - disconnect grace expiry always used `forceFoldPlayer`, so a disconnected player could be folded even when checking was free
+  - after a disconnect auto-check, the same still-disconnected player could receive a fresh 60-second timer on the next street
+- change:
+  - `GameLogic.handlePlayerDisconnect` now auto-checks only when the disconnected player is the current actor and has `0` to call
+  - bet-facing disconnects and non-current disconnects still force-fold after the existing grace path
+  - `startPlayerTimer` immediately applies disconnect auto-action for still-disconnected current players after grace has already expired, instead of granting another full timer
+  - `ActionButtons` now explains own disconnect auto-actions with `断线自动过牌` / `断线自动弃牌`
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-disconnect-check-audit.json` (`runId = mooucfgj`)
+  - quick reconnect fresh room `BMRBCZ`: phone reload in a flop check spot stayed on P2 decision after grace would have expired, with hole cards and `过牌` controls intact
+  - disconnect auto-check fresh room `T7DTWT`: after closing the P2 phone page past grace, server recorded P2 `check` with `auto = true`, `reason = disconnect`, and reconnected P2 saw `断线自动过牌`
+  - sustained disconnect fresh room `KPNG8Y`: after P2 disconnected on flop and remained offline, P2 auto-checked again immediately on `turn` with `reason = disconnect`; no extra 60-second wait was introduced
+  - all phone browser states stayed single-screen with no dialog and `rootInert = false`
+- final verification:
+  - red server test before implementation: no-call disconnect expected `check` but received `fold`
+  - red server test before sustained fix: next street still had `currentPlayerId = device-p2` instead of immediately handing off to P3
+  - red client contract before copy fix: missing `断线自动过牌` / `断线自动弃牌`
+  - `cd server && pnpm jest tests/gameLogic/GameplaySmoke.test.js --runInBand`: `10/10`
+  - `cd server && pnpm test --runInBand`: `128/128`
+  - `cd client && pnpm exec node --test src/components/interactionSurfaceContract.test.js`: `18/18`
+  - `cd client && pnpm exec node --test`: `258/258`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-86407b81.js` 535.44 kB)
+- next queue:
+  - `[todo]` validate bet-facing disconnect auto-fold feedback in a real phone browser, including `断线自动弃牌`, call-only preservation, and no stale action controls

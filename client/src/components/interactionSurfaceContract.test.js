@@ -95,6 +95,9 @@ test('ActionButtons explains timeout auto-folds in the watch console', () => {
   assert.match(actionButtonsSource, /lastAction\?\.reason === 'timeout'/);
   assert.match(actionButtonsSource, /超时自动弃牌/);
   assert.match(actionButtonsSource, /超时自动过牌/);
+  assert.match(actionButtonsSource, /lastAction\?\.reason === 'disconnect'/);
+  assert.match(actionButtonsSource, /断线自动弃牌/);
+  assert.match(actionButtonsSource, /断线自动过牌/);
 });
 
 test('GameContext guards player actions against duplicate socket submissions', () => {

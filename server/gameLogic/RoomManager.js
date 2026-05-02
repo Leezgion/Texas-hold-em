@@ -198,6 +198,10 @@ class RoomManager {
     this.disconnectGraceTimers.delete(playerId);
   }
 
+  hasDisconnectGraceTimer(playerId) {
+    return this.disconnectGraceTimers.has(playerId);
+  }
+
   scheduleDisconnectGrace(room, playerId) {
     this.clearDisconnectGraceTimer(playerId);
 

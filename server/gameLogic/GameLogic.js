@@ -1236,7 +1236,26 @@ class GameLogic {
   }
 
   handlePlayerDisconnect(playerId) {
-    this.forceFoldPlayer(playerId, 'disconnect');
+    const playerIndex = this.room.players.findIndex((player) => player.id === playerId);
+    if (playerIndex === -1) {
+      return;
+    }
+
+    const player = this.room.players[playerIndex];
+    if (!player.inHand || player.folded || player.allIn) {
+      return;
+    }
+
+    if (playerIndex !== this.currentPlayerIndex || this.getAmountToCall(player) > 0) {
+      this.forceFoldPlayer(playerId, 'disconnect');
+      return;
+    }
+
+    this.clearPlayerTimer();
+    this.applyCheck(playerIndex, { auto: true, reason: 'disconnect' });
+    this.refreshPotState();
+    this.updatePendingPlayersAfterAction(playerIndex, false);
+    this.advanceGameFlow(playerIndex);
   }
 
   forceFoldPlayer(playerId, reason = 'forced') {
@@ -1301,7 +1320,15 @@ class GameLogic {
 
   startPlayerTimer() {
     this.clearPlayerTimer();
-    if (!this.getCurrentPlayer()) {
+    const currentPlayer = this.getCurrentPlayer();
+    if (!currentPlayer) {
+      return;
+    }
+
+    if (currentPlayer.disconnected && !this.roomManager.hasDisconnectGraceTimer?.(currentPlayer.id)) {
+      this.timeRemaining = 0;
+      this.handlePlayerDisconnect(currentPlayer.id);
+      this.roomManager.broadcastRoomState(this.room);
       return;
     }
 
