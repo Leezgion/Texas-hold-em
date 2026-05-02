@@ -5,6 +5,14 @@ import { motion, useReducedMotion } from 'motion/react';
 import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
 import { buildHandHistoryView } from '../view-models/handHistoryViewModel';
 
+function resolveHandHistoryLineLimit({ effectiveDisplayMode, surfaceVariant }) {
+  if (surfaceVariant === 'embedded') {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return effectiveDisplayMode === 'study' ? 6 : 4;
+}
+
 const HandHistoryDrawerContent = ({
   summaries,
   motionProfile,
@@ -132,7 +140,7 @@ const HandHistoryDrawer = ({
     viewport: resolveTacticalMotionViewport({ viewportModel, viewportWidth }),
   });
   const summaries = buildHandHistoryView(records);
-  const lineLimit = effectiveDisplayMode === 'study' ? 6 : 4;
+  const lineLimit = resolveHandHistoryLineLimit({ effectiveDisplayMode, surfaceVariant });
 
   useEffect(() => {
     if (viewportModel) {

@@ -2017,3 +2017,19 @@ This pass narrowed the next professional-player correctness queue after the non-
 - next queue:
   - build or verify a compact phone drill-down for hands with multiple side pots so the user can inspect every pot layer without leaving the single-screen table context
   - keep service preflight explicit: browser audits that create socket rooms on `3101` must run Vite with `VITE_SERVER_ORIGIN=http://127.0.0.1:3101`
+
+## 2026-05-03 Embedded Replay Drill-Down
+
+This pass addressed the first replay drill-down issue without changing the table layout.
+
+- change:
+  - embedded `HandHistoryDrawer` surfaces now use `Number.POSITIVE_INFINITY` for the line limit, so phone support-panel replay cards do not truncate pot layers after 4 lines
+  - normal toggle drawers keep the previous compact line limits
+- verification:
+  - `cd client && pnpm exec node --test src/components/gameRoomStageContract.test.js`: passed
+  - `cd client && pnpm exec node --test`: `248/248`
+  - `cd client && pnpm build`: passed, with existing large chunk warning (`assets/index-3104147b.js` 532.41 kB)
+  - `cd server && pnpm test --runInBand`: `125/125`
+  - browser side-pot audit: `.runlogs/2026-05-02-phone-side-pot-allin-audit.json` (`runId = moopltvc`, fresh room `2R0DDL`)
+- next queue:
+  - add a real-browser 4+ player multi-side-pot history-drawer audit that opens the phone `牌局` sheet and asserts all pot layers plus chip deltas are visible through sheet scrolling

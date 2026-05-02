@@ -383,3 +383,12 @@ test('HandHistoryDrawer keeps the tactical support panel copy localized for phon
   assert.match(handHistoryDrawerSource, /tactical-history-drawer__title">最近手牌/);
   assert.doesNotMatch(handHistoryDrawerSource, /Hand History|Recent Tape/);
 });
+
+test('HandHistoryDrawer does not truncate embedded support-panel replay lines', () => {
+  assert.match(handHistoryDrawerSource, /function resolveHandHistoryLineLimit/);
+  assert.match(
+    handHistoryDrawerSource,
+    /surfaceVariant\s*===\s*'embedded'[\s\S]*Number\.POSITIVE_INFINITY/s
+  );
+  assert.match(handHistoryDrawerSource, /const lineLimit = resolveHandHistoryLineLimit/);
+});
