@@ -1059,6 +1059,78 @@ test('maps out-of-turn action errors to immediate warning feedback', () => {
   );
 });
 
+test('maps message-only player action errors to actionable warning feedback', () => {
+  assert.deepEqual(
+    deriveRequestErrorFeedback({
+      scope: 'playerAction',
+      fallbackPrefix: '操作失败',
+      error: {
+        message: '不是你的回合',
+      },
+    }),
+    {
+      channel: 'game-warning',
+      detail: '当前不是你的回合，操作未生效。',
+    }
+  );
+
+  assert.deepEqual(
+    deriveRequestErrorFeedback({
+      scope: 'playerAction',
+      fallbackPrefix: '操作失败',
+      error: {
+        message: '加注金额必须至少为 40',
+      },
+    }),
+    {
+      channel: 'game-warning',
+      detail: '加注金额低于当前最小加注，请至少加注 40。',
+    }
+  );
+
+  assert.deepEqual(
+    deriveRequestErrorFeedback({
+      scope: 'playerAction',
+      fallbackPrefix: '操作失败',
+      error: {
+        message: '筹码不足',
+      },
+    }),
+    {
+      channel: 'game-warning',
+      detail: '当前筹码不足，请改用可用筹码范围内的下注或全下。',
+    }
+  );
+
+  assert.deepEqual(
+    deriveRequestErrorFeedback({
+      scope: 'playerAction',
+      fallbackPrefix: '操作失败',
+      error: {
+        message: '当前不能过牌',
+      },
+    }),
+    {
+      channel: 'game-warning',
+      detail: '当前不能过牌，请选择跟注、加注或弃牌。',
+    }
+  );
+
+  assert.deepEqual(
+    deriveRequestErrorFeedback({
+      scope: 'playerAction',
+      fallbackPrefix: '操作失败',
+      error: {
+        message: '玩家当前无法行动',
+      },
+    }),
+    {
+      channel: 'game-warning',
+      detail: '你当前不能行动，可能已弃牌、全下或未参与本手。',
+    }
+  );
+});
+
 test('maps recovery-required start errors to an operator-facing warning', () => {
   assert.deepEqual(
     deriveRequestErrorFeedback({

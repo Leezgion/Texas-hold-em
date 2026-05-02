@@ -910,6 +910,59 @@ export function deriveRequestErrorFeedback({ scope = 'generic', fallbackPrefix =
     return mappedByCode[code];
   }
 
+  if (scope === 'playerAction') {
+    const minRaiseMatch = normalizedMessage.match(/加注金额必须至少为\s*([0-9,]+)/);
+
+    if (normalizedMessage.includes('不是你的回合')) {
+      return {
+        channel: 'game-warning',
+        detail: '当前不是你的回合，操作未生效。',
+      };
+    }
+
+    if (minRaiseMatch) {
+      return {
+        channel: 'game-warning',
+        detail: `加注金额低于当前最小加注，请至少加注 ${minRaiseMatch[1]}。`,
+      };
+    }
+
+    if (normalizedMessage.includes('加注金额必须是正整数') || normalizedMessage.includes('加注金额必须是正数')) {
+      return {
+        channel: 'game-warning',
+        detail: '请输入有效的加注金额。',
+      };
+    }
+
+    if (normalizedMessage.includes('筹码不足')) {
+      return {
+        channel: 'game-warning',
+        detail: '当前筹码不足，请改用可用筹码范围内的下注或全下。',
+      };
+    }
+
+    if (normalizedMessage.includes('当前不能过牌')) {
+      return {
+        channel: 'game-warning',
+        detail: '当前不能过牌，请选择跟注、加注或弃牌。',
+      };
+    }
+
+    if (normalizedMessage.includes('玩家当前无法行动')) {
+      return {
+        channel: 'game-warning',
+        detail: '你当前不能行动，可能已弃牌、全下或未参与本手。',
+      };
+    }
+
+    if (normalizedMessage.includes('无效的动作')) {
+      return {
+        channel: 'game-warning',
+        detail: '当前操作无效，请等待最新桌面状态后再试。',
+      };
+    }
+  }
+
   if (normalizedMessage.includes('设备未注册')) {
     return {
       channel: 'game-warning',

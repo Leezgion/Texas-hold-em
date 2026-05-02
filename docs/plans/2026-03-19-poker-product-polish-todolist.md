@@ -282,7 +282,7 @@
 - Remaining gameplay queue:
   - `[done]` real-browser smoke for a short 2-max hand from create/join/start through settlement UI
   - `[done]` real-browser smoke for a 9-max full room through first action and raise drawer recovery
-  - `[todo]` review client feedback copy for invalid/out-of-turn/min-raise actions after the browser gameplay pass
+  - `[done]` review client feedback copy for invalid/out-of-turn/min-raise actions after the browser gameplay pass
 
 ## 2026-05-02 Browser Gameplay Edge Follow-up
 
@@ -318,6 +318,24 @@
 - Product notes from the pass:
   - 9-max phone live-hand is intentionally very dense; side plaques are close to the rail and viewport edge but not clipped in the measured pass
   - settlement overlay on phone is readable and remains single-screen, but it visually dominates the table; revisit only after invalid-action feedback polish if we decide settlement needs a lower-profile pro variant
+
+## 2026-05-02 Player-Action Feedback Follow-up
+
+- Status: `[done]` Message-only player-action errors now map to actionable warning toasts instead of generic error toasts.
+- Root cause:
+  - server player-action failures often return only Chinese `message` values without structured `code`
+  - client feedback mapping already handled coded errors, but message-only errors such as `加注金额必须至少为 40` fell back to `操作失败：...`
+- Local fixes:
+  - message-only `不是你的回合` maps to an immediate warning
+  - message-only min-raise errors parse the required amount and tell the player the minimum
+  - message-only `筹码不足`, `当前不能过牌`, `玩家当前无法行动`, and `无效的动作` map to concise action guidance
+- Fresh evidence:
+  - red test before implementation:
+    - `cd client && node --test src/view-models/gameViewModel.test.js`
+    - failed at `maps message-only player action errors to actionable warning feedback`
+  - green focused test:
+    - `cd client && node --test src/view-models/gameViewModel.test.js`
+    - `40/40` passed on `2026-05-02`
 
 ## Product Mode Model
 
