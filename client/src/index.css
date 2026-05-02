@@ -2391,6 +2391,40 @@
     transform: translateY(-4.25rem);
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-pot-capsule {
+    top: clamp(5.8rem, 15dvh, 6.5rem);
+    display: inline-flex;
+    width: fit-content;
+    max-width: min(8.5rem, calc(100% - 5rem));
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.18rem 0.48rem;
+    border-radius: 999px;
+    border-color: rgba(247, 229, 173, 0.13);
+    background: rgba(3, 8, 14, 0.42);
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-pot-capsule__kicker {
+    font-size: 0.52rem;
+    line-height: 1;
+    letter-spacing: 0.14em;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-pot-capsule__amount {
+    margin-top: 0;
+    font-size: 0.78rem;
+    line-height: 1;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-pot-capsule__rail {
+    display: none;
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-beacon {
     bottom: auto;
     top: clamp(16.8rem, 34dvh, 18rem);
@@ -3822,6 +3856,12 @@
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-center-shell {
     transform: translateY(-4.75rem);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-pot-capsule {
+    top: clamp(4.05rem, 10dvh, 4.35rem);
+    max-width: min(7.5rem, calc(100% - 4rem));
+    padding: 0.16rem 0.42rem;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-beacon {

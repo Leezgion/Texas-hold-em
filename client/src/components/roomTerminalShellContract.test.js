@@ -403,6 +403,25 @@ test('phone-terminal live hand uses a clean-center table cue instead of a large 
   );
 });
 
+test('phone-terminal live hand compacts the pot capsule into a seat-clear table pill', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-pot-capsule\s*\{[\s\S]*top:\s*clamp\(5\.8rem,\s*15dvh,\s*6\.5rem\);[\s\S]*display:\s*inline-flex;[\s\S]*width:\s*fit-content;[\s\S]*max-width:\s*min\(8\.5rem,\s*calc\(100% - 5rem\)\);[\s\S]*padding:\s*0\.18rem 0\.48rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-pot-capsule__amount\s*\{[\s\S]*margin-top:\s*0;[\s\S]*font-size:\s*0\.78rem;[\s\S]*line-height:\s*1;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-pot-capsule__rail\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-pot-capsule\s*\{[\s\S]*top:\s*clamp\(4\.05rem,\s*10dvh,\s*4\.35rem\);/s
+  );
+});
+
 test('short-height phone live hand switches to a micro table-and-dock contract', () => {
   assert.match(
     globalStylesSource,

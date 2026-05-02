@@ -629,7 +629,38 @@
     - both viewports reported `clippedViewport = []`
     - both viewports still reported no beacon/board, beacon/cards, beacon/action, beacon/dock, dock/table, dock/board, raise/beacon, raise/board, or raise/cards collision
 - Remaining queue:
-  - `[todo]` rework the phone live-hand pot capsule / board-area hierarchy; screenshots still show the pot capsule too close to the top seat/top rail even though geometry checks pass
+  - `[done]` rework the phone live-hand pot capsule / board-area hierarchy; screenshots had shown the pot capsule too close to the top seat/top rail even though geometry checks passed
+  - `[todo]` continue phone live-hand visual polish on the board tray / seat rail density after pot, center cue, and header chrome are stable
+
+## 2026-05-02 Phone Live Pot-Pill Follow-up
+
+- Status: `[done]` Phone live-hand pot display is now a compact table pill clear of top seat, header, board, and cue.
+- Root cause:
+  - the original phone live pot capsule remained a `~65px` tall desktop-like card
+  - real browser metrics showed `potSeat = true`; short-height phones also showed `potHeader = true`
+  - geometry checks for board/dock/action could pass while the pot still visually collided with the top opponent plaque
+- Local fixes:
+  - phone live-hand `.table-stage-pot-capsule` is now an inline pill (`~20px` high, `~53-55px` wide)
+  - regular phone positions the pot pill between the top opponent plaque and board tray
+  - short-height phone uses a separate top offset so the pot clears the header and top opponent before the board tray
+  - phone live-hand hides secondary pot rails in the micro pill; detailed pot data remains in the action dock and support surfaces
+- Fresh evidence:
+  - focused client contract tests:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js src/utils/roomViewportLayout.test.js src/utils/tableStageLayout.test.js src/components/roomShellScrollContract.test.js`
+    - `68/68` passed on `2026-05-02`
+  - full client node suite:
+    - `228/228` passed on `2026-05-02`
+  - client production build:
+    - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - browser audit:
+    - `.runlogs/2026-05-02-phone-clean-center-audit.json`
+    - `390x844` room `ZW8D6O`, `375x667` room `V5AR2L`
+    - regular phone pot rect: `top = 138.59`, `bottom = 158.83`, `width = 54.86`, `height = 20.23`
+    - short phone pot rect: `top = 93.28`, `bottom = 112.86`, `width = 52.95`, `height = 19.58`
+    - both viewports reported `potHeader = false`, `potSeat = false`, `potBoard = false`, and `potBeacon = false`
+    - both viewports stayed `scrollHeight = clientHeight` with `clippedViewport = []`
+- Product note:
+  - the table now has a cleaner hierarchy: header identity, opponent badge, micro pot, board tray, center action cue, hero/dock action surface
 
 ## Product Mode Model
 
