@@ -731,6 +731,7 @@
 
   .room-terminal-shell {
     min-height: calc(100dvh - (var(--mode-shell-page-padding-y) * 2));
+    padding-block: 0.75rem;
     overflow: hidden;
   }
 
@@ -3881,6 +3882,14 @@
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-core {
     min-height: 18rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"][data-room-scroll-contract="single-screen"] .table-stage-surface {
+    min-height: min(19.5rem, calc(100dvh - 21.5rem));
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"][data-room-scroll-contract="single-screen"] .table-stage-core {
+    min-height: 17.5rem;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-center-shell {

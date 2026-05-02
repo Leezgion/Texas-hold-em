@@ -29,6 +29,7 @@ class GameLogic {
     this.handNumber = 0;
     this.handStartedAt = 0;
     this.playersToAct = new Set();
+    this.callOnlyPlayerIndices = new Set();
     this.allinResults = [];
     this.pendingSettlementSnapshot = null;
     this.settlementWindowEndsAt = null;
@@ -59,6 +60,7 @@ class GameLogic {
     this.roundStartIndex = -1;
     this.lastRaiseIndex = -1;
     this.playersToAct = new Set();
+    this.callOnlyPlayerIndices = new Set();
     this.deck = new Deck();
 
     this.preparePlayersForNewHand();
@@ -283,7 +285,7 @@ class GameLogic {
     }
 
     this.refreshPotState();
-    this.updatePendingPlayersAfterAction(playerIndex, actionResult.reopensAction);
+    this.updatePendingPlayersAfterAction(playerIndex, actionResult);
     this.advanceGameFlow(playerIndex);
   }
 
@@ -326,6 +328,10 @@ class GameLogic {
 
   applyRaise(playerIndex, raiseAmount, meta = {}) {
     const player = this.room.players[playerIndex];
+    if (this.callOnlyPlayerIndices.has(playerIndex)) {
+      throw new Error('当前只能跟注或弃牌');
+    }
+
     if (!Number.isInteger(raiseAmount) || raiseAmount <= 0) {
       throw new Error('加注金额必须是正整数');
     }
@@ -355,13 +361,18 @@ class GameLogic {
       committed,
     });
 
-    return { reopensAction: true };
+    return { reopensAction: true, increasedBet: true };
   }
 
   applyAllIn(playerIndex, meta = {}) {
     const player = this.room.players[playerIndex];
     if (player.chips <= 0) {
       throw new Error('玩家没有可用筹码');
+    }
+
+    const toCall = this.getAmountToCall(player);
+    if (this.callOnlyPlayerIndices.has(playerIndex) && player.chips > toCall) {
+      throw new Error('当前只能跟注或弃牌');
     }
 
     const previousBet = this.currentBet;
@@ -386,7 +397,7 @@ class GameLogic {
       reopensAction: fullRaise,
     });
 
-    return { reopensAction: fullRaise };
+    return { reopensAction: fullRaise, increasedBet: newBet > previousBet };
   }
 
   commitChips(playerIndex, amount) {
@@ -408,18 +419,38 @@ class GameLogic {
     return Math.max(0, this.currentBet - player.currentBet);
   }
 
-  updatePendingPlayersAfterAction(playerIndex, reopensAction) {
+  updatePendingPlayersAfterAction(playerIndex, actionResult = {}) {
+    const normalizedActionResult =
+      typeof actionResult === 'boolean' ? { reopensAction: actionResult } : actionResult || {};
+    const reopensAction = Boolean(normalizedActionResult.reopensAction);
+    const nonFullBetIncrease = Boolean(normalizedActionResult.increasedBet && !reopensAction);
+    const pendingBeforeAction = new Set(this.playersToAct);
+
     this.playersToAct.delete(playerIndex);
+    this.callOnlyPlayerIndices.delete(playerIndex);
 
     if (reopensAction) {
       const actionablePlayers = this.getActionablePlayerIndices().filter((index) => index !== playerIndex);
       this.playersToAct = new Set(actionablePlayers);
+      this.callOnlyPlayerIndices = new Set();
       return;
+    }
+
+    if (nonFullBetIncrease) {
+      this.getActionablePlayerIndices()
+        .filter((index) => index !== playerIndex && this.room.players[index].currentBet < this.currentBet)
+        .forEach((index) => {
+          this.playersToAct.add(index);
+          if (!pendingBeforeAction.has(index)) {
+            this.callOnlyPlayerIndices.add(index);
+          }
+        });
     }
 
     [...this.playersToAct].forEach((index) => {
       if (!this.isPlayerActionable(this.room.players[index])) {
         this.playersToAct.delete(index);
+        this.callOnlyPlayerIndices.delete(index);
       }
     });
   }
@@ -507,6 +538,7 @@ class GameLogic {
     this.minRaise = this.getBigBlind();
     this.roundStartIndex = -1;
     this.lastRaiseIndex = -1;
+    this.callOnlyPlayerIndices = new Set();
 
     this.room.players.forEach((player) => {
       player.currentBet = 0;
@@ -530,6 +562,7 @@ class GameLogic {
     this.gamePhase = GAME_PHASES.SHOWDOWN;
     this.currentPlayerIndex = -1;
     this.playersToAct = new Set();
+    this.callOnlyPlayerIndices = new Set();
     this.currentBet = 0;
 
     const contenders = this.getContestingPlayerIndices();
@@ -994,6 +1027,7 @@ class GameLogic {
     this.currentBet = 0;
     this.currentPlayerIndex = -1;
     this.playersToAct = new Set();
+    this.callOnlyPlayerIndices = new Set();
     this.gamePhase = GAME_PHASES.SHOWDOWN;
     const winners = [{ playerId: winner.id, nickname: winner.nickname, winnings: totalPot }];
     this.captureHandRecord({
@@ -1321,6 +1355,7 @@ class GameLogic {
       smallBlind: this.getSmallBlind(),
       currentPlayerIndex: this.currentPlayerIndex,
       currentPlayerId: this.getCurrentPlayer()?.id || null,
+      currentPlayerActionMode: this.callOnlyPlayerIndices.has(this.currentPlayerIndex) ? 'call_only' : 'open',
       dealerIndex: this.dealerIndex,
       dealerPosition: this.room.players[this.dealerIndex]?.seat ?? -1,
       smallBlindIndex: this.smallBlindIndex,

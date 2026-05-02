@@ -210,4 +210,56 @@ describe('Gameplay smoke regression', () => {
         .sort(([leftId], [rightId]) => leftId.localeCompare(rightId))
     ).toEqual(initialSeatMap);
   });
+
+  it('returns action to the opener to call a non-full all-in raise without reopening raises', () => {
+    const { roomManager, room } = createRoomWithPlayers({
+      maxPlayers: 3,
+      seatedPlayers: 3,
+      settleMs: 10,
+    });
+
+    roomManager.handleRebuyRequest('device-host', 2000);
+    roomManager.handleRebuyRequest('device-p3', 2000);
+    roomManager.startGame(room.id, 'device-host');
+
+    roomManager.handlePlayerAction('device-host', 'raise', 600);
+    roomManager.handlePlayerAction('device-p2', 'allin');
+
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-p3');
+    expect(room.gameLogic.getGameState().currentBet).toBe(1000);
+    expect(room.gameLogic.getGameState().minRaise).toBe(600);
+
+    roomManager.handlePlayerAction('device-p3', 'call');
+
+    expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-host');
+    expect(room.gameLogic.getGameState().currentPlayerActionMode).toBe('call_only');
+    expect(room.gameLogic.getGameState().currentBet).toBe(1000);
+    expect(() => roomManager.handlePlayerAction('device-host', 'raise', 600)).toThrow('当前只能跟注或弃牌');
+
+    roomManager.handlePlayerAction('device-host', 'call');
+
+    expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
+    expect(room.gameLogic.getGameState().phase).toBe('flop');
+    expect(room.gameLogic.getGameState().currentBet).toBe(0);
+
+    while (room.roomState !== ROOM_STATES.SETTLING) {
+      const { currentPlayerId } = room.gameLogic.getGameState();
+      expect(currentPlayerId).toBeTruthy();
+      roomManager.handlePlayerAction(currentPlayerId, 'check');
+    }
+
+    expect(room.roomState).toBe(ROOM_STATES.SETTLING);
+    expect(
+      room.gameLogic.handHistory
+        .at(-1)
+        .actionsByStreet.preflop.map((action) => [action.playerId, action.action, action.amount])
+    ).toEqual([
+      ['device-host', 'raise', 600],
+      ['device-p2', 'allin', 990],
+      ['device-p3', 'call', 980],
+      ['device-host', 'call', 380],
+    ]);
+    expect(room.gameLogic.handHistory.at(-1).totalPot).toBe(3000);
+  });
 });

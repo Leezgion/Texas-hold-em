@@ -40,6 +40,11 @@ test('GameRoom keeps the dock inside the single-screen main stage stack', () => 
 });
 
 test('room route clears gateway page padding so phone terminals fit inside 100dvh', () => {
+  assert.doesNotMatch(gameRoomSource, /className="room-terminal-shell[^"]*\bpy-3\b/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\s*\{[\s\S]*padding-block:\s*0\.75rem;/s
+  );
   assert.match(
     globalStylesSource,
     /\.mode-shell\[data-shell-route="room"\]\s+\.mode-shell__content,\s*\.mode-shell\[data-shell-route="room"\]\s+\.mode-app-shell\s*\{[^}]*padding:\s*0;/s
@@ -321,6 +326,12 @@ test('ActionButtons preserves 44px touch targets for primary and commit actions'
   assert.match(globalStylesSource, /\.table-action-command\s*\{[\s\S]*min-height:\s*3\.65rem;/s);
 });
 
+test('ActionButtons hides raise controls when server marks the current player as call-only', () => {
+  assert.match(actionButtonsSource, /currentPlayerActionMode/);
+  assert.match(actionButtonsSource, /currentPlayerActionMode\s*===\s*'call_only'/);
+  assert.match(actionButtonsSource, /const canRaise = showsDecisionConsole && !isCallOnlyAction/);
+});
+
 test('ActionDock keeps the live-hand action frame wired to ActionButtons', () => {
   assert.match(
     actionDockSource,
@@ -458,6 +469,17 @@ test('short-height phone live hand switches to a micro table-and-dock contract',
   assert.match(
     globalStylesSource,
     /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-surface\s*\{[\s\S]*top:\s*auto;[\s\S]*max-height:\s*clamp\(7\.5rem,\s*calc\(100dvh - 31\.5rem\),\s*9\.5rem\);/s
+  );
+});
+
+test('short-height phone live hand tightens the single-screen stage budget to prevent compact overflow', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\[data-room-scroll-contract="single-screen"\]\s+\.table-stage-surface\s*\{[\s\S]*min-height:\s*min\(19\.5rem,\s*calc\(100dvh - 21\.5rem\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\[data-room-scroll-contract="single-screen"\]\s+\.table-stage-core\s*\{[\s\S]*min-height:\s*17\.5rem;/s
   );
 });
 

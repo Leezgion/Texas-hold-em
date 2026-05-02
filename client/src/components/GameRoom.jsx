@@ -628,7 +628,7 @@ const GameRoom = () => {
 
   return (
     <div
-      className="room-terminal-shell px-3 py-3 sm:px-4 lg:px-6"
+      className="room-terminal-shell px-3 sm:px-4 lg:px-6"
       data-viewport-model={roomViewportLayout.viewportModel}
       data-height-class={roomViewportLayout.heightClass}
       data-stage-density={roomViewportLayout.stageDensity}

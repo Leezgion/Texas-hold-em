@@ -1967,3 +1967,29 @@ This follow-up rerun stayed on the same local-dev pair and focused on two waitin
   - a wide short-height desktop viewport such as `1366x707` now stays `desktop-oval` with a `horizontal-capsule` shell instead of incorrectly collapsing to `phone-oval`
 - follow-up note:
   - the coupled dock still intentionally overlaps the hero zone and lower flank region in waiting rooms; this is now a visual-polish trade-off, not a table-family regression
+
+## 2026-05-03 Non-Full All-In Call-Only Validation
+
+This pass closed the first professional-player betting-rule edge case after the phone table/action UI stabilized.
+
+- fixed gameplay rule:
+  - a short stack all-in that raises the current bet by less than `minRaise` no longer ends the street before prior bettors have matched the new bet
+  - players pulled back only because of that non-full all-in are marked `currentPlayerActionMode = call_only`
+  - call-only players may only fold/call, and a deep all-in raise attempt is rejected with `当前只能跟注或弃牌`
+- fixed phone action UI:
+  - when the server marks the current player as `call_only`, the phone decision cockpit hides `加注` and `全下`
+  - the same state still shows the reachable two-button row: `弃牌 / 跟注 380`
+- fixed short-phone single-screen layout:
+  - moved room-shell vertical padding out of the JSX `py-3` utility so data-attribute short-height CSS can actually override it
+  - tightened the short-height single-screen stage budget for `375x667`
+- evidence:
+  - browser audit: `.runlogs/2026-05-03-nonfull-allin-callonly-audit.json` (`runId = mooo6t98`)
+  - fresh room: `X7DSC9`
+  - `390x844`: `shellScrollHeight = shellClientHeight = 844`, command labels `弃牌 / 跟注`, no raise/all-in button
+  - `375x667`: `shellScrollHeight = shellClientHeight = 667`, command labels `弃牌 / 跟注`, no raise/all-in button
+  - preflop action record: host `raise 600`, short stack `allin 990`, deep stack `call 980`, host `call 380`
+  - hand history panel on both phone viewports showed localized `牌局记录 / 最近手牌` and total pot `3,000`
+- next queue:
+  - validate odd-chip split and side-pot replay details in the hand-history drawer
+  - validate timeout/disconnect while the current player is in a call-only state
+  - validate min-raise reopening after a full all-in raise with four or more players

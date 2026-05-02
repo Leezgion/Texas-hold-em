@@ -63,6 +63,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     minRaise: 0,
     bigBlind: 20,
     timeRemaining: 0,
+    currentPlayerActionMode: 'open',
   };
 
   const isCurrentTurn =
@@ -76,7 +77,8 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
   const potSize = resolvedGameState.pot || 0;
   const callAmount = Math.max(0, resolvedGameState.currentBet - resolvedPlayer.currentBet);
   const maxRaiseAmount = Math.max(0, resolvedPlayer.chips - callAmount);
-  const canRaise = showsDecisionConsole && maxRaiseAmount >= resolvedGameState.minRaise;
+  const isCallOnlyAction = resolvedGameState.currentPlayerActionMode === 'call_only';
+  const canRaise = showsDecisionConsole && !isCallOnlyAction && maxRaiseAmount >= resolvedGameState.minRaise;
   const bigBlind = resolvedGameState.bigBlind || resolvedGameState.minRaise || 20;
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const actionConsoleState = !hasResolvedActionState ? 'sync' : showsDecisionConsole ? 'decision' : 'watch';
