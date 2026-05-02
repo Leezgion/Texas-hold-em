@@ -130,6 +130,32 @@ test('keeps six-player split-stage seats outside the table bounds with live-turn
   );
 });
 
+test('keeps desktop split-stage top seats inside the compact stage budget while preserving live-turn clearance', () => {
+  const positions = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 1280,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+  const seatsBySlot = indexBySlotId(positions);
+
+  assert.ok(
+    Math.abs(seatsBySlot.top.y) <= 300,
+    `top seat y=${seatsBySlot.top.y} should not require a stage taller than the compact room shell`
+  );
+  assert.equal(
+    countTableRectOverlaps({
+      positions: [seatsBySlot.hero, seatsBySlot.top],
+      tableWidth: 352,
+      tableHeight: 352,
+      cardWidth: 132,
+      cardHeight: 144,
+    }),
+    0
+  );
+});
+
 test('keeps six-player phone portrait seats outside the table bounds', () => {
   const positions = buildSeatRingPositions({
     playerCount: 6,

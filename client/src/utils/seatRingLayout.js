@@ -69,7 +69,7 @@ export function resolveSupportedSeatSlotIds(playerCount = 0) {
 
 const CANONICAL_SLOT_MODELS = {
   'desktop-oval': [
-    { slotId: 'hero', anchorRole: 'hero', anchorZone: 'table-edge', normalized: { x: 0, y: 0.82 } },
+    { slotId: 'hero', anchorRole: 'hero', anchorZone: 'table-edge', normalized: { x: 0, y: 0.86 } },
     { slotId: 'lower-left', anchorRole: 'lower-left', anchorZone: 'table-flank', normalized: { x: -1, y: 0.48 } },
     { slotId: 'upper-left', anchorRole: 'upper-left', anchorZone: 'table-flank', normalized: { x: -1, y: -0.48 } },
     { slotId: 'top-left', anchorRole: 'top-left', anchorZone: 'table-flank', normalized: { x: -0.98, y: -1 } },
@@ -103,15 +103,21 @@ function resolveCanonicalProjection({
   anchorCardHeight,
   anchorHorizontalGap,
   anchorVerticalGap,
+  stageBandHeight,
+  stageBandOffset,
 } = {}) {
   const projectionCardWidth = Math.max(cardWidth || 0, anchorCardWidth || 0);
   const projectionCardHeight = Math.max(cardHeight || 0, anchorCardHeight || 0);
   const projectionHorizontalGap = Math.max(horizontalGap || 0, anchorHorizontalGap || 0);
   const projectionVerticalGap = Math.max(verticalGap || 0, anchorVerticalGap || 0);
+  const projectionBandReserve = Math.max(stageBandHeight || 0, 0) / 2 + Math.max(stageBandOffset || 0, 0) / 2;
+  const projectionStageClearance = Math.max(6, projectionVerticalGap / 4);
 
   return {
     xExtent: roundCoordinate(tableWidth / 2 + projectionCardWidth / 2 + projectionHorizontalGap),
-    yExtent: roundCoordinate(tableHeight / 2 + projectionCardHeight + projectionVerticalGap * 1.2),
+    yExtent: roundCoordinate(
+      tableHeight / 2 + projectionCardHeight / 2 + projectionVerticalGap + projectionBandReserve + projectionStageClearance
+    ),
   };
 }
 

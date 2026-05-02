@@ -104,6 +104,7 @@ function Start-Server {
         -ArgumentList '/c', $command `
         -RedirectStandardOutput $ServerOutLog `
         -RedirectStandardError $ServerErrLog `
+        -WindowStyle Hidden `
         -PassThru | Out-Null
 
     Wait-ForHttp -Url "http://$BindHost`:$ServerPort/api/debug/devices"
@@ -116,6 +117,7 @@ function Start-Client {
         -ArgumentList '/c', $command `
         -RedirectStandardOutput $ClientOutLog `
         -RedirectStandardError $ClientErrLog `
+        -WindowStyle Hidden `
         -PassThru | Out-Null
 
     Wait-ForHttp -Url "http://$BindHost`:$ClientPort"

@@ -30,6 +30,9 @@ const TableStage = ({
   const roomCopy = theme.room;
   const primaryPotItem = tablePotSummary.items[0] || null;
   const secondaryPotItems = tablePotSummary.items.slice(1, 3);
+  const hasVisiblePrimaryPot =
+    Boolean(primaryPotItem) &&
+    (String(primaryPotItem.amount ?? '').replace(/[,\s]/g, '') !== '0' || secondaryPotItems.length > 0);
   const runtimeGeometry =
     geometryContract ||
     resolveRoomGeometryContract({
@@ -185,7 +188,7 @@ const TableStage = ({
           </div>
 
           <AnimatePresence initial={false} mode="popLayout">
-            {primaryPotItem && (
+            {hasVisiblePrimaryPot && (
               <motion.div
                 key={`${primaryPotItem.label}-${primaryPotItem.amount}-${secondaryPotItems.map((item) => item.amount).join('-')}`}
                 className="table-stage-center-shell__pot table-stage-pot-capsule table-stage-pot-capsule--broadcast-confirmation"

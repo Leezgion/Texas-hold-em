@@ -131,6 +131,17 @@ test('broadcast tactical css stays aligned with scoped cue usage and phone confi
   assert.match(cssSource, /\.table-action-timer__dial\s*\{/);
 });
 
+test('desktop top-row seat plaques are pulled back inside the clipped table panel', () => {
+  assert.match(
+    cssSource,
+    /\.table-stage-surface\[data-table-profile="desktop-oval"\]\s+\.arena-seat-plaque-anchor\[data-anchor-role="top"\]/
+  );
+  assert.match(
+    cssSource,
+    /\.table-stage-surface\[data-table-profile="desktop-oval"\]\s+\.table-stage-center-shell\[data-center-shell-density="compact"\]\s+\.table-stage-pot-capsule\s*\{[\s\S]*top:\s*6\.1rem;/
+  );
+});
+
 test('all-in controls use broadcast risk colors instead of purple gaming colors', () => {
   assert.match(actionButtonsSource, /colorScheme=\{sliderValue === maxRaiseAmount \? 'risk' : 'gold'\}/);
   assert.match(sliderInputSource, /case 'risk':/);

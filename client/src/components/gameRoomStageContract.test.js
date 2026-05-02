@@ -111,6 +111,7 @@ test('SeatRing and SeatCard expose canonical slot metadata instead of count-driv
     seatRingSource,
     /geometryContract\?\.tableSurfaceLayout\?\.profile \|\| seats\[0\]\?\.position\?\.profile \|\| 'desktop-oval'/
   );
+  assert.match(seatRingSource, /seat\.seatAvailability === 'closed'/);
   assert.match(seatCardSource, /data-anchor-slot-id/);
   assert.match(seatCardSource, /data-canonical-slot-index/);
   assert.match(seatCardSource, /Number\.isInteger\(seat\.canonicalSlotIndex\)/);
@@ -185,6 +186,35 @@ test('TableStage threads broadcast center material hooks through the pot capsule
   assert.match(stage, /data-center-surface-model="broadcast-clean-center"/);
   assert.match(stage, /data-table-material-felt-tone="deep-green-velvet"/);
   assert.match(stage, /data-table-material-rail-tone="black-gold"/);
+});
+
+test('TableStage suppresses the zero-pot capsule in waiting rooms so top seats stay readable', async () => {
+  const { module } = await loadBundledModule('./TableStage.jsx');
+  const stage = renderComponent(
+    React.createElement(module.default, {
+      shellView: {
+        stagePulseTone: 'idle',
+        roomStateLabel: '等待开始',
+        stageLabel: 'Stage',
+        stageCaption: 'Caption',
+        modeLabel: '职业',
+        phaseLabel: '',
+      },
+      tablePotSummary: {
+        centerPriority: 'board-pot-street',
+        items: [{ label: '底池', amount: 0 }],
+      },
+      seatRing: React.createElement('div', { 'data-seat-ring': 'true' }),
+      effectiveDisplayMode: 'pro',
+      viewportWidth: 1280,
+      viewportHeight: 900,
+      tableDiameter: 352,
+      seatGuides: [],
+    })
+  );
+
+  assert.match(stage, /table-stage-center-shell/);
+  assert.doesNotMatch(stage, /table-stage-pot-capsule/);
 });
 
 test('TableStage keeps pro mode board-first by dropping the duplicate summary rail and explanatory caption copy', async () => {

@@ -1716,6 +1716,10 @@
     padding: 0.58rem 0.95rem;
   }
 
+  .table-stage-surface[data-table-profile="desktop-oval"] .table-stage-center-shell[data-center-shell-density="compact"] .table-stage-pot-capsule {
+    top: 6.1rem;
+  }
+
   .table-stage-center-shell[data-center-shell-density="compact"] .table-stage-beacon {
     bottom: 0.95rem;
     max-width: min(92%, 30rem);
@@ -1825,6 +1829,12 @@
     border: 1px solid rgba(255, 255, 255, 0.07);
     background: rgba(3, 7, 18, 0.44);
     backdrop-filter: blur(var(--arena-shell-beacon-blur, 14px));
+  }
+
+  .table-stage-surface[data-table-profile="desktop-oval"] .arena-seat-plaque-anchor[data-anchor-role="top"],
+  .table-stage-surface[data-table-profile="desktop-oval"] .arena-seat-plaque-anchor[data-anchor-role="top-left"],
+  .table-stage-surface[data-table-profile="desktop-oval"] .arena-seat-plaque-anchor[data-anchor-role="top-right"] {
+    top: 2.4rem !important;
   }
 
   .room-terminal-shell[data-room-motion-budget="mobile-tight"] .table-stage-atmosphere,

@@ -4,7 +4,13 @@ import SeatCard from './SeatCard';
 
 const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContract = null, hideHeroSeat = false }) => {
   const tableProfile = geometryContract?.tableSurfaceLayout?.profile || seats[0]?.position?.profile || 'desktop-oval';
-  const visibleSeats = hideHeroSeat ? seats.filter((seat) => seat.anchorRole !== 'hero') : seats;
+  const visibleSeats = seats.filter((seat) => {
+    if (seat.seatAvailability === 'closed') {
+      return false;
+    }
+
+    return hideHeroSeat ? seat.anchorRole !== 'hero' : true;
+  });
 
   return (
     <div

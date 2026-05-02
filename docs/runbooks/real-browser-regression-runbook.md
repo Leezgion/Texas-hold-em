@@ -101,6 +101,13 @@ Check client reachability:
 Invoke-WebRequest -UseBasicParsing http://127.0.0.1:5173/index.html | Select-Object StatusCode
 ```
 
+Do not use `http://127.0.0.1:5173/` as the only health check in the current Vite setup. On `2026-05-02`, `/` and direct `/game/:roomId` navigation returned dev-server `404`, while `/index.html` served the app correctly. For BrowserRouter evidence, load `/index.html` and initialize the intended route before page load, for example:
+
+```javascript
+await page.addInitScript(() => window.history.replaceState(null, '', '/game/ABC123'));
+await page.goto('http://127.0.0.1:5173/index.html', { waitUntil: 'networkidle' });
+```
+
 If `5173` is missing or startup returned an unexpected failure, inspect the logs before retrying:
 
 ```powershell
@@ -337,6 +344,8 @@ Expected final state:
 ## 8. Known Operator Pitfalls
 
 - `start-all` can fail fast even though `3101` is already up and `5173` comes up shortly after. Always check `status` and `.runlogs` before retrying.
+- `start-all` can also stop after starting only the backend. Confirm both listeners and both HTTP checks before assuming the regression pair is ready.
+- Vite dev routing may serve the app at `/index.html` while `/` and `/game/:roomId` return `404`; for Playwright BrowserRouter checks, inject `history.replaceState()` and then load `/index.html`.
 - If `5173` points at the wrong backend, stop and restart using this worktree runbook. Do not trust a stale dev server.
 - If you are intentionally reusing local `pnpm dev` on `3001 / 5173`, check `3001/api/debug/devices` first; `manage-real-browser-env.ps1 status` only tells you whether the dedicated `3101` regression backend is up.
 - If a browser page shows old room state, verify the room via `/api/debug/rooms/:roomId` before assuming a gameplay bug.
@@ -362,3 +371,4 @@ Expected final state:
 - After any waiting-state polish pass, inspect at least one fresh room before seating a second player and confirm both:
   - the board tray is showing idle slot placeholders instead of five blue back cards
   - a wide short-height desktop viewport still reports `data-table-profile="desktop-oval"` and `data-table-shell-orientation="horizontal-capsule"`
+- In waiting-room density checks, verify that `0` pot capsules and closed-seat plaques are not consuming the top-stage budget. Closed seats should remain visible as subtle table guides, not as full actionable SeatRing plaques.
