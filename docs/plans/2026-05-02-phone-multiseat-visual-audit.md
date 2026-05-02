@@ -61,4 +61,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Continue professional-player replay validation for odd-chip split display; hand-history summaries now mark the recipient with `（奇数筹码）`, and backend regression coverage verifies the odd chip goes to the winner closest to the small blind.
 - `[done]` Continue side-pot replay drill-down beyond summary lines; embedded phone support-panel hand history now keeps all replay lines available instead of truncating pro-mode records to 4 lines.
 - `[done]` Validate a 4+ player multi-side-pot hand in the phone support-panel history drawer; browser audit `moopphv2` showed main pot, side pot 1, side pot 2, and all chip-delta lines on `390x844` and `375x667`.
-- `[todo]` Continue reveal-detail density validation for long multiway showdown histories where several players choose `show_one` / `show_all` in the same hand.
+- `[done]` Continue reveal-detail density validation for long multiway showdown histories where several players choose `show_one` / `show_all` in the same hand; browser audit `moopyq2i` showed 11 replay lines, 3 visible reveal lines, and no body/shell scroll on `390x844` and `375x667`.
+- `[todo]` Continue post-hand review ergonomics polish so long pot/delta/reveal records become faster to scan inside the sheet without removing evidence.

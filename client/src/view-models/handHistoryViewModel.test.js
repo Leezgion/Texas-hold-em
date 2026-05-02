@@ -136,6 +136,37 @@ test('builds winner-first scoreboard fields for tactical settlement surfaces', (
   assert.deepEqual(summary.detailLines, ['Alice 全亮 A♠ K♠']);
 });
 
+test('keeps multiple mixed reveal choices in replay detail lines', () => {
+  const summary = buildHandSummary({
+    handNumber: 14,
+    totalPot: 7200,
+    potResults: [
+      {
+        potId: 0,
+        potType: 'main',
+        amount: 7200,
+        winners: [{ playerId: 'p1', nickname: 'Alice', amount: 7200 }],
+      },
+    ],
+    reveals: [
+      { playerId: 'p1', nickname: 'Alice', reveal: 'show_all', cards: ['A♠', 'K♠'] },
+      { playerId: 'p2', nickname: 'Bob', reveal: 'show_one', cards: ['Q♥'] },
+      { playerId: 'p3', nickname: 'Carol', reveal: 'show_all', cards: ['7♦', '7♣'] },
+      { playerId: 'p4', nickname: 'Dave', reveal: 'hide', cards: [] },
+    ],
+  });
+
+  assert.deepEqual(summary.detailLines, [
+    'Alice 全亮 A♠ K♠',
+    'Bob 亮牌 Q♥',
+    'Carol 全亮 7♦ 7♣',
+  ]);
+  assert.match(summary.lines.at(-3), /Alice 全亮/);
+  assert.match(summary.lines.at(-2), /Bob 亮牌/);
+  assert.match(summary.lines.at(-1), /Carol 全亮/);
+  assert.equal(summary.lines.some((line) => /Dave/.test(line)), false);
+});
+
 test('builds drawer items in reverse hand order with chip delta lines', () => {
   const history = buildHandHistoryView([
     {

@@ -2033,4 +2033,26 @@ This pass addressed the first replay drill-down issue without changing the table
   - browser side-pot audit: `.runlogs/2026-05-02-phone-side-pot-allin-audit.json` (`runId = moopltvc`, fresh room `2R0DDL`)
   - browser multi-side-pot history audit: `.runlogs/2026-05-03-phone-multisidepot-history-audit.json` (`runId = moopphv2`, fresh room `S88824`)
 - next queue:
-  - continue reveal-detail density validation for long multiway showdown histories where several players choose `show_one` / `show_all`
+  - `[done]` continue reveal-detail density validation for long multiway showdown histories where several players choose `show_one` / `show_all`
+
+## 2026-05-03 Multiway Reveal Replay Density
+
+This pass locked the remaining reveal-detail replay case after the embedded history drill-down.
+
+- coverage added:
+  - `buildHandSummary` now has a contract test for multiple mixed reveal choices in one replay: `show_all`, `show_one`, and `hide`
+  - `hide` stays out of replay text, while every visible reveal line remains in both `detailLines` and the full replay `lines`
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-multi-reveal-history-audit.json` (`runId = moopyq2i`, fresh room `EH92HC`)
+  - 4-way all-in hand with main pot, two side pots, all chip-delta lines, and three visible reveal lines
+  - `390x844`: `lineCount = 11`, `revealLineCount = 3`, `missingExpectedLines = []`, `shellScrollHeight = shellClientHeight = 844`
+  - `375x667`: `lineCount = 11`, `revealLineCount = 3`, `missingExpectedLines = []`, `shellScrollHeight = shellClientHeight = 667`
+- final verification:
+  - `cd client && pnpm exec node --test`: `249/249`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-3104147b.js` 532.41 kB)
+  - `cd server && pnpm test --runInBand`: `125/125`
+- product decision:
+  - long replay detail belongs in the support panel's internal scroll area, not in the room page scroll
+  - the single-screen table shell remains locked; dense replay evidence can scroll inside the sheet when needed
+- next queue:
+  - continue professional-player flow polish around post-hand review ergonomics: make dense replay easier to scan without dropping pot, delta, or reveal evidence
