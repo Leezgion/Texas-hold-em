@@ -240,9 +240,21 @@
   - `plaqueBoard = []`
   - `plaquePairs = []`
   - `clippedViewport = []`
+  - `.runlogs/2026-05-02-room-phone-live-hand-9max-raise-open-after-sticky-footer.png`
+  - room `LYZ3H3`
+  - `scrollHeight = clientHeight = bodyHeight = 844`
+  - `dockTable = false`
+  - `dockBoard = false`
+  - `actionCards = false`
+  - `raiseTable = false`
+  - `raiseBoard = false`
+  - `raiseCards = false`
+  - `raiseLauncher = false`
+  - `confirmVisible = true`
+  - `raiseSurface.scrollable = true`
 - Remaining queue:
   - `[done]` validate phone live-hand with 6-max and 9-max occupied seats, including lower-flank and near-hero occupied opponents
-  - `[todo]` validate raise-slider open state on phone live-hand so expanded bet sizing does not reintroduce scroll or table overlap
+  - `[done]` validate raise-slider open state on phone live-hand so expanded bet sizing does not reintroduce scroll or table overlap
   - `[todo]` continue gameplay validation for supported room sizes and edge flows
 
 ## Product Mode Model

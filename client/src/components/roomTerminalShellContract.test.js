@@ -408,6 +408,26 @@ test('phone-terminal live hand compacts opponent plaques to table badges', () =>
   );
 });
 
+test('phone-terminal raise sizing opens as a bounded drawer instead of growing over the table', () => {
+  assert.match(actionButtonsSource, /table-action-console--raise-open/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-surface\s*\{[\s\S]*position:\s*fixed;[\s\S]*bottom:\s*-0\.35rem;[\s\S]*max-height:\s*min\(11\.25rem,\s*calc\(100dvh - 31rem\)\);[\s\S]*overflow-y:\s*auto;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__quick-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-command--wide\s*\{[\s\S]*min-height:\s*2\.45rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-actions\s*\{[\s\S]*position:\s*sticky;[\s\S]*bottom:\s*-0\.56rem;/s
+  );
+});
+
 test('desktop live ribbon aligns timer and primary commands into a single decision strip', () => {
   assert.match(
     globalStylesSource,
