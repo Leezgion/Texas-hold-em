@@ -178,6 +178,22 @@ test('keeps six-player phone portrait seats outside the table bounds', () => {
   );
 });
 
+test('keeps six-player phone lower flank seats above the waiting dock reserve', () => {
+  const positions = buildSeatRingPositions({
+    playerCount: 6,
+    viewportWidth: 390,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+  const seatsBySlot = indexBySlotId(positions);
+
+  assert.ok(
+    Math.max(seatsBySlot['lower-left'].y, seatsBySlot['lower-right'].y) <= 114,
+    `phone lower flank y=${seatsBySlot['lower-left'].y}/${seatsBySlot['lower-right'].y} should leave room for the waiting dock`
+  );
+});
+
 test('desktop profile uses an oval table and keeps the top seat clear of the stage band', () => {
   const layout = buildSeatRingPositions({
     playerCount: 6,

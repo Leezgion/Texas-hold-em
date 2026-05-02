@@ -116,8 +116,53 @@
   - `clippedByPanel = []`
   - top open-seat plaque still geometrically touches the table rail, but it is now an embedded rail treatment and does not cover the pot, board tray, or action area
 - Remaining queue for this phase:
-  - `[todo]` rerun phone portrait waiting-room browser evidence
+  - `[done]` rerun phone portrait waiting-room browser evidence
+  - `[done]` rerun phone roster sheet evidence
   - `[todo]` rerun live-hand desktop and phone evidence for action dock / table co-visibility
+
+## 2026-05-02 Phone Waiting And Roster Follow-up
+
+- Status: `[done]` Phone waiting-room table, dock, header, and roster sheet constraints are implemented and verified locally.
+- Root causes found in fresh browser evidence:
+  - phone `lower-left / lower-right` seat anchors were still using the desktop-like `0.48` lower-flank vertical ratio, which pushed open-seat plaques about `9.4px` into the waiting dock
+  - phone header kept the full `服务器已连接` copy inside a single-line badge row, causing the rightmost connection badge to clip
+- Local fixes in this pass:
+  - `phone-oval` lower flank anchors move to `0.41`, preserving the same vertical capsule table while keeping open-seat plaques above the dock reserve
+  - `TableHeader` uses `已连接 / 未连接` only on `phone-terminal`; desktop keeps the complete `服务器已连接 / 服务器未连接` copy
+- Automated evidence:
+  - red test before the fix: `phone lower flank y=131/131 should leave room for the waiting dock`
+  - `cd client && node --test src/components/roomTerminalShellContract.test.js src/utils/seatRingLayout.test.js src/utils/tableStageLayout.test.js`
+  - `66/66` passed on `2026-05-02`
+  - `cd client && node --test src/view-models/handHistoryViewModel.test.js src/view-models/gameViewModel.test.js src/utils/tacticalMotion.test.js src/utils/tableStageLayout.test.js src/utils/socketRequest.test.js src/utils/serverOrigin.test.js src/utils/seatRingLayout.test.js src/utils/roomViewportLayout.test.js src/utils/roomTransition.test.js src/utils/productMode.test.js src/utils/playerIdentity.test.js src/components/dialogSemanticsContract.test.js src/components/createRoomSurfaceContract.test.js src/components/createRoomModalContract.test.js src/components/gameRoomStageContract.test.js src/components/roomTerminalShellContract.test.js src/components/roomShellScrollContract.test.js src/components/interactionSurfaceContract.test.js`
+  - `209/209` passed on `2026-05-02`
+  - `cd client && npm run build`
+  - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - `cd server && npm test -- --runInBand`
+  - `114/114` passed on `2026-05-02`
+- Fresh browser evidence:
+  - `.runlogs/2026-05-02-room-phone-waiting-header-compact.png`
+  - room `DJPCKF`
+  - `scrollHeight = clientHeight = bodyHeight = 844`
+  - `tableProfile = phone-oval`
+  - `shellOrientation = vertical-capsule`
+  - `potExists = false`
+  - `closedPlaques = 0`
+  - `overlappingTable = []`
+  - `overlappingBoard = []`
+  - `overlappingDock = []`
+  - `clipped = []`
+  - lower flank dock gap: `9.57px`
+  - `headerOverflow = false`
+  - quick actions remain visible: `补码 / 离座 / 分享 / 退出 / 成员 / 牌局 / 房间`
+  - `.runlogs/2026-05-02-room-phone-roster-sheet.png`
+  - room `YA5ZNJ`
+  - roster sheet state: `scrollHeight = clientHeight = bodyHeight = 844`, `rootInert = true`, `dialogCount = 1`, `data-sheet-density = tight-terminal`
+- Remaining queue:
+  - `[done]` run the full client node suite after this phone fix
+  - `[done]` run `cd client && npm run build`
+  - `[done]` run `cd server && npm test -- --runInBand`
+  - `[in_progress]` commit the phone waiting/roster phase
+  - `[todo]` continue live-hand desktop and phone evidence
 
 ## Product Mode Model
 

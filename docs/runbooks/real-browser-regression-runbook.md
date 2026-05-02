@@ -372,3 +372,5 @@ Expected final state:
   - the board tray is showing idle slot placeholders instead of five blue back cards
   - a wide short-height desktop viewport still reports `data-table-profile="desktop-oval"` and `data-table-shell-orientation="horizontal-capsule"`
 - In waiting-room density checks, verify that `0` pot capsules and closed-seat plaques are not consuming the top-stage budget. Closed seats should remain visible as subtle table guides, not as full actionable SeatRing plaques.
+- For phone waiting-room checks, measure lower flank plaques against the dock, not only against the table and board. The `2026-05-02` phone pass looked acceptable until rects showed lower seats entering the dock by about `9.4px`.
+- For phone header checks, inspect `.room-terminal-header__track.scrollWidth <= clientWidth`; a single clipped connection badge is still a product defect even if the page has no vertical scroll.

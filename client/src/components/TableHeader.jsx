@@ -34,6 +34,10 @@ const TableHeader = ({
   canRequestRebuy = false,
 }) => {
   const usesToolbarActions = viewportLayout?.headerActionModel === 'toolbar';
+  const connectionLabel =
+    viewportLayout?.viewportModel === 'phone-terminal'
+      ? shellView.connectedLabel.replace('服务器', '')
+      : shellView.connectedLabel;
 
   return (
     <header
@@ -65,7 +69,7 @@ const TableHeader = ({
           </span>
           <span className="room-terminal-header__badge room-terminal-header__badge--connection">
             <Activity size={13} />
-            <span>{shellView.connectedLabel}</span>
+            <span>{connectionLabel}</span>
           </span>
         </div>
 

@@ -129,6 +129,13 @@ test('TableHeader trims room chrome down to a low-profile badge spine', () => {
   );
 });
 
+test('TableHeader uses compact connection copy on phone terminals', () => {
+  assert.match(tableHeaderSource, /const connectionLabel =/);
+  assert.match(tableHeaderSource, /viewportLayout\?\.viewportModel === 'phone-terminal'/);
+  assert.match(tableHeaderSource, /shellView\.connectedLabel\.replace\('服务器', ''\)/);
+  assert.match(tableHeaderSource, /\{connectionLabel\}/);
+});
+
 test('ActionDock exposes primary quick actions when header actions collapse into room-sheet-first mode', () => {
   assert.match(actionDockSource, /const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout\?\.headerActionModel !== 'toolbar'/);
   assert.match(
