@@ -2523,4 +2523,27 @@ This pass fixed stale room access after a timer-ended room has already been dele
   - `cd client && pnpm exec node --test`: `265/265`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-e7aca36e.js` 540.51 kB)
 - next queue:
-  - `[todo]` validate post-closed-room recovery continuation: after returning home from a closed stale room, creating or joining a new room should not carry stale room errors, stale room codes, or blocked navigation
+  - `[done]` validate post-closed-room recovery continuation: after returning home from a closed stale room, creating or joining a new room should not carry stale room errors, stale room codes, or blocked navigation
+
+## 2026-05-03 Phone Post Closed-Room Continuation Audit
+
+This pass verified that closed-room recovery does not block continued use of the product.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-post-closed-room-continuation-audit.json` (`runId = moowojv5`)
+  - create path stale room `AY1NA7`, new room `W92VIO`
+  - join path stale room `O2XSEZ`, target room `CHUWL6`
+  - screenshots:
+    - `.runlogs/2026-05-03-phone-post-closed-create.png`
+    - `.runlogs/2026-05-03-phone-post-closed-join.png`
+- verified contract:
+  - after `ROOM CLOSED -> 返回主页 -> 创建新游戏 -> 创建房间`, the phone entered `/game/W92VIO`
+  - after `ROOM CLOSED -> 返回主页 -> 输入房间号 -> 加入房间`, the phone entered `/game/CHUWL6`
+  - both new room states had `.room-terminal-shell`, no `data-room-access-state`, no stale closed-room id, no dialog, and `rootInert = false`
+  - both new room states stayed single-screen at `390x844`
+  - filtered console errors were empty; raw errors were only favicon/client 404 checks and the intentional offline resource error from the stale-tab setup
+- product observation:
+  - the create path still briefly carries the informational toast `房间已关闭，牌桌状态已清理。` into the new room
+  - this does not block navigation or state correctness, but it is stale context and should be cleared before entering a fresh room
+- next queue:
+  - `[todo]` polish closed-room feedback lifecycle so the old room-closed info toast is cleared when the user successfully creates or joins a new room after recovery
