@@ -69,4 +69,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Continue active-hand leave/exit hardening; browser audit `moorw8wp` verified leave-seat and exit-room confirmations, forced-fold metadata, stable homepage return, and inert cleanup on `390x844` and `375x667`.
 - `[done]` Continue real-browser product hardening with same-device room-switch cleanup; browser audit `moos5mtp` verified same-device create-switch and join-switch paths clean old membership, preserve new-room hand state, and avoid stale room-code text.
 - `[done]` Continue post-switch stale page actions and multi-tab same-device ownership messaging; browser audit `moosa0p2` verified stale home create and stale room exit show the refresh-identity hint without raw `设备未注册`.
-- `[todo]` Continue room-end / empty-room lifecycle and post-hand navigation ergonomics.
+- `[done]` Continue room-end / empty-room lifecycle; browser audit `moosel6h` verified the sole-host waiting-room exit closes the room, returns home, and makes both debug and proxied room checks return `404`.
+- `[todo]` Continue post-hand navigation ergonomics.

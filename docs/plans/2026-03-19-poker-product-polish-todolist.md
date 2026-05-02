@@ -2196,4 +2196,28 @@ This pass validated stale same-device tab messaging after room-switch cleanup.
 - product decision:
   - current error mapping is acceptable for this stage: stale ownership is a recoverable warning, not a destructive room action
 - next queue:
-  - `[todo]` continue product hardening around room-end / empty-room lifecycle and post-hand navigation ergonomics
+  - `[done]` continue product hardening around room-end / empty-room lifecycle
+  - `[todo]` continue post-hand navigation ergonomics
+
+## 2026-05-03 Empty-Room Close Feedback
+
+This pass improved the last-player exit lifecycle for room owners.
+
+- change:
+  - `deriveLeaveRoomFeedback` now distinguishes `roomClosed: true`
+  - when the last player exits an idle room, the feedback is `已退出房间，房间已关闭。`
+  - ordinary leave-room and active-hand auto-fold feedback remain unchanged
+- automated evidence:
+  - red test before implementation: `derives explicit feedback when leaving closes the room` failed because the copy was only `已退出房间。`
+  - `cd client && pnpm exec node --test src/view-models/gameViewModel.test.js`: `42/42`
+- browser evidence:
+  - `.runlogs/2026-05-03-empty-room-close-audit.json` (`runId = moosel6h`)
+  - fresh room `D7CX89`
+  - after the sole host clicked `退出`, the page returned to `/`, showed `已退出房间，房间已关闭。`, had no dialog left open, and `#root.inert = false`
+  - `GET /api/debug/rooms/D7CX89` returned `404`
+  - `GET /api/rooms/D7CX89` through the Vite proxy also returned `404`
+- final verification:
+  - `cd client && pnpm exec node --test`: `253/253`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-3befab11.js` 533.83 kB)
+- next queue:
+  - `[todo]` continue post-hand navigation ergonomics

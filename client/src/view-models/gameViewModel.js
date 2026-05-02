@@ -819,6 +819,13 @@ export function deriveLeaveRoomFeedback(result = {}) {
     };
   }
 
+  if (result?.roomClosed) {
+    return {
+      channel: 'game-info',
+      detail: '已退出房间，房间已关闭。',
+    };
+  }
+
   return {
     channel: 'game-info',
     detail: '已退出房间。',

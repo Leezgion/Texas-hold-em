@@ -1035,6 +1035,19 @@ test('derives leave-room feedback from whether the server had to auto-fold', () 
   );
 });
 
+test('derives explicit feedback when leaving closes the room', () => {
+  assert.deepEqual(
+    deriveLeaveRoomFeedback({
+      forcedFold: false,
+      roomClosed: true,
+    }),
+    {
+      channel: 'game-info',
+      detail: '已退出房间，房间已关闭。',
+    }
+  );
+});
+
 test('derives a fallback start-game notice when the room returns to idle', () => {
   assert.deepEqual(
     deriveStartGameFeedback({
