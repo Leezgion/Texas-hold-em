@@ -583,7 +583,7 @@ test('phone-terminal raise sizing opens as a bounded drawer instead of growing o
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__quick-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__quick-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(4\.6rem,\s*1fr\)\);/s
   );
   assert.match(
     globalStylesSource,

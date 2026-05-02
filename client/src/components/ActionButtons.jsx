@@ -4,6 +4,7 @@ import PlayerTimer from './PlayerTimer';
 import SliderInput from './SliderInput';
 import { useGame } from '../contexts/GameContext';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { buildQuickRaiseSizes } from '../utils/betSizing';
 import { getDisplayModeTheme } from '../utils/productMode';
 import {
   buildProActionStatRows,
@@ -97,12 +98,12 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     return value + (bigBlind - remainder);
   };
 
-  const quickRaiseSizes = [
-    { label: '1/3池', amount: alignToBigBlind(Math.max(resolvedGameState.minRaise, Math.floor(potSize / 3))) },
-    { label: '1/2池', amount: alignToBigBlind(Math.max(resolvedGameState.minRaise, Math.floor(potSize / 2))) },
-    { label: '1x池', amount: alignToBigBlind(Math.max(resolvedGameState.minRaise, potSize)) },
-    { label: '1.2x池', amount: alignToBigBlind(Math.max(resolvedGameState.minRaise, Math.floor(potSize * 1.2))) },
-  ].filter((raise) => raise.amount <= maxRaiseAmount);
+  const quickRaiseSizes = buildQuickRaiseSizes({
+    potSize,
+    minRaise: resolvedGameState.minRaise,
+    maxRaiseAmount,
+    bigBlind,
+  });
 
   useEffect(() => {
     if (canRaise && resolvedGameState.minRaise && sliderValue === 0) {

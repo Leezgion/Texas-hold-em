@@ -3785,7 +3785,7 @@
   }
 
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console--raise-open .table-action-console__quick-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(4.6rem, 1fr));
     gap: 0.26rem;
   }
 

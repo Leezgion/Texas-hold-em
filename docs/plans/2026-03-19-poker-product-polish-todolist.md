@@ -769,7 +769,33 @@
     - both viewports stayed `scrollHeight = clientHeight`
     - both viewports reported no beacon/board, beacon/cards, beacon/action-frame, beacon/dock, raise/beacon, raise/board, or raise/cards collision
 - Remaining queue:
-  - `[todo]` continue raise-drawer hierarchy review for larger blind structures and deeper stacks
+  - `[done]` continue raise-drawer hierarchy review for larger blind structures and deeper stacks
+
+## 2026-05-02 Phone Raise Drawer Sizing Follow-up
+
+- Status: `[done]` Phone quick-raise buttons now dedupe after big-blind alignment and use an adaptive drawer grid.
+- Root cause:
+  - the quick-raise candidates were deduped only by label intent, not by their final aligned amount
+  - on a small pot such as `30` with `BB = 20`, `1/3池`, `1/2池`, and `1.2x池` can all align to the same legal chip amount, creating crowded duplicate buttons
+- Local fixes:
+  - added `buildQuickRaiseSizes` so candidate amounts are rounded to the big blind, clamped to min/max raise, and then deduped by final amount
+  - phone raise drawer quick grid now uses `repeat(auto-fit, minmax(4.6rem, 1fr))`, so 2/3/4 valid buttons fill the drawer without thin empty columns
+  - added focused unit coverage for small-pot dedupe, normal ladder sizing, and max-raise filtering
+- Fresh evidence:
+  - focused tests:
+    - `cd client && node --test src/utils/betSizing.test.js src/components/roomTerminalShellContract.test.js`
+    - `36/36` passed on `2026-05-02`
+  - browser audit:
+    - `node .runlogs\2026-05-02-phone-action-execution-audit.cjs` (`runId = moole7j8`)
+    - `390x844` room `P2GKYW`, quick buttons `1/3池 20 1BB` / `1x池 40 2BB`, min quick width `155.97px`
+    - `375x667` room `KFWVXL`, quick buttons `1/3池 20 1BB` / `1x池 40 2BB`, min quick width `151.47px`
+    - both viewports stayed `scrollHeight = clientHeight`
+    - both viewports reported no raise/table, raise/board, or raise/cards collision
+  - final verification:
+    - client full node tests: `240/240`
+    - client build: passed; Vite still reports the existing `>500 kB` chunk-size warning
+- Remaining queue:
+  - `[todo]` continue broader gameplay edge validation after the phone table/action UI is stable
 
 ## Product Mode Model
 
