@@ -1993,3 +1993,27 @@ This pass closed the first professional-player betting-rule edge case after the 
   - validate odd-chip split and side-pot replay details in the hand-history drawer
   - validate timeout/disconnect while the current player is in a call-only state
   - validate min-raise reopening after a full all-in raise with four or more players
+
+## 2026-05-03 Betting Edge Coverage and Odd-Chip Replay
+
+This pass narrowed the next professional-player correctness queue after the non-full all-in fix.
+
+- locked existing correct gameplay behavior:
+  - a complete all-in raise in a 4-handed preflop spot reopens action to prior bettors as `currentPlayerActionMode = open`
+  - a call-only current player who times out is auto-folded and the hand record stores `auto: true`, `reason: timeout`
+  - a call-only current player who disconnects is force-folded and the hand record stores `auto: true`, `reason: disconnect`
+- improved replay clarity:
+  - hand-history pot lines now mark uneven split recipients with `（奇数筹码）`
+  - a 303-chip main pot split between two winners records `151 / 152`, with the extra chip awarded to the winner closest to the small blind
+- targeted verification:
+  - `cd server && pnpm jest tests/gameLogic/GameplaySmoke.test.js --runInBand`
+  - `cd server && pnpm jest tests/gameLogic/SidePotFlow.test.js --runInBand`
+  - `cd client && pnpm exec node --test src/view-models/handHistoryViewModel.test.js`
+- final verification:
+  - `cd client && pnpm exec node --test`: `247/247`
+  - `cd client && pnpm build`: passed, with existing large chunk warning (`assets/index-7fcc17c4.js` 532.27 kB)
+  - `cd server && pnpm test --runInBand`: `125/125`
+  - browser audit: `.runlogs/2026-05-03-nonfull-allin-callonly-audit.json` (`runId = moopggpk`, fresh room `DJ60VQ`)
+- next queue:
+  - build or verify a compact phone drill-down for hands with multiple side pots so the user can inspect every pot layer without leaving the single-screen table context
+  - keep service preflight explicit: browser audits that create socket rooms on `3101` must run Vite with `VITE_SERVER_ORIGIN=http://127.0.0.1:3101`

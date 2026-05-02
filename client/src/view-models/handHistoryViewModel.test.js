@@ -75,6 +75,27 @@ test('summarizes split side pots with per-player shares', () => {
   assert.match(summary.lines[2], /Carol/);
 });
 
+test('calls out odd-chip recipients when a split pot cannot divide evenly', () => {
+  const summary = buildHandSummary({
+    handNumber: 13,
+    totalPot: 301,
+    potResults: [
+      {
+        potId: 0,
+        potType: 'main',
+        amount: 301,
+        winners: [
+          { playerId: 'p1', nickname: 'Alice', amount: 101 },
+          { playerId: 'p2', nickname: 'Bob', amount: 100 },
+          { playerId: 'p3', nickname: 'Carol', amount: 100 },
+        ],
+      },
+    ],
+  });
+
+  assert.equal(summary.lines[1], '主池 +301 平分: Alice +101（奇数筹码）、Bob +100、Carol +100');
+});
+
 test('builds winner-first scoreboard fields for tactical settlement surfaces', () => {
   const summary = buildHandSummary({
     handNumber: 12,

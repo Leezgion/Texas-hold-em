@@ -78,6 +78,19 @@ function playFoldOnlyHand(roomManager, room) {
   return actedPlayerIds;
 }
 
+function putHostInNonFullAllInCallOnlySpot(roomManager, room) {
+  roomManager.handleRebuyRequest('device-host', 2000);
+  roomManager.handleRebuyRequest('device-p3', 2000);
+  roomManager.startGame(room.id, 'device-host');
+
+  roomManager.handlePlayerAction('device-host', 'raise', 600);
+  roomManager.handlePlayerAction('device-p2', 'allin');
+  roomManager.handlePlayerAction('device-p3', 'call');
+
+  expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-host');
+  expect(room.gameLogic.getGameState().currentPlayerActionMode).toBe('call_only');
+}
+
 describe('Gameplay smoke regression', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -211,6 +224,40 @@ describe('Gameplay smoke regression', () => {
     ).toEqual(initialSeatMap);
   });
 
+  it('reopens raises when an all-in shove is a complete raise', () => {
+    const { roomManager, room } = createRoomWithPlayers({
+      maxPlayers: 4,
+      seatedPlayers: 4,
+      settleMs: 10,
+    });
+
+    const host = getPlayerAtSeat(room, 0);
+    const smallBlind = getPlayerAtSeat(room, 1);
+    const bigBlind = getPlayerAtSeat(room, 2);
+    const underTheGun = getPlayerAtSeat(room, 3);
+    smallBlind.chips = 230;
+
+    roomManager.startGame(room.id, host.id);
+
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe(underTheGun.id);
+
+    roomManager.handlePlayerAction(underTheGun.id, 'raise', 100);
+    roomManager.handlePlayerAction(host.id, 'call');
+    roomManager.handlePlayerAction(smallBlind.id, 'allin');
+
+    expect(room.gameLogic.getGameState().currentBet).toBe(230);
+    expect(room.gameLogic.getGameState().minRaise).toBe(110);
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe(bigBlind.id);
+
+    roomManager.handlePlayerAction(bigBlind.id, 'call');
+
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe(underTheGun.id);
+    expect(room.gameLogic.getGameState().currentPlayerActionMode).toBe('open');
+    expect(() => roomManager.handlePlayerAction(underTheGun.id, 'raise', 110)).not.toThrow();
+    expect(room.gameLogic.getGameState().currentBet).toBe(340);
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe(host.id);
+  });
+
   it('returns action to the opener to call a non-full all-in raise without reopening raises', () => {
     const { roomManager, room } = createRoomWithPlayers({
       maxPlayers: 3,
@@ -218,18 +265,10 @@ describe('Gameplay smoke regression', () => {
       settleMs: 10,
     });
 
-    roomManager.handleRebuyRequest('device-host', 2000);
-    roomManager.handleRebuyRequest('device-p3', 2000);
-    roomManager.startGame(room.id, 'device-host');
+    putHostInNonFullAllInCallOnlySpot(roomManager, room);
 
-    roomManager.handlePlayerAction('device-host', 'raise', 600);
-    roomManager.handlePlayerAction('device-p2', 'allin');
-
-    expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-p3');
     expect(room.gameLogic.getGameState().currentBet).toBe(1000);
     expect(room.gameLogic.getGameState().minRaise).toBe(600);
-
-    roomManager.handlePlayerAction('device-p3', 'call');
 
     expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
     expect(room.gameLogic.getGameState().currentPlayerId).toBe('device-host');
@@ -261,5 +300,51 @@ describe('Gameplay smoke regression', () => {
       ['device-host', 'call', 380],
     ]);
     expect(room.gameLogic.handHistory.at(-1).totalPot).toBe(3000);
+  });
+
+  it('auto-folds a call-only current player on timeout and records the forced decision', () => {
+    const { roomManager, room } = createRoomWithPlayers({
+      maxPlayers: 3,
+      seatedPlayers: 3,
+      settleMs: 10,
+    });
+
+    putHostInNonFullAllInCallOnlySpot(roomManager, room);
+
+    jest.advanceTimersByTime(room.gameLogic.actionTimeLimit * 1000);
+
+    expect(room.roomState).toBe(ROOM_STATES.SETTLING);
+    expect(room.gameLogic.handHistory.at(-1).actionsByStreet.preflop.at(-1)).toEqual(
+      expect.objectContaining({
+        playerId: 'device-host',
+        action: 'fold',
+        amount: 0,
+        auto: true,
+        reason: 'timeout',
+      })
+    );
+  });
+
+  it('force-folds a disconnected call-only current player and records the disconnect reason', () => {
+    const { roomManager, room } = createRoomWithPlayers({
+      maxPlayers: 3,
+      seatedPlayers: 3,
+      settleMs: 10,
+    });
+
+    putHostInNonFullAllInCallOnlySpot(roomManager, room);
+
+    roomManager.handlePlayerDisconnect('device-host');
+
+    expect(room.roomState).toBe(ROOM_STATES.SETTLING);
+    expect(room.gameLogic.handHistory.at(-1).actionsByStreet.preflop.at(-1)).toEqual(
+      expect.objectContaining({
+        playerId: 'device-host',
+        action: 'fold',
+        amount: 0,
+        auto: true,
+        reason: 'disconnect',
+      })
+    );
   });
 });

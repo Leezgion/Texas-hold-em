@@ -72,8 +72,33 @@ function formatPotTypeLabel(potResult, index) {
   return `边池 ${index}`;
 }
 
-function formatPotWinnerShare(winner) {
-  return `${sanitizeDisplayName(winner.nickname || winner.playerId, { fallback: '玩家' })} ${formatSignedChips(winner.amount ?? 0)}`;
+function formatPotWinnerShare(winner, oddChipRecipientIds = new Set()) {
+  const name = sanitizeDisplayName(winner.nickname || winner.playerId, { fallback: '玩家' });
+  const oddChipLabel = oddChipRecipientIds.has(winner.playerId) ? '（奇数筹码）' : '';
+  return `${name} ${formatSignedChips(winner.amount ?? 0)}${oddChipLabel}`;
+}
+
+function getOddChipRecipientIds(potResult, winners) {
+  if (!Array.isArray(winners) || winners.length <= 1) {
+    return new Set();
+  }
+
+  const potAmount = Number(potResult.amount);
+  if (!Number.isFinite(potAmount) || potAmount % winners.length === 0) {
+    return new Set();
+  }
+
+  const baseShare = Math.floor(potAmount / winners.length);
+  const totalWinnerAmount = winners.reduce((sum, winner) => sum + (Number(winner.amount) || 0), 0);
+  if (totalWinnerAmount !== potAmount) {
+    return new Set();
+  }
+
+  return new Set(
+    winners
+      .filter((winner) => Number(winner.amount) > baseShare)
+      .map((winner) => winner.playerId)
+  );
 }
 
 function buildPotResultLines(record) {
@@ -86,7 +111,8 @@ function buildPotResultLines(record) {
     }
 
     const winners = potResult.winners || [];
-    const winnerSummary = winners.map(formatPotWinnerShare).join('、');
+    const oddChipRecipientIds = getOddChipRecipientIds(potResult, winners);
+    const winnerSummary = winners.map((winner) => formatPotWinnerShare(winner, oddChipRecipientIds)).join('、');
     const splitLabel = winners.length > 1 ? ' 平分' : '';
     return `${label} ${formatSignedChips(potResult.amount ?? 0)}${splitLabel}: ${winnerSummary}`.trim();
   });

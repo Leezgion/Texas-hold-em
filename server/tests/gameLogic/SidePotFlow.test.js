@@ -153,4 +153,73 @@ describe('Side pot flow regression', () => {
       },
     ]);
   });
+
+  it('records odd-chip split allocation to the winner closest to the small blind', () => {
+    const { roomManager, room } = createThreePlayerRoom({ settleMs: 10 });
+
+    const host = room.players.find((player) => player.id === 'device-host');
+    const p2 = room.players.find((player) => player.id === 'device-p2');
+    const p3 = room.players.find((player) => player.id === 'device-p3');
+
+    host.chips = 101;
+    p2.chips = 101;
+    p3.chips = 101;
+
+    roomManager.startGame(room.id, 'device-host');
+
+    host.hand = [
+      { rank: 14, suit: 'clubs' },
+      { rank: 3, suit: 'diamonds' },
+    ];
+    p2.hand = [
+      { rank: 14, suit: 'spades' },
+      { rank: 4, suit: 'diamonds' },
+    ];
+    p3.hand = [
+      { rank: 12, suit: 'clubs' },
+      { rank: 11, suit: 'diamonds' },
+    ];
+
+    const scriptedBoardDrawOrder = [
+      { rank: 9, suit: 'hearts' },
+      { rank: 13, suit: 'clubs' },
+      { rank: 13, suit: 'diamonds' },
+      { rank: 7, suit: 'clubs' },
+      { rank: 10, suit: 'spades' },
+      { rank: 7, suit: 'diamonds' },
+      { rank: 8, suit: 'spades' },
+      { rank: 2, suit: 'hearts' },
+    ];
+    room.gameLogic.deck.cards = [...scriptedBoardDrawOrder].reverse();
+
+    roomManager.handlePlayerAction('device-host', 'allin');
+    roomManager.handlePlayerAction('device-p2', 'call');
+    roomManager.handlePlayerAction('device-p3', 'call');
+
+    expect(room.roomState).toBe(ROOM_STATES.SETTLING);
+
+    const handRecord = room.gameLogic.handHistory.at(-1);
+    expect(handRecord.totalPot).toBe(303);
+    expect(handRecord.potResults).toEqual([
+      {
+        potId: 0,
+        potType: 'main',
+        amount: 303,
+        winners: [
+          expect.objectContaining({
+            playerId: 'device-host',
+            amount: 151,
+          }),
+          expect.objectContaining({
+            playerId: 'device-p2',
+            amount: 152,
+          }),
+        ],
+      },
+    ]);
+    expect(p2.seat).toBe(room.players[room.gameLogic.smallBlindIndex].seat);
+    expect(host.chips).toBe(151);
+    expect(p2.chips).toBe(152);
+    expect(p3.chips).toBe(0);
+  });
 });
