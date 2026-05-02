@@ -118,6 +118,7 @@ const GameRoom = () => {
   const [measuredDockReservePx, setMeasuredDockReservePx] = useState(roomViewportLayout.dockReservePx);
   const lastLoggedActionKeyRef = useRef(null);
   const roomDockRef = useRef(null);
+  const isExitingRoomRef = useRef(false);
   const playersList = Array.isArray(players) ? players : EMPTY_PLAYERS;
   const currentPlayer = playersList.find((player) => player.id === currentPlayerId) || null;
   const activeRoomState = roomState || 'idle';
@@ -146,6 +147,11 @@ const GameRoom = () => {
         isCreatingRoom,
         navigationTarget,
       });
+
+      if (isExitingRoomRef.current) {
+        console.log('正在退出房间，跳过自动房间恢复');
+        return;
+      }
 
       // 如果已经连接到正确的房间，不需要验证
       if (currentRoomId === roomId && currentPlayerId) {
@@ -443,14 +449,17 @@ const GameRoom = () => {
 
   // 确认退出房间
   const confirmExitRoom = async () => {
+    isExitingRoomRef.current = true;
+
     try {
       const result = await leaveRoom();
       const notice = deriveLeaveRoomFeedback(result);
       window.dispatchEvent(new CustomEvent(notice.channel, { detail: notice.detail }));
-      resetGame();
       setShowExitRoom(false);
-      navigate('/');
+      resetGame();
+      navigate('/', { replace: true });
     } catch (error) {
+      isExitingRoomRef.current = false;
       const notice = deriveRequestErrorFeedback({
         scope: 'leaveRoom',
         fallbackPrefix: '退出房间失败',

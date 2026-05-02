@@ -2136,5 +2136,29 @@ This pass fixed the highest-risk reconnect failure: refreshing or briefly losing
   - desktop `1366x900` fresh room `NNSLC6`: refresh changed socket id, kept `currentPlayerId` on host, kept `holeCardCount = 2`, kept action console `decision`, and stayed single-screen
   - phone `390x844` fresh room `HNC2YF`: same reconnect outcome with `shellScrollHeight = shellClientHeight = 844`
 - next queue:
-  - `[todo]` validate leave-seat / leave-room confirmations during an active hand, including forced-fold feedback and single-screen phone layout
+  - `[done]` validate leave-seat / leave-room confirmations during an active hand, including forced-fold feedback and single-screen phone layout
+  - `[todo]` validate same-device room switching in a real browser so old room cleanup does not leave phantom membership or stale hand state
+
+## 2026-05-03 Active-Hand Leave/Exit Guard
+
+This pass fixed the active-hand exit race found by real-browser testing after reconnect hardening.
+
+- change:
+  - `GameRoom` now marks an intentional room exit before calling `leaveRoom`
+  - the room-verification effect skips automatic URL recovery while that intentional exit is in progress
+  - successful active-hand exit closes the confirmation modal, resets local room state, and returns to `/` with `replace: true`
+  - failed exit requests clear the guard so the player can retry or keep playing
+- root cause:
+  - the old success path called `resetGame()` while the route was still `/game/:roomId`
+  - the `GameRoom` verification effect then saw `roomId && !currentRoomId` and treated the intentional exit as a refresh recovery, sometimes auto-joining the just-left room again
+- browser evidence:
+  - `.runlogs/2026-05-03-active-leave-exit-audit.json` (`runId = moorw8wp`)
+  - leave-seat `390x844` fresh room `PJLKSR`: confirmation modal warned about auto-fold, host moved to `seat = -1`, `isActive = false`, last action was auto `fold` with `reason = leave_seat`, and the room shell stayed single-screen
+  - exit-room `390x844` fresh room `QG83NT`: confirmation modal warned about auto-fold, host moved to `seat = -1`, `isActive = false`, last action was auto `fold` with `reason = leave_room`, returned to `/`, and `#root.inert = false`
+  - leave-seat `375x667` fresh room `F9ZUQS`: same forced-fold and single-screen result
+  - exit-room `375x667` fresh room `J6SJMJ`: same forced-fold result, stable return to `/`, and `#root.inert = false`
+- final verification:
+  - `cd client && pnpm exec node --test`: `252/252`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-81ce2b91.js` 533.76 kB)
+- next queue:
   - `[todo]` validate same-device room switching in a real browser so old room cleanup does not leave phantom membership or stale hand state
