@@ -2055,4 +2055,23 @@ This pass locked the remaining reveal-detail replay case after the embedded hist
   - long replay detail belongs in the support panel's internal scroll area, not in the room page scroll
   - the single-screen table shell remains locked; dense replay evidence can scroll inside the sheet when needed
 - next queue:
-  - continue professional-player flow polish around post-hand review ergonomics: make dense replay easier to scan without dropping pot, delta, or reveal evidence
+  - `[done]` continue professional-player flow polish around post-hand review ergonomics: make dense replay easier to scan without dropping pot, delta, or reveal evidence
+
+## 2026-05-03 Scan-Friendly Replay Sections
+
+This pass improved dense post-hand review readability without changing replay data or dropping evidence.
+
+- change:
+  - `HandHistoryDrawer` now groups replay lines into `总览`, `底池与输赢`, and `亮牌`
+  - the existing `.tactical-history-card__line` DOM hook remains intact so browser audits and downstream selectors still count every evidence line
+  - normal drawer line limits still apply globally, while embedded support-panel history keeps the full record
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-multi-reveal-history-audit.json` (`runId = mooq4wxz`, fresh room `XZ3TLU`)
+  - `390x844`: section labels `总览 / 底池与输赢 / 亮牌`, `lineCount = 11`, `revealLineCount = 3`, `missingExpectedLines = []`, `shellScrollHeight = shellClientHeight = 844`
+  - `375x667`: same section labels, `lineCount = 11`, `revealLineCount = 3`, `missingExpectedLines = []`, `shellScrollHeight = shellClientHeight = 667`
+- final verification:
+  - `cd client && pnpm exec node --test`: `250/250`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-365edde4.js` 533.49 kB)
+  - `cd server && pnpm test --runInBand`: `125/125`
+- next queue:
+  - continue product polish with the next highest-risk professional workflow after replay: invalid action/error feedback and fast recovery states in real browser flows

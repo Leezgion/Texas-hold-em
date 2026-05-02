@@ -13,6 +13,60 @@ function resolveHandHistoryLineLimit({ effectiveDisplayMode, surfaceVariant }) {
   return effectiveDisplayMode === 'study' ? 6 : 4;
 }
 
+export function buildHistoryLineSections(summary, lineLimit) {
+  const fallbackLines = Array.isArray(summary.lines) ? summary.lines : [];
+  const maxLines = Number.isFinite(lineLimit) ? Math.max(0, lineLimit) : Number.POSITIVE_INFINITY;
+  const sections = [
+    {
+      key: 'total',
+      label: '总览',
+      lines: summary.totalLine ? [summary.totalLine] : [],
+    },
+    {
+      key: 'scoreboard',
+      label: '底池与输赢',
+      lines: Array.isArray(summary.scoreboardLines) ? summary.scoreboardLines : [],
+    },
+    {
+      key: 'reveal',
+      label: '亮牌',
+      lines: Array.isArray(summary.detailLines) ? summary.detailLines : [],
+    },
+  ];
+  let consumed = 0;
+
+  const groupedSections = sections
+    .map((section) => {
+      if (consumed >= maxLines) {
+        return { ...section, lines: [] };
+      }
+
+      const remaining = Number.isFinite(maxLines) ? maxLines - consumed : Number.POSITIVE_INFINITY;
+      const sectionLines = section.lines.slice(0, remaining).map((line, index) => ({
+        text: line,
+        globalIndex: consumed + index,
+      }));
+      consumed += sectionLines.length;
+      return { ...section, lines: sectionLines };
+    })
+    .filter((section) => section.lines.length > 0);
+
+  if (groupedSections.length > 0) {
+    return groupedSections;
+  }
+
+  return [
+    {
+      key: 'summary',
+      label: '摘要',
+      lines: fallbackLines.slice(0, maxLines).map((line, index) => ({
+        text: line,
+        globalIndex: index,
+      })),
+    },
+  ].filter((section) => section.lines.length > 0);
+}
+
 const HandHistoryDrawerContent = ({
   summaries,
   motionProfile,
@@ -52,19 +106,31 @@ const HandHistoryDrawerContent = ({
             {summary.boardLabel && <div className="tactical-history-card__board">公牌 {summary.boardLabel}</div>}
             <div className="tactical-history-card__lines">
               {summary.lines.length > 0 ? (
-                summary.lines.slice(0, lineLimit).map((line, index) => (
-                  <motion.div
-                    key={`${summary.handNumber}-${index}`}
-                    className="tactical-history-card__line"
-                    initial={motionProfile.handTape.initial}
-                    animate={motionProfile.handTape.animate}
-                    transition={{
-                      ...motionProfile.handTape.transition,
-                      delay: motionProfile.handTape.staggerChildren * (index + 1),
-                    }}
+                buildHistoryLineSections(summary, lineLimit).map((section) => (
+                  <div
+                    key={`${summary.handNumber}-${section.key}`}
+                    className="tactical-history-card__section"
+                    data-history-section={section.key}
                   >
-                    {line}
-                  </motion.div>
+                    <div className="tactical-history-card__section-label">{section.label}</div>
+                    <div className="tactical-history-card__section-lines">
+                      {section.lines.map((line) => (
+                        <motion.div
+                          key={`${summary.handNumber}-${section.key}-${line.globalIndex}`}
+                          className="tactical-history-card__line"
+                          data-history-line-type={section.key}
+                          initial={motionProfile.handTape.initial}
+                          animate={motionProfile.handTape.animate}
+                          transition={{
+                            ...motionProfile.handTape.transition,
+                            delay: motionProfile.handTape.staggerChildren * (line.globalIndex + 1),
+                          }}
+                        >
+                          {line.text}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
                 ))
               ) : (
                 <div className="tactical-history-card__line">无结算摘要</div>

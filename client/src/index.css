@@ -4342,6 +4342,30 @@
     gap: 0.55rem;
   }
 
+  .tactical-history-card__section {
+    display: grid;
+    gap: 0.42rem;
+  }
+
+  .tactical-history-card__section-label {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    background: rgba(120, 53, 15, 0.18);
+    padding: 0.18rem 0.5rem;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    color: rgb(253 230 138 / 0.92);
+  }
+
+  .tactical-history-card__section-lines {
+    display: grid;
+    gap: 0.42rem;
+  }
+
   .tactical-event-card__tape-line,
   .settlement-sheet__line,
   .tactical-history-card__line {
@@ -4350,6 +4374,23 @@
     padding: 0.7rem 0.8rem;
     font-size: 0.88rem;
     color: rgb(241 245 249 / 0.98);
+  }
+
+  .tactical-history-card__line[data-history-line-type="total"] {
+    border: 1px solid rgba(250, 204, 21, 0.28);
+    background: linear-gradient(135deg, rgba(113, 63, 18, 0.34), rgba(3, 7, 18, 0.32));
+    color: rgb(254 249 195 / 0.98);
+    font-weight: 800;
+  }
+
+  .tactical-history-card__line[data-history-line-type="scoreboard"] {
+    border: 1px solid rgba(56, 189, 248, 0.14);
+  }
+
+  .tactical-history-card__line[data-history-line-type="reveal"] {
+    border: 1px dashed rgba(125, 211, 252, 0.26);
+    background: rgba(8, 47, 73, 0.22);
+    color: rgb(224 242 254 / 0.94);
   }
 
   .tactical-event-card__detail-line {

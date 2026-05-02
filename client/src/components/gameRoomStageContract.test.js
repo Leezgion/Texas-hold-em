@@ -392,3 +392,53 @@ test('HandHistoryDrawer does not truncate embedded support-panel replay lines', 
   );
   assert.match(handHistoryDrawerSource, /const lineLimit = resolveHandHistoryLineLimit/);
 });
+
+test('HandHistoryDrawer groups dense replay lines into scan-friendly sections', async () => {
+  const { module } = await loadBundledModule('./HandHistoryDrawer.jsx');
+  const sections = module.buildHistoryLineSections(
+    {
+      totalLine: '总池 +9,000',
+      scoreboardLines: [
+        '主池 +4,000: P3 +4,000',
+        '边池 1 +3,000: P3 +3,000',
+        '房主 净赢亏 -1,000',
+      ],
+      detailLines: ['房主 全亮 A♠ K♠', 'P2 亮牌 Q♥'],
+      lines: ['legacy fallback should not be used'],
+    },
+    Number.POSITIVE_INFINITY
+  );
+
+  assert.deepEqual(
+    sections.map((section) => ({
+      key: section.key,
+      label: section.label,
+      lines: section.lines.map((line) => line.text),
+    })),
+    [
+      { key: 'total', label: '总览', lines: ['总池 +9,000'] },
+      {
+        key: 'scoreboard',
+        label: '底池与输赢',
+        lines: ['主池 +4,000: P3 +4,000', '边池 1 +3,000: P3 +3,000', '房主 净赢亏 -1,000'],
+      },
+      { key: 'reveal', label: '亮牌', lines: ['房主 全亮 A♠ K♠', 'P2 亮牌 Q♥'] },
+    ]
+  );
+
+  const compactSections = module.buildHistoryLineSections(
+    {
+      totalLine: '总池 +9,000',
+      scoreboardLines: ['主池 +4,000: P3 +4,000', '边池 1 +3,000: P3 +3,000'],
+      detailLines: ['房主 全亮 A♠ K♠'],
+      lines: [],
+    },
+    2
+  );
+  assert.deepEqual(compactSections.map((section) => section.lines.map((line) => line.text)), [
+    ['总池 +9,000'],
+    ['主池 +4,000: P3 +4,000'],
+  ]);
+  assert.match(handHistoryDrawerSource, /tactical-history-card__section/);
+  assert.match(stageStylesSource, /\.tactical-history-card__section-label/);
+});

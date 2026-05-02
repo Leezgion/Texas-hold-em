@@ -62,4 +62,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Continue side-pot replay drill-down beyond summary lines; embedded phone support-panel hand history now keeps all replay lines available instead of truncating pro-mode records to 4 lines.
 - `[done]` Validate a 4+ player multi-side-pot hand in the phone support-panel history drawer; browser audit `moopphv2` showed main pot, side pot 1, side pot 2, and all chip-delta lines on `390x844` and `375x667`.
 - `[done]` Continue reveal-detail density validation for long multiway showdown histories where several players choose `show_one` / `show_all` in the same hand; browser audit `moopyq2i` showed 11 replay lines, 3 visible reveal lines, and no body/shell scroll on `390x844` and `375x667`.
-- `[todo]` Continue post-hand review ergonomics polish so long pot/delta/reveal records become faster to scan inside the sheet without removing evidence.
+- `[done]` Continue post-hand review ergonomics polish so long pot/delta/reveal records become faster to scan inside the sheet without removing evidence; browser audit `mooq4wxz` verified `总览 / 底池与输赢 / 亮牌` sections with the same 11 evidence lines on `390x844` and `375x667`.
+- `[todo]` Continue product polish with invalid-action/error feedback and fast recovery states in real browser flows.
