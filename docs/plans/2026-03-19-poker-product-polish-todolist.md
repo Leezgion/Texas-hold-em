@@ -2306,4 +2306,28 @@ This pass tightened the feedback loop after a state-correction rebuy.
   - `cd client && pnpm exec node --test`: `257/257`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-2190225f.js` 534.65 kB)
 - next queue:
-  - `[todo]` continue professional product hardening with timer-expiry browser behavior: verify a live phone decision times out into the correct forced action, feedback remains clear, and the next player/next hand state does not create scroll or stale controls
+  - `[done]` continue professional product hardening with timer-expiry browser behavior: verify a live phone decision times out into the correct forced action, feedback remains clear, and the next player/next hand state does not create scroll or stale controls
+
+## 2026-05-03 Phone Timeout Handoff Feedback
+
+This pass verified and clarified the phone timeout path for a live decision.
+
+- root cause:
+  - the server already recorded timeout folds correctly as `auto: true, reason: timeout`
+  - the phone watch console only said `本手已弃牌`, which did not tell the player why the hand was folded
+- change:
+  - `ActionButtons` now detects when the current player's last action is an automatic timeout fold
+  - the watch console shows `超时自动弃牌` and `系统已自动弃牌，行动已交给下一位玩家`
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-timeout-handoff-audit.json` (`runId = mootivlx`)
+  - fresh room `W0QYOF`
+  - before timeout: host browser had the decision console, four action commands, two hole cards, and timer `60`
+  - after timeout: server last action was host `fold` with `auto = true` and `reason = timeout`
+  - after timeout: current player handed off to P2, host console switched to `watch`, commands were removed, and the text showed `超时自动弃牌`
+  - phone shell remained single-screen with no dialog and `rootInert = false`
+- final verification:
+  - `cd client && pnpm exec node --test src/components/interactionSurfaceContract.test.js`: `18/18`
+  - `cd client && pnpm exec node --test`: `258/258`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-86714207.js` 534.86 kB)
+- next queue:
+  - `[todo]` continue real-browser hardening around timeout/check spots: verify a no-call timeout auto-checks rather than folds, advances streets correctly, and explains the automatic check without stale action controls

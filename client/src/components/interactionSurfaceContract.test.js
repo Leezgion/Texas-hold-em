@@ -91,6 +91,11 @@ test('ActionButtons exposes a table-integrated action console instead of utility
   assert.match(actionButtonsSource, /table-action-command__meta/);
 });
 
+test('ActionButtons explains timeout auto-folds in the watch console', () => {
+  assert.match(actionButtonsSource, /lastAction\?\.reason === 'timeout'/);
+  assert.match(actionButtonsSource, /超时自动弃牌/);
+});
+
 test('GameContext guards player actions against duplicate socket submissions', () => {
   assert.match(gameContextSource, /emitEvent:\s*'playerAction'/);
   assert.match(gameContextSource, /requestKey:\s*'playerAction'/);

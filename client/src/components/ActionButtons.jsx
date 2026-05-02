@@ -82,6 +82,13 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
   const bigBlind = resolvedGameState.bigBlind || resolvedGameState.minRaise || 20;
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const actionConsoleState = !hasResolvedActionState ? 'sync' : showsDecisionConsole ? 'decision' : 'watch';
+  const lastAction = resolvedGameState.lastAction || null;
+  const isOwnTimeoutFold =
+    Boolean(resolvedPlayer.id) &&
+    lastAction?.playerId === resolvedPlayer.id &&
+    lastAction?.action === 'fold' &&
+    lastAction?.auto === true &&
+    lastAction?.reason === 'timeout';
   const proActionSummary = hasResolvedActionState
     ? deriveProActionSummary({
         currentPlayer: resolvedPlayer,
@@ -210,12 +217,16 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
 
   if (!showsDecisionConsole) {
     const watchLabel = resolvedPlayer.folded
-      ? '本手已弃牌'
+      ? isOwnTimeoutFold
+        ? '超时自动弃牌'
+        : '本手已弃牌'
       : resolvedPlayer.allIn
       ? '本手已全下'
       : '等待其他玩家行动';
     const watchMeta =
-      resolvedPlayer.folded || resolvedPlayer.allIn
+      isOwnTimeoutFold
+        ? '系统已自动弃牌，行动已交给下一位玩家'
+        : resolvedPlayer.folded || resolvedPlayer.allIn
         ? '继续关注桌面结算与轮转'
         : `需跟注 ${callAmount.toLocaleString()} · 底池 ${potSize.toLocaleString()}`;
 
