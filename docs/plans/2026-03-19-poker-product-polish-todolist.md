@@ -255,7 +255,34 @@
 - Remaining queue:
   - `[done]` validate phone live-hand with 6-max and 9-max occupied seats, including lower-flank and near-hero occupied opponents
   - `[done]` validate raise-slider open state on phone live-hand so expanded bet sizing does not reintroduce scroll or table overlap
-  - `[todo]` continue gameplay validation for supported room sizes and edge flows
+  - `[done]` continue gameplay validation for supported room sizes and edge flows
+
+## 2026-05-02 Supported Room-Size Gameplay Follow-up
+
+- Status: `[done]` Minimum and maximum table-size gameplay smoke is now explicitly covered.
+- Why this matters:
+  - visual table geometry is now always a unified `9-max` table, but server gameplay still needs to prove that capped `2-max` and full `9-max` rooms behave correctly
+  - existing smoke covered six-player hands, side pots, settlement, and room-state recovery, but did not directly assert heads-up blind/action order or full-table starting semantics
+- New automated coverage:
+  - `2-max` heads-up room:
+    - third joiner becomes spectator with `seat = -1`, `chips = 0`, and does not enter the hand
+    - dealer is also small blind on the first hand
+    - heads-up preflop action starts on the button-small-blind
+    - after settlement, the button/small-blind rotates to the other player
+    - total chips remain conserved at `2000`
+  - `9-max` full room:
+    - exactly nine players enter the hand and each receives two cards
+    - first hand starts with dealer seat `0`, small blind seat `1`, big blind seat `2`, and UTG seat `3`
+    - fold-only settlement reaches `settling` without phantom side pots
+    - total chips remain conserved at `9000`
+    - seat map does not drift after settlement
+- Fresh evidence:
+  - `cd server && npm test -- GameplaySmoke.test.js --runInBand`
+  - `4/4` passed on `2026-05-02`
+- Remaining gameplay queue:
+  - `[todo]` real-browser smoke for a short 2-max hand from create/join/start through settlement UI
+  - `[todo]` real-browser smoke for a 9-max full room through first action and raise drawer recovery
+  - `[todo]` review client feedback copy for invalid/out-of-turn/min-raise actions after the browser gameplay pass
 
 ## Product Mode Model
 

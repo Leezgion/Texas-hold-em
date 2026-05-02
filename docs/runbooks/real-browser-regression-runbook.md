@@ -162,6 +162,9 @@ At minimum, record:
 - `seat / chips / isActive / tableState`
 - `handHistory`
 - `potResults` when side-pot settlement is involved
+- when validating supported table sizes, always include both:
+  - `2-max` heads-up: button is small blind, preflop action starts on the button, extra joiners stay spectators
+  - `9-max` full table: nine players receive cards, first action starts UTG, and settlement preserves the seat map
 
 For Poker OS shell work, add these spot checks explicitly:
 

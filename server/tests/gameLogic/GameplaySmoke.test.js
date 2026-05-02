@@ -26,7 +26,7 @@ function registerDevice(io, socketDeviceMap, socketId, deviceId) {
   return socket;
 }
 
-function createSixPlayerRoom({ settleMs = 10 } = {}) {
+function createRoomWithPlayers({ maxPlayers = 6, seatedPlayers = maxPlayers, settleMs = 10 } = {}) {
   const io = createIo();
   const gameRooms = new Map();
   const socketDeviceMap = new Map();
@@ -36,12 +36,12 @@ function createSixPlayerRoom({ settleMs = 10 } = {}) {
   const hostSocket = registerDevice(io, socketDeviceMap, 'socket-host', 'device-host');
   const roomId = roomManager.createRoom(hostSocket, {
     duration: 60,
-    maxPlayers: 6,
+    maxPlayers,
     allinDealCount: 1,
     settleMs,
   });
 
-  for (let seat = 1; seat < 6; seat += 1) {
+  for (let seat = 1; seat < seatedPlayers; seat += 1) {
     const deviceId = `device-p${seat + 1}`;
     const socketId = `socket-p${seat + 1}`;
     const socket = registerDevice(io, socketDeviceMap, socketId, deviceId);
@@ -50,6 +50,14 @@ function createSixPlayerRoom({ settleMs = 10 } = {}) {
 
   const room = gameRooms.get(roomId);
   return { io, gameRooms, socketDeviceMap, roomManager, room };
+}
+
+function createSixPlayerRoom(options = {}) {
+  return createRoomWithPlayers({ ...options, maxPlayers: 6, seatedPlayers: 6 });
+}
+
+function getPlayerAtSeat(room, seat) {
+  return room.players.find((player) => player.seat === seat);
 }
 
 function playFoldOnlyHand(roomManager, room) {
@@ -126,5 +134,80 @@ describe('Gameplay smoke regression', () => {
       expect(room.gameLogic.handNumber).toBe(completedHands + 1);
       expect(room.gameLogic.sidePots).toEqual([]);
     }
+  });
+
+  it('plays heads-up with button-small-blind action order and one-screen table cap semantics', () => {
+    const { io, socketDeviceMap, roomManager, room } = createRoomWithPlayers({
+      maxPlayers: 2,
+      seatedPlayers: 2,
+      settleMs: 10,
+    });
+    const spectatorSocket = registerDevice(io, socketDeviceMap, 'socket-spectator', 'device-spectator');
+
+    roomManager.joinRoom(spectatorSocket, room.id, 'device-spectator', 'Spectator');
+    roomManager.startGame(room.id, 'device-host');
+
+    const spectator = room.players.find((player) => player.id === 'device-spectator');
+    expect(spectator.seat).toBe(-1);
+    expect(spectator.chips).toBe(0);
+    expect(spectator.inHand).toBe(false);
+
+    const host = getPlayerAtSeat(room, 0);
+    const guest = getPlayerAtSeat(room, 1);
+    expect(room.gameLogic.dealerIndex).toBe(room.players.indexOf(host));
+    expect(room.gameLogic.smallBlindIndex).toBe(room.players.indexOf(host));
+    expect(room.gameLogic.bigBlindIndex).toBe(room.players.indexOf(guest));
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe(host.id);
+
+    const firstHandActors = playFoldOnlyHand(roomManager, room);
+    expect(firstHandActors).toEqual([host.id]);
+    expect(room.roomState).toBe(ROOM_STATES.SETTLING);
+    expect(room.players.reduce((sum, player) => sum + player.chips, 0)).toBe(2000);
+
+    jest.advanceTimersByTime(10);
+
+    expect(room.roomState).toBe(ROOM_STATES.IN_HAND);
+    expect(room.gameLogic.dealerIndex).toBe(room.players.indexOf(guest));
+    expect(room.gameLogic.smallBlindIndex).toBe(room.players.indexOf(guest));
+    expect(room.gameLogic.bigBlindIndex).toBe(room.players.indexOf(host));
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe(guest.id);
+    expect(spectator.inHand).toBe(false);
+  });
+
+  it('starts and settles a full nine-player table without seat drift or phantom side pots', () => {
+    const { roomManager, room } = createRoomWithPlayers({
+      maxPlayers: 9,
+      seatedPlayers: 9,
+      settleMs: 10,
+    });
+
+    roomManager.startGame(room.id, 'device-host');
+
+    const initialSeatMap = room.players
+      .map((player) => [player.id, player.seat])
+      .sort(([leftId], [rightId]) => leftId.localeCompare(rightId));
+    const dealer = getPlayerAtSeat(room, 0);
+    const smallBlind = getPlayerAtSeat(room, 1);
+    const bigBlind = getPlayerAtSeat(room, 2);
+    const underTheGun = getPlayerAtSeat(room, 3);
+
+    expect(room.players.filter((player) => player.inHand)).toHaveLength(9);
+    expect(room.players.every((player) => player.hand.length === 2)).toBe(true);
+    expect(room.gameLogic.dealerIndex).toBe(room.players.indexOf(dealer));
+    expect(room.gameLogic.smallBlindIndex).toBe(room.players.indexOf(smallBlind));
+    expect(room.gameLogic.bigBlindIndex).toBe(room.players.indexOf(bigBlind));
+    expect(room.gameLogic.getGameState().currentPlayerId).toBe(underTheGun.id);
+
+    const actedPlayerIds = playFoldOnlyHand(roomManager, room);
+
+    expect(actedPlayerIds).toHaveLength(8);
+    expect(room.roomState).toBe(ROOM_STATES.SETTLING);
+    expect(room.gameLogic.sidePots).toEqual([]);
+    expect(room.players.reduce((sum, player) => sum + player.chips, 0)).toBe(9000);
+    expect(
+      room.players
+        .map((player) => [player.id, player.seat])
+        .sort(([leftId], [rightId]) => leftId.localeCompare(rightId))
+    ).toEqual(initialSeatMap);
   });
 });
