@@ -179,6 +179,18 @@ For Poker OS shell work, add these spot checks explicitly:
   - room desktop live-hand with co-visible table and action area
   - room phone waiting with compact launcher row
   - room phone roster sheet open without page-length scroll
+- phone live-hand table/action evidence must also record:
+  - `document.documentElement.scrollHeight === document.documentElement.clientHeight`
+  - `data-room-play-state = live-hand`
+  - `tableProfile = phone-oval`
+  - `holeCardCount = 2`
+  - `dockTable = false`
+  - `dockBoard = false`
+  - `actionCards = false`
+  - `plaqueDock = []`
+  - `plaqueBoard = []`
+  - `clippedViewport = []`
+  - open-seat plaques are intentionally suppressed on phone live-hand; validate occupied plaques, not waiting-seat affordances
 - broadcast tactical density evidence: record the exact artifacts and measurements:
   - treat the following as a dated sample capture set from `2026-03-20`, not as fixed future inputs
   - for future reruns, use a naming pattern like `density-<date>-<surface>.png` and substitute the current room IDs instead of reusing `SBJV6M` / `0G3HEY`

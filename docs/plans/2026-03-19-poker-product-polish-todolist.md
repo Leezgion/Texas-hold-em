@@ -161,8 +161,65 @@
   - `[done]` run the full client node suite after this phone fix
   - `[done]` run `cd client && npm run build`
   - `[done]` run `cd server && npm test -- --runInBand`
-  - `[in_progress]` commit the phone waiting/roster phase
-  - `[todo]` continue live-hand desktop and phone evidence
+  - `[done]` commit the phone waiting/roster phase
+  - `[done]` continue live-hand desktop and phone evidence
+
+## 2026-05-02 Live-Hand Phone Action-Dock Follow-up
+
+- Status: `[done]` Desktop live-hand evidence is recorded and phone live-hand table/action co-visibility is implemented and verified locally.
+- Root causes found in fresh browser evidence:
+  - desktop live-hand was usable, but phone live-hand had a `~504px` action dock that covered the vertical capsule table and public board region
+  - shrinking the phone stage height alone moved the seat-coordinate center upward and clipped the top open seat into the header
+  - phone live-hand continued rendering open-seat plaques even though they were not useful during a hand and competed with action controls
+  - opponent plaques on phone were too tall and too close to viewport/dock edges for a dense live-hand screen
+- Local fixes in this pass:
+  - `GameRoom` exposes `data-room-play-state="live-hand"` so phone live-hand can use a different stage contract from waiting rooms
+  - phone live-hand keeps the vertical stage coordinate space, shifts the table center upward, and compacts the betting dock instead of making the user scroll
+  - `SeatRing` hides open seats only for `phone-oval` live hands; occupied opponents remain visible
+  - `SeatCard` applies phone live-hand nudges for flank/lower plaques and compacts opponent plaques into table badges
+  - phone top-row canonical anchors move from `-1` to `-0.91`, staying below the compact header while preserving table and stage-band clearance
+- Automated evidence:
+  - red test before the seat fix: `top-left y=-272 should stay below the compact header apron`
+  - red contract before the live-hand fix: missing `data-room-play-state` and phone live-stage / dock rules
+  - `cd client && node --test src/components/roomTerminalShellContract.test.js src/utils/seatRingLayout.test.js`
+  - `43/43` passed on `2026-05-02`
+  - `cd client && node --test <all src/**/*.test.js>`
+  - `214/214` passed on `2026-05-02`
+  - `cd client && npm run build`
+  - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - `cd server && npm test -- --runInBand`
+  - `114/114` passed on `2026-05-02`
+- Fresh browser evidence:
+  - `.runlogs/2026-05-02-room-desktop-live-hand.png`
+  - room `P8Q5C3`
+  - `scrollHeight = clientHeight = bodyHeight = 900`
+  - `tableProfile = desktop-oval`
+  - `shellOrientation = horizontal-capsule`
+  - `potText = 底池30`
+  - `holeCardCount = 2`
+  - action buttons visible: `弃牌 / 跟注 / 加注 / 全下`
+  - `dockStageGap = 30.97px`, `tableDockGap = 105.47px`, `boardDockGap = 215.97px`
+  - `.runlogs/2026-05-02-room-phone-live-hand-after-compact-opponent-badges.png`
+  - room `WOJWZJ`
+  - `scrollHeight = clientHeight = bodyHeight = 844`
+  - `data-room-play-state = live-hand`
+  - `tableProfile = phone-oval`
+  - `potText = 底池30`
+  - `holeCardCount = 2`
+  - `plaqueCount = 1` in the two-player sample because open seats are intentionally suppressed during phone live hands
+  - `dockTable = false`
+  - `dockBoard = false`
+  - `actionCards = false`
+  - `plaqueDock = []`
+  - `plaqueTable = []`
+  - `plaqueBoard = []`
+  - `clippedViewport = []`
+  - `dockTableGap = 9.73px`
+  - `dockBoardGap = 124.73px`
+- Remaining queue:
+  - `[todo]` validate phone live-hand with 6-max and 9-max occupied seats, including lower-flank and near-hero occupied opponents
+  - `[todo]` validate raise-slider open state on phone live-hand so expanded bet sizing does not reintroduce scroll or table overlap
+  - `[todo]` continue gameplay validation for supported room sizes and edge flows
 
 ## Product Mode Model
 

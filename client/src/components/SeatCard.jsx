@@ -3,6 +3,14 @@ import React from 'react';
 import EmptySeat from './EmptySeat';
 import { getPlayerDisplayName } from '../utils/playerIdentity';
 
+const PHONE_LIVE_PLAQUE_TRANSFORMS = Object.freeze({
+  'upper-left': 'translate(calc(-50% + 0.45rem), -50%)',
+  'lower-left': 'translate(calc(-50% + 0.45rem), calc(-50% - 5.75rem))',
+  'upper-right': 'translate(calc(-50% - 0.45rem), -50%)',
+  'lower-right': 'translate(calc(-50% - 0.45rem), calc(-50% - 5.75rem))',
+  'near-hero-right': 'translate(calc(-50% - 0.7rem), calc(-50% - 15rem))',
+});
+
 const SeatCard = ({
   seat,
   tableProfile = null,
@@ -18,6 +26,10 @@ const SeatCard = ({
   const visualRole = seat.visualRole || 'embedded-plaque';
   const plaqueDensityModel = seat.plaqueDensityModel || 'broadcast-compact';
   const plaqueMaterialModel = seat.plaqueMaterialModel || 'embedded-rail-display';
+  const livePhonePlaqueTransform =
+    gameStarted && resolvedTableProfile === 'phone-oval'
+      ? PHONE_LIVE_PLAQUE_TRANSFORMS[anchorRole] || 'translate(-50%, -50%)'
+      : 'translate(-50%, -50%)';
 
   if (!seat.occupied) {
     return (
@@ -70,7 +82,7 @@ const SeatCard = ({
       style={{
         left: `calc(50% + ${seat.position.x}px)`,
         top: `calc(50% + ${seat.position.y}px)`,
-        transform: 'translate(-50%, -50%)',
+        transform: livePhonePlaqueTransform,
       }}
     >
       <div

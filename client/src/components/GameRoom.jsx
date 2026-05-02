@@ -642,6 +642,7 @@ const GameRoom = () => {
       data-hero-dock-style={shellView.heroDockStyle}
       data-hero-dock-density={shellView.heroDockDensity}
       data-stage-spacing={shellView.stageSpacing}
+      data-room-play-state={gameStarted ? 'live-hand' : 'waiting'}
       data-room-motion-budget={roomViewportLayout.viewportModel === 'phone-terminal' ? 'mobile-tight' : 'standard'}
       data-room-scroll-contract={roomViewportLayout.roomScrollContract}
       data-room-touch-scroll-model={

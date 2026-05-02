@@ -6,6 +6,8 @@ const gameRoomSource = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 
 const tableHeaderSource = readFileSync(new URL('./TableHeader.jsx', import.meta.url), 'utf8');
 const actionDockSource = readFileSync(new URL('./ActionDock.jsx', import.meta.url), 'utf8');
 const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.meta.url), 'utf8');
+const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 'utf8');
+const seatCardSource = readFileSync(new URL('./SeatCard.jsx', import.meta.url), 'utf8');
 const globalStylesSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
 test('GameRoom keeps the dock inside the single-screen main stage stack', () => {
@@ -328,7 +330,65 @@ test('phone-terminal live hand collapses the dock stack back toward the table', 
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__command-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__command-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s
+  );
+});
+
+test('phone-terminal live hand reserves a compact stage above a bounded betting dock', () => {
+  assert.match(
+    gameRoomSource,
+    /data-room-play-state=\{gameStarted \? 'live-hand' : 'waiting'\}/
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-surface\s*\{[\s\S]*min-height:\s*min\(31rem,\s*calc\(100dvh - 10\.5rem\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-center-shell\s*\{[\s\S]*transform:\s*translateY\(-4\.25rem\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s*\{[\s\S]*padding:\s*0\.45rem 0\.55rem 0\.55rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.tactical-dock__hero-panel\s*\{[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*minmax\(0,\s*0\.6fr\)\s+minmax\(0,\s*1\.4fr\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__main\s*\{[\s\S]*grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\);/s
+  );
+});
+
+test('SeatRing suppresses empty phone seats during live hands so action space stays readable', () => {
+  assert.match(
+    seatRingSource,
+    /const hidesPhoneLiveOpenSeats = gameStarted && tableProfile === 'phone-oval';/
+  );
+  assert.match(
+    seatRingSource,
+    /if \(hidesPhoneLiveOpenSeats && !seat\.occupied\) \{\s*return false;\s*\}/s
+  );
+});
+
+test('SeatCard nudges live phone flank plaques away from viewport and dock edges', () => {
+  assert.match(seatCardSource, /const PHONE_LIVE_PLAQUE_TRANSFORMS = Object\.freeze\(\{/);
+  assert.match(
+    seatCardSource,
+    /const livePhonePlaqueTransform =\s*gameStarted && resolvedTableProfile === 'phone-oval'\s*\? PHONE_LIVE_PLAQUE_TRANSFORMS\[anchorRole\]\s*\|\|\s*'translate\(-50%, -50%\)'\s*:\s*'translate\(-50%, -50%\)';/s
+  );
+  assert.match(seatCardSource, /transform:\s*livePhonePlaqueTransform,/);
+});
+
+test('phone-terminal live hand compacts opponent plaques to table badges', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque\s*\{[\s\S]*width:\s*clamp\(3\.6rem,\s*16vw,\s*4\.25rem\);[\s\S]*min-height:\s*4\.45rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque__status-row\s*\{\s*display:\s*none;/s
   );
 });
 

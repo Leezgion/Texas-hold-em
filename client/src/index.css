@@ -2324,6 +2324,70 @@
     min-height: var(--room-terminal-stage-budget, 180px);
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-frame {
+    gap: 0.45rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-panel {
+    padding: 0.55rem;
+    border-radius: 1.35rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-surface {
+    min-height: min(31rem, calc(100dvh - 10.5rem));
+    padding: 0.6rem 0.45rem;
+    border-radius: 1.25rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-core {
+    min-height: 30rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-center-shell {
+    transform: translateY(-4.25rem);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque {
+    width: clamp(3.6rem, 16vw, 4.25rem);
+    min-height: 4.45rem;
+    padding: 0.3rem 0.34rem;
+    border-radius: 0.88rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__header {
+    gap: 0.24rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__meta-row,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__badge-row {
+    gap: 0.18rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__seat-label,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__badge {
+    font-size: 0.48rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__name,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__stack {
+    font-size: 0.64rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__stack-row {
+    margin-top: 0.24rem;
+    gap: 0.22rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__status,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__bet,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__net {
+    font-size: 0.5rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__status-row {
+    display: none;
+  }
+
   .room-terminal-shell[data-support-surface-model="bottom-sheets"] .room-terminal-main,
   .room-terminal-shell[data-support-surface-model="slide-panels"] .room-terminal-main {
     overflow: hidden;
@@ -3410,6 +3474,125 @@
 
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-timer__prompt-copy {
     display: none;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] {
+    padding: 0.45rem 0.55rem 0.55rem;
+    border-radius: 1.08rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__grid {
+    gap: 0.36rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__hero-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
+    align-items: center;
+    gap: 0.28rem 0.4rem;
+    margin-top: 0;
+    padding: 0.42rem 0.48rem;
+    border-radius: 0.9rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__hero-header {
+    display: contents;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__hero-name {
+    font-size: 0.92rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__hero-badges {
+    justify-content: flex-end;
+    gap: 0.22rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__hero-ribbon {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.24rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__hero-meta-strip,
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__turn-chip {
+    display: none;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__decision-cockpit {
+    gap: 0.22rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .tactical-dock__action-frame {
+    padding: 0.38rem;
+    border-radius: 0.85rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console {
+    gap: 0.32rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__stat {
+    padding: 0.3rem 0.24rem;
+    border-radius: 0.72rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__stat-label {
+    font-size: 0.46rem;
+    letter-spacing: 0.08em;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__stat-value {
+    margin-top: 0.12rem;
+    font-size: 0.68rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__main {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.34rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__timer-shell {
+    justify-content: flex-start;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-timer {
+    height: 100%;
+    padding: 0.26rem;
+    border-radius: 0.86rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-timer__dial {
+    width: 2.7rem;
+    height: 2.7rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-timer__prompt {
+    display: none;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__command-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-command {
+    min-height: 2.75rem;
+    padding: 0.42rem 0.46rem;
+    border-radius: 0.82rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .room-support-launcher {
+    margin-top: 0.12rem;
+    gap: 0.28rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .room-support-launcher__button {
+    min-height: 2.2rem;
+    padding: 0.34rem 0.42rem;
+    border-radius: 0.8rem;
   }
 
   .tactical-dock__turn-chip--broadcast-cue {

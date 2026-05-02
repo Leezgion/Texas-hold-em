@@ -194,6 +194,26 @@ test('keeps six-player phone lower flank seats above the waiting dock reserve', 
   );
 });
 
+test('keeps phone top-row plaques below the compact header apron', () => {
+  const positions = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 390,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+  const seatsBySlot = indexBySlotId(positions);
+
+  for (const slotId of ['top-left', 'top', 'top-right']) {
+    assert.ok(
+      seatsBySlot[slotId].y >= -252,
+      `${slotId} y=${seatsBySlot[slotId].y} should stay below the compact header apron`
+    );
+  }
+  assert.equal(positions.overlaps.tableBody, 0);
+  assert.equal(positions.overlaps.stageBand, 0);
+});
+
 test('desktop profile uses an oval table and keeps the top seat clear of the stage band', () => {
   const layout = buildSeatRingPositions({
     playerCount: 6,
