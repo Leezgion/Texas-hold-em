@@ -70,4 +70,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Continue real-browser product hardening with same-device room-switch cleanup; browser audit `moos5mtp` verified same-device create-switch and join-switch paths clean old membership, preserve new-room hand state, and avoid stale room-code text.
 - `[done]` Continue post-switch stale page actions and multi-tab same-device ownership messaging; browser audit `moosa0p2` verified stale home create and stale room exit show the refresh-identity hint without raw `设备未注册`.
 - `[done]` Continue room-end / empty-room lifecycle; browser audit `moosel6h` verified the sole-host waiting-room exit closes the room, returns home, and makes both debug and proxied room checks return `404`.
-- `[todo]` Continue post-hand navigation ergonomics.
+- `[done]` Continue post-hand navigation ergonomics; browser audit `moosobsp` verified a settlement `牌局` support panel auto-closes when hand 2 starts, clears `#root.inert`, and keeps the phone shell single-screen.
+- `[todo]` Validate repeated multi-hand continuity on phone, including support-panel transitions, current actor/watch states, chip conservation, and no shell scroll across several hands.

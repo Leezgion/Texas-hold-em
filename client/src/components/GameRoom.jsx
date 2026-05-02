@@ -119,6 +119,7 @@ const GameRoom = () => {
   const lastLoggedActionKeyRef = useRef(null);
   const roomDockRef = useRef(null);
   const isExitingRoomRef = useRef(false);
+  const lastObservedHandNumberRef = useRef(null);
   const playersList = Array.isArray(players) ? players : EMPTY_PLAYERS;
   const currentPlayer = playersList.find((player) => player.id === currentPlayerId) || null;
   const activeRoomState = roomState || 'idle';
@@ -286,7 +287,23 @@ const GameRoom = () => {
 
   useEffect(() => {
     setActiveSupportPanel(null);
+    lastObservedHandNumberRef.current = null;
   }, [roomId]);
+
+  useEffect(() => {
+    const nextHandNumber = Number.isInteger(safeGameState?.handNumber) ? safeGameState.handNumber : null;
+
+    if (nextHandNumber === null) {
+      return;
+    }
+
+    const previousHandNumber = lastObservedHandNumberRef.current;
+    lastObservedHandNumberRef.current = nextHandNumber;
+
+    if (previousHandNumber !== null && previousHandNumber !== nextHandNumber) {
+      setActiveSupportPanel(null);
+    }
+  }, [safeGameState?.handNumber]);
 
   useLayoutEffect(() => {
     const dockElement = roomDockRef.current;

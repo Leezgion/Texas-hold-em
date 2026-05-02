@@ -186,6 +186,14 @@ test('ActionDock exposes primary quick actions when header actions collapse into
   assert.match(actionDockSource, /快速操作/);
 });
 
+test('GameRoom closes support panels when a new hand begins so action is not hidden', () => {
+  assert.match(gameRoomSource, /const lastObservedHandNumberRef = useRef\(null\);/);
+  assert.match(
+    gameRoomSource,
+    /useEffect\(\(\) => \{[\s\S]*safeGameState\?\.handNumber[\s\S]*lastObservedHandNumberRef\.current[\s\S]*setActiveSupportPanel\(null\);[\s\S]*\}, \[safeGameState\?\.handNumber\]\);/s
+  );
+});
+
 test('ActionDock collapses waiting-state hero info into a denser strip so the table keeps more visible depth', () => {
   assert.match(actionDockSource, /const isWaitingDockState = !gameStarted;/);
   assert.match(actionDockSource, /const heroPanelLayout = isWaitingDockState \? 'waiting-strip' : 'live-ribbon';/);

@@ -2220,4 +2220,31 @@ This pass improved the last-player exit lifecycle for room owners.
   - `cd client && pnpm exec node --test`: `253/253`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-3befab11.js` 533.83 kB)
 - next queue:
-  - `[todo]` continue post-hand navigation ergonomics
+  - `[done]` continue post-hand navigation ergonomics
+
+## 2026-05-03 Post-Hand Support Panel Auto-Close
+
+This pass fixed a real phone ergonomics problem after settlement review.
+
+- root cause:
+  - phone support panels are modal dialogs, correctly making `#root.inert = true` while open
+  - if the user opened `牌局` during settlement and the next hand began automatically, the same support panel stayed open over the new hand
+  - this hid the table/action surface even though the room had already advanced to a fresh preflop hand
+- change:
+  - `GameRoom` now tracks the last observed `gameState.handNumber`
+  - support panels close automatically when the hand number changes
+  - the tracker resets on room changes so joining another room does not carry stale hand-transition state
+- automated evidence:
+  - red test before implementation: `GameRoom closes support panels when a new hand begins so action is not hidden` failed because `lastObservedHandNumberRef` did not exist
+  - `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js`: `36/36`
+- browser evidence:
+  - `.runlogs/2026-05-03-post-hand-panel-ergonomics-audit.json` (`runId = moosobsp`)
+  - fresh room `A6FBMH`
+  - during settlement, `牌局` support panel was open: `dialogCount = 1`, `rootInert = true`, and the panel text included `最近手牌`
+  - after hand 2 started, the panel was closed: `dialogCount = 0`, `rootInert = false`, `shellScrollHeight = shellClientHeight = 844`
+  - the browser correctly remained in `watch` state because the next preflop action had rotated to the other player
+- final verification:
+  - `cd client && pnpm exec node --test`: `254/254`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-64028b6e.js` 534.06 kB)
+- next queue:
+  - `[todo]` validate repeated multi-hand continuity on phone, including no stuck modal inert state, conserved chips, correct actor/watch states, and no room-shell scroll across several automatic hand transitions
