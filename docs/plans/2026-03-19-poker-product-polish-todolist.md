@@ -2569,4 +2569,37 @@ This pass removed stale closed-room info toasts from newly entered rooms.
   - `cd client && pnpm exec node --test`: `266/266`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-935ff88a.js` 540.63 kB)
 - next queue:
-  - `[todo]` validate invalid or expired room joins from the homepage and shared-link/direct URL paths, including no stuck join modal, clear copy, and no stale navigation after failure
+  - `[done]` validate invalid or expired room joins from the homepage and shared-link/direct URL paths, including no stuck join modal, clear copy, and no stale navigation after failure
+
+## 2026-05-03 Invalid / Expired Room Join Recovery
+
+This pass verified that failed room joins recover cleanly without stale navigation.
+
+- root cause:
+  - `joinRoomError` for missing rooms only carried the server message `房间不存在`
+  - the client fallback rendered generic error copy `加入房间失败：房间不存在`, which did not tell users whether the code was stale, expired, or mistyped
+- change:
+  - `deriveRequestErrorFeedback` now maps missing or closed `joinRoom` failures to a retry-oriented warning
+  - the copy is `房间不存在或已关闭，请确认房间号，或让房主重新分享最新链接。`
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-invalid-room-join-audit.json` (`runId = moox8bik`)
+  - invalid homepage room `ZZZZZZ`
+  - expired homepage room `F6YPGD`
+  - expired direct path `/game/F6YPGD`
+  - screenshots:
+    - `.runlogs/2026-05-03-phone-invalid-room-join.png`
+    - `.runlogs/2026-05-03-phone-expired-room-join.png`
+    - `.runlogs/2026-05-03-phone-expired-room-direct.png`
+- verified contract:
+  - homepage invalid and expired joins remain on `/`
+  - the join dialog remains open for retry, the submit button returns to `加入房间`, and `rootInert` clears after closing
+  - the old generic fallback copy is absent
+  - no stale `.room-terminal-shell` appears after failure
+  - direct expired room links show the product-facing `ROOM CLOSED` recovery state, no dialog, no inert leak, and single-screen phone layout
+- final verification:
+  - red test before implementation: `maps missing or closed join-room failures to a recovery hint` failed on generic fallback copy
+  - `cd client && pnpm exec node --test src/view-models/gameViewModel.test.js`: `46/46`
+  - `cd client && pnpm exec node --test`: `267/267`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-5e0bc205.js` 540.78 kB)
+- next queue:
+  - `[todo]` polish the join-room modal visual density and retry state so the failure path matches the current Poker OS terminal style instead of the legacy gray form

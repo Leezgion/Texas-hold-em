@@ -1020,6 +1020,18 @@ export function deriveRequestErrorFeedback({ scope = 'generic', fallbackPrefix =
     return mappedByCode[code];
   }
 
+  if (
+    scope === 'joinRoom' &&
+    (code === 'ROOM_NOT_FOUND' ||
+      normalizedMessage.includes('房间不存在') ||
+      normalizedMessage.includes('房间已关闭'))
+  ) {
+    return {
+      channel: 'game-warning',
+      detail: '房间不存在或已关闭，请确认房间号，或让房主重新分享最新链接。',
+    };
+  }
+
   if (scope === 'playerAction') {
     const minRaiseMatch = normalizedMessage.match(/加注金额必须至少为\s*([0-9,]+)/);
 

@@ -1279,3 +1279,17 @@ test('maps stale device-registration failures to a refresh hint', () => {
     }
   );
 });
+
+test('maps missing or closed join-room failures to a recovery hint', () => {
+  assert.deepEqual(
+    deriveRequestErrorFeedback({
+      scope: 'joinRoom',
+      fallbackPrefix: '加入房间失败',
+      error: new Error('房间不存在'),
+    }),
+    {
+      channel: 'game-warning',
+      detail: '房间不存在或已关闭，请确认房间号，或让房主重新分享最新链接。',
+    }
+  );
+});
