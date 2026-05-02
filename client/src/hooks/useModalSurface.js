@@ -46,6 +46,42 @@ function setRootInteractionState(rootElement, inert = false) {
   }
 }
 
+function lockDocumentScroll(documentRef) {
+  const bodyStyle = documentRef?.body?.style;
+  const documentElementStyle = documentRef?.documentElement?.style;
+  const previousState = {
+    bodyOverflow: bodyStyle?.overflow,
+    documentElementOverflow: documentElementStyle?.overflow,
+  };
+
+  if (bodyStyle) {
+    bodyStyle.overflow = 'hidden';
+  }
+
+  if (documentElementStyle) {
+    documentElementStyle.overflow = 'hidden';
+  }
+
+  return previousState;
+}
+
+function restoreDocumentScroll(documentRef, previousState) {
+  if (!previousState) {
+    return;
+  }
+
+  const bodyStyle = documentRef?.body?.style;
+  const documentElementStyle = documentRef?.documentElement?.style;
+
+  if (bodyStyle) {
+    bodyStyle.overflow = previousState.bodyOverflow ?? '';
+  }
+
+  if (documentElementStyle) {
+    documentElementStyle.overflow = previousState.documentElementOverflow ?? '';
+  }
+}
+
 export function resolveModalPortalHost(
   documentRef = typeof document !== 'undefined' ? document : null,
   modalRootId = 'modal-root'
@@ -74,6 +110,7 @@ export function createModalSurfaceController({
   closeOnEscape = true,
 } = {}) {
   let previousActiveElement = null;
+  let previousScrollState = null;
   let isActive = false;
 
   const resolveRootElement = () => {
@@ -104,6 +141,7 @@ export function createModalSurfaceController({
 
     previousActiveElement = documentRef?.activeElement ?? null;
     setRootInteractionState(resolveRootElement(), true);
+    previousScrollState = lockDocumentScroll(documentRef);
     isActive = true;
     focusInitialTarget();
   };
@@ -114,6 +152,8 @@ export function createModalSurfaceController({
     }
 
     setRootInteractionState(resolveRootElement(), false);
+    restoreDocumentScroll(documentRef, previousScrollState);
+    previousScrollState = null;
     isActive = false;
 
     const previousElement = previousActiveElement;

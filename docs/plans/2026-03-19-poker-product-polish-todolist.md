@@ -391,6 +391,35 @@
     - phone after fix: `modePanel = 283.70px`, `modeStrip = 81.53px`, `body.clientHeight = 672`, `body.scrollHeight = 685`, `footerVisible = true`, `clipped = []`
     - desktop after fix: still `tileCount = 3`, `bodyOwnsOverflow = false`, `clipped = []`
 
+## 2026-05-02 Modal Background Scroll-Lock Follow-up
+
+- Status: `[done]` Modal background scroll-lock is implemented and verified locally.
+- Root cause:
+  - the modal surface made `#root` inert and portaled the dialog outside the app root, but it did not lock `html/body` scrolling
+  - after the create-room modal opened, the underlying gateway page still reported `scrollHeight = 3325`
+  - on phone, this creates a real risk that touch gestures scroll the background instead of the sheet body
+- Local fixes:
+  - `createModalSurfaceController` saves `body.style.overflow` and `documentElement.style.overflow`
+  - modal activation sets both to `hidden`
+  - modal deactivation restores the previous values
+- Fresh evidence:
+  - red before implementation:
+    - `cd client && node --test src/components/dialogSemanticsContract.test.js`
+    - failed at `modal surface controller locks background page scroll and restores it on close`
+  - green focused test:
+    - `cd client && node --test src/components/dialogSemanticsContract.test.js`
+    - `9/9` passed on `2026-05-02`
+  - full client suite:
+    - `cd client && node --test <all src/**/*.test.js>`
+    - `219/219` passed on `2026-05-02`
+  - client build:
+    - `cd client && npm run build`
+    - passed on `2026-05-02`; Vite still reports the existing `>500 kB` chunk-size warning
+  - browser evidence:
+    - `.runlogs/2026-05-02-create-room-modal-phone.png`
+    - phone modal open: `bodyOverflowY = hidden`, `htmlOverflowY = hidden`, modal body still `overflowY = auto`
+    - desktop modal open: `bodyOverflowY = hidden`, `htmlOverflowY = hidden`
+
 ## Product Mode Model
 
 ### Shared Room Mode

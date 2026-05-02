@@ -41,11 +41,15 @@ function createFakeElement(name) {
 function createFakeDocument({ focusables = [] } = {}) {
   const root = createFakeElement('root');
   const modalRoot = createFakeElement('modal-root');
+  const body = createFakeElement('body');
+  const documentElement = createFakeElement('html');
   const closeButton = createFakeElement('close');
   const primaryAction = createFakeElement('primary');
   const surface = createFakeElement('surface');
   const documentRef = {
     activeElement: null,
+    body,
+    documentElement,
     getElementById(id) {
       if (id === 'root') {
         return root;
@@ -59,9 +63,13 @@ function createFakeDocument({ focusables = [] } = {}) {
 
   root.ownerDocument = documentRef;
   modalRoot.ownerDocument = documentRef;
+  body.ownerDocument = documentRef;
+  documentElement.ownerDocument = documentRef;
   closeButton.ownerDocument = documentRef;
   primaryAction.ownerDocument = documentRef;
   surface.ownerDocument = documentRef;
+  body.style = { overflow: 'auto' };
+  documentElement.style = { overflow: 'visible' };
   surface.querySelectorAll = () => focusables;
   modalRoot.children.push(surface);
 
@@ -69,6 +77,8 @@ function createFakeDocument({ focusables = [] } = {}) {
     documentRef,
     root,
     modalRoot,
+    body,
+    documentElement,
     closeButton,
     primaryAction,
     surface,
@@ -127,6 +137,28 @@ test('modal surface controller traps focus, marks the background inert, and rest
   assert.equal(env.root.hasAttribute('aria-hidden'), false);
   assert.equal(env.documentRef.activeElement, outsideButton);
   assert.equal(onCloseCalls.length, 0);
+});
+
+test('modal surface controller locks background page scroll and restores it on close', () => {
+  const env = createFakeDocument();
+  const controller = createModalSurfaceController({
+    documentRef: env.documentRef,
+    rootSelector: '#root',
+    surfaceElement: env.surface,
+    closeButtonElement: env.closeButton,
+    onClose: () => {},
+    closeOnEscape: true,
+  });
+
+  controller.activate();
+
+  assert.equal(env.body.style.overflow, 'hidden');
+  assert.equal(env.documentElement.style.overflow, 'hidden');
+
+  controller.deactivate();
+
+  assert.equal(env.body.style.overflow, 'auto');
+  assert.equal(env.documentElement.style.overflow, 'visible');
 });
 
 test('modal surface controller dismisses on escape when enabled', () => {
