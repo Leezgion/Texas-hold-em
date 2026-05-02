@@ -823,7 +823,36 @@
     - client build: passed; Vite still reports the existing `>500 kB` chunk-size warning
     - server Jest suite: `12/12` suites and `120/120` tests passed
 - Remaining queue:
-  - `[todo]` continue gameplay edge validation for reveal policy variants and hand-history/support-panel access after settlement
+  - `[done]` continue gameplay edge validation for reveal policy variants and hand-history/support-panel access after settlement
+
+## 2026-05-03 Phone Settlement Policy And Post-Settlement Panels Follow-up
+
+- Status: `[done]` Fold-to-settlement reveal policy behavior and post-settlement support panels are verified on regular and short phone viewports.
+- Root cause:
+  - the hand-history support panel still exposed hard-coded English `Hand History / Recent Tape` copy inside an otherwise localized phone settlement review flow
+  - short-height no-reveal phone settlement used bottom anchoring, so the compressed stage container could push the settlement rail back into the vertical table capsule
+  - the first audit draft incorrectly expected debug-room player objects to expose `inHand/folded`; the durable participant check must use the latest hand record plus the fold action
+- Local fixes:
+  - localized the embedded hand-history drawer header to `牌局记录 / 最近手牌`
+  - changed phone settlement positioning so reveal and no-reveal outcomes share the same table/dock gap anchor, with a short-height override on the base `.settlement-sheet`
+  - added contract coverage for localized hand-history copy and phone settlement anchoring for reveal and no-reveal outcomes
+- Fresh evidence:
+  - red/green contract:
+    - `cd client && pnpm exec node --test src/components/gameRoomStageContract.test.js`
+    - new contracts failed before the copy/CSS fixes and passed after them; final focused run `17/17` passed on `2026-05-03`
+  - browser audit:
+    - `node .runlogs\2026-05-03-phone-settlement-policy-panels-audit.cjs` (`runId = moomvwb3`)
+    - `showdown_only` room `48I66B`: folded host saw `0` reveal buttons on `390x844` and `375x667`
+    - `free_reveal_after_hand` room `Q7DLW6`: folded host saw `4` reveal buttons on `390x844` and `375x667`
+    - all four viewport/scenario audits stayed `scrollHeight = clientHeight`
+    - all four audits reported no settlement/table, settlement/board, settlement/dock, or actions/dock collision
+    - `成员 / 牌局 / 房间` panels opened after settlement with modal isolation, owned sheet scrolling, and no English hand-history copy
+  - final verification:
+    - client full node tests: `242/242`
+    - client build: passed; Vite still reports the existing `>500 kB` chunk-size warning
+    - server Jest suite: `12/12` suites and `120/120` tests passed
+- Remaining queue:
+  - `[todo]` continue professional-player gameplay validation around multi-street betting, min-raise/all-in edge cases, and post-hand replay accuracy
 
 ## Product Mode Model
 

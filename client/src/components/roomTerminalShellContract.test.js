@@ -598,7 +598,7 @@ test('phone-terminal raise sizing opens as a bounded drawer instead of growing o
 test('phone-terminal settlement renders as a compact rail result instead of a full table cover', () => {
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet\s*\{[\s\S]*top:\s*auto;[\s\S]*bottom:\s*5\.35rem;[\s\S]*width:\s*min\(18rem,\s*calc\(100% - 1\.5rem\)\);[\s\S]*padding:\s*0\.56rem 0\.64rem;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet\s*\{[^}]*top:\s*21\.75rem;[^}]*bottom:\s*auto;[^}]*width:\s*min\(18rem,\s*calc\(100% - 1\.5rem\)\);[^}]*padding:\s*0\.56rem 0\.64rem;/s
   );
   assert.match(
     globalStylesSource,
@@ -625,7 +625,7 @@ test('phone-terminal settlement reveal controls stay inline with the compact res
   assert.match(settlementOverlaySource, /\{!showsInlineRevealHeadline && latestSummary\?\.headlineLine && \(/);
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s*\{[\s\S]*top:\s*21\.75rem;[\s\S]*bottom:\s*auto;[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\);[\s\S]*row-gap:\s*0\.24rem;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);[^}]*row-gap:\s*0\.24rem;/s
   );
   assert.match(
     globalStylesSource,
@@ -645,7 +645,7 @@ test('phone-terminal settlement reveal controls stay inline with the compact res
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s*\{[\s\S]*top:\s*18\.8rem;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet\s*\{[^}]*top:\s*18\.8rem;/s
   );
 });
 

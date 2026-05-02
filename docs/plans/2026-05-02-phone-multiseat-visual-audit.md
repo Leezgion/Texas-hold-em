@@ -55,4 +55,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Continue live-hand action dock polish after board/seat geometry is stable; decision buttons now stretch to the available phone dock width.
 - `[done]` Continue raise-drawer hierarchy review for larger blind structures and deeper stacks; quick-raise amounts now dedupe after big-blind alignment and the phone drawer grid adapts to 2/3/4 valid buttons.
 - `[done]` Continue broader gameplay edge validation after the phone table/action UI is stable; 3-way all-in side-pot settlement now shows main and side pot lines on regular and short phone viewports.
-- `[todo]` Continue gameplay edge validation for reveal policy variants and hand-history/support-panel access after settlement.
+- `[done]` Continue gameplay edge validation for reveal policy variants and hand-history/support-panel access after settlement; folded host reveal behavior now matches `showdown_only` vs `free_reveal_after_hand`, and post-settlement support panels are verified on `390x844` and `375x667`.
+- `[todo]` Continue professional-player gameplay validation around multi-street betting, min-raise/all-in edge cases, and post-hand replay accuracy.

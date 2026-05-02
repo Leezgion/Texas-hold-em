@@ -5098,8 +5098,8 @@
     }
 
     .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet {
-      top: auto;
-      bottom: 5.35rem;
+      top: 21.75rem;
+      bottom: auto;
       width: min(18rem, calc(100% - 1.5rem));
       padding: 0.56rem 0.64rem;
       border-radius: 1.1rem;
@@ -5149,8 +5149,6 @@
     }
 
     .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions {
-      top: 21.75rem;
-      bottom: auto;
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       row-gap: 0.24rem;
@@ -5214,7 +5212,7 @@
       white-space: nowrap;
     }
 
-    .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions {
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .settlement-sheet {
       top: 18.8rem;
     }
 

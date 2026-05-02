@@ -15,8 +15,8 @@ const HandHistoryDrawerContent = ({
       <div className="flex items-center gap-2">
         <ScrollText size={18} className="text-[color:var(--mode-shell-accent-strong)]" />
         <div>
-          <div className="tactical-history-drawer__kicker">Hand History</div>
-          <div className="tactical-history-drawer__title">Recent Tape</div>
+          <div className="tactical-history-drawer__kicker">牌局记录</div>
+          <div className="tactical-history-drawer__title">最近手牌</div>
         </div>
       </div>
       <span className="tactical-history-drawer__count">{summaries.length}</span>

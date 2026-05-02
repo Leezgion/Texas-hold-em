@@ -15,6 +15,7 @@ const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 
 const seatCardSource = readFileSync(new URL('./SeatCard.jsx', import.meta.url), 'utf8');
 const communityCardsSource = readFileSync(new URL('./CommunityCards.jsx', import.meta.url), 'utf8');
 const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
+const handHistoryDrawerSource = readFileSync(new URL('./HandHistoryDrawer.jsx', import.meta.url), 'utf8');
 const stageStylesSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 const bundledModuleCache = new Map();
 const bundledTempDirs = [];
@@ -292,6 +293,17 @@ test('Settlement sheet stays above center-shell layers to preserve reveal-button
   assert.match(stageStylesSource, /\.settlement-sheet\s*\{[\s\S]*?z-index:\s*22;/);
 });
 
+test('Phone settlement sheet anchors below the table for both reveal and no-reveal outcomes', () => {
+  assert.match(
+    stageStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet\s*\{[^}]*top:\s*21\.75rem;[^}]*bottom:\s*auto;/
+  );
+  assert.match(
+    stageStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet\s*\{[^}]*top:\s*18\.8rem;/
+  );
+});
+
 test('CommunityCards and TableStage use the cleaned center-shell naming and avoid HUD-ring language', () => {
   assert.match(communityCardsSource, /community-cards-center-shell/);
   assert.match(communityCardsSource, /community-cards-center-shell--compact-density/);
@@ -364,4 +376,10 @@ test('ActionDock renders a sync placeholder instead of blanking the center durin
 
   assert.match(dock, /等待牌局状态同步/);
   assert.match(dock, /tactical-dock__action-frame/);
+});
+
+test('HandHistoryDrawer keeps the tactical support panel copy localized for phone settlement review', () => {
+  assert.match(handHistoryDrawerSource, /tactical-history-drawer__kicker">牌局记录/);
+  assert.match(handHistoryDrawerSource, /tactical-history-drawer__title">最近手牌/);
+  assert.doesNotMatch(handHistoryDrawerSource, /Hand History|Recent Tape/);
 });
