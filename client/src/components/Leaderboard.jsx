@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { deriveProPlayerSummary } from '../view-models/gameViewModel';
+import { getPlayerDisplayName } from '../utils/playerIdentity';
 
 function getRankTone(index) {
   if (index === 0) {
@@ -41,9 +42,9 @@ const Leaderboard = ({
         className="tactical-ledger__header"
       >
         <div>
-          <div className="tactical-ledger__kicker">Leaderboard</div>
+          <div className="tactical-ledger__kicker">筹码榜</div>
           <div className="tactical-ledger__title">
-            {leader ? `${leader.nickname || leader.id} 领跑` : '暂无玩家数据'}
+            {leader ? `${getPlayerDisplayName(leader, { fallback: '玩家' })} 领跑` : '暂无玩家数据'}
           </div>
         </div>
         <div className="tactical-ledger__header-meta">
@@ -64,6 +65,8 @@ const Leaderboard = ({
                   players,
                   gameState,
                 });
+                const displayName = getPlayerDisplayName(player, { fallback: '玩家' });
+                const showHostPill = Boolean(player.isHost) && displayName !== '房主';
 
                 return (
                   <div
@@ -74,9 +77,9 @@ const Leaderboard = ({
                       <span className={getRankTone(index)}>{index + 1}</span>
                       <div className="min-w-0">
                         <div className="tactical-ledger__name">
-                          <span className="truncate">{player.nickname || player.id}</span>
+                          <span className="truncate">{displayName}</span>
                           {player.id === currentPlayerId && <span className="tactical-ledger__self-pill">我</span>}
-                          {player.isHost && <span className="tactical-ledger__host-pill">HOST</span>}
+                          {showHostPill && <span className="tactical-ledger__host-pill">房主</span>}
                         </div>
                         <div className="tactical-ledger__meta">
                           {[summary.seatLabel, summary.positionLabel, summary.statusLabel].filter(Boolean).join(' · ')}

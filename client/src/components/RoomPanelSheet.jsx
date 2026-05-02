@@ -55,7 +55,7 @@ const RoomPanelSheet = ({
       >
         <div className="room-panel-sheet__header" data-sheet-density={sheetDensity}>
           <div className="min-w-0">
-            <div className="room-panel-sheet__kicker">Support Surface</div>
+            <div className="room-panel-sheet__kicker">辅助面板</div>
             <h2 id={titleId} className="room-panel-sheet__title">
               {title}
             </h2>

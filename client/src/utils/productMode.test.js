@@ -34,7 +34,7 @@ test('returns stable shell theme tokens for each display mode', () => {
   const clubTheme = getDisplayModeTheme('club');
 
   assert.equal(proTheme.mode, 'pro');
-  assert.equal(proTheme.label, 'Pro');
+  assert.equal(proTheme.label, '职业');
   assert.equal(proTheme.title, '职业对局');
   assert.equal(proTheme.shellClassName, 'mode-shell-pro');
   assert.equal(proTheme.accentClassName, 'mode-accent-pro');
@@ -42,7 +42,7 @@ test('returns stable shell theme tokens for each display mode', () => {
   assert.equal(proTheme.motionStyle, 'sharp');
 
   assert.equal(clubTheme.mode, 'club');
-  assert.equal(clubTheme.label, 'Club');
+  assert.equal(clubTheme.label, '私局');
   assert.equal(clubTheme.title, '私局辅助');
   assert.equal(clubTheme.shellClassName, 'mode-shell-club');
   assert.equal(clubTheme.accentClassName, 'mode-accent-club');
@@ -85,7 +85,7 @@ test('builds mode preview cards in club-pro-study order', () => {
     [
       {
         mode: 'club',
-        label: 'Club',
+        label: '私局',
         title: '私局辅助',
         shellClassName: 'mode-shell-club',
         accentClassName: 'mode-accent-club',
@@ -93,7 +93,7 @@ test('builds mode preview cards in club-pro-study order', () => {
       },
       {
         mode: 'pro',
-        label: 'Pro',
+        label: '职业',
         title: '职业对局',
         shellClassName: 'mode-shell-pro',
         accentClassName: 'mode-accent-pro',
@@ -101,7 +101,7 @@ test('builds mode preview cards in club-pro-study order', () => {
       },
       {
         mode: 'study',
-        label: 'Study',
+        label: '复盘',
         title: '训练复盘',
         shellClassName: 'mode-shell-study',
         accentClassName: 'mode-accent-study',
@@ -114,13 +114,13 @@ test('builds mode preview cards in club-pro-study order', () => {
 test('builds richer gateway preview metadata for tactical arena mode cards', () => {
   const [clubCard, proCard, studyCard] = buildModePreviewCards();
 
-  assert.equal(clubCard.gatewayScene, 'Host Table');
+  assert.equal(clubCard.gatewayScene, '私局控制桌');
   assert.equal(clubCard.gatewayPersona, '线下私局组织者');
 
-  assert.equal(proCard.gatewayScene, 'Arena Table');
+  assert.equal(proCard.gatewayScene, '职业竞技桌');
   assert.equal(proCard.gatewayPersona, '线上职业玩家');
 
-  assert.equal(studyCard.gatewayScene, 'Review Desk');
+  assert.equal(studyCard.gatewayScene, '训练分析台');
   assert.equal(studyCard.gatewayPersona, '复盘与训练者');
 });
 
@@ -130,19 +130,19 @@ test('exposes room-shell choreography tokens for each display mode', () => {
   const studyTheme = getDisplayModeTheme('study');
 
   assert.equal(clubTheme.motionStyle, 'measured');
-  assert.equal(clubTheme.room.stageLabel, 'Table Console');
+  assert.equal(clubTheme.room.stageLabel, '牌桌控制台');
   assert.equal(clubTheme.room.intelTitle, '桌况总览');
   assert.equal(clubTheme.room.actionTitle, '本席控制');
   assert.equal(clubTheme.room.historyPreviewCount, 3);
 
   assert.equal(proTheme.motionStyle, 'sharp');
-  assert.equal(proTheme.room.stageLabel, 'Table Stage');
-  assert.equal(proTheme.room.actionTitle, 'Hero Seat');
+  assert.equal(proTheme.room.stageLabel, '牌桌主舞台');
+  assert.equal(proTheme.room.actionTitle, '本席控制台');
   assert.equal(proTheme.room.historyPreviewCount, 4);
 
   assert.equal(studyTheme.motionStyle, 'annotated');
-  assert.equal(studyTheme.room.stageLabel, 'Review Stage');
-  assert.equal(studyTheme.room.eventTitle, 'Review Rail');
+  assert.equal(studyTheme.room.stageLabel, '复盘舞台');
+  assert.equal(studyTheme.room.eventTitle, '复盘时间线');
   assert.equal(studyTheme.room.latestHandLabel, '上一手结算');
   assert.equal(studyTheme.room.historyPreviewCount, 6);
 });
@@ -253,12 +253,12 @@ test('exposes single-screen room terminal metadata for each display mode', () =>
   assert.equal(clubTheme.sheetLabels.history, '最近动态');
   assert.equal(clubTheme.sheetLabels.room, '房间设置');
 
-  assert.equal(proTheme.sheetLabels.players, 'Roster');
-  assert.equal(proTheme.sheetLabels.history, 'Hand Tape');
-  assert.equal(proTheme.sheetLabels.room, 'Room');
+  assert.equal(proTheme.sheetLabels.players, '成员');
+  assert.equal(proTheme.sheetLabels.history, '牌局');
+  assert.equal(proTheme.sheetLabels.room, '房间');
 
   assert.equal(studyTheme.sheetLabels.players, '状态面板');
-  assert.equal(studyTheme.sheetLabels.history, 'Timeline');
+  assert.equal(studyTheme.sheetLabels.history, '时间线');
   assert.equal(studyTheme.sheetLabels.room, '复盘设置');
 });
 

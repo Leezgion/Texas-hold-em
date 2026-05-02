@@ -133,7 +133,7 @@ const SettlementOverlay = ({
               animate={motionProfile.cue.animate}
               transition={{ ...motionProfile.cue.transition, delay: motionProfile.settlement.staggerChildren * 2 }}
             >
-              <span className="settlement-sheet__board-label">Board</span>
+              <span className="settlement-sheet__board-label">公牌</span>
               <span>{latestSummary.boardLabel}</span>
             </motion.div>
           )}

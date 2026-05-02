@@ -20,7 +20,7 @@ const IntelRail = ({
   const roomCopy = theme.room;
   const consoleModeCopy = {
     club: '桌面控制台',
-    pro: 'Tactical Intel',
+    pro: '桌况情报',
     study: '桌况分析台',
   };
   const summaryCardsByMode = {
@@ -102,7 +102,7 @@ const IntelRail = ({
 
         <div className="tactical-rail__spotlight">
           <div>
-            <div className="tactical-rail__spotlight-kicker">TABLE STATE</div>
+            <div className="tactical-rail__spotlight-kicker">桌况</div>
             <div className="tactical-rail__spotlight-value">{roomStateLabel}</div>
           </div>
           <div className="tactical-rail__spotlight-meta">
@@ -125,7 +125,7 @@ const IntelRail = ({
         <div className="tactical-rail__header">
           <div>
             <div className="poker-shell-kicker">{roomCopy.rosterTitle}</div>
-            <div className="tactical-rail__title">Seat Intel</div>
+            <div className="tactical-rail__title">席位总览</div>
           </div>
           <span className="tactical-rail__pill">{intelRailView.occupancyLabel}</span>
         </div>

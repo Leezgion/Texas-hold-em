@@ -22,6 +22,16 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
     width: `${resolvedBoardLayout.cardWidth}px`,
     height: `${resolvedBoardLayout.cardHeight}px`,
   };
+  const showsIdleBoardSlots = !gameState || !gameState.communityCards;
+
+  const renderIdleBoardSlots = () =>
+    [0, 1, 2, 3, 4].map((cardIndex) => (
+      <div
+        key={cardIndex}
+        className="community-cards-area__slot community-cards-area__slot--idle"
+        style={cardStyle}
+      />
+    ));
 
   useEffect(() => {
     if (!gameState || !gameState.phase) return;
@@ -63,7 +73,7 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
     }
   }, [gameState?.phase, previousPhase]);
 
-  if (!gameState || !gameState.communityCards) {
+  if (showsIdleBoardSlots) {
     return (
       <div
         className={`community-cards-area community-cards-center-shell community-cards-center-shell--compact-density community-cards-area--${resolvedTableProfile} ${
@@ -79,9 +89,7 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
           data-table-profile={resolvedTableProfile}
         >
           <div className="community-cards-center-shell__rail community-cards-area__rail" style={{ gap: `${resolvedBoardLayout.gap}px` }}>
-            {[1, 2, 3, 4, 5].map((index) => (
-              <div key={index} className="poker-card community back" style={cardStyle}></div>
-            ))}
+            {renderIdleBoardSlots()}
           </div>
         </div>
       </div>
@@ -160,6 +168,17 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
             const card = communityCards[cardIndex];
             const isVisible = cardIndex < visibleCards.length;
             const isAnimating = animatingCards.has(cardIndex);
+            const showsIdleBoardSlot = !isVisible && !isAnimating;
+
+            if (showsIdleBoardSlot) {
+              return (
+                <div
+                  key={cardIndex}
+                  className="community-cards-area__slot community-cards-area__slot--idle"
+                  style={cardStyle}
+                />
+              );
+            }
 
             return (
               <div
@@ -191,13 +210,6 @@ const CommunityCards = ({ boardLayout = null, tableProfile = null }) => {
             );
           })}
         </div>
-
-        {gameState.pot > 0 && resolvedBoardLayout.phaseVisible && (
-          <div className="community-cards-center-shell__pot community-cards-area__pot">
-            <div className="text-sm text-gray-300">底池</div>
-            <div className="text-lg font-bold text-green-400">{gameState.pot}</div>
-          </div>
-        )}
       </div>
     </div>
   );

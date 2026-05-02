@@ -46,7 +46,7 @@ const EventRail = ({
         <div className="tactical-rail__header">
           <div>
             <div className="poker-shell-kicker">{roomCopy.eventTitle}</div>
-            <div className="tactical-rail__title">Event Console</div>
+            <div className="tactical-rail__title">最近结果</div>
           </div>
           <span className="tactical-rail__pill">{eventRailView.historyCount} 手牌</span>
         </div>
@@ -74,7 +74,7 @@ const EventRail = ({
             </div>
             {eventRailView.boardLabel && (
               <div className="tactical-event-card__board">
-                <span className="tactical-event-card__board-label">Board</span>
+                <span className="tactical-event-card__board-label">公牌</span>
                 <span>{eventRailView.boardLabel}</span>
               </div>
             )}
@@ -139,7 +139,7 @@ const EventRail = ({
         <div className="tactical-rail__header">
           <div>
             <div className="poker-shell-kicker">{roomCopy.stacksTitle}</div>
-            <div className="tactical-rail__title">Stack Ledger</div>
+            <div className="tactical-rail__title">筹码与净额</div>
           </div>
         </div>
         <div className="tactical-rail__lead">
@@ -159,7 +159,7 @@ const EventRail = ({
         <div className="tactical-rail__header">
           <div>
             <div className="poker-shell-kicker">{roomCopy.historyTitle}</div>
-            <div className="tactical-rail__title">Hand Tape</div>
+            <div className="tactical-rail__title">时间线</div>
           </div>
           <div className="tactical-rail__pill">{eventRailView.historyCount} 手牌</div>
         </div>
@@ -184,7 +184,7 @@ const EventRail = ({
                     {summary.reason && <div className="tactical-history-card__reason">{summary.reason}</div>}
                   </div>
                   {summary.boardLabel && (
-                    <div className="tactical-history-card__board">Board {summary.boardLabel}</div>
+                    <div className="tactical-history-card__board">公牌 {summary.boardLabel}</div>
                   )}
                   {summary.headlineLine && (
                     <div className="tactical-history-card__headline">{summary.headlineLine}</div>

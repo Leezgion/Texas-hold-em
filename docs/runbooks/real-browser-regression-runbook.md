@@ -1,6 +1,6 @@
 # Real Browser Regression Runbook
 
-This runbook is the authoritative operator workflow for real-browser regression in the current repository checkout on `main`.
+This runbook is the authoritative operator workflow for real-browser regression in the current repository checkout. Do not assume the checkout is on `main`; product-polish work may intentionally stay on a feature branch until final merge readiness.
 
 Use it when you need to:
 
@@ -22,6 +22,18 @@ Use it when you need to:
 ## 1. Preflight
 
 Close old browser pages first. Keep one `about:blank` page if you are using Chrome DevTools MCP.
+
+Confirm branch and dirty state before browser evidence:
+
+```powershell
+git status --short --branch
+```
+
+Expected:
+
+- you are on the intended product branch
+- no unexpected unrelated dirty files will be mistaken for the current UI pass
+- if the user is manually running dev servers, you do not stop or replace them without first proving they are stale or unreachable
 
 Run:
 
@@ -344,3 +356,9 @@ Expected final state:
   - `.arena-seat-anchor` overlap checks against both the table body and the community-card band
 - Do not budget wide short-height `phone-oval` plaques from the true-phone footprint. The `2026-03-19` rerun only went green after the helper reserved a footprint closer to `94 x 138`, which browser rects exposed before the unit tests did.
 - A modal controller test is not enough if the dialog still renders inside `#root`; if `#root` is inerted, modalized surfaces must live in a separate host such as `#modal-root` or the browser contract is still broken.
+- After copy-polish changes, do not rely only on home-page snapshots; open at least one live room and confirm the shell no longer leaks raw mode strings such as `ROOM / PRO / Pro` and that phone portrait still exposes primary quick actions without opening the room sheet first.
+- When checking for duplicated center-stage pot data right after `开始游戏`, wait for a stable live-hand cue like `需跟注`, `您的回合`, or the `preflop` beacon before treating an extra node as a real UI regression; Motion exit frames can briefly leave a stale pre-hand node visible in accessibility snapshots.
+- If a browser-evidence room goes `404` during a copy pass, assume the host `deviceId` may have replaced the previous empty room before assuming the latest build is broken; create a fresh room and capture the new id immediately.
+- After any waiting-state polish pass, inspect at least one fresh room before seating a second player and confirm both:
+  - the board tray is showing idle slot placeholders instead of five blue back cards
+  - a wide short-height desktop viewport still reports `data-table-profile="desktop-oval"` and `data-table-shell-orientation="horizontal-capsule"`

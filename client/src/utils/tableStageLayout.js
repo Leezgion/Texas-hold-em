@@ -1,4 +1,4 @@
-import { buildSeatRingPositions } from './seatRingLayout.js';
+import { buildSeatRingPositions, resolveSupportedSeatSlotIds } from './seatRingLayout.js';
 import { resolveRoomViewportLayout, resolveStageViewportContract } from './roomViewportLayout.js';
 
 const TABLE_FAMILY = 'broadcast-tactical-9max';
@@ -22,10 +22,6 @@ export function resolveSeatRingRotationSeatIndex(currentPlayer = null) {
 function resolveTableProfile({ viewportWidth = 0, viewportHeight = 0, tableProfile = null } = {}) {
   if (tableProfile === 'desktop-oval' || tableProfile === 'phone-oval') {
     return tableProfile;
-  }
-
-  if (resolveStageViewportContract({ width: viewportWidth, height: viewportHeight }).heightClass === 'short-height') {
-    return 'phone-oval';
   }
 
   return viewportWidth < 768 ? 'phone-oval' : 'desktop-oval';
@@ -167,18 +163,17 @@ export function resolveRoomGeometryContract({
     tableDiameter: tableSurfaceLayout.effectiveTableDiameter,
     profile: tableSurfaceLayout.profile,
   };
-  const safePlayerCount = Math.max(0, Number(playerCount) || 0);
-  const canonicalPositions =
-    safePlayerCount >= 2
-      ? buildSeatRingPositions({
-          playerCount: safePlayerCount,
-          ...seatRingLayout,
-        })
-      : [];
+  const roomMaxPlayers = Math.max(2, Number(playerCount) || 6);
+  const visualSeatCount = 9;
+  const roomSeatSlotIds = resolveSupportedSeatSlotIds(roomMaxPlayers);
+  const canonicalPositions = buildSeatRingPositions({
+    playerCount: visualSeatCount,
+    ...seatRingLayout,
+  });
   const canonicalSlots = canonicalPositions.map((position, seatIndex) => ({
     seatIndex,
     slotId: position.slotId || null,
-    anchorSlotId: `${tableSurfaceLayout.profile}:${safePlayerCount}:${position.slotId || position.anchorRole || 'ring'}:${seatIndex}`,
+    anchorSlotId: `${tableSurfaceLayout.profile}:${visualSeatCount}:${position.slotId || position.anchorRole || 'ring'}:${seatIndex}`,
     anchorRole: position.anchorRole || null,
     anchorZone: position.anchorZone || null,
     position: {
@@ -196,6 +191,9 @@ export function resolveRoomGeometryContract({
     tableSurfaceLayout,
     communityCardLayout,
     seatRingLayout,
+    roomMaxPlayers,
+    visualSeatCount,
+    roomSeatSlotIds,
     canonicalSlots,
     roomShellLayout,
   };
@@ -251,8 +249,8 @@ export function buildStageChromeLayout({
   const boardTrayHeight = communityLayout.trayHeight + (compact ? 14 : 20);
   const guideRadius = compact ? 10 : 13;
   const stageBandWidth = Math.min(surface.tableWidth * 0.74, compact ? 188 : 316);
-  const stageBandHeight = surface.stageBandHeight;
-  const stageBandY = centerY - outerRy - stageBandHeight - (compact ? 14 : 16);
+  const stageBandHeight = compact ? 24 : 30;
+  const stageBandY = centerY - outerRy - stageBandHeight - (compact ? 10 : 12);
   const orbitMarkerCount = 9;
   const orbitRx = outerRx + (compact ? 16 : 18);
   const orbitRy = outerRy + (compact ? 12 : 14);
@@ -270,6 +268,7 @@ export function buildStageChromeLayout({
   });
   const safeSeatGuides = Array.isArray(seatGuides) ? seatGuides : [];
   const seatCount = safeSeatGuides.length;
+  const geometryCanonicalSlots = Array.isArray(geometryContract?.canonicalSlots) ? geometryContract.canonicalSlots : [];
   const heroSeatGuide = safeSeatGuides.find((seat) => Boolean(seat?.isHero || seat?.isCurrentPlayer)) || null;
   const heroSeatIndex = Number.isInteger(Number(heroSeatGuide?.seatIndex)) ? Number(heroSeatGuide.seatIndex) : 0;
   const canonicalSeatPositions =
@@ -282,22 +281,32 @@ export function buildStageChromeLayout({
   const normalizedSeatGuides = safeSeatGuides.map((sourceSeat, inputIndex) => {
     const seatIndex = Number.isInteger(Number(sourceSeat?.seatIndex)) ? Number(sourceSeat.seatIndex) : inputIndex;
     const relativeSeat = seatCount > 0 ? ((seatIndex - heroSeatIndex + seatCount) % seatCount) : inputIndex;
-    const canonicalPosition = canonicalSeatPositions[relativeSeat] || null;
+    const explicitCanonicalIndex = Number.isInteger(Number(sourceSeat?.canonicalSlotIndex))
+      ? Number(sourceSeat.canonicalSlotIndex)
+      : null;
+    const geometryCanonicalSlot =
+      explicitCanonicalIndex !== null ? geometryCanonicalSlots[explicitCanonicalIndex] || null : null;
+    const canonicalPosition = geometryCanonicalSlot?.position || canonicalSeatPositions[relativeSeat] || null;
+    const canonicalRole = geometryCanonicalSlot?.anchorRole || canonicalPosition?.anchorRole || null;
+    const canonicalZone = geometryCanonicalSlot?.anchorZone || canonicalPosition?.anchorZone || null;
+    const canonicalSlotId = geometryCanonicalSlot?.slotId || canonicalPosition?.slotId || null;
+    const anchorIndex = explicitCanonicalIndex ?? relativeSeat;
 
     return {
       seatIndex,
       seatLabel: sourceSeat.seatLabel,
       markerLabel: sourceSeat.positionLabel || null,
       occupied: Boolean(sourceSeat.occupied),
+      seatAvailability: sourceSeat.seatAvailability || (sourceSeat.occupied ? 'occupied' : 'open'),
       isCurrentTurn: Boolean(sourceSeat.isCurrentTurn),
       isHero: Boolean(sourceSeat.isHero || sourceSeat.isCurrentPlayer),
-      slotId: canonicalPosition?.slotId || null,
+      slotId: canonicalSlotId,
       anchorSlotId:
-        canonicalPosition?.slotId || canonicalPosition?.anchorRole
-          ? `${surface.profile}:${seatCount}:${canonicalPosition?.slotId || canonicalPosition?.anchorRole}:${relativeSeat}`
+        canonicalSlotId || canonicalRole
+          ? `${surface.profile}:${geometryCanonicalSlots.length || seatCount}:${canonicalSlotId || canonicalRole}:${anchorIndex}`
           : null,
-      anchorRole: canonicalPosition?.anchorRole || null,
-      anchorZone: canonicalPosition?.anchorZone || null,
+      anchorRole: canonicalRole,
+      anchorZone: canonicalZone,
       cx: canonicalPosition ? centerX + canonicalPosition.x : centerX,
       cy: canonicalPosition ? centerY + canonicalPosition.y : centerY,
     };

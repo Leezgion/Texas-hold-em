@@ -1,6 +1,6 @@
 # Poker Product Polish Todo
 
-**Goal:** Keep polishing the game on `main` until it is robust in normal play, resilient in edge cases, aligned with serious Hold'em table expectations, and only then spend time on visual refinement.
+**Goal:** Keep polishing the game on the active product branch until it is robust in normal play, resilient in edge cases, aligned with serious Hold'em table expectations, and only then merge back to `main`.
 
 **Non-goals for this phase:** deployment, staging, CI, persistence, or launch preparation. Those tracks are intentionally deferred.
 
@@ -37,7 +37,9 @@
 
 ## Current Snapshot
 
-- Branch: `main`
+- Branch at original plan creation: `main`
+- Active branch as of `2026-05-02`: `feat/poker-os-polish`
+- Merge policy: stay on the active product branch until the table UX, functional flows, browser regression, and edge-case tests are complete; only then merge to `main` and push.
 - Baseline commit at plan creation: `d705784`
 - Automated regression baseline was green before this plan started:
   - `server`: `102/102`
@@ -50,6 +52,30 @@
 - Existing operator runbook and regression log already exist:
   - `docs/runbooks/real-browser-regression-runbook.md`
   - `真实浏览器联机回归踩坑记录.md`
+
+## 2026-05-02 Active Product-Branch Update
+
+- Status: `[done]` Product copy cleanup, canonical `9-max` seat semantics, closed-seat modeling, and table-anchor safety pass are verified on the active branch.
+- Scope completed in this pass:
+  - product-facing Chinese labels for room support surfaces, mode cards, history/event panels, and settlement surfaces
+  - sanitized player display names so raw `device_*` identities do not leak into key UI surfaces
+  - a unified `9-max` visual table with room-cap seats marked as closed rather than changing the table geometry per player count
+  - compact visual plaques separated from larger anchor-safety footprints, so live-turn badges and halo states do not clip back into the table
+  - sign-symmetric seat-coordinate rounding, so phone left/right canonical anchors stay mirrored at half-pixel boundaries
+- Automated evidence:
+  - `cd client && node --test ...`
+    - `204/204` passed on `2026-05-02`
+  - `cd client && npm run build`
+    - passed on `2026-05-02`
+  - `cd server && npm test -- --runInBand`
+    - `114/114` passed on `2026-05-02`
+- Browser evidence status:
+  - `[blocked]` live browser evidence was not captured in this pass because no local listeners were reachable on `5173 / 5174 / 3001 / 3101`
+  - do not claim visual completion from automated tests alone; rerun browser evidence after the user-owned dev pair is confirmed healthy
+- Next immediate queue:
+  - `[todo]` rerun live browser screenshots and metrics for create-room desktop, desktop waiting/live, phone waiting, and phone roster sheet
+  - `[todo]` fix any remaining visual overlap or density regressions found by that browser pass
+  - `[todo]` then continue gameplay validation for supported room sizes and edge flows
 
 ## Product Mode Model
 
@@ -1116,3 +1142,51 @@ This pass closed the density-pass browser-evidence task on the reused local-dev 
   - client build: passed
   - server full suite: `114/114`
   - these reruns were part of the same density-pass evidence closure and confirmed the browser evidence did not leave the repo in a broken state
+
+## 2026-03-22 Copy Cleanup and Primary-Dock Evidence Rerun
+
+This rerun reused the user-owned local-dev pair and focused on real operator-facing polish instead of geometry:
+
+- fresh room:
+  - `FA1JHX`
+- fresh screenshots:
+  - `.runlogs/create-room-copy-clean-desktop.png`
+  - `.runlogs/broadcast-tactical-copy-clean-desktop-live.png`
+  - `.runlogs/broadcast-tactical-copy-clean-phone-live.png`
+- create-room copy cleanup verified:
+  - the gateway now reads `当前桌型 / 显示模式 / 开设牌桌 / 加入牌桌 / 模式速览`
+  - mode scenes read `私局控制桌 / 职业竞技桌 / 训练分析台`
+  - density and motion labels now read as short Chinese product language instead of mixed English descriptors
+- room-shell copy cleanup verified:
+  - header now reads `房间`
+  - the mode pill no longer leaks `ROOM / PRO / Pro`
+  - the support surface now reads `辅助面板`
+  - phone portrait now exposes `快速操作` directly inside the dock with `补码 / 离座 / 分享 / 退出`
+- live-hand cleanup verified:
+  - no raw `device_*` nickname leaked into the tested hero-facing surfaces
+  - duplicate textual `房主` markers were removed from seat plaques and the leaderboard
+  - pro mode dropped the duplicate explanatory stage caption and duplicate board-summary copy
+  - the stale legacy pot block inside `CommunityCards` was removed, leaving a single center-stage pot readout
+- evidence-capture pitfall recorded:
+  - immediately after `开始游戏`, a11y snapshots can briefly retain an exiting pre-hand node until Motion settles
+  - wait for an authoritative live-hand cue such as `需跟注`, `您的回合`, or the `preflop` stage beacon before concluding that the center-stage data is duplicated
+
+## 2026-03-22 Create-Room Compression and True-Capsule Waiting Rerun
+
+This follow-up rerun stayed on the same local-dev pair and focused on two waiting-state problems a picky live review immediately surfaced:
+
+- fresh room:
+  - `D3OMEW`
+- fresh screenshots:
+  - `.runlogs/create-room-summary-tight-desktop.png`
+  - `.runlogs/broadcast-tactical-room-waiting-no-back-cards-desktop.png`
+  - `.runlogs/broadcast-tactical-room-desktop-true-capsule.png`
+- create-room modal evidence:
+  - the right-side summary now reads as `开桌速览`, with opening parameters and rule state instead of repeating the selected mode identity
+  - the quick summary now stays on `信息重点 / 桌面参数 / 规则状态`
+- waiting-room evidence:
+  - waiting-state dock now uses a denser hero strip so the table keeps more visible depth
+  - the board tray no longer renders five blue back cards while the room is idle or still preflop without board cards
+  - a wide short-height desktop viewport such as `1366x707` now stays `desktop-oval` with a `horizontal-capsule` shell instead of incorrectly collapsing to `phone-oval`
+- follow-up note:
+  - the coupled dock still intentionally overlaps the hero zone and lower flank region in waiting rooms; this is now a visual-polish trade-off, not a table-family regression

@@ -1,4 +1,6 @@
 import { ROOM_MODE_META, getDisplayModeTheme } from '../utils/productMode.js';
+import { getPlayerDisplayName } from '../utils/playerIdentity.js';
+import { resolveSupportedSeatSlotIds } from '../utils/seatRingLayout.js';
 
 const REBUY_BLOCKED_STATES = new Set(['active_in_hand', 'all_in_this_hand', 'disconnected']);
 const SEATED_STATES = new Set([
@@ -98,7 +100,7 @@ function buildStageActionLabel({ roomState = 'idle', gameState = null, currentTu
   }
 
   const toCall = Math.max(0, (Number(gameState?.currentBet) || 0) - (Number(currentTurnPlayer.currentBet) || 0));
-  return `轮到 ${seatLabel} · TO CALL ${toCall.toLocaleString()}`;
+  return `轮到 ${seatLabel} · 需跟注 ${toCall.toLocaleString()}`;
 }
 
 export function formatSignedChips(value = 0) {
@@ -272,7 +274,10 @@ export function deriveActionDockView({
     : null;
 
   return {
-    heroName: currentPlayer.nickname || currentPlayer.id || '玩家',
+    heroName: getPlayerDisplayName(currentPlayer, {
+      fallback: currentPlayer?.isHost ? '房主' : '玩家',
+      selfLabel: '我',
+    }),
     isHost: Boolean(currentPlayer.isHost),
     seatLabel: heroSummary.seatLabel,
     positionLabel: heroSummary.positionLabel,
@@ -527,14 +532,33 @@ function deriveSeatPlaqueDensityModel() {
 export function deriveSeatRingView({
   players = [],
   maxPlayers = 6,
+  visualSeatCount = 9,
   currentPlayerId = null,
   roomState = 'idle',
   gameState = null,
   canonicalSlots = [],
+  roomSeatSlotIds = [],
 } = {}) {
   const safePlayers = Array.isArray(players) ? players : [];
   const safeMaxPlayers = Math.max(2, Number(maxPlayers) || 6);
+  const safeVisualSeatCount = Math.max(
+    2,
+    Math.min(9, Number(visualSeatCount) || Math.max(safeMaxPlayers, canonicalSlots.length || 9))
+  );
   const safeCanonicalSlots = Array.isArray(canonicalSlots) ? canonicalSlots : [];
+  const canonicalSlotCount = safeCanonicalSlots.length > 0 ? safeCanonicalSlots.length : safeVisualSeatCount;
+  const canonicalSlotsBySlotId = new Map(
+    safeCanonicalSlots
+      .filter((slot) => slot?.slotId)
+      .map((slot) => [slot.slotId, slot])
+  );
+  const supportedRoomSeatSlotIds = (
+    Array.isArray(roomSeatSlotIds) && roomSeatSlotIds.length > 0
+      ? roomSeatSlotIds
+      : resolveSupportedSeatSlotIds(safeMaxPlayers)
+  )
+    .map((slotId) => canonicalSlotsBySlotId.get(slotId))
+    .filter(Boolean);
   const heroSeatIndex = (() => {
     const currentPlayer = safePlayers.find((player) => player?.id === currentPlayerId) || null;
     const seatIndex = Number(currentPlayer?.seat);
@@ -542,20 +566,34 @@ export function deriveSeatRingView({
     return Number.isInteger(seatIndex) && seatIndex >= 0 ? seatIndex : 0;
   })();
 
-  return Array.from({ length: safeMaxPlayers }, (_, seatIndex) => {
+  const usedCanonicalSlotIds = new Set();
+  const usedCanonicalSlotIndexes = new Set();
+
+  const roomSeatEntries = Array.from({ length: safeMaxPlayers }, (_, seatIndex) => {
     const player = safePlayers.find((candidate) => Number(candidate?.seat) === seatIndex);
     const relativeSlotIndex = ((seatIndex - heroSeatIndex + safeMaxPlayers) % safeMaxPlayers);
-    const canonicalSlot = safeCanonicalSlots[relativeSlotIndex] || null;
+    const canonicalSlot = supportedRoomSeatSlotIds[relativeSlotIndex] || safeCanonicalSlots[relativeSlotIndex] || null;
     const anchorRole = deriveSeatAnchorRole(canonicalSlot, relativeSlotIndex);
     const anchorZone = deriveSeatAnchorZone(canonicalSlot, anchorRole);
     const densityTier = deriveSeatDensityTier(relativeSlotIndex);
     const plaqueDensityModel = deriveSeatPlaqueDensityModel();
+    const canonicalSlotIndex = Number.isInteger(canonicalSlot?.seatIndex) ? canonicalSlot.seatIndex : relativeSlotIndex;
+
+    if (canonicalSlot?.slotId) {
+      usedCanonicalSlotIds.add(canonicalSlot.slotId);
+    }
+    if (Number.isInteger(canonicalSlot?.seatIndex)) {
+      usedCanonicalSlotIndexes.add(canonicalSlot.seatIndex);
+    }
 
     if (!player) {
       return {
         seatIndex,
         seatLabel: `座${seatIndex + 1}`,
         occupied: false,
+        seatAvailability: 'open',
+        canTakeSeat: true,
+        emptyText: '可入座',
         isCurrentPlayer: false,
         statusLabel: '空座',
         seatTone: 'open-seat',
@@ -564,7 +602,7 @@ export function deriveSeatRingView({
         densityTier,
         plaqueDensityModel,
         anchorSlotId: canonicalSlot?.anchorSlotId || null,
-        canonicalSlotIndex: canonicalSlot ? relativeSlotIndex : null,
+        canonicalSlotIndex: canonicalSlotIndex,
         anchorRole,
         anchorZone,
         position: canonicalSlot?.position || null,
@@ -584,6 +622,8 @@ export function deriveSeatRingView({
       seatIndex,
       seatLabel: summary.seatLabel || `座${seatIndex + 1}`,
       occupied: true,
+      seatAvailability: 'occupied',
+      canTakeSeat: false,
       isCurrentPlayer,
       statusLabel: summary.statusLabel,
       seatTone: deriveSeatTone(player, { isCurrentPlayer, roomState }),
@@ -594,13 +634,54 @@ export function deriveSeatRingView({
       densityTier,
       plaqueDensityModel,
       anchorSlotId: canonicalSlot?.anchorSlotId || null,
-      canonicalSlotIndex: canonicalSlot ? relativeSlotIndex : null,
+      canonicalSlotIndex: canonicalSlotIndex,
       anchorRole,
       anchorZone,
       position: canonicalSlot?.position || null,
       player,
     };
   });
+
+  const closedSeatEntries = safeCanonicalSlots
+    .filter((slot) => {
+      if (!slot) {
+        return false;
+      }
+
+      if (Number.isInteger(slot.seatIndex) && usedCanonicalSlotIndexes.has(slot.seatIndex)) {
+        return false;
+      }
+
+      if (slot.slotId && usedCanonicalSlotIds.has(slot.slotId)) {
+        return false;
+      }
+
+      return true;
+    })
+    .slice(0, Math.max(0, canonicalSlotCount - roomSeatEntries.length))
+    .map((canonicalSlot, closedIndex) => ({
+      seatIndex: safeMaxPlayers + closedIndex,
+      seatLabel: '保留位',
+      occupied: false,
+      seatAvailability: 'closed',
+      canTakeSeat: false,
+      emptyText: '本桌未开放',
+      isCurrentPlayer: false,
+      statusLabel: '未开放',
+      seatTone: 'closed-seat',
+      positionLabel: null,
+      visualRole: 'embedded-plaque',
+      densityTier: deriveSeatDensityTier(safeMaxPlayers + closedIndex),
+      plaqueDensityModel: deriveSeatPlaqueDensityModel(),
+      anchorSlotId: canonicalSlot.anchorSlotId || null,
+      canonicalSlotIndex: Number.isInteger(canonicalSlot?.seatIndex) ? canonicalSlot.seatIndex : safeMaxPlayers + closedIndex,
+      anchorRole: deriveSeatAnchorRole(canonicalSlot, safeMaxPlayers + closedIndex),
+      anchorZone: deriveSeatAnchorZone(canonicalSlot, deriveSeatAnchorRole(canonicalSlot, safeMaxPlayers + closedIndex)),
+      position: canonicalSlot.position || null,
+      player: null,
+    }));
+
+  return [...roomSeatEntries, ...closedSeatEntries];
 }
 
 export function deriveIntelRailView({

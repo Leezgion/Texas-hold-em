@@ -463,6 +463,51 @@ test('rotates canonical slots so the current player stays on the hero anchor eve
   assert.deepEqual(seatRing[0].position, canonicalSlots[3].position);
 });
 
+test('keeps a unified 9-max seat ring and marks seats beyond the room cap as closed', () => {
+  const canonicalSlots = Array.from({ length: 9 }, (_, seatIndex) => ({
+    seatIndex,
+    slotId: `slot-${seatIndex}`,
+    anchorSlotId: `desktop-9-slot-${seatIndex}`,
+    anchorRole: seatIndex === 0 ? 'hero' : 'ring',
+    anchorZone: seatIndex === 0 ? 'table-edge' : 'table-flank',
+    position: { x: seatIndex * 10, y: seatIndex * -10, profile: 'desktop-oval' },
+  }));
+
+  const seatRing = deriveSeatRingView({
+    maxPlayers: 6,
+    visualSeatCount: 9,
+    currentPlayerId: 'hero',
+    roomState: 'idle',
+    players: [
+      {
+        id: 'hero',
+        nickname: 'Hero',
+        seat: 0,
+        chips: 1000,
+        tableState: 'seated_ready',
+      },
+      {
+        id: 'villain',
+        nickname: 'Villain',
+        seat: 3,
+        chips: 1200,
+        tableState: 'seated_ready',
+      },
+    ],
+    canonicalSlots,
+  });
+
+  assert.equal(seatRing.length, 9);
+  assert.equal(seatRing[5].seatAvailability, 'open');
+  assert.equal(seatRing[5].statusLabel, '空座');
+  assert.equal(seatRing[6].seatAvailability, 'closed');
+  assert.equal(seatRing[6].statusLabel, '未开放');
+  assert.equal(seatRing[6].seatTone, 'closed-seat');
+  assert.equal(seatRing[6].canTakeSeat, false);
+  assert.equal(seatRing[8].anchorSlotId, canonicalSlots[8].anchorSlotId);
+  assert.deepEqual(seatRing[8].position, canonicalSlots[8].position);
+});
+
 test('derives seat selection notices from the authoritative room state', () => {
   assert.deepEqual(deriveSeatSelectionNotice('idle', 1), {
     channel: 'game-success',
@@ -685,7 +730,7 @@ test('derives a tactical action-dock summary from hero state and current hand nu
     roomState: 'in_hand',
   });
 
-  assert.equal(dockView.heroName, 'Hero');
+  assert.equal(dockView.heroName, '我');
   assert.equal(dockView.statusLabel, '游戏中');
   assert.equal(dockView.chipsLabel, '980');
   assert.equal(dockView.betLabel, '20');
@@ -812,7 +857,7 @@ test('derives a poker-os shell summary for the room header and shared banners', 
     roomState: 'settling',
     roomStateLabel: '结算中',
     connectedLabel: '服务器已连接',
-    modeLabel: 'Study',
+    modeLabel: '复盘',
     modeTitle: '训练复盘',
     effectiveDisplayMode: 'pro',
     shellLayout: 'single-screen-terminal',
@@ -869,7 +914,7 @@ test('derives current-turn stage emphasis for in-hand rooms', () => {
   assert.equal(shell.phaseLabel, 'TURN');
   assert.equal(shell.currentTurnSeatLabel, '座2');
   assert.equal(shell.stagePulseTone, 'live-turn');
-  assert.equal(shell.stageActionLabel, '轮到 座2 · TO CALL 10');
+  assert.equal(shell.stageActionLabel, '轮到 座2 · 需跟注 10');
   assert.equal(shell.lastActionLabel, '上一动作 座1 加注到 20');
   assert.equal(shell.stageLayoutModel, 'viewport-authoritative');
   assert.equal(shell.heroDockPriority, 'always-visible');

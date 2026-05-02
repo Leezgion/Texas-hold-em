@@ -1,4 +1,5 @@
 import { formatSignedChips } from './gameViewModel.js';
+import { sanitizeDisplayName } from '../utils/playerIdentity.js';
 
 function formatCardLabel(card) {
   if (!card) {
@@ -38,11 +39,15 @@ function formatBoardLabel(communityCards = []) {
 }
 
 function getPlayerName(record, playerId) {
-  return record.players?.find((player) => player.id === playerId)?.nickname || playerId;
+  const player = record.players?.find((entry) => entry.id === playerId) || null;
+  return sanitizeDisplayName(player?.nickname || playerId, {
+    fallback: '玩家',
+    isHost: Boolean(player?.isHost),
+  });
 }
 
 function formatRevealLine(reveal) {
-  const name = reveal.nickname || reveal.playerId;
+  const name = sanitizeDisplayName(reveal.nickname || reveal.playerId, { fallback: '玩家' });
   const cardsLabel = (reveal.cards || []).map(formatCardLabel).filter(Boolean).join(' ');
   if ((reveal.reveal || reveal.mode) === 'show_one') {
     return `${name} 亮牌 ${cardsLabel}`.trim();
@@ -56,7 +61,7 @@ function formatRevealLine(reveal) {
 function formatWinnerLine(winner) {
   const potType = winner.potType === 'main' ? '主池' : winner.potType === 'side' ? '边池' : '底池';
   const amount = winner.amount ?? winner.winnings ?? 0;
-  return `${winner.nickname || winner.playerId} 赢得${potType} ${formatSignedChips(amount)}`;
+  return `${sanitizeDisplayName(winner.nickname || winner.playerId, { fallback: '玩家' })} 赢得${potType} ${formatSignedChips(amount)}`;
 }
 
 function formatPotTypeLabel(potResult, index) {
@@ -68,7 +73,7 @@ function formatPotTypeLabel(potResult, index) {
 }
 
 function formatPotWinnerShare(winner) {
-  return `${winner.nickname || winner.playerId} ${formatSignedChips(winner.amount ?? 0)}`;
+  return `${sanitizeDisplayName(winner.nickname || winner.playerId, { fallback: '玩家' })} ${formatSignedChips(winner.amount ?? 0)}`;
 }
 
 function buildPotResultLines(record) {

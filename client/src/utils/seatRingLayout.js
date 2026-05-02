@@ -3,11 +3,21 @@ function clampNumber(value, fallback = 0) {
   return Number.isFinite(normalized) ? normalized : fallback;
 }
 
+function roundCoordinate(value = 0) {
+  const normalized = Number(value);
+  if (!Number.isFinite(normalized)) {
+    return 0;
+  }
+
+  const rounded = normalized < 0 ? -Math.round(Math.abs(normalized)) : Math.round(normalized);
+  return Object.is(rounded, -0) ? 0 : rounded;
+}
+
 function roundPosition(position = {}) {
   return {
     ...position,
-    x: Math.round(position.x || 0),
-    y: Math.round(position.y || 0),
+    x: roundCoordinate(position.x),
+    y: roundCoordinate(position.y),
   };
 }
 
@@ -50,6 +60,13 @@ const SUPPORTS_2_TO_9_OCCUPANCY = {
   9: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right', 'near-hero-right'],
 };
 
+export function resolveSupportedSeatSlotIds(playerCount = 0) {
+  const safePlayerCount = Math.min(9, Math.max(2, Number(playerCount) || 0));
+  return SUPPORTS_2_TO_9_OCCUPANCY[safePlayerCount]
+    ? [...SUPPORTS_2_TO_9_OCCUPANCY[safePlayerCount]]
+    : [...SUPPORTS_2_TO_9_OCCUPANCY[9]];
+}
+
 const CANONICAL_SLOT_MODELS = {
   'desktop-oval': [
     { slotId: 'hero', anchorRole: 'hero', anchorZone: 'table-edge', normalized: { x: 0, y: 0.82 } },
@@ -82,10 +99,19 @@ function resolveCanonicalProjection({
   cardHeight,
   horizontalGap,
   verticalGap,
+  anchorCardWidth,
+  anchorCardHeight,
+  anchorHorizontalGap,
+  anchorVerticalGap,
 } = {}) {
+  const projectionCardWidth = Math.max(cardWidth || 0, anchorCardWidth || 0);
+  const projectionCardHeight = Math.max(cardHeight || 0, anchorCardHeight || 0);
+  const projectionHorizontalGap = Math.max(horizontalGap || 0, anchorHorizontalGap || 0);
+  const projectionVerticalGap = Math.max(verticalGap || 0, anchorVerticalGap || 0);
+
   return {
-    xExtent: Math.round(tableWidth / 2 + cardWidth / 2 + horizontalGap),
-    yExtent: Math.round(tableHeight / 2 + cardHeight + verticalGap * 1.2),
+    xExtent: roundCoordinate(tableWidth / 2 + projectionCardWidth / 2 + projectionHorizontalGap),
+    yExtent: roundCoordinate(tableHeight / 2 + projectionCardHeight + projectionVerticalGap * 1.2),
   };
 }
 
@@ -114,11 +140,7 @@ function buildSeatRingPositionsForSupportedProfile({
     profile,
     ...layoutProfile,
   });
-  const templateSlotIds = SUPPORTS_2_TO_9_OCCUPANCY[playerCount];
-
-  if (!templateSlotIds) {
-    return null;
-  }
+  const templateSlotIds = resolveSupportedSeatSlotIds(playerCount);
 
   const templateBySlotId = new Map(template.map((slot) => [slot.slotId, slot]));
 
@@ -181,10 +203,14 @@ export function getSeatRingLayoutProfile({
       tableHeight: footprint.tableHeight,
       stageBandHeight: footprint.stageBandHeight,
       stageBandOffset: footprint.stageBandOffset,
-      cardWidth: usesWidePhonePlaques ? 94 : 70,
-      cardHeight: usesWidePhonePlaques ? 138 : 128,
-      horizontalGap: usesWidePhonePlaques ? 10 : 8,
-      verticalGap: usesWidePhonePlaques ? 20 : 18,
+      cardWidth: usesWidePhonePlaques ? 84 : 64,
+      cardHeight: usesWidePhonePlaques ? 116 : 104,
+      horizontalGap: usesWidePhonePlaques ? 9 : 7,
+      verticalGap: usesWidePhonePlaques ? 16 : 14,
+      anchorCardWidth: usesWidePhonePlaques ? 94 : 70,
+      anchorCardHeight: usesWidePhonePlaques ? 138 : 128,
+      anchorHorizontalGap: usesWidePhonePlaques ? 10 : 8,
+      anchorVerticalGap: usesWidePhonePlaques ? 20 : 18,
     };
   }
 
@@ -200,10 +226,14 @@ export function getSeatRingLayoutProfile({
     tableHeight: footprint.tableHeight,
     stageBandHeight: footprint.stageBandHeight,
     stageBandOffset: footprint.stageBandOffset,
-    cardWidth: roomShellLayout === 'three-column' ? 136 : 132,
-    cardHeight: 144,
-    horizontalGap: roomShellLayout === 'three-column' ? 16 : 14,
-    verticalGap: roomShellLayout === 'three-column' ? 20 : 24,
+    cardWidth: roomShellLayout === 'three-column' ? 124 : 118,
+    cardHeight: 118,
+    horizontalGap: roomShellLayout === 'three-column' ? 14 : 12,
+    verticalGap: roomShellLayout === 'three-column' ? 18 : 18,
+    anchorCardWidth: roomShellLayout === 'three-column' ? 136 : 132,
+    anchorCardHeight: 144,
+    anchorHorizontalGap: roomShellLayout === 'three-column' ? 16 : 14,
+    anchorVerticalGap: roomShellLayout === 'three-column' ? 20 : 24,
   };
 }
 

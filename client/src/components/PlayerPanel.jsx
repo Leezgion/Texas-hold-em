@@ -2,18 +2,14 @@ import { ChevronDown, ChevronUp, Crown, Eye, Gamepad2, Users } from 'lucide-reac
 import React, { useEffect, useRef, useState } from 'react';
 
 import { derivePlayerStateView, deriveProPlayerSummary, deriveRoomOccupancy } from '../view-models/gameViewModel';
+import { getPlayerDisplayName, truncateDisplayName } from '../utils/playerIdentity';
 
 function getSafeNickname(player) {
-  if (typeof player?.nickname === 'string' && player.nickname.trim()) {
-    return player.nickname;
-  }
-
-  return player?.id || '未知玩家';
+  return getPlayerDisplayName(player, { fallback: '未知玩家' });
 }
 
 function truncateNickname(player) {
-  const nickname = getSafeNickname(player);
-  return nickname.length > 14 ? `${nickname.slice(0, 10)}...` : nickname;
+  return truncateDisplayName(getSafeNickname(player), 14);
 }
 
 function getStatusTone(player, roomState) {
@@ -81,6 +77,12 @@ const PlayerPanel = ({
   const safeMaxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
   const { seatedPlayers, spectators } = deriveRoomOccupancy(safePlayers, roomState);
   const occupancyLabel = `${safePlayers.length}/${safeMaxPlayers}`;
+  const displayModeTitles = {
+    club: '私局辅助',
+    pro: '职业对局',
+    study: '训练复盘',
+  };
+  const roomStateTitle = gameStarted ? '牌局进行中' : '等待开始';
 
   useEffect(() => {
     if (!isExpanded) {
@@ -129,11 +131,11 @@ const PlayerPanel = ({
           <div className="tactical-roster__summary-grid">
             <div className="tactical-roster__summary-card">
               <span className="tactical-roster__summary-label">桌况</span>
-              <span className="tactical-roster__summary-value">{gameStarted ? 'In Hand' : 'Waiting'}</span>
+              <span className="tactical-roster__summary-value">{roomStateTitle}</span>
             </div>
             <div className="tactical-roster__summary-card">
               <span className="tactical-roster__summary-label">模式</span>
-              <span className="tactical-roster__summary-value">{effectiveDisplayMode.toUpperCase()}</span>
+              <span className="tactical-roster__summary-value">{displayModeTitles[effectiveDisplayMode] || '职业对局'}</span>
             </div>
             <div className="tactical-roster__summary-card">
               <span className="tactical-roster__summary-label">已入座</span>
@@ -149,7 +151,7 @@ const PlayerPanel = ({
             <div className="tactical-roster__section-head">
               <div className="tactical-roster__section-title">
                 <Gamepad2 size={14} />
-                <span>Seat Roster</span>
+                <span>入座玩家</span>
               </div>
               <span className="tactical-roster__section-count">{seatedRows.length}</span>
             </div>

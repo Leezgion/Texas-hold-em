@@ -19,6 +19,13 @@ const ModeGateway = ({
     previewCards.find((card) => card.mode === effectiveDisplayMode) ??
     previewCards.find((card) => card.mode === 'pro') ??
     previewCards[0];
+  const densityLabel = effectiveCard.layoutDensity === 'high' ? '高密度' : '均衡';
+  const motionLabel =
+    effectiveCard.motionStyle === 'sharp'
+      ? '干脆'
+      : effectiveCard.motionStyle === 'annotated'
+      ? '注记'
+      : '稳健';
 
   return (
     <div className="relative min-h-screen py-2 sm:py-4">
@@ -60,7 +67,7 @@ const ModeGateway = ({
                 </div>
 
                 <div className={`mode-gateway-stage ${effectiveCard.shellClassName}`}>
-                  <div className="mode-gateway-stage__eyebrow">Current Table Profile</div>
+                  <div className="mode-gateway-stage__eyebrow">当前桌型</div>
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <div>
                       <div className={`mode-preview-card__eyebrow ${effectiveCard.accentClassName}`}>{effectiveCard.label}</div>
@@ -71,16 +78,16 @@ const ModeGateway = ({
                   <p className="mt-3 text-sm leading-6 text-slate-300">{effectiveCard.tagline}</p>
                   <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div className="mode-gateway-stage__stat">
-                      <span className="mode-gateway-stage__stat-kicker">Persona</span>
+                      <span className="mode-gateway-stage__stat-kicker">适合</span>
                       <span className="mode-gateway-stage__stat-value">{effectiveCard.gatewayPersona}</span>
                     </div>
                     <div className="mode-gateway-stage__stat">
-                      <span className="mode-gateway-stage__stat-kicker">Density</span>
-                      <span className="mode-gateway-stage__stat-value">{effectiveCard.layoutDensity === 'high' ? 'High' : 'Medium'}</span>
+                      <span className="mode-gateway-stage__stat-kicker">信息密度</span>
+                      <span className="mode-gateway-stage__stat-value">{densityLabel}</span>
                     </div>
                     <div className="mode-gateway-stage__stat">
-                      <span className="mode-gateway-stage__stat-kicker">Motion</span>
-                      <span className="mode-gateway-stage__stat-value">{effectiveCard.motionStyle}</span>
+                      <span className="mode-gateway-stage__stat-kicker">动效节奏</span>
+                      <span className="mode-gateway-stage__stat-value">{motionLabel}</span>
                     </div>
                   </div>
                 </div>
@@ -89,7 +96,7 @@ const ModeGateway = ({
               <div className="mt-10">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Display Mode</div>
+                    <div className="text-xs uppercase tracking-[0.28em] text-slate-400">显示模式</div>
                     <div className="mt-1 text-sm text-slate-300">选择你想看到的桌面风格。房间规则和状态真相仍然以服务器为准。</div>
                   </div>
                   <button
@@ -122,7 +129,7 @@ const ModeGateway = ({
 
           <aside className="mode-gateway-control">
             <div className="mode-gateway-control__block">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Start Table</div>
+              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">开设牌桌</div>
               <h2 className="mt-3 text-3xl font-semibold text-white">创建新房间</h2>
               <p className="mt-3 text-sm leading-6 text-slate-300">
                 创建房间时会继承你在模态框里选择的房间模式。客户端显示模式仍可单独覆盖，用于你自己的阅读习惯。
@@ -141,7 +148,7 @@ const ModeGateway = ({
             </div>
 
             <div className="mode-gateway-control__block">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Join Table</div>
+              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">加入牌桌</div>
               <h3 className="mt-3 text-2xl font-semibold text-white">输入房间号</h3>
               <p className="mt-3 text-sm leading-6 text-slate-300">
                 适合通过房主分享的房间码直接进入。系统会保留当前设备身份，并在入房后自动应用你的显示偏好。
@@ -171,7 +178,7 @@ const ModeGateway = ({
             </div>
 
             <div className="mode-gateway-control__block">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">Operational Notes</div>
+              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">模式速览</div>
               <div className="mt-4 grid gap-3">
                 {previewCards.map((card) => (
                   <ModePreviewCard

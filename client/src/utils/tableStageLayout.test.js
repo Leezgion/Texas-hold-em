@@ -136,6 +136,7 @@ test('compresses short-height landscape stage layout without changing the family
   });
 
   assert.equal(shortLandscape.family, 'broadcast-tactical-9max');
+  assert.equal(shortLandscape.profile, 'desktop-oval');
   assert.equal(shortLandscape.heightClass, 'short-height');
   assert.equal(shortLandscape.stageDensity, 'compressed');
   assert.equal(shortLandscape.stageBudget.minStageBudgetPx, 180);
@@ -145,7 +146,7 @@ test('compresses short-height landscape stage layout without changing the family
   assert.ok(shortLandscape.stageMinHeightPx < regularLandscape.stageMinHeightPx);
 });
 
-test('builds one shared runtime geometry contract for short-height landscape rooms', () => {
+test('builds one shared desktop-oval runtime geometry contract for short-height landscape rooms above phone width', () => {
   const contract = resolveRoomGeometryContract({
     viewportWidth: 844,
     viewportHeight: 390,
@@ -176,7 +177,7 @@ test('builds one shared runtime geometry contract for short-height landscape roo
   assert.equal(contract.tableSurfaceLayout.heightClass, contract.viewportLayout.heightClass);
   assert.equal(contract.tableSurfaceLayout.stageBudget.minStageBudgetPx, contract.viewportLayout.minStageBudgetPx);
   assert.equal(contract.tableSurfaceLayout.stageMinHeightPx, contract.viewportLayout.minStageBudgetPx);
-  assert.equal(contract.tableSurfaceLayout.profile, 'phone-oval');
+  assert.equal(contract.tableSurfaceLayout.profile, 'desktop-oval');
   assert.equal(contract.seatRingLayout.profile, contract.tableSurfaceLayout.profile);
   assert.equal(contract.seatRingLayout.tableDiameter, contract.tableSurfaceLayout.effectiveTableDiameter);
   assert.equal(contract.seatRingLayout.roomShellLayout, 'split-stage');
@@ -185,7 +186,7 @@ test('builds one shared runtime geometry contract for short-height landscape roo
   assert.ok(heroGuide);
   assert.equal(heroGuide.seatIndex, 5);
   assert.equal(heroGuide.anchorRole, 'hero');
-  assert.equal(heroGuide.anchorZone, 'dock-edge');
+  assert.equal(heroGuide.anchorZone, 'table-edge');
   assert.equal(heroGuide.cx, chrome.centerX + canonical[0].x);
   assert.equal(heroGuide.cy, chrome.centerY + canonical[0].y);
 });
@@ -199,7 +200,9 @@ test('exposes canonical anchor slots on the runtime geometry contract for suppor
     playerCount: 6,
   });
 
-  assert.equal(contract.canonicalSlots.length, 6);
+  assert.equal(contract.visualSeatCount, 9);
+  assert.equal(contract.roomMaxPlayers, 6);
+  assert.equal(contract.canonicalSlots.length, 9);
   assert.equal(contract.canonicalSlots[0].anchorRole, 'hero');
   assert.equal(contract.canonicalSlots[0].anchorZone, 'table-edge');
   assert.ok(contract.canonicalSlots.every((slot) => slot.anchorSlotId));
@@ -216,7 +219,7 @@ test('runtime geometry contract keeps explicit 9-max slots for late short-handed
       roomShellLayout: 'split-stage',
       tableDiameter: 352,
       playerCount: 8,
-      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right'],
+      expectedSlots: ['hero', 'lower-left', 'upper-left', 'top-left', 'top', 'top-right', 'upper-right', 'lower-right', 'near-hero-right'],
     },
     {
       label: 'desktop clamped ten-handed',
@@ -341,6 +344,82 @@ test('desktop oval stage chrome leaves a real clearance gap above the top seat',
     layout.centerY + topSeat.y + profile.cardHeight / 2 <= layout.stageBand.y - 12,
     'top seat should stay clearly above the stage band'
   );
+});
+
+test('desktop 9-max top-facing plaques keep a safety margin inside the stage chrome', () => {
+  const seatRingLayout = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 1366,
+    viewportHeight: 770,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+  const profile = getSeatRingLayoutProfile({
+    viewportWidth: 1366,
+    roomShellLayout: 'split-stage',
+    tableDiameter: 352,
+    profile: 'desktop-oval',
+  });
+  const seatGuides = seatRingLayout.map((seat, seatIndex) => ({
+    seatIndex,
+    seatLabel: `Seat ${seatIndex + 1}`,
+    occupied: true,
+    position: { x: seat.x, y: seat.y, profile: seat.profile },
+  }));
+  const layout = buildStageChromeLayout({
+    viewportWidth: 1366,
+    viewportHeight: 770,
+    tableDiameter: 352,
+    roomShellLayout: 'split-stage',
+    tableProfile: 'desktop-oval',
+    seatGuides,
+  });
+
+  for (const guide of layout.seatGuides.filter((seat) => ['top-left', 'top', 'top-right'].includes(seat.slotId))) {
+    assert.ok(
+      guide.cy - profile.cardHeight / 2 >= 16,
+      `${guide.slotId} should keep at least 16px of top safety margin`
+    );
+  }
+});
+
+test('phone 9-max top-facing plaques keep a safety margin inside the portrait stage chrome', () => {
+  const seatRingLayout = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 390,
+    viewportHeight: 844,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+  const profile = getSeatRingLayoutProfile({
+    viewportWidth: 390,
+    roomShellLayout: 'stacked',
+    tableDiameter: 208,
+    profile: 'phone-oval',
+  });
+  const seatGuides = seatRingLayout.map((seat, seatIndex) => ({
+    seatIndex,
+    seatLabel: `Seat ${seatIndex + 1}`,
+    occupied: true,
+    position: { x: seat.x, y: seat.y, profile: seat.profile },
+  }));
+  const layout = buildStageChromeLayout({
+    viewportWidth: 390,
+    viewportHeight: 844,
+    tableDiameter: 208,
+    roomShellLayout: 'stacked',
+    tableProfile: 'phone-oval',
+    seatGuides,
+  });
+
+  for (const guide of layout.seatGuides.filter((seat) => ['top-left', 'top', 'top-right'].includes(seat.slotId))) {
+    assert.ok(
+      guide.cy - profile.cardHeight / 2 >= 10,
+      `${guide.slotId} should keep at least 10px of top safety margin on phone`
+    );
+  }
 });
 
 test('desktop capsule stage chrome exposes horizontal shell semantics and tray clearance', () => {
@@ -562,7 +641,7 @@ test('keeps the hero anchor on the hero-relative slot for split-stage tables', (
   assert.equal(heroGuide.cy, layout.centerY + canonical[0].y);
 });
 
-test('keeps short-height phone-oval normalization aligned to the unified hero anchor', () => {
+test('keeps phone-oval normalization aligned to the unified hero anchor for true phone layouts', () => {
   const rawSeatGuides = Array.from({ length: 9 }, (_, seatIndex) => ({
     seatIndex,
     seatLabel: `Seat ${seatIndex + 1}`,
@@ -571,15 +650,15 @@ test('keeps short-height phone-oval normalization aligned to the unified hero an
     position: { x: 900 - seatIndex * 90, y: -900 + seatIndex * 80 },
   }));
   const layout = buildStageChromeLayout({
-    viewportWidth: 844,
-    viewportHeight: 390,
-    tableDiameter: 320,
+    viewportWidth: 390,
+    viewportHeight: 844,
+    tableDiameter: 208,
     roomShellLayout: 'stacked',
     seatGuides: rawSeatGuides,
   });
   const canonical = buildSeatRingPositions({
     playerCount: rawSeatGuides.length,
-    viewportWidth: 844,
+    viewportWidth: 390,
     roomShellLayout: 'stacked',
     tableDiameter: layout.effectiveTableDiameter,
     profile: 'phone-oval',
@@ -587,8 +666,8 @@ test('keeps short-height phone-oval normalization aligned to the unified hero an
   const heroGuide = layout.seatGuides.find((guide) => guide.isHero);
 
   assert.equal(layout.profile, 'phone-oval');
-  assert.equal(layout.heightClass, 'short-height');
-  assert.equal(layout.stageDensity, 'compressed');
+  assert.equal(layout.heightClass, 'regular-height');
+  assert.equal(layout.stageDensity, 'compact');
   assert.ok(heroGuide);
   assert.equal(heroGuide.seatIndex, 5);
   assert.equal(heroGuide.anchorRole, 'hero');

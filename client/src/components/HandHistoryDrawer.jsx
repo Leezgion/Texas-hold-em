@@ -41,7 +41,7 @@ const HandHistoryDrawerContent = ({
               <div className="tactical-history-card__title">{summary.title}</div>
               {summary.reason && <div className="tactical-history-card__reason">{summary.reason}</div>}
             </div>
-            {summary.boardLabel && <div className="tactical-history-card__board">Board {summary.boardLabel}</div>}
+            {summary.boardLabel && <div className="tactical-history-card__board">公牌 {summary.boardLabel}</div>}
             <div className="tactical-history-card__lines">
               {summary.lines.length > 0 ? (
                 summary.lines.slice(0, lineLimit).map((line, index) => (
