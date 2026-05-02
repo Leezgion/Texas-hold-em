@@ -2430,4 +2430,36 @@ This pass verified the settlement-window refresh and reveal recovery path in a r
   - no production code change was needed in this pass
   - settlement refresh, reveal action recovery, and support-panel ergonomics are currently stable on the phone viewport
 - next queue:
-  - `[todo]` validate post-settlement reveal/history persistence across the automatic next hand and longer reveal sequences, including whether revealed/mucked details remain easy to recover after the settlement sheet disappears
+  - `[done]` validate post-settlement reveal/history persistence across the automatic next hand and longer reveal sequences, including whether revealed/mucked details remain easy to recover after the settlement sheet disappears
+
+## 2026-05-03 Phone Post-Settlement History Persistence Audit
+
+This pass verified that reveal history remains recoverable after the settlement sheet disappears and the room automatically advances to the next hand.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-post-settlement-history-audit.json` (`runId = moouwl1n`)
+  - fresh room `FKY6L7`
+  - screenshots:
+    - `.runlogs/2026-05-03-phone-post-settlement-history-phone-390x844.png`
+    - `.runlogs/2026-05-03-phone-post-settlement-history-compact-375x667.png`
+- setup:
+  - `3-max`, `free_reveal_after_hand`, `settleMs = 3500`
+  - hand 1 ended by host fold and P2 fold
+  - during settlement, host chose `show_all`, P2 chose `show_one`, and P3 chose `show_all`
+  - after the settlement timer expired, the server advanced to hand 2 preflop with `settlementWindowEndsAt = null`
+- verified contract:
+  - after hand 2 started, hand history still contained one completed hand with reveal modes `show_all / show_one / show_all`
+  - the phone UI no longer had `.settlement-sheet`, proving the history was recovered from the support panel rather than the settlement overlay
+  - the `牌局` panel showed `第 1 手` plus all three expected reveal lines:
+    - `房主 全亮 2♦ 10♠`
+    - `P2 亮牌 K♣`
+    - `P3 全亮 7♠ 6♦`
+  - both `390x844` and `375x667` kept `shellScrollHeight = shellClientHeight` and `bodyScrollHeight = bodyClientHeight`
+  - the support panel itself remained scrollable, which is expected for dense replay content, and closing it cleared `#root.inert`
+- product result:
+  - no production code change was needed in this pass
+  - the current history model preserves visible reveal choices across automatic hand transitions
+- product observation:
+  - hidden/mucked reveal choices are currently not surfaced in `detailLines`; this avoids noisy default `盖牌` lines, but a future study-mode-only option could explicitly show confirmed muck decisions if we start tracking explicit hide selections separately from default hidden state
+- next queue:
+  - `[todo]` continue professional-player hardening with room/game lifecycle edge cases beyond normal hand flow: game-duration expiry, end-game summary visibility, and whether active dialogs/toasts cleanly reset when a room is closed by timer
