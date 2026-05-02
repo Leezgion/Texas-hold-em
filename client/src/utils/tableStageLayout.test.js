@@ -91,6 +91,31 @@ test('keeps five community cards inside the phone table safe width', () => {
   assert.equal(layout.phaseVisible, false);
 });
 
+test('keeps short-height phone community cards inside the compressed vertical table', () => {
+  const surface = resolveTableSurfaceLayout({
+    viewportWidth: 375,
+    viewportHeight: 667,
+    tableDiameter: 208,
+  });
+  const layout = resolveCommunityCardLayout({
+    viewportWidth: 375,
+    viewportHeight: 667,
+    tableDiameter: 208,
+    tableSurfaceLayout: surface,
+  });
+
+  assert.equal(surface.profile, 'phone-oval');
+  assert.equal(surface.heightClass, 'short-height');
+  assert.equal(layout.cardDensity, 'micro');
+  assert.ok(layout.trayWidth <= surface.tableWidth, `expected tray ${layout.trayWidth} to fit table ${surface.tableWidth}`);
+  assert.ok(
+    getCommunityRowWidth(layout) <= layout.safeWidth,
+    `expected row width ${getCommunityRowWidth(layout)} to fit within ${layout.safeWidth}`
+  );
+  assert.ok(layout.cardWidth <= 22);
+  assert.equal(layout.phaseVisible, false);
+});
+
 test('keeps five community cards inside the desktop table safe width', () => {
   const layout = resolveCommunityCardLayout({
     viewportWidth: 1280,

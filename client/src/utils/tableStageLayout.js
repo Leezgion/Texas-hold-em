@@ -102,6 +102,27 @@ export function resolveCommunityCardLayout({
     });
 
   if (surface.profile === 'phone-oval') {
+    if (surface.heightClass === 'short-height') {
+      const cardWidth = 20;
+      const cardHeight = 30;
+      const gap = 2;
+      const rowWidth = cardWidth * 5 + gap * 4;
+      const safeWidth = Math.max(rowWidth, Math.min(surface.tableWidth - 6, 118));
+
+      return {
+        family: surface.family,
+        tableProfile: surface.profile,
+        trayWidth: safeWidth,
+        trayHeight: 46,
+        safeWidth,
+        cardWidth,
+        cardHeight,
+        gap,
+        cardDensity: 'micro',
+        phaseVisible: false,
+      };
+    }
+
     const safeWidth = Math.max(surface.tableWidth - surface.boardTrayInsetX - 2, 190);
     return {
       family: surface.family,

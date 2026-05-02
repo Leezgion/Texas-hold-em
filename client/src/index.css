@@ -2467,6 +2467,17 @@
     line-height: 1;
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-chrome__seat-node--occupied,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-chrome__seat-node--open,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-chrome__seat-node--closed,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-chrome__marker {
+    display: none;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-chrome__seat-node--current-turn .table-stage-chrome__marker {
+    display: block;
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque {
     width: clamp(4.1rem, 18vw, 4.75rem);
     min-height: 3.65rem;
@@ -3846,17 +3857,17 @@
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .room-terminal-main {
-    overflow: visible;
+    overflow: visible !important;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-panel {
-    overflow: visible;
+    overflow: visible !important;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-surface {
     min-height: min(20rem, calc(100dvh - 21rem));
     padding: 0.42rem 0.35rem;
-    overflow: visible;
+    overflow: visible !important;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .table-stage-core {
@@ -3881,6 +3892,58 @@
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] {
     transform: translate(-50%, calc(-50% + 0.9rem)) !important;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top-left"],
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top-right"] {
+    transform: translate(-50%, calc(-50% + 1rem)) !important;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque {
+    width: clamp(3.75rem, 17vw, 4.2rem);
+    min-height: 2.45rem;
+    padding: 0.16rem 0.24rem;
+    border-radius: 0.72rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque::before {
+    inset: 0.09rem;
+    border-radius: 0.56rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__header,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__stack-row {
+    gap: 0.16rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__name,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__badge-row {
+    display: none;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__meta-row {
+    gap: 0.18rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__seat-label {
+    font-size: 0.46rem;
+    line-height: 0.7rem;
+    letter-spacing: 0.12em;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__stack-row {
+    margin-top: 0.16rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__stack {
+    font-size: 0.58rem;
+    line-height: 0.76rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque__bet {
+    padding: 0.08rem 0.18rem;
+    font-size: 0.44rem;
+    line-height: 0.58rem;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"][data-room-play-state="live-hand"] .arena-seat-plaque-anchor[data-anchor-role="top"] .arena-seat-plaque {
@@ -6186,6 +6249,12 @@
     gap: 0.65rem;
   }
 
+  .community-cards-area__tray[data-card-density="micro"] {
+    gap: 0.16rem;
+    padding: 0.22rem 0.26rem;
+    border-radius: 0.86rem;
+  }
+
   .community-cards-area__rail {
     @apply flex justify-center;
   }
@@ -6202,6 +6271,10 @@
 
   .community-cards-area__slot--idle {
     opacity: 0.78;
+  }
+
+  .community-cards-area__tray[data-card-density="micro"] .community-cards-area__slot {
+    border-radius: 0.36rem;
   }
 
   .community-cards-area--compact .community-cards-area__tray {

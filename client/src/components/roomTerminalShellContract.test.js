@@ -8,6 +8,7 @@ const actionDockSource = readFileSync(new URL('./ActionDock.jsx', import.meta.ur
 const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.meta.url), 'utf8');
 const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 'utf8');
 const seatCardSource = readFileSync(new URL('./SeatCard.jsx', import.meta.url), 'utf8');
+const cardSource = readFileSync(new URL('./Card.jsx', import.meta.url), 'utf8');
 const settlementOverlaySource = readFileSync(new URL('./SettlementOverlay.jsx', import.meta.url), 'utf8');
 const globalStylesSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
@@ -496,18 +497,29 @@ test('phone-terminal live hand compacts opponent plaques to table badges', () =>
   );
 });
 
+test('phone-terminal live hand hides unused chrome guide ghosts and duplicate markers', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-chrome__seat-node--occupied,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-chrome__seat-node--open,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-chrome__seat-node--closed,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-chrome__marker\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-chrome__seat-node--current-turn\s+\.table-stage-chrome__marker\s*\{\s*display:\s*block;/s
+  );
+});
+
 test('short-height phone live hand uses a micro top opponent plaque below the header', () => {
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.room-terminal-main\s*\{[\s\S]*overflow:\s*visible;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.room-terminal-main\s*\{[\s\S]*overflow:\s*visible\s*!important;/s
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-panel\s*\{[\s\S]*overflow:\s*visible;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-panel\s*\{[\s\S]*overflow:\s*visible\s*!important;/s
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-surface\s*\{[\s\S]*overflow:\s*visible;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-surface\s*\{[\s\S]*overflow:\s*visible\s*!important;/s
   );
   assert.match(
     globalStylesSource,
@@ -521,6 +533,28 @@ test('short-height phone live hand uses a micro top opponent plaque below the he
     globalStylesSource,
     /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque-anchor\[data-anchor-role="top"\]\s+\.arena-seat-plaque__name\s*\{\s*display:\s*none;/s
   );
+});
+
+test('short-height phone live hand uses micro opponent plaques for crowded 6-max and 9-max edges', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque\s*\{[\s\S]*width:\s*clamp\(3\.75rem,\s*17vw,\s*4\.2rem\);[\s\S]*min-height:\s*2\.45rem;[\s\S]*padding:\s*0\.16rem 0\.24rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque__name,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque__badge-row\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque-anchor\[data-anchor-role="top-left"\],\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque-anchor\[data-anchor-role="top-right"\]\s*\{[\s\S]*transform:\s*translate\(-50%,\s*calc\(-50% \+ 1rem\)\)\s*!important;/s
+  );
+});
+
+test('community cards support a micro density for short phone boards', () => {
+  assert.match(cardSource, /const isMicroCommunity = size === 'community' && density === 'micro';/);
+  assert.match(cardSource, /poker-card--micro/);
+  assert.match(cardSource, /isMicroCommunity\s*\?\s*'text-sm'/);
+  assert.match(cardSource, /isMicroCommunity\s*\?\s*'text-xs'/);
 });
 
 test('phone-terminal raise sizing opens as a bounded drawer instead of growing over the table', () => {

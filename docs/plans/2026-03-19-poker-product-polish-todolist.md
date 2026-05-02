@@ -694,6 +694,29 @@
   - short phone live-hand now follows a strict information hierarchy: room identity, top opponent micro badge, pot, board, cue, hero cards, action dock
   - short-screen plaques should remove lower-priority copy before moving critical poker data into another layer
 
+## 2026-05-02 Phone Multiseat Visual Audit Follow-up
+
+- Status: `[done]` Full 6-max and 9-max phone live-hand tables are verified on regular and short phone viewports.
+- Plan:
+  - `docs/plans/2026-05-02-phone-multiseat-visual-audit.md`
+- Completed:
+  - `[done]` added a `.runlogs` browser audit for full 6-max and 9-max rooms on `390x844` and `375x667`
+  - `[done]` corrected the audit expectation that the hero is represented in the dock, so visible opponent plaque count is `seatedPlayers - 1`
+  - `[done]` shrank short-height phone community-card geometry to a `micro` density that stays inside the compressed vertical table
+  - `[done]` applied short-height micro opponent plaques to crowded 6-max/9-max edges instead of only the top seat
+  - `[done]` forced short-height phone live-hand stage/main overflow visible after screenshots exposed ancestor clipping despite passing collision checks
+  - `[done]` hid duplicate non-current chrome guide ghosts on phone live hands so seat plaques own player information
+- Evidence:
+  - `node .runlogs\2026-05-02-phone-multiseat-visual-audit.cjs` (`runId = moojx4ch`)
+  - `6max-full 390x844`: room `M52XLY`, `seatPairs = 0`, `seatHeader = 0`, `seatBoard = 0`, `scrollHeight = clientHeight = 844`
+  - `6max-full 375x667`: room `I0L7OU`, `seatPairs = 0`, `seatHeader = 0`, `seatBoard = 0`, `stageOverflow = visible`, `mainOverflow = visible`, `scrollHeight = clientHeight = 667`
+  - `9max-full 390x844`: room `70L2P9`, `seatPairs = 0`, `seatHeader = 0`, `seatBoard = 0`, `scrollHeight = clientHeight = 844`
+  - `9max-full 375x667`: room `P18N3G`, `seatPairs = 0`, `seatHeader = 0`, `seatBoard = 0`, `stageOverflow = visible`, `mainOverflow = visible`, `scrollHeight = clientHeight = 667`
+- Remaining queue:
+  - `[todo]` run the same multiseat phone audit through flop/turn/river/showdown so actual community cards are verified in the micro board
+  - `[todo]` review whether current-turn position communication is still strong enough after hiding duplicate chrome guides
+  - `[todo]` continue short-phone action dock and raise-drawer polish now that board/seat geometry is stable
+
 ## Product Mode Model
 
 ### Shared Room Mode

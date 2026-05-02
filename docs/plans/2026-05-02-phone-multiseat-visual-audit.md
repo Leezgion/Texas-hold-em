@@ -1,0 +1,38 @@
+# 2026-05-02 Phone Multiseat Visual Audit
+
+## Goal
+
+Make full 6-max and 9-max phone live-hand tables readable on regular and short phone viewports without changing the shared vertical capsule table language.
+
+## Completed
+
+- Added a real-browser multiseat audit for full 6-max and 9-max rooms across `390x844` and `375x667`.
+- Fixed short-height phone board geometry by switching community cards to a `micro` board density that fits inside the compressed vertical table.
+- Compacted short-height opponent plaques globally, not just the top seat, so flank seats no longer collide with each other or the board.
+- Forced short-height live-hand stage/main overflow to `visible !important` after screenshots showed Tailwind `overflow-hidden` still clipping top seats.
+- Hid duplicate phone live-hand chrome guide ghosts, keeping the current-turn guide while letting seat plaques carry player data.
+
+## Evidence
+
+- Browser audit: `.runlogs/2026-05-02-phone-multiseat-visual-audit.json` (`runId = moojx4ch`)
+- Screenshots:
+  - `.runlogs/2026-05-02-phone-multiseat-6max-full-phone-390x844-live.png`
+  - `.runlogs/2026-05-02-phone-multiseat-6max-full-compact-375x667-live.png`
+  - `.runlogs/2026-05-02-phone-multiseat-9max-full-phone-390x844-live.png`
+  - `.runlogs/2026-05-02-phone-multiseat-9max-full-compact-375x667-live.png`
+- Fresh rooms:
+  - `6max-full 390x844`: `M52XLY`
+  - `6max-full 375x667`: `I0L7OU`
+  - `9max-full 390x844`: `70L2P9`
+  - `9max-full 375x667`: `P18N3G`
+- Key metrics:
+  - every audit reported `scrollHeight = clientHeight`
+  - every audit reported `seatPairs = 0`, `seatHeader = 0`, `seatBoard = 0`
+  - short phone reported `stageOverflow = visible` and `mainOverflow = visible`
+  - short phone board bounds stayed inside the table lane: `left = 134`, `right = 251`
+
+## Next Queue
+
+- `[todo]` Run the same 6-max/9-max phone audit through flop, turn, river, and showdown so the micro board is verified with actual community cards.
+- `[todo]` Review short-phone current-turn marker and hero-position communication; after hiding duplicate guides, the current actor's position should remain obvious but not noisy.
+- `[todo]` Continue live-hand action dock polish after board/seat geometry is stable, especially raise drawer readability and one-thumb reach.

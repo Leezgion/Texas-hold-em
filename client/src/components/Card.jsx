@@ -2,6 +2,7 @@ const Card = ({ card, size = 'normal', density = 'regular', className = '', styl
   if (!card) return null;
 
   const isCompactCommunity = size === 'community' && density === 'compact';
+  const isMicroCommunity = size === 'community' && density === 'micro';
 
   const getSuitColor = () => {
     return card.isRed ? 'text-red-600' : 'text-black';
@@ -65,7 +66,9 @@ const Card = ({ card, size = 'normal', density = 'regular', className = '', styl
 
   return (
     <div
-      className={`poker-card ${getSizeClass()} ${isCompactCommunity ? 'poker-card--compact' : ''} ${getSuitColor()} ${className} relative`}
+      className={`poker-card ${getSizeClass()} ${isCompactCommunity ? 'poker-card--compact' : ''} ${
+        isMicroCommunity ? 'poker-card--micro' : ''
+      } ${getSuitColor()} ${className} relative`}
       style={style}
     >
       {/* 简化设计：只显示中央的点数和花色 */}
@@ -76,7 +79,9 @@ const Card = ({ card, size = 'normal', density = 'regular', className = '', styl
             size === 'small'
               ? 'text-lg'
               : size === 'community'
-              ? isCompactCommunity
+              ? isMicroCommunity
+                ? 'text-sm'
+                : isCompactCommunity
                 ? 'text-2xl'
                 : 'text-4xl'
               : size === 'large'
@@ -93,7 +98,9 @@ const Card = ({ card, size = 'normal', density = 'regular', className = '', styl
             size === 'small'
               ? 'text-base'
               : size === 'community'
-              ? isCompactCommunity
+              ? isMicroCommunity
+                ? 'text-xs'
+                : isCompactCommunity
                 ? 'text-xl'
                 : 'text-3xl'
               : size === 'large'
