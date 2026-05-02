@@ -89,6 +89,12 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     lastAction?.action === 'fold' &&
     lastAction?.auto === true &&
     lastAction?.reason === 'timeout';
+  const isOwnTimeoutCheck =
+    Boolean(resolvedPlayer.id) &&
+    lastAction?.playerId === resolvedPlayer.id &&
+    lastAction?.action === 'check' &&
+    lastAction?.auto === true &&
+    lastAction?.reason === 'timeout';
   const proActionSummary = hasResolvedActionState
     ? deriveProActionSummary({
         currentPlayer: resolvedPlayer,
@@ -220,12 +226,16 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       ? isOwnTimeoutFold
         ? '超时自动弃牌'
         : '本手已弃牌'
+      : isOwnTimeoutCheck
+      ? '超时自动过牌'
       : resolvedPlayer.allIn
       ? '本手已全下'
       : '等待其他玩家行动';
     const watchMeta =
       isOwnTimeoutFold
         ? '系统已自动弃牌，行动已交给下一位玩家'
+        : isOwnTimeoutCheck
+        ? '系统已自动过牌，行动已交给下一位玩家'
         : resolvedPlayer.folded || resolvedPlayer.allIn
         ? '继续关注桌面结算与轮转'
         : `需跟注 ${callAmount.toLocaleString()} · 底池 ${potSize.toLocaleString()}`;

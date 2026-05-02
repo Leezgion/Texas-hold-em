@@ -75,4 +75,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Validate rebuy / busted-player recovery in real phone browser flow; browser audits `moot2zaw` and `moot38jj` verified zero-stack seat messaging, rebuy modal fit, post-rebuy seating, host-start participation, and single-screen behavior on `390x844` and `375x667`.
 - `[done]` Polish rebuy success feedback; browser audits `moot8hrm` and `moot8rhv` verified restored chips show `已补码 1,000，当前筹码 1,000。` and clear the stale zero-chip warning before seating/start continues.
 - `[done]` Validate timer-expiry browser behavior on phone; browser audit `mootivlx` verified timeout auto-fold metadata, current-player handoff, explicit `超时自动弃牌` copy, no stale action controls, and no shell scroll.
-- `[todo]` Validate no-call timeout behavior on phone, including auto-check copy, street advancement, and no stale action controls.
+- `[done]` Validate no-call timeout behavior on phone; browser audit `mootxidq` verified timeout auto-check metadata, explicit `超时自动过牌` copy, no stale action controls, flop-to-turn advancement after all players checked, and no shell scroll.
+- `[todo]` Continue professional-player hardening around disconnect / reconnect in no-call check spots.

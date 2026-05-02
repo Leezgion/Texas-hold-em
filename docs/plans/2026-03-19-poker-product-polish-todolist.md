@@ -2330,4 +2330,30 @@ This pass verified and clarified the phone timeout path for a live decision.
   - `cd client && pnpm exec node --test`: `258/258`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-86714207.js` 534.86 kB)
 - next queue:
-  - `[todo]` continue real-browser hardening around timeout/check spots: verify a no-call timeout auto-checks rather than folds, advances streets correctly, and explains the automatic check without stale action controls
+  - `[done]` continue real-browser hardening around timeout/check spots: verify a no-call timeout auto-checks rather than folds, advances streets correctly, and explains the automatic check without stale action controls
+
+## 2026-05-03 Phone Timeout Auto-Check Feedback
+
+This pass closed the no-call timeout path for live phone decisions.
+
+- root cause:
+  - the server already auto-checked no-call timeout spots and recorded `auto: true, reason: timeout`
+  - the phone watch console only had explicit timeout feedback for auto-folds, so an automatic check could look like a generic wait state
+- change:
+  - `ActionButtons` now detects the current player's timeout `check`
+  - the watch console shows `超时自动过牌` and `系统已自动过牌，行动已交给下一位玩家`
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-timeout-check-audit.json` (`runId = mootxidq`)
+  - fresh room `LEMIH1`
+  - before timeout: P2 browser was on `flop`, action console was `decision`, commands were `弃牌 / 过牌 / 加注 / 全下`, and timer was `60`
+  - after timeout: server last action was P2 `check` with `auto = true` and `reason = timeout`
+  - after timeout: current player handed off to P3, P2 console switched to `watch`, old commands were removed, and the text showed `超时自动过牌`
+  - after P3 and the button both checked, the hand advanced to `turn`, P2 became current again, and the phone decision console showed `过牌`
+  - phone shell stayed single-screen throughout, with no dialog and `rootInert = false`
+- final verification:
+  - red test before implementation: `ActionButtons explains timeout auto-folds in the watch console` failed on missing `超时自动过牌`
+  - `cd client && pnpm exec node --test src/components/interactionSurfaceContract.test.js`: `18/18`
+  - `cd client && pnpm exec node --test`: `258/258`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-0382b9d2.js` 535.05 kB)
+- next queue:
+  - `[todo]` continue professional-player hardening around disconnect / reconnect in no-call check spots, so temporary refresh does not create misleading forced-action feedback and sustained disconnect semantics stay explicit
