@@ -72,4 +72,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Continue room-end / empty-room lifecycle; browser audit `moosel6h` verified the sole-host waiting-room exit closes the room, returns home, and makes both debug and proxied room checks return `404`.
 - `[done]` Continue post-hand navigation ergonomics; browser audit `moosobsp` verified a settlement `牌局` support panel auto-closes when hand 2 starts, clears `#root.inert`, and keeps the phone shell single-screen.
 - `[done]` Validate repeated multi-hand continuity on phone; browser audit `moosucfd` reached hand 5 after four settlement-review transitions with conserved chips, correct host `decision/watch` states, cleared modal inert state, and no shell scroll.
-- `[todo]` Validate rebuy / busted-player recovery in real phone browser flow, including zero-stack seat messaging, host start eligibility, and action dock single-screen behavior.
+- `[done]` Validate rebuy / busted-player recovery in real phone browser flow; browser audits `moot2zaw` and `moot38jj` verified zero-stack seat messaging, rebuy modal fit, post-rebuy seating, host-start participation, and single-screen behavior on `390x844` and `375x667`.
+- `[todo]` Polish rebuy success feedback so restored chips produce an explicit confirmation and stale zero-chip warning context no longer dominates the next action.

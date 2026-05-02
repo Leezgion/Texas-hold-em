@@ -2264,4 +2264,22 @@ This pass verified repeated phone hand transitions after the support-panel auto-
   - every settlement review had `dialogCount = 1`, `rootInert = true`, and support-panel text containing `最近手牌`
   - final state reached hand 5 preflop with the host back in `decision`, no dialog, no inert root, and conserved chips
 - next queue:
-  - `[todo]` validate rebuy / busted-player recovery in real phone browser flow, including zero-stack seat messaging, host start eligibility, and whether the action dock stays single-screen when a busted player requests chips
+  - `[done]` validate rebuy / busted-player recovery in real phone browser flow, including zero-stack seat messaging, host start eligibility, and whether the action dock stays single-screen when a busted player requests chips
+
+## 2026-05-03 Phone Rebuy / Busted Recovery Audit
+
+This pass verified the phone recovery path for a zero-chip spectator returning to a playable seat.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-rebuy-recovery-390x844-audit.json` (`runId = moot2zaw`, fresh room `YOZJ1Z`)
+  - `.runlogs/2026-05-03-phone-rebuy-recovery-375x667-audit.json` (`runId = moot38jj`, fresh room `6ZE37V`)
+- verified contract:
+  - a zero-chip spectator tapping an open seat stays unseated and receives `当前筹码不足，已保留观战状态，请先补码后再入座。`
+  - the rebuy modal stays within the phone viewport on both `390x844` and `375x667`, with `bodyScrollHeight = bodyClientHeight` and `rootInert = true`
+  - after submitting the default `1,000` rebuy, the player has `chips = 1000`, `seat = -1`, and the modal closes with `rootInert = false`
+  - after tapping the open seat again, the player takes seat 3 with `isActive = true`
+  - after the socket host starts the game, the rebought browser player receives two hole cards and the room shell remains single-screen on both phone viewports
+- product observation:
+  - the flow is functionally correct, but the earlier zero-chip warning toast remains visible briefly after successful rebuy and seating; this is a feedback-polish issue, not a state or layout blocker
+- next queue:
+  - `[todo]` polish rebuy success feedback so the user gets an explicit confirmation after chips are restored and stale warning context does not dominate the next action
