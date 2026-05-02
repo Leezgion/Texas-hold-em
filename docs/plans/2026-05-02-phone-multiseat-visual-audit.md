@@ -67,4 +67,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Continue invalid-action coverage for stale/out-of-turn requests and recovery-required room actions in real browser flows; browser audit `mooqv5ok` verified stale-device UI feedback, out-of-turn socket rejection, and recovery-required banner/recover flows on `390x844` and `375x667`.
 - `[done]` Continue real-browser product hardening with live-hand refresh/reconnect; browser audit `moorek12` verified desktop `1366x900` and phone `390x844` refresh keep the host decision, hole cards, and single-screen shell after socket id rotation.
 - `[done]` Continue active-hand leave/exit hardening; browser audit `moorw8wp` verified leave-seat and exit-room confirmations, forced-fold metadata, stable homepage return, and inert cleanup on `390x844` and `375x667`.
-- `[todo]` Continue real-browser product hardening with same-device room-switch cleanup.
+- `[done]` Continue real-browser product hardening with same-device room-switch cleanup; browser audit `moos5mtp` verified same-device create-switch and join-switch paths clean old membership, preserve new-room hand state, and avoid stale room-code text.
+- `[todo]` Continue post-switch stale page actions and multi-tab same-device ownership messaging.

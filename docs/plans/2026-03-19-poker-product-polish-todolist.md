@@ -2161,4 +2161,21 @@ This pass fixed the active-hand exit race found by real-browser testing after re
   - `cd client && pnpm exec node --test`: `252/252`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-81ce2b91.js` 533.76 kB)
 - next queue:
-  - `[todo]` validate same-device room switching in a real browser so old room cleanup does not leave phantom membership or stale hand state
+  - `[done]` validate same-device room switching in a real browser so old room cleanup does not leave phantom membership or stale hand state
+
+## 2026-05-03 Same-Device Room Switch Browser Audit
+
+This pass validated the existing same-device room cleanup path in a real browser without requiring production code changes.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-same-device-room-switch-audit.json` (`runId = moos5mtp`)
+  - create-switch path on `390x844`: same browser created room `IVCRDU`, navigated home without explicit leave, created room `TZNB1B`, added a guest, started the new room, and folded as host
+  - `IVCRDU` returned `404` after the second create, proving the old empty room was cleaned
+  - `TZNB1B` recorded the host fold in the new room, kept the browser on `/game/TZNB1B`, showed no `IVCRDU` text, kept `#root.inert = false`, and stayed single-screen
+  - join-switch path on `375x667`: same browser joined room `7DKBF2`, navigated home, then joined room `3A9ZV7`
+  - after joining `3A9ZV7`, room `7DKBF2` contained only its original host, while `3A9ZV7` contained the browser device with two visible hand cards and no stale `7DKBF2` text
+- product decision:
+  - current server behavior is correct: `createRoom` and `joinRoom` both call `leaveOtherRoomsForDevice`, so a device has one authoritative room membership
+  - no production code change is needed for this stage
+- next queue:
+  - `[todo]` continue broader product polish from the next highest-risk workflow: post-switch stale page actions and multi-tab same-device ownership messaging
