@@ -2031,5 +2031,6 @@ This pass addressed the first replay drill-down issue without changing the table
   - `cd client && pnpm build`: passed, with existing large chunk warning (`assets/index-3104147b.js` 532.41 kB)
   - `cd server && pnpm test --runInBand`: `125/125`
   - browser side-pot audit: `.runlogs/2026-05-02-phone-side-pot-allin-audit.json` (`runId = moopltvc`, fresh room `2R0DDL`)
+  - browser multi-side-pot history audit: `.runlogs/2026-05-03-phone-multisidepot-history-audit.json` (`runId = moopphv2`, fresh room `S88824`)
 - next queue:
-  - add a real-browser 4+ player multi-side-pot history-drawer audit that opens the phone `牌局` sheet and asserts all pot layers plus chip deltas are visible through sheet scrolling
+  - continue reveal-detail density validation for long multiway showdown histories where several players choose `show_one` / `show_all`
