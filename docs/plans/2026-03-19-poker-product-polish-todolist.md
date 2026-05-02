@@ -2543,7 +2543,30 @@ This pass verified that closed-room recovery does not block continued use of the
   - both new room states stayed single-screen at `390x844`
   - filtered console errors were empty; raw errors were only favicon/client 404 checks and the intentional offline resource error from the stale-tab setup
 - product observation:
-  - the create path still briefly carries the informational toast `房间已关闭，牌桌状态已清理。` into the new room
-  - this does not block navigation or state correctness, but it is stale context and should be cleared before entering a fresh room
+  - `[done]` the create path initially carried the informational toast `房间已关闭，牌桌状态已清理。` into the new room; the following feedback-lifecycle pass now clears it before fresh room entry
 - next queue:
-  - `[todo]` polish closed-room feedback lifecycle so the old room-closed info toast is cleared when the user successfully creates or joins a new room after recovery
+  - `[done]` polish closed-room feedback lifecycle so the old room-closed info toast is cleared when the user successfully creates or joins a new room after recovery
+
+## 2026-05-03 Closed-Room Toast Lifecycle Polish
+
+This pass removed stale closed-room info toasts from newly entered rooms.
+
+- root cause:
+  - the closed-room recovery path correctly showed `房间已关闭，牌桌状态已清理。`
+  - when the user immediately created a new room, the old info toast could remain visible inside the new table
+- change:
+  - `roomCreated` now dispatches `game-clear-toasts` before navigating into the new room
+  - successful `joinRoom` now dispatches `game-clear-toasts` before navigating into the target room
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-post-closed-room-continuation-audit.json` (`runId = moowtpdx`)
+  - create path stale room `ZJYDCW`, new room `D93DLI`
+  - join path stale room `E78XM7`, target room `QON4PC`
+  - both fresh room states had `hasClosedCleanupToast = false`
+  - both fresh room states still had no stale room id, no closed access state, no dialog, no inert leak, and single-screen phone layout
+- final verification:
+  - red test before implementation: `GameContext clears stale closed-room toasts before entering a fresh room` failed on missing `game-clear-toasts`
+  - `cd client && pnpm exec node --test src/components/interactionSurfaceContract.test.js`: `24/24`
+  - `cd client && pnpm exec node --test`: `266/266`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-935ff88a.js` 540.63 kB)
+- next queue:
+  - `[todo]` validate invalid or expired room joins from the homepage and shared-link/direct URL paths, including no stuck join modal, clear copy, and no stale navigation after failure

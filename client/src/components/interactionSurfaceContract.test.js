@@ -150,6 +150,12 @@ test('GameContext clears stale room state when reconnecting into a deleted room'
   assert.match(gameContextSource, /resetGame\(\)/);
 });
 
+test('GameContext clears stale closed-room toasts before entering a fresh room', () => {
+  assert.match(gameContextSource, /game-clear-toasts/);
+  assert.match(gameContextSource, /socket\.on\('roomCreated'[\s\S]*game-clear-toasts[\s\S]*navigationTarget:\s*`\/game\/\$\{roomId\}`/);
+  assert.match(gameContextSource, /\.then\(\(\{\s*roomId:\s*joinedRoomId\s*\}\)\s*=>[\s\S]*game-clear-toasts[\s\S]*navigationTarget:\s*currentPath === targetPath \? null : targetPath/);
+});
+
 test('RebuyModal clears stale warning context before showing confirmed rebuy success', () => {
   assert.match(rebuyModalSource, /deriveRebuySuccessFeedback/);
   assert.match(rebuyModalSource, /game-clear-toasts/);

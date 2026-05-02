@@ -170,6 +170,7 @@ const useGameStore = create((set, get) => ({
 
     socket.on('roomCreated', ({ roomId }) => {
       // 房间创建成功，保持使用设备ID
+      window.dispatchEvent(new CustomEvent('game-clear-toasts'));
       set({ roomId, isCreatingRoom: false, navigationTarget: `/game/${roomId}`, roomAccessError: null });
     });
 
@@ -494,6 +495,7 @@ const useGameStore = create((set, get) => ({
         const targetPath = `/game/${joinedRoomId}`;
         const currentPath = window.location.pathname;
 
+        window.dispatchEvent(new CustomEvent('game-clear-toasts'));
         set({
           roomId,
           showJoinRoom: false,
