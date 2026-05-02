@@ -165,6 +165,7 @@ At minimum, record:
 - when validating supported table sizes, always include both:
   - `2-max` heads-up: button is small blind, preflop action starts on the button, extra joiners stay spectators
   - `9-max` full table: nine players receive cards, first action starts UTG, and settlement preserves the seat map
+- if rooms are seeded through Socket.IO to avoid repetitive browser join setup, record which critical actions were still executed by the browser UI; do not describe a socket-only setup as an end-to-end browser flow
 
 For Poker OS shell work, add these spot checks explicitly:
 

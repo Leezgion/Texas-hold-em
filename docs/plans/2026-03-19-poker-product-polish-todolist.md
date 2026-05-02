@@ -280,9 +280,44 @@
   - `cd server && npm test -- GameplaySmoke.test.js --runInBand`
   - `4/4` passed on `2026-05-02`
 - Remaining gameplay queue:
-  - `[todo]` real-browser smoke for a short 2-max hand from create/join/start through settlement UI
-  - `[todo]` real-browser smoke for a 9-max full room through first action and raise drawer recovery
+  - `[done]` real-browser smoke for a short 2-max hand from create/join/start through settlement UI
+  - `[done]` real-browser smoke for a 9-max full room through first action and raise drawer recovery
   - `[todo]` review client feedback copy for invalid/out-of-turn/min-raise actions after the browser gameplay pass
+
+## 2026-05-02 Browser Gameplay Edge Follow-up
+
+- Status: `[done]` 2-max settlement and 9-max first-action raise drawer are verified in a real phone browser viewport.
+- Method:
+  - Socket.IO seeded deterministic `2-max` and `9-max` rooms so the browser pass could focus on critical UI actions instead of repeating manual join boilerplate
+  - the browser still entered with real persisted device IDs through `/game/:roomId`
+  - 2-max host performed the actual UI `开始` and `弃牌` actions
+  - 9-max current actor opened the actual UI `加注` drawer
+- Fresh evidence:
+  - `.runlogs/2026-05-02-browser-gameplay-edge-smoke.json`
+  - `.runlogs/2026-05-02-browser-2max-settlement-phone.png`
+  - room `0I7WBP`
+  - `scrollHeight = clientHeight = bodyHeight = 844`
+  - `settlementVisible = true`
+  - `handHistoryCount = 1`
+  - `totalChips = 2000`
+  - spectator `seat = -1`, `chips = 0`, `isActive = false`
+  - `dockTable = false`, `dockBoard = false`, `actionCards = false`
+  - `clippedViewport = []`
+  - `.runlogs/2026-05-02-browser-9max-raise-open-phone.png`
+  - room `ZAYM4P`
+  - current actor `device_browser9_moo5beyi_4`
+  - `scrollHeight = clientHeight = bodyHeight = 844`
+  - `actionConsoleState = decision`
+  - `holeCardCount = 2`
+  - `plaqueCount = 8`
+  - `confirmVisible = true`
+  - `raiseSurface.scrollable = true`
+  - `raiseTable = false`, `raiseBoard = false`, `raiseCards = false`, `raiseLauncher = false`
+  - `clippedViewport = []`
+  - server `inHandCount = 9`, `pot = 30`, `chipsPlusPot = 9000`
+- Product notes from the pass:
+  - 9-max phone live-hand is intentionally very dense; side plaques are close to the rail and viewport edge but not clipped in the measured pass
+  - settlement overlay on phone is readable and remains single-screen, but it visually dominates the table; revisit only after invalid-action feedback polish if we decide settlement needs a lower-profile pro variant
 
 ## Product Mode Model
 
