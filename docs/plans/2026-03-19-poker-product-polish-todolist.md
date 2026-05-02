@@ -452,6 +452,33 @@
     - `frameRect.top = 12`, `frameRect.bottom = 832`, `frameRect.height = 820`
     - `clipped = []`
 
+## 2026-05-02 Mobile Settlement Rail Follow-up
+
+- Status: `[done]` Phone settlement no longer behaves like a full table-cover overlay during live-hand settlement.
+- Root cause:
+  - the generic phone settlement sheet reused the large desktop-style card footprint
+  - fresh browser evidence after the shell-fit pass still showed `settlementTable = true` and `settlementBoard = true`
+  - the product issue was not scrolling; it was hierarchy: the result surface dominated the table when the player only needed the latest-hand outcome and countdown
+- Local fixes:
+  - phone live-hand settlement now renders as a compact rail result near the lower table apron
+  - it keeps the hand number, countdown, and winner/pot headline visible
+  - total, board, and detailed net lines are hidden on the compact phone rail; the detailed review path remains in the hand-history support surface
+- Fresh evidence:
+  - red before implementation:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js`
+    - failed at `phone-terminal settlement renders as a compact rail result instead of a full table cover`
+  - green focused test:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js`
+    - `22/22` passed on `2026-05-02`
+  - browser rerun:
+    - `.runlogs/2026-05-02-create-to-settlement-phone-after-shell-padding.png`
+    - room `STJLX2`
+    - `bodyHeight = clientHeight = scrollHeight = 844`
+    - settlement rect: `top = 443.33`, `bottom = 533.98`, `height = 90.66`
+    - `settlementTable = false`
+    - `settlementBoard = false`
+    - `clippedViewport = []`
+
 ## Product Mode Model
 
 ### Shared Room Mode

@@ -435,6 +435,25 @@ test('phone-terminal raise sizing opens as a bounded drawer instead of growing o
   );
 });
 
+test('phone-terminal settlement renders as a compact rail result instead of a full table cover', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet\s*\{[\s\S]*top:\s*auto;[\s\S]*bottom:\s*5\.35rem;[\s\S]*width:\s*min\(18rem,\s*calc\(100% - 1\.5rem\)\);[\s\S]*padding:\s*0\.56rem 0\.64rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet__header\s*\{[\s\S]*flex-direction:\s*row;[\s\S]*align-items:\s*center;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet__spotlight\s*\{[\s\S]*margin-top:\s*0\.36rem;[\s\S]*padding:\s*0\.4rem 0\.5rem;[\s\S]*font-size:\s*0\.76rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet__total,[\s\S]*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet__board,[\s\S]*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet__lines\s*\{\s*display:\s*none;/s
+  );
+});
+
 test('desktop live ribbon aligns timer and primary commands into a single decision strip', () => {
   assert.match(
     globalStylesSource,

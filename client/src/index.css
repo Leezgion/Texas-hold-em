@@ -4742,6 +4742,57 @@
       padding: 0.85rem;
     }
 
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet {
+      top: auto;
+      bottom: 5.35rem;
+      width: min(18rem, calc(100% - 1.5rem));
+      padding: 0.56rem 0.64rem;
+      border-radius: 1.1rem;
+      background:
+        linear-gradient(180deg, rgba(7, 15, 20, 0.86), rgba(3, 9, 12, 0.7)),
+        radial-gradient(circle at top right, rgba(247, 229, 173, 0.14), transparent 8rem);
+      box-shadow:
+        0 10px 22px rgba(0, 0, 0, 0.26),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet__header {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet__kicker {
+      font-size: 0.54rem;
+      letter-spacing: 0.18em;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet__title {
+      margin-top: 0.18rem;
+      font-size: 1rem;
+      line-height: 1.1rem;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet__countdown {
+      padding: 0.22rem 0.5rem;
+      font-size: 0.76rem;
+      line-height: 1rem;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet__spotlight {
+      margin-top: 0.36rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 0.72rem;
+      font-size: 0.76rem;
+      line-height: 1.05rem;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet__total,
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet__board,
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet__lines {
+      display: none;
+    }
+
     .tactical-history-drawer {
       right: 0.35rem;
       top: auto;
