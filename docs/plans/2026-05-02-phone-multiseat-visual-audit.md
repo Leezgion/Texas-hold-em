@@ -54,4 +54,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Review short-phone current-turn marker and hero-position communication; center cue now uses compact `座N · 跟注 X` / `座N · 可过牌` wording while seat plaques keep position and stack context.
 - `[done]` Continue live-hand action dock polish after board/seat geometry is stable; decision buttons now stretch to the available phone dock width.
 - `[done]` Continue raise-drawer hierarchy review for larger blind structures and deeper stacks; quick-raise amounts now dedupe after big-blind alignment and the phone drawer grid adapts to 2/3/4 valid buttons.
-- `[todo]` Continue broader gameplay edge validation after the phone table/action UI is stable.
+- `[done]` Continue broader gameplay edge validation after the phone table/action UI is stable; 3-way all-in side-pot settlement now shows main and side pot lines on regular and short phone viewports.
+- `[todo]` Continue gameplay edge validation for reveal policy variants and hand-history/support-panel access after settlement.

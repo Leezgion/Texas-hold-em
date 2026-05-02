@@ -721,7 +721,7 @@
   - `9max-full 390x844`: room `G9MGLS`, streets `3/3`, `4/4`, `5/5`, `5/5`, `clippedBoardCards = 0`
   - `9max-full 375x667`: room `QU13X9`, streets `3/3`, `4/4`, `5/5`, `5/5`, `clippedBoardCards = 0`
 - Remaining queue:
-  - `[todo]` review whether current-turn position communication is still strong enough after hiding duplicate chrome guides
+  - `[done]` review whether current-turn position communication is still strong enough after hiding duplicate chrome guides
   - `[done]` continue short-phone action dock and raise-drawer polish now that board/seat geometry is stable
 
 ## 2026-05-02 Phone Live Decision-Cockpit Follow-up
@@ -746,7 +746,7 @@
     - both viewports reported no dock/table, dock/board, cards/command-row, raise/table, or raise/board collision
 - Remaining queue:
   - `[done]` decide whether the phone live-hand center cue should be reduced further into a thinner chip-level HUD after action controls are now readable
-  - `[todo]` continue raise-drawer hierarchy review for larger blind structures and deeper stacks
+  - `[done]` continue raise-drawer hierarchy review for larger blind structures and deeper stacks
 
 ## 2026-05-02 Phone Live Center-Cue Copy Follow-up
 
@@ -795,7 +795,35 @@
     - client full node tests: `240/240`
     - client build: passed; Vite still reports the existing `>500 kB` chunk-size warning
 - Remaining queue:
-  - `[todo]` continue broader gameplay edge validation after the phone table/action UI is stable
+  - `[done]` continue broader gameplay edge validation after the phone table/action UI is stable
+
+## 2026-05-02 Phone Side-Pot Settlement Follow-up
+
+- Status: `[done]` Phone settlement now preserves side-pot result visibility during reveal-action windows on regular and short phone viewports.
+- Root cause:
+  - reveal-enabled phone settlement only inlined `latestSummary.headlineLine`, which is the first scoreboard line
+  - the remaining scoreboard lines were hidden by the compact phone settlement rule, so multiway all-in side pots disappeared from the visible single-screen result
+  - the added side-pot line also needed a separate short-height position, otherwise `375x667` phones pushed the settlement rail into the bottom dock
+- Local fixes:
+  - reveal-enabled settlement now inlines the first two scoreboard lines, exposing both main pot and first side pot in compact phone mode
+  - reveal buttons and inline result typography were compressed so the settlement rail still fits between table and dock
+  - short-height phone settlement uses its own `18.8rem` top position while regular phone stays on the table/dock gap
+  - added contract coverage for inline side-pot scoreboard lines and short-height settlement positioning
+- Fresh evidence:
+  - red/green contract:
+    - `cd client && node --test src/components/roomTerminalShellContract.test.js`
+    - new contract failed before the CSS/component fix and passed after it; final focused run `33/33` passed on `2026-05-02`
+  - browser audit:
+    - `node .runlogs\2026-05-02-phone-side-pot-allin-audit.cjs` (`runId = moom32yj`)
+    - fresh room `NDZU8Y`, 3-way all-in, server total chips `7000`, total pot `5000`, pot results `main 3000` and `side 2000`
+    - `390x844`: visible `主池 +3,000` and `边池 1 +2,000`, `scrollHeight = clientHeight = 844`, no settlement/table, settlement/board, or settlement/dock collision
+    - `375x667`: visible `主池 +3,000` and `边池 1 +2,000`, `scrollHeight = clientHeight = 667`, no settlement/table, settlement/board, or settlement/dock collision
+  - final verification:
+    - client full node tests: `240/240`
+    - client build: passed; Vite still reports the existing `>500 kB` chunk-size warning
+    - server Jest suite: `12/12` suites and `120/120` tests passed
+- Remaining queue:
+  - `[todo]` continue gameplay edge validation for reveal policy variants and hand-history/support-panel access after settlement
 
 ## Product Mode Model
 

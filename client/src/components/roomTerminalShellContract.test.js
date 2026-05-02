@@ -616,12 +616,20 @@ test('phone-terminal settlement renders as a compact rail result instead of a fu
 
 test('phone-terminal settlement reveal controls stay inline with the compact result rail', () => {
   assert.match(settlementOverlaySource, /settlement-sheet--with-reveal-actions/);
-  assert.match(settlementOverlaySource, /const showsInlineRevealHeadline = canReveal && latestSummary\?\.headlineLine;/);
+  assert.match(
+    settlementOverlaySource,
+    /const inlineScoreboardLines = canReveal\s*\?\s*\(latestSummary\?\.scoreboardLines \|\| \[\]\)\.slice\(0,\s*2\)\s*:\s*\[\];/s
+  );
+  assert.match(settlementOverlaySource, /className="settlement-sheet__inline-lines"/);
   assert.match(settlementOverlaySource, /className="settlement-sheet__inline-headline"/);
   assert.match(settlementOverlaySource, /\{!showsInlineRevealHeadline && latestSummary\?\.headlineLine && \(/);
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s*\{[\s\S]*top:\s*21\.8rem;[\s\S]*bottom:\s*auto;[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\);[\s\S]*row-gap:\s*0\.32rem;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s*\{[\s\S]*top:\s*21\.75rem;[\s\S]*bottom:\s*auto;[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\);[\s\S]*row-gap:\s*0\.24rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s+\.settlement-sheet__inline-lines\s*\{[\s\S]*display:\s*grid;[\s\S]*gap:\s*0\.06rem;/s
   );
   assert.match(
     globalStylesSource,
@@ -633,7 +641,11 @@ test('phone-terminal settlement reveal controls stay inline with the compact res
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s+\.settlement-sheet__button\s*\{[\s\S]*min-height:\s*2\.4rem;[\s\S]*font-size:\s*0\.68rem;/s
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s+\.settlement-sheet__button\s*\{[\s\S]*min-height:\s*2\.05rem;[\s\S]*font-size:\s*0\.62rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s*\{[\s\S]*top:\s*18\.8rem;/s
   );
 });
 

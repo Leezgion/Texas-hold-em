@@ -54,7 +54,8 @@ const SettlementOverlay = ({
     gameState?.revealPolicy === 'free_reveal_after_hand'
       ? Boolean(currentPlayer?.inHand)
       : gameState?.eligibleRevealPlayerIds?.includes(currentPlayerId);
-  const showsInlineRevealHeadline = canReveal && latestSummary?.headlineLine;
+  const inlineScoreboardLines = canReveal ? (latestSummary?.scoreboardLines || []).slice(0, 2) : [];
+  const showsInlineRevealHeadline = inlineScoreboardLines.length > 0;
   const settlementSheetClassName = [
     'settlement-sheet',
     'settlement-sheet--table-center-subordinate',
@@ -100,7 +101,13 @@ const SettlementOverlay = ({
               <div className="settlement-sheet__kicker">{roomCopy.latestHandLabel}</div>
               <div className="settlement-sheet__title">{latestSummary?.title || '本手已结束'}</div>
               {showsInlineRevealHeadline && (
-                <div className="settlement-sheet__inline-headline">{latestSummary.headlineLine}</div>
+                <div className="settlement-sheet__inline-lines">
+                  {inlineScoreboardLines.map((line, index) => (
+                    <div key={`${latestSummary?.handNumber || 'latest'}-inline-${index}`} className="settlement-sheet__inline-headline">
+                      {line}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
             <motion.div
