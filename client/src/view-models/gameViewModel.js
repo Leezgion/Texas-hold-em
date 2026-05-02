@@ -100,7 +100,7 @@ function buildStageActionLabel({ roomState = 'idle', gameState = null, currentTu
   }
 
   const toCall = Math.max(0, (Number(gameState?.currentBet) || 0) - (Number(currentTurnPlayer.currentBet) || 0));
-  return `轮到 ${seatLabel} · 需跟注 ${toCall.toLocaleString()}`;
+  return toCall > 0 ? `${seatLabel} · 跟注 ${toCall.toLocaleString()}` : `${seatLabel} · 可过牌`;
 }
 
 export function formatSignedChips(value = 0) {

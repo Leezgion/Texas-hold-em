@@ -914,7 +914,7 @@ test('derives current-turn stage emphasis for in-hand rooms', () => {
   assert.equal(shell.phaseLabel, 'TURN');
   assert.equal(shell.currentTurnSeatLabel, '座2');
   assert.equal(shell.stagePulseTone, 'live-turn');
-  assert.equal(shell.stageActionLabel, '轮到 座2 · 需跟注 10');
+  assert.equal(shell.stageActionLabel, '座2 · 跟注 10');
   assert.equal(shell.lastActionLabel, '上一动作 座1 加注到 20');
   assert.equal(shell.stageLayoutModel, 'viewport-authoritative');
   assert.equal(shell.heroDockPriority, 'always-visible');
@@ -924,6 +924,27 @@ test('derives current-turn stage emphasis for in-hand rooms', () => {
   assert.equal(shell.supportLauncherDensity, 'compact');
   assert.equal(shell.supportSurfacePolicy.phone, 'sheet');
   assert.equal(shell.supportSurfacePolicy.desktop, 'panel-or-rail');
+});
+
+test('derives a compact no-call stage cue for check spots', () => {
+  const shell = deriveTableShellView({
+    roomId: 'CHECK1',
+    roomState: 'in_hand',
+    roomSettings: { roomMode: 'pro' },
+    connected: true,
+    effectiveDisplayMode: 'pro',
+    players: [
+      { id: 'p1', seat: 0, tableState: 'active_in_hand', currentBet: 20 },
+      { id: 'p2', seat: 1, tableState: 'active_in_hand', currentBet: 20 },
+    ],
+    gameState: {
+      currentPlayerIndex: 0,
+      phase: 'flop',
+      currentBet: 20,
+    },
+  });
+
+  assert.equal(shell.stageActionLabel, '座1 · 可过牌');
 });
 
 test('derives intel-rail summaries for occupancy and host controls', () => {

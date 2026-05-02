@@ -745,7 +745,30 @@
     - both viewports stayed `scrollHeight = clientHeight`
     - both viewports reported no dock/table, dock/board, cards/command-row, raise/table, or raise/board collision
 - Remaining queue:
-  - `[todo]` decide whether the phone live-hand center cue should be reduced further into a thinner chip-level HUD after action controls are now readable
+  - `[done]` decide whether the phone live-hand center cue should be reduced further into a thinner chip-level HUD after action controls are now readable
+  - `[todo]` continue raise-drawer hierarchy review for larger blind structures and deeper stacks
+
+## 2026-05-02 Phone Live Center-Cue Copy Follow-up
+
+- Status: `[done]` Phone live-hand center cue now uses compact decision wording instead of a sentence-like prompt.
+- Root cause:
+  - the previous center cue `轮到 座1 · 需跟注 10` was safe geometrically but still read like explanatory UI copy
+  - the action dock already carries the full numeric decision context, so the table-center HUD should only identify street, acting seat, and immediate action
+- Local fixes:
+  - stage action copy now formats call spots as `座N · 跟注 X`
+  - no-call spots now format as `座N · 可过牌` instead of `需跟注 0`
+  - added view-model coverage for both call and check spots
+- Fresh evidence:
+  - focused tests:
+    - `cd client && node --test src/view-models/gameViewModel.test.js src/components/roomTerminalShellContract.test.js`
+    - `74/74` passed on `2026-05-02`
+  - browser audit:
+    - `node .runlogs\2026-05-02-phone-clean-center-audit.cjs` (`runId = mool5q9j`)
+    - `390x844` room `TZ7CZV`, beacon text `PREFLOP 座1 · 跟注 10`, width `133.42px`, height `18.94px`
+    - `375x667` room `YTASTQ`, beacon text `PREFLOP 座1 · 跟注 10`, width `131.52px`, height `17.66px`
+    - both viewports stayed `scrollHeight = clientHeight`
+    - both viewports reported no beacon/board, beacon/cards, beacon/action-frame, beacon/dock, raise/beacon, raise/board, or raise/cards collision
+- Remaining queue:
   - `[todo]` continue raise-drawer hierarchy review for larger blind structures and deeper stacks
 
 ## Product Mode Model
