@@ -528,9 +528,29 @@
     - raise metrics: `raiseTable = false`, `raiseBoard = false`, `raiseCards = false`
     - `raiseScroll.canScroll = true`
 - Remaining queue:
-  - `[todo]` audit phone live-hand support panels (`成员 / 牌局 / 房间`) on short-height and regular phone viewports
+  - `[done]` audit phone live-hand support panels (`成员 / 牌局 / 房间`) on short-height and regular phone viewports
   - `[todo]` run real phone action execution flow through quick actions, raise confirm/cancel, and post-action state transitions
   - `[todo]` continue visual density polish only after the single-screen action path remains stable on both phone heights
+
+## 2026-05-02 Phone Support Panel Audit Follow-up
+
+- Status: `[done]` Phone live-hand support panels keep modal isolation and owned overflow on regular and short phone viewports.
+- Method:
+  - seeded a fresh `2-max` live hand for each viewport through Socket.IO setup
+  - entered the room with a real browser device ID and opened the actual `成员 / 牌局 / 房间` launcher buttons
+  - tested both `390x844` and `375x667`
+- Fresh evidence:
+  - `.runlogs/2026-05-02-phone-support-panels-audit.json`
+  - `390x844` room `2ER56Q`, `375x667` room `IPGEI0`
+  - all six panel opens reported `scrollHeight = clientHeight`
+  - all six panel opens reported `bodyOverflowY = hidden` and `htmlOverflowY = hidden`
+  - all six panel opens reported `rootInert = true`, `modalRootHasDialog = true`, `dialogInsideRoot = false`
+  - all six panel opens reported `clippedViewport = []`
+  - body scroll attempts stayed at `0`
+  - each sheet body owned its own scroll range, including the dense `牌局` panel
+  - after `Escape`, every panel returned to `dialogCount = 0`, `rootInert = false`, and `clippedViewport = []`
+- Product note:
+  - support panels intentionally cover the lower table/dock while open because they are explicit modal bottom sheets; the hard requirement is that the underlying table does not regain scroll or focus while a support panel is active
 
 ## Product Mode Model
 
