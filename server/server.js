@@ -4,6 +4,11 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const { ERROR_CODES, ROOM_STATES } = require('./types/GameTypes');
+const {
+  listSocketDeviceMappings,
+  registerSocketDevice,
+  unregisterSocketDevice,
+} = require('./utils/socketDeviceRegistry');
 
 const app = express();
 const server = http.createServer(app);
@@ -54,17 +59,7 @@ io.on('connection', (socket) => {
   socket.on('registerDevice', ({ deviceId }) => {
     console.log('注册设备:', { deviceId, socketId: socket.id });
 
-    // 如果设备之前已连接，清除旧的socket映射（遍历查找相同deviceId）
-    for (const [oldSocketId, devId] of socketDeviceMap.entries()) {
-      if (devId === deviceId && oldSocketId !== socket.id) {
-        socketDeviceMap.delete(oldSocketId);
-        console.log('清除旧的socket映射:', { oldSocketId, deviceId });
-        break;
-      }
-    }
-
-    // 建立新的映射关系
-    socketDeviceMap.set(socket.id, deviceId);
+    registerSocketDevice(socketDeviceMap, socket.id, deviceId);
 
     // 发送注册成功事件
     socket.emit('deviceRegistered', { deviceId, socketId: socket.id });
@@ -262,13 +257,10 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('用户断开连接:', socket.id);
 
-    // 获取设备ID
-    const deviceId = socketDeviceMap.get(socket.id);
+    // 获取设备ID，并清理已经失效的 socket 映射，避免长测污染调试状态。
+    const deviceId = unregisterSocketDevice(socketDeviceMap, socket.id);
     if (deviceId) {
       console.log('设备断开连接:', deviceId);
-      // 暂时保留设备映射，允许重连
-      // 注意：如果需要清理映射，可以设置超时后删除
-      // socketDeviceMap.delete(socket.id);
     }
 
     roomManager.handlePlayerDisconnect(deviceId);
@@ -346,10 +338,7 @@ app.get('/api/debug/rooms/:roomId', (req, res) => {
 
 // 调试端点 - 查看设备映射
 app.get('/api/debug/devices', (req, res) => {
-  const deviceMappings = Array.from(socketDeviceMap.entries()).map(([socketId, deviceId]) => ({
-    socketId,
-    deviceId,
-  }));
+  const deviceMappings = listSocketDeviceMappings(socketDeviceMap);
 
   res.json({
     socketCount: socketDeviceMap.size,

@@ -337,6 +337,28 @@
     - `cd client && node --test src/view-models/gameViewModel.test.js`
     - `40/40` passed on `2026-05-02`
 
+## 2026-05-02 Socket Lifecycle Hygiene Follow-up
+
+- Status: `[done]` Server socket-device registry cleanup is implemented and verified locally.
+- Root cause:
+  - browser evidence runs and Socket.IO setup scripts create many short-lived sockets
+  - `server.js` handled disconnects but intentionally kept `socketDeviceMap` entries, so `/api/debug/devices` accumulated stale socket IDs and made pre-task service checks misleading
+  - same-device reconnect cleanup only removed the first stale socket mapping, which was not enough after repeated browser retries
+- Local fixes:
+  - extracted `socketDeviceRegistry` helper for register/unregister/list semantics
+  - same-device registration removes all stale socket IDs before setting the current socket
+  - disconnect unregisters the current socket before delegating player-disconnect handling, while reconnect still works through the device ID
+- Fresh evidence:
+  - red before implementation:
+    - `cd server && npm test -- socketDeviceRegistry.test.js --runInBand`
+    - failed because `../utils/socketDeviceRegistry` did not exist
+  - green focused test:
+    - `cd server && npm test -- socketDeviceRegistry.test.js --runInBand`
+    - `4/4` passed on `2026-05-02`
+  - full server suite:
+    - `cd server && npm test -- --runInBand`
+    - `120/120` passed on `2026-05-02`
+
 ## Product Mode Model
 
 ### Shared Room Mode
