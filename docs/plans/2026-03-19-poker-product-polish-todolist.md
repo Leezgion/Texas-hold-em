@@ -2247,4 +2247,21 @@ This pass fixed a real phone ergonomics problem after settlement review.
   - `cd client && pnpm exec node --test`: `254/254`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-64028b6e.js` 534.06 kB)
 - next queue:
-  - `[todo]` validate repeated multi-hand continuity on phone, including no stuck modal inert state, conserved chips, correct actor/watch states, and no room-shell scroll across several automatic hand transitions
+  - `[done]` validate repeated multi-hand continuity on phone, including no stuck modal inert state, conserved chips, correct actor/watch states, and no room-shell scroll across several automatic hand transitions
+
+## 2026-05-03 Phone Multi-Hand Continuity Audit
+
+This pass verified repeated phone hand transitions after the support-panel auto-close fix.
+
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-multihand-continuity-audit.json` (`runId = moosucfd`)
+  - fresh room `260SKC`
+  - host browser played hands 1 and 3; guest socket played hands 2 and 4, so both `decision` and `watch` host states were covered
+  - each settlement opened the real `牌局` support panel, then the next hand auto-closed it
+- verified contract:
+  - hand 1 through hand 4 each kept `chipsPlusPot = 2000`
+  - every preflop hand start had `dialogCount = 0`, `rootInert = false`, `holeCardCount = 2`, and `shellScrollHeight = shellClientHeight = 844`
+  - every settlement review had `dialogCount = 1`, `rootInert = true`, and support-panel text containing `最近手牌`
+  - final state reached hand 5 preflop with the host back in `decision`, no dialog, no inert root, and conserved chips
+- next queue:
+  - `[todo]` validate rebuy / busted-player recovery in real phone browser flow, including zero-stack seat messaging, host start eligibility, and whether the action dock stays single-screen when a busted player requests chips

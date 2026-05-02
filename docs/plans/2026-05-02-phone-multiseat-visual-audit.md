@@ -71,4 +71,5 @@ Make full 6-max and 9-max phone live-hand tables readable on regular and short p
 - `[done]` Continue post-switch stale page actions and multi-tab same-device ownership messaging; browser audit `moosa0p2` verified stale home create and stale room exit show the refresh-identity hint without raw `设备未注册`.
 - `[done]` Continue room-end / empty-room lifecycle; browser audit `moosel6h` verified the sole-host waiting-room exit closes the room, returns home, and makes both debug and proxied room checks return `404`.
 - `[done]` Continue post-hand navigation ergonomics; browser audit `moosobsp` verified a settlement `牌局` support panel auto-closes when hand 2 starts, clears `#root.inert`, and keeps the phone shell single-screen.
-- `[todo]` Validate repeated multi-hand continuity on phone, including support-panel transitions, current actor/watch states, chip conservation, and no shell scroll across several hands.
+- `[done]` Validate repeated multi-hand continuity on phone; browser audit `moosucfd` reached hand 5 after four settlement-review transitions with conserved chips, correct host `decision/watch` states, cleared modal inert state, and no shell scroll.
+- `[todo]` Validate rebuy / busted-player recovery in real phone browser flow, including zero-stack seat messaging, host start eligibility, and action dock single-screen behavior.
