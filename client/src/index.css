@@ -4793,6 +4793,62 @@
       display: none;
     }
 
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions {
+      top: 21.8rem;
+      bottom: auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0.32rem;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions .settlement-sheet__header {
+      grid-column: 1 / -1;
+      align-items: center;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions .settlement-sheet__kicker {
+      display: none;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions .settlement-sheet__inline-headline {
+      margin-top: 0.14rem;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-size: 0.72rem;
+      line-height: 0.95rem;
+      color: rgb(203 213 225 / 0.94);
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions .settlement-sheet__spotlight {
+      grid-column: 1;
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      min-height: 2.15rem;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions .settlement-sheet__actions {
+      grid-column: 1;
+      margin-top: 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.28rem;
+      align-items: stretch;
+    }
+
+    .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .settlement-sheet--with-reveal-actions .settlement-sheet__button {
+      min-height: 2.4rem;
+      padding: 0.36rem 0.22rem;
+      border-radius: 0.68rem;
+      font-size: 0.68rem;
+      line-height: 0.95rem;
+      white-space: nowrap;
+    }
+
     .tactical-history-drawer {
       right: 0.35rem;
       top: auto;

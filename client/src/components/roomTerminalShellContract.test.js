@@ -8,6 +8,7 @@ const actionDockSource = readFileSync(new URL('./ActionDock.jsx', import.meta.ur
 const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.meta.url), 'utf8');
 const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 'utf8');
 const seatCardSource = readFileSync(new URL('./SeatCard.jsx', import.meta.url), 'utf8');
+const settlementOverlaySource = readFileSync(new URL('./SettlementOverlay.jsx', import.meta.url), 'utf8');
 const globalStylesSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
 test('GameRoom keeps the dock inside the single-screen main stage stack', () => {
@@ -451,6 +452,29 @@ test('phone-terminal settlement renders as a compact rail result instead of a fu
   assert.match(
     globalStylesSource,
     /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet__total,[\s\S]*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet__board,[\s\S]*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet__lines\s*\{\s*display:\s*none;/s
+  );
+});
+
+test('phone-terminal settlement reveal controls stay inline with the compact result rail', () => {
+  assert.match(settlementOverlaySource, /settlement-sheet--with-reveal-actions/);
+  assert.match(settlementOverlaySource, /const showsInlineRevealHeadline = canReveal && latestSummary\?\.headlineLine;/);
+  assert.match(settlementOverlaySource, /className="settlement-sheet__inline-headline"/);
+  assert.match(settlementOverlaySource, /\{!showsInlineRevealHeadline && latestSummary\?\.headlineLine && \(/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s*\{[\s\S]*top:\s*21\.8rem;[\s\S]*bottom:\s*auto;[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\);[\s\S]*row-gap:\s*0\.32rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s+\.settlement-sheet__inline-headline\s*\{[\s\S]*white-space:\s*nowrap;[\s\S]*text-overflow:\s*ellipsis;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s+\.settlement-sheet__actions\s*\{[\s\S]*grid-column:\s*1;[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.settlement-sheet--with-reveal-actions\s+\.settlement-sheet__button\s*\{[\s\S]*min-height:\s*2\.4rem;[\s\S]*font-size:\s*0\.68rem;/s
   );
 });
 

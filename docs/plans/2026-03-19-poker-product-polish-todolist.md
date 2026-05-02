@@ -478,6 +478,22 @@
     - `settlementTable = false`
     - `settlementBoard = false`
     - `clippedViewport = []`
+- Reveal-action follow-up:
+  - first showdown reveal browser audit exposed that four reveal buttons could make the compact rail tall enough to touch the table or dock
+  - settlement sheets now add `settlement-sheet--with-reveal-actions` only when the current player can reveal
+  - the reveal variant moves the winner/pot headline inline under the hand number and gives the four reveal buttons a single full-width row
+  - final browser rerun:
+    - `.runlogs/2026-05-02-showdown-reveal-phone.png`
+    - room `67L2BQ`
+    - `revealButtonCount = 4`
+    - `bodyHeight = clientHeight = scrollHeight = 844`
+    - settlement rect: `top = 440.38`, `bottom = 541.69`, `height = 101.31`
+    - actions rect: `top = 493.34`, `bottom = 531.73`, `height = 38.39`
+    - `settlementTable = false`
+    - `settlementBoard = false`
+    - `settlementDock = false`
+    - `actionsDock = false`
+    - `clippedViewport = []`
 
 ## Product Mode Model
 
