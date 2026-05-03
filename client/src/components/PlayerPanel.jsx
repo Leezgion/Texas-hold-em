@@ -65,11 +65,9 @@ function buildPlayerRow(player, { roomState, players, gameState, currentPlayerId
 const PlayerPanel = ({
   players = [],
   roomSettings = {},
-  gameStarted = false,
   roomState = 'idle',
   currentPlayerId,
   gameState = null,
-  effectiveDisplayMode = 'pro',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const panelRef = useRef(null);
@@ -77,13 +75,6 @@ const PlayerPanel = ({
   const safeMaxPlayers = Math.max(2, Number(roomSettings?.maxPlayers) || 6);
   const { seatedPlayers, spectators } = deriveRoomOccupancy(safePlayers, roomState);
   const occupancyLabel = `${safePlayers.length}/${safeMaxPlayers}`;
-  const displayModeTitles = {
-    club: '私局辅助',
-    pro: '职业对局',
-    study: '训练复盘',
-  };
-  const roomStateTitle = gameStarted ? '牌局进行中' : '等待开始';
-
   useEffect(() => {
     if (!isExpanded) {
       return undefined;
@@ -116,7 +107,7 @@ const PlayerPanel = ({
       >
         <div className="tactical-roster__trigger-head">
           <Users size={16} />
-          <span>成员面板</span>
+          <span>成员</span>
         </div>
         <div className="tactical-roster__trigger-meta">
           <span>{occupancyLabel}</span>
@@ -128,25 +119,6 @@ const PlayerPanel = ({
 
       {isExpanded && (
         <div className="tactical-roster__panel">
-          <div className="tactical-roster__summary-grid">
-            <div className="tactical-roster__summary-card">
-              <span className="tactical-roster__summary-label">桌况</span>
-              <span className="tactical-roster__summary-value">{roomStateTitle}</span>
-            </div>
-            <div className="tactical-roster__summary-card">
-              <span className="tactical-roster__summary-label">模式</span>
-              <span className="tactical-roster__summary-value">{displayModeTitles[effectiveDisplayMode] || '职业对局'}</span>
-            </div>
-            <div className="tactical-roster__summary-card">
-              <span className="tactical-roster__summary-label">已入座</span>
-              <span className="tactical-roster__summary-value">{seatedRows.length}</span>
-            </div>
-            <div className="tactical-roster__summary-card">
-              <span className="tactical-roster__summary-label">观战</span>
-              <span className="tactical-roster__summary-value">{spectatorRows.length}</span>
-            </div>
-          </div>
-
           <div className="tactical-roster__section">
             <div className="tactical-roster__section-head">
               <div className="tactical-roster__section-title">

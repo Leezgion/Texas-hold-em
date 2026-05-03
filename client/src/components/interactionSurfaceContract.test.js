@@ -8,6 +8,9 @@ const leaderboardSource = readFileSync(new URL('./Leaderboard.jsx', import.meta.
 const modeShellSource = readFileSync(new URL('./ModeShell.jsx', import.meta.url), 'utf8');
 const actionDockSource = readFileSync(new URL('./ActionDock.jsx', import.meta.url), 'utf8');
 const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.meta.url), 'utf8');
+const handHistoryDrawerSource = readFileSync(new URL('./HandHistoryDrawer.jsx', import.meta.url), 'utf8');
+const intelRailSource = readFileSync(new URL('./IntelRail.jsx', import.meta.url), 'utf8');
+const playerPanelSource = readFileSync(new URL('./PlayerPanel.jsx', import.meta.url), 'utf8');
 const gameContextSource = readFileSync(new URL('../contexts/GameContext.jsx', import.meta.url), 'utf8');
 const gameRoomSource = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 'utf8');
 const handResultModalSource = readFileSync(new URL('./HandResultModal.jsx', import.meta.url), 'utf8');
@@ -17,6 +20,7 @@ const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.ur
 const sliderInputSource = readFileSync(new URL('./SliderInput.jsx', import.meta.url), 'utf8');
 const rebuyModalSource = readFileSync(new URL('./RebuyModal.jsx', import.meta.url), 'utf8');
 const appSource = readFileSync(new URL('../App.jsx', import.meta.url), 'utf8');
+const productModeSource = readFileSync(new URL('../utils/productMode.js', import.meta.url), 'utf8');
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
 test('EmptySeat exposes a real button trigger with disabled semantics and an accessible label', () => {
@@ -100,6 +104,36 @@ test('ActionButtons explains timeout auto-folds in the watch console', () => {
   assert.match(actionButtonsSource, /lastAction\?\.reason === 'disconnect'/);
   assert.match(actionButtonsSource, /断线自动弃牌/);
   assert.match(actionButtonsSource, /断线自动过牌/);
+});
+
+test('embedded hand timeline uses left-right switching instead of a tall vertical tape', () => {
+  assert.match(handHistoryDrawerSource, /const HandHistoryCarouselContent = \(/);
+  assert.match(handHistoryDrawerSource, /const \[activeSummaryIndex, setActiveSummaryIndex\] = useState\(0\);/);
+  assert.match(handHistoryDrawerSource, /className="tactical-history-carousel"/);
+  assert.match(handHistoryDrawerSource, /aria-label="上一手"/);
+  assert.match(handHistoryDrawerSource, /aria-label="下一手"/);
+  assert.match(handHistoryDrawerSource, /data-interaction-model="carousel"/);
+  assert.match(
+    handHistoryDrawerSource,
+    /surfaceVariant === 'embedded'[\s\S]*<EmbeddedHandHistoryDrawer[\s\S]*interactionModel="carousel"/s
+  );
+  assert.match(cssSource, /\.tactical-history-carousel\s*\{/);
+  assert.match(
+    cssSource,
+    /\.tactical-history-drawer\[data-interaction-model="carousel"\]\s+\.tactical-history-tape\s*\{[\s\S]*display:\s*block;/s
+  );
+});
+
+test('support status surfaces keep only decision-relevant table information', () => {
+  assert.match(intelRailSource, /const summaryCards = \[/);
+  assert.doesNotMatch(intelRailSource, /summaryCardsByMode/);
+  assert.doesNotMatch(intelRailSource, /label:\s*'模式'/);
+  assert.doesNotMatch(intelRailSource, /label:\s*'桌型'/);
+  assert.doesNotMatch(intelRailSource, /label:\s*'观战'/);
+  assert.doesNotMatch(intelRailSource, /label:\s*'已入座'/);
+  assert.doesNotMatch(playerPanelSource, /tactical-roster__summary-grid/);
+  assert.doesNotMatch(playerPanelSource, /displayModeTitles/);
+  assert.doesNotMatch(productModeSource, /状态面板/);
 });
 
 test('GameContext guards player actions against duplicate socket submissions', () => {

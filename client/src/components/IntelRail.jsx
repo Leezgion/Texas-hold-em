@@ -19,63 +19,27 @@ const IntelRail = ({
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const roomCopy = theme.room;
   const consoleModeCopy = {
-    club: '桌面控制台',
+    club: '成员与桌况',
     pro: '桌况情报',
-    study: '桌况分析台',
+    study: '成员与复盘',
   };
-  const summaryCardsByMode = {
-    club: [
-      {
-        label: '桌况',
-        value: roomStateLabel,
-        detail: intelRailView.hostActionLabel || '等待房主操作',
-      },
-      {
-        label: '人数',
-        value: intelRailView.occupancyLabel,
-        detail: `${intelRailView.seatedCount} 入座 · ${intelRailView.spectatorCount} 观战`,
-      },
-      {
-        label: '桌型',
-        value: intelRailView.modeTitle,
-        detail: '减少争议，优先清楚广播。',
-      },
-      {
-        label: '房主动作',
-        value: intelRailView.hostActionLabel || '等待中',
-        detail: intelRailView.canRecoverRoom ? '恢复优先' : '可直接继续',
-      },
-    ],
-    pro: [
-      { label: '人数', value: intelRailView.occupancyLabel, detail: null },
-      { label: '模式', value: intelRailView.modeTitle, detail: null },
-      { label: '已入座', value: intelRailView.seatedCount, detail: null },
-      { label: '观战', value: intelRailView.spectatorCount, detail: null },
-    ],
-    study: [
-      {
-        label: '当前状态',
-        value: roomStateLabel,
-        detail: '状态广播与恢复提示都从这里解释。',
-      },
-      {
-        label: '桌型',
-        value: intelRailView.modeTitle,
-        detail: '复盘优先保留语义。',
-      },
-      {
-        label: '人数',
-        value: intelRailView.occupancyLabel,
-        detail: `${intelRailView.seatedCount} 入座 / ${intelRailView.spectatorCount} 观战`,
-      },
-      {
-        label: '下一步',
-        value: intelRailView.hostActionLabel || '等待广播',
-        detail: '右侧时间线会同步最近结果。',
-      },
-    ],
-  };
-  const summaryCards = summaryCardsByMode[effectiveDisplayMode] || summaryCardsByMode.pro;
+  const summaryCards = [
+    {
+      label: '桌况',
+      value: roomStateLabel,
+      detail: intelRailView.hostActionLabel || '等待桌面行动',
+    },
+    {
+      label: '在桌',
+      value: intelRailView.occupancyLabel,
+      detail: `${intelRailView.seatedCount} 座 · ${intelRailView.spectatorCount} 观`,
+    },
+    {
+      label: '下一步',
+      value: intelRailView.hostActionLabel || (intelRailView.canRecoverRoom ? '恢复牌桌' : '等待行动'),
+      detail: intelRailView.canRecoverRoom ? '先恢复牌桌再继续' : null,
+    },
+  ];
   const ContainerTag = presentation === 'rail' ? 'aside' : 'div';
   const supportLauncherDensity = viewportLayout?.supportLauncherDensity || 'regular';
 
@@ -88,6 +52,7 @@ const IntelRail = ({
       data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-surface-variant={presentation}
       data-support-launcher-density={supportLauncherDensity}
+      data-info-model="decision-relevant"
     >
       <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--intel rounded-[1.75rem] p-4 sm:p-5">
         <div className="tactical-rail__header">
@@ -95,7 +60,7 @@ const IntelRail = ({
             <div className="poker-shell-kicker">{roomCopy.intelTitle}</div>
             <div className="tactical-rail__title">{consoleModeCopy[effectiveDisplayMode] || consoleModeCopy.pro}</div>
           </div>
-          <span className="tactical-rail__pill">{intelRailView.modeTitle}</span>
+          <span className="tactical-rail__pill">{intelRailView.occupancyLabel}</span>
         </div>
 
         <div className="tactical-rail__lead">{roomCopy.intelCaption}</div>

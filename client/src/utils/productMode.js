@@ -48,9 +48,9 @@ const ROOM_TERMINAL_LABELS = Object.freeze({
     room: '房间',
   }),
   study: Object.freeze({
-    players: '状态面板',
-    history: '时间线',
-    room: '复盘设置',
+    players: '成员',
+    history: '手牌',
+    room: '复盘',
   }),
 });
 
@@ -339,14 +339,14 @@ const DISPLAY_MODE_THEME_META = Object.freeze({
     room: Object.freeze({
       stageLabel: '复盘舞台',
       stageCaption: '当前牌面、池子层级和结算窗口都为回看服务。',
-      intelTitle: '状态注记',
-      intelCaption: '房间状态和成员语义更显式。',
+      intelTitle: '桌况分析',
+      intelCaption: '只保留牌局状态、成员席位和下一步。',
       eventTitle: '复盘时间线',
       eventCaption: '上一手、底池层级和时间线更详细。',
       actionTitle: '本席复盘',
       actionCaption: '操作前先看清位置、筹码和说明。',
-      rosterTitle: '状态面板',
-      rosterCaption: '保留更强的解释性标签。',
+      rosterTitle: '成员与席位',
+      rosterCaption: '座位、位置、筹码和状态。',
       stacksTitle: '筹码账本',
       historyTitle: '时间线',
       latestHandLabel: '上一手结算',

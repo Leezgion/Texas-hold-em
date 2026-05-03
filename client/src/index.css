@@ -5753,6 +5753,38 @@
     backdrop-filter: none;
   }
 
+  .tactical-history-carousel {
+    margin-top: 0.72rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 0.55rem;
+  }
+
+  .tactical-history-carousel__viewport {
+    min-width: 0;
+  }
+
+  .tactical-history-carousel__button {
+    width: 2.35rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgb(241 245 249 / 0.95);
+  }
+
+  .tactical-history-carousel__button:disabled {
+    cursor: not-allowed;
+    opacity: 0.38;
+  }
+
+  .tactical-history-drawer[data-interaction-model="carousel"] .tactical-history-tape {
+    display: block;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
   @media (min-width: 1280px) {
     .tactical-dock__grid {
       grid-template-columns: minmax(0, 0.95fr) minmax(22rem, 1.05fr);

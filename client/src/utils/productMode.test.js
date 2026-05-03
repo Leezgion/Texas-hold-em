@@ -257,9 +257,9 @@ test('exposes single-screen room terminal metadata for each display mode', () =>
   assert.equal(proTheme.sheetLabels.history, '牌局');
   assert.equal(proTheme.sheetLabels.room, '房间');
 
-  assert.equal(studyTheme.sheetLabels.players, '状态面板');
-  assert.equal(studyTheme.sheetLabels.history, '时间线');
-  assert.equal(studyTheme.sheetLabels.room, '复盘设置');
+  assert.equal(studyTheme.sheetLabels.players, '成员');
+  assert.equal(studyTheme.sheetLabels.history, '手牌');
+  assert.equal(studyTheme.sheetLabels.room, '复盘');
 });
 
 test('exposes profile-first create-room surface contract for the terminal modal', () => {
