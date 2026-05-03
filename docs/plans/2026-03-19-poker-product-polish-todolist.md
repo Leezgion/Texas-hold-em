@@ -3024,3 +3024,42 @@ The branch is now treated as an RC candidate for manual product acceptance, not 
   - `[todo]` wait for manual product acceptance feedback
   - `[todo]` if acceptance passes, run one last merge-time verification and merge to `main`
   - `[todo]` if acceptance finds issues, fix only concrete blockers with new focused commits
+
+## 2026-05-03 RC UX Density Feedback Follow-Up
+
+Manual acceptance found concrete UX blockers in the gateway, create-room flow, phone live cockpit, support entry points, timeline navigation, and status panel copy.
+
+- completed commits:
+  - `1d9cebd fix: use one table type selection for room creation`
+  - `d942179 fix: collapse phone table support actions`
+  - `cb5112f fix: simplify support panels and hand timeline`
+- fixed scope:
+  - `[done]` gateway now uses one poker-facing table-type selector and create-room inherits it
+  - `[done]` create-room modal no longer asks for the same mode twice
+  - `[done]` phone live hand collapses support launchers into one `桌面` entry
+  - `[done]` `桌面` sheet exposes `离座` as a first-level action
+  - `[done]` phone decision cockpit limits inline professional metrics to the three most useful items
+  - `[done]` embedded hand-history panel uses left/right carousel controls
+  - `[done]` status/member panels remove duplicate mode/status summary cards and stop using `状态面板` copy
+- fresh verification:
+  - `cd client && pnpm exec node --test src/components/modeGatewayMobileContract.test.js src/components/createRoomSurfaceContract.test.js src/utils/productMode.test.js src/components/createRoomModalContract.test.js src/components/joinRoomModalContract.test.js`: `36/36`
+  - `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js src/components/interactionSurfaceContract.test.js src/components/gameRoomStageContract.test.js src/view-models/gameViewModel.test.js src/utils/roomViewportLayout.test.js`: `148/148`
+  - `cd client && pnpm exec node --test src/components/interactionSurfaceContract.test.js src/utils/productMode.test.js src/components/gameRoomStageContract.test.js`: `61/61`
+  - `cd client && pnpm build`: passed with the existing Vite large chunk warning
+  - `git diff --check`: passed for each edited phase, with Windows LF-to-CRLF working-copy warnings only
+- fresh browser smoke:
+  - service check: `3001/api/rooms` returned `200 []`
+  - built app entry: `http://localhost:3001`
+  - room: `LYLBV8`
+  - two isolated browser sessions entered the same room and started a live hand
+  - phone viewport `390x844` showed one `桌面` launcher, no horizontal overflow, and `document/body scrollHeight = 844`
+  - `桌面` sheet showed first-level `离座 / 补码 / 分享 / 退出` plus `成员 / 牌局` links
+- newly discovered pitfalls:
+  - `5173/` was listening but returned `404`; do not trust port presence as health
+  - `3001` serves `client/dist`, so run `client pnpm build` before using it as the browser evidence entry
+  - PowerShell requires quoted refs for `agent-browser`, for example `click '@e3'`
+  - live-hand support panels may close when a new hand starts by design; use longer settlement/seeded evidence if validating history panels during auto-advancing hands
+- next action:
+  - `[todo]` repeat focused manual visual acceptance on the latest branch state
+  - `[todo]` if the timeline sheet still feels hard to access during fast live hands, create a new focused task around panel persistence vs action safety
+  - `[todo]` if acceptance passes, run full local verification again before considering merge to `main`
