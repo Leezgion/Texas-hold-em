@@ -2941,5 +2941,30 @@ This pass reran the final visual browser QA after phone profiling and fixed the 
   - `node .runlogs/2026-05-03-phone-interaction-smoothness-audit.cjs`: passed (`runId = mopmopgskzh`)
   - `git diff --check -- client/src/components/SeatCard.jsx client/src/components/roomTerminalShellContract.test.js`: passed, with Windows LF-to-CRLF working-copy warnings only
 - next queue:
-  - `[todo]` run final full local verification snapshot: full client node tests, client build, server tests, and repository whitespace/status checks
+  - `[done]` run final full local verification snapshot: full client node tests, client build, server tests, and repository whitespace/status checks
   - `[todo]` prepare a merge-readiness checklist that lists remaining product risks, but do not merge or push yet
+
+## 2026-05-03 Final Full Local Verification Snapshot
+
+This snapshot records the full local verification after the final visual QA seat-clearance fix and documentation updates.
+
+- full verification:
+  - `cd client && pnpm exec node --test`: `285/285`
+  - `cd client && pnpm build`: passed; Vite still reports the existing large chunk warning (`assets/index-5075a937.js` `545.74 kB`)
+  - `cd server && npm test -- --runInBand`: `130/130`
+  - `git diff --check`: passed
+  - `git status --short --branch`: clean worktree on `feat/poker-os-polish` before recording this snapshot; the exact ahead count is dynamic because this documentation snapshot is committed afterward
+- browser verification already recorded in the previous section:
+  - responsive cockpit visual QA: `mopgqixr`
+  - professional cockpit QA: `mopgrbwc`
+  - phone settlement/support panel QA: `mopgrwq0`
+  - phone smoothness rerun: `mopmopgskzh`
+- branch policy:
+  - stay on `feat/poker-os-polish`
+  - do not merge to `main`
+  - do not push until the merge-readiness checklist is reviewed and explicitly approved
+- merge-readiness queue:
+  - `[todo]` final product-readiness review: confirm the current scope is acceptable for `club / pro / study` mode positioning without adding deployment tasks
+  - `[todo]` final risk register: list known non-blockers such as the existing Vite chunk-size warning and support-sheet first-open Long Task warnings
+  - `[todo]` final operator handoff: summarize required local commands, service-health checks, browser QA scripts, and the “do not stage .runlogs” rule
+  - `[todo]` only after approval: merge the product branch to `main` and push
