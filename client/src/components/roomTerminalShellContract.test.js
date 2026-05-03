@@ -359,6 +359,23 @@ test('ActionButtons uses inline confirmation for all-in and large commit actions
   assert.match(globalStylesSource, /\.table-action-console__risk-confirmation\s*\{/);
 });
 
+test('ActionButtons keeps high-risk confirmation stable across timer-only gameState refreshes', () => {
+  const riskActionResetKeyBlock =
+    actionButtonsSource.match(/const riskActionResetKey = \[[\s\S]*?\]\.join\('\|'\);/)?.[0] ?? '';
+
+  assert.match(actionButtonsSource, /const riskActionResetKey = \[/);
+  assert.ok(riskActionResetKeyBlock);
+  assert.doesNotMatch(riskActionResetKeyBlock, /timeRemaining/);
+  assert.match(
+    actionButtonsSource,
+    /useEffect\(\(\) => \{\s*setPendingRiskAction\(null\);\s*\}, \[riskActionResetKey\]\);/s
+  );
+  assert.doesNotMatch(
+    actionButtonsSource,
+    /useEffect\(\(\) => \{\s*if \(gameState\) \{\s*setIsSubmitting\(false\);\s*setPendingRiskAction\(null\);/s
+  );
+});
+
 test('ActionDock keeps the live-hand action frame wired to ActionButtons', () => {
   assert.match(
     actionDockSource,
@@ -468,7 +485,7 @@ test('tablet portrait phone-oval live hand uses compact table and decision cockp
 test('ActionButtons fail-closes when player or gameState is temporarily unavailable', () => {
   assert.match(
     actionButtonsSource,
-    /useEffect\(\(\) => \{\s*if \(gameState\) \{\s*setIsSubmitting\(false\);\s*setPendingRiskAction\(null\);\s*\}\s*\}, \[gameState\]\);/s
+    /useEffect\(\(\) => \{\s*if \(gameState\) \{\s*setIsSubmitting\(false\);\s*\}\s*\}, \[gameState\]\);/s
   );
   assert.match(
     actionButtonsSource,

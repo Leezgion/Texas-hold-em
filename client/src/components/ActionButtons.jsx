@@ -129,6 +129,23 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       })
     : null;
   const proActionStats = buildProActionStatRows(proActionSummary);
+  const riskActionResetKey = [
+    hasResolvedActionState ? 'ready' : 'sync',
+    resolvedGameState.handNumber ?? '',
+    resolvedGameState.phase || '',
+    resolvedGameState.currentPlayerIndex ?? '',
+    resolvedGameState.currentBet ?? '',
+    resolvedGameState.minRaise ?? '',
+    resolvedGameState.currentPlayerActionMode || '',
+    lastAction?.timestamp ?? '',
+    lastAction?.playerId ?? '',
+    lastAction?.action ?? '',
+    resolvedPlayer.id || '',
+    resolvedPlayer.currentBet ?? '',
+    resolvedPlayer.chips ?? '',
+    resolvedPlayer.folded ? 'folded' : 'live',
+    resolvedPlayer.allIn ? 'allin' : 'stack',
+  ].join('|');
 
   const alignToBigBlind = (value) => {
     if (!bigBlind || bigBlind <= 0) return value;
@@ -167,9 +184,12 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
   useEffect(() => {
     if (gameState) {
       setIsSubmitting(false);
-      setPendingRiskAction(null);
     }
   }, [gameState]);
+
+  useEffect(() => {
+    setPendingRiskAction(null);
+  }, [riskActionResetKey]);
 
   useEffect(() => {
     if (isSubmitting) {
