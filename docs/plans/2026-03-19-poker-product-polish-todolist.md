@@ -3071,8 +3071,8 @@ Manual acceptance now found a larger phone UX architecture issue: the live-hand 
 - status:
   - `[in_progress]` replace phone live-hand presentation with a fullscreen felt-table cockpit
   - `[done]` lock the fullscreen shell with failing contract tests before production code
-  - `[todo]` float hero cards and actions on the table plane
-  - `[todo]` remove internal scrolling from the raise sizing surface
+  - `[done]` float hero cards and actions on the table plane
+  - `[done]` remove internal scrolling from the raise sizing surface
   - `[todo]` convert phone opponent seats into compact poker-app action/stack/bet badges
   - `[todo]` convert phone hand history into a replay side drawer with previous/next navigation and per-player action rows
 - design:
@@ -3090,3 +3090,6 @@ Manual acceptance now found a larger phone UX architecture issue: the live-hand 
 - stage 1 evidence:
   - red contract: `phone-terminal live hand uses a fullscreen felt table shell instead of stacked panels` failed before production changes
   - green contract: `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js` passed `46/46`
+- stage 2 evidence:
+  - red contract: `phone-terminal live actions float on the table and raise sizing does not scroll` failed before production changes
+  - green contract: `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js src/view-models/gameViewModel.test.js` passed `95/95`

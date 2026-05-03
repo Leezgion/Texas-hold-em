@@ -311,6 +311,7 @@ const ActionButtons = ({
       <div
         className="table-action-console table-action-console--inactive"
         data-action-console-state={actionConsoleState}
+        data-phone-action-layout={isPhoneTerminal ? 'floating-thumb-zone' : 'standard'}
       >
         <div className="table-action-console__empty-state">等待牌局状态同步</div>
       </div>
@@ -348,6 +349,7 @@ const ActionButtons = ({
       <div
         className="table-action-console table-action-console--watch"
         data-action-console-state={actionConsoleState}
+        data-phone-action-layout={isPhoneTerminal ? 'floating-thumb-zone' : 'standard'}
       >
         <div className="table-action-console__watch-state">
           <div className="table-action-console__watch-label">{watchLabel}</div>
@@ -376,6 +378,7 @@ const ActionButtons = ({
         isSubmitting ? 'table-action-console--submitting' : ''
       }`}
       data-action-console-state={actionConsoleState}
+      data-phone-action-layout={isPhoneTerminal ? 'floating-thumb-zone' : 'standard'}
     >
       {visibleProActionStats.length > 0 && (
         <div

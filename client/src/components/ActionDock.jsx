@@ -112,6 +112,7 @@ const ActionDock = ({
       data-hero-panel-layout={heroPanelLayout}
       data-has-center-stage={showsDecisionCenter ? 'true' : 'false'}
       data-support-launcher-mode={isPhoneLiveHand ? 'single-table-menu' : 'multi-panel'}
+      data-phone-action-presentation={isPhoneLiveHand ? 'floating-table-controls' : 'dock-panel'}
     >
       <div className="tactical-dock__grid">
         <div className="min-w-0 tactical-dock__hero-column">

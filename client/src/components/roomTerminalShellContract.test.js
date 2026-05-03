@@ -798,23 +798,31 @@ test('community cards support a micro density for short phone boards', () => {
   assert.match(cardSource, /isMicroCommunity\s*\?\s*'text-xs'/);
 });
 
-test('phone-terminal raise sizing opens as a bounded drawer instead of growing over the table', () => {
+test('phone-terminal live actions float on the table and raise sizing does not scroll', () => {
+  assert.match(
+    actionDockSource,
+    /data-phone-action-presentation=\{isPhoneLiveHand \? 'floating-table-controls' : 'dock-panel'\}/
+  );
+  assert.match(
+    actionButtonsSource,
+    /data-phone-action-layout=\{isPhoneTerminal \? 'floating-thumb-zone' : 'standard'\}/
+  );
   assert.match(actionButtonsSource, /table-action-console--raise-open/);
   assert.match(
     globalStylesSource,
-    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-surface\s*\{[\s\S]*position:\s*fixed;[\s\S]*bottom:\s*-0\.35rem;[\s\S]*max-height:\s*min\(11\.25rem,\s*calc\(100dvh - 31rem\)\);[\s\S]*overflow-y:\s*auto;/s
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\[data-phone-action-presentation="floating-table-controls"\]\s*\{[\s\S]*background:\s*transparent;[\s\S]*box-shadow:\s*none;/s
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__quick-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(4\.6rem,\s*1fr\)\);/s
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-surface\s*\{[\s\S]*position:\s*fixed;[\s\S]*max-height:\s*min\(12\.5rem,\s*calc\(100dvh - 28rem\)\);[\s\S]*overflow:\s*hidden;/s
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-command--wide\s*\{[\s\S]*min-height:\s*2\.45rem;/s
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__quick-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
   );
-  assert.match(
+  assert.doesNotMatch(
     globalStylesSource,
-    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-actions\s*\{[\s\S]*position:\s*sticky;[\s\S]*bottom:\s*-0\.56rem;/s
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-surface\s*\{[^}]*overflow-y:\s*auto;/s
   );
 });
 
