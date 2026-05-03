@@ -2872,7 +2872,39 @@ This snapshot records the full local verification after the professional cockpit
   - stay on `feat/poker-os-polish`
   - do not merge to `main` or push until phone performance profiling, final visual QA, and product-readiness review are complete
 - next queue:
-  - `[todo]` run real-browser phone interaction smoothness profiling for live hand, raise drawer, risk confirmation, support sheets, settlement, and multi-hand transitions
-  - `[todo]` reduce CSS/animation/paint cost if traces show jank
-  - `[todo]` run final cross-device visual QA screenshots after any performance changes
+  - `[done]` run real-browser phone interaction smoothness profiling for live hand, raise drawer, risk confirmation, support sheets, settlement, and multi-hand transitions
+  - `[done]` reduce CSS/animation/paint cost if traces show jank; no blocking jank was found, so no product code change was made in the profiling pass
+  - `[todo]` run final cross-device visual QA screenshots after the profiling evidence
   - `[todo]` prepare a merge-readiness checklist only after the above tasks are done
+
+## 2026-05-03 Phone Interaction Smoothness Profiling
+
+This pass measured the refined phone cockpit under real browser interaction instead of relying on subjective scroll/jank impressions.
+
+- method:
+  - profiling script: `.runlogs/2026-05-03-phone-interaction-smoothness-audit.cjs`
+  - evidence: `.runlogs/2026-05-03-phone-interaction-smoothness-audit.json` (`runId = mopmopggq8y`)
+  - viewports: phone `390x844` and compact phone `375x667`
+  - CPU throttle: `3x`
+  - captured click-to-ready time, Long Task max/count, RAF frame gap max/count, document scroll, clipping, and console errors
+- measured flows:
+  - all-in opens inline confirmation
+  - risk confirmation cancel returns to the action console
+  - raise button opens bounded drawer
+  - raise drawer cancel returns to the action console
+  - member support sheet opens/closes
+  - fold renders settlement sheet
+  - history support sheet opens/closes over settlement
+  - settlement auto-advances back to the live table
+- result:
+  - no hard interaction, layout, scroll, clipping, or console-error failures
+  - all critical action controls reached stable UI in under `300ms` under `3x` CPU throttle
+  - risk confirmation and raise drawer interactions stayed below `200ms`
+  - settlement rendering stayed below `280ms`
+- warnings to keep:
+  - support sheet opening produced moderate Long Tasks on both phone sizes
+  - max values: member sheet `141ms`, history sheet `137ms`, compact history sheet `123ms`
+  - current root-cause read: first sheet mount plus focus/inert lock and panel content render, not runaway backdrop/animation cost; phone motion rules already disable sheet backdrop filters and key room animations
+- next queue:
+  - `[todo]` run final cross-device visual QA for live, risk-confirmation, raise-drawer, support-sheet, and settlement states
+  - `[todo]` if final QA finds no visual blockers, prepare merge-readiness checklist without merging or pushing
