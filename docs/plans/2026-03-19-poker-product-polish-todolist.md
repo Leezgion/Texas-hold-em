@@ -2999,7 +2999,28 @@ This checklist prepares the branch for review without merging or pushing.
   - run browser QA serially for stateful room/device scenarios
   - close only automation-owned browser sessions; do not close user-owned manual browser windows by guess
 - final integration options:
-  - current selected option: keep `feat/poker-os-polish` as-is
+  - current selected option: keep `feat/poker-os-polish` as-is as a release-candidate branch
   - do not merge locally yet
   - do not push or create a PR yet
   - do not discard the branch
+
+## 2026-05-03 RC Candidate Decision
+
+The branch is now treated as an RC candidate for manual product acceptance, not as a branch to continue polishing indefinitely.
+
+- decision:
+  - keep `feat/poker-os-polish` as the active RC candidate
+  - do not merge to `main` until manual product acceptance is complete
+  - do not push until merge approval is explicit
+  - treat the Vite large chunk warning and support-sheet first-open Long Task warnings as documented non-blockers for this non-launch phase
+- manual acceptance checklist:
+  - create a `club` room, invite/join another device, sit, start, leave/rebuy, and verify room/member surfaces
+  - create a `pro` room, play through fold/call/raise/all-in, confirm high-risk action protection, and verify single-screen phone cockpit
+  - create a `study` room or review settlement/history surfaces, verify reveal policy, side-pot text, and hand-history panel readability
+  - check phone `390x844`, compact phone `375x667`, tablet portrait `768x1024`, tablet landscape `1024x768`, and desktop `1366x900`
+  - confirm no obvious seat/cockpit overlap, no forced page scroll during live action, no blocked modal/inert state after closing panels
+  - confirm the product feels acceptable before merge, rather than starting another broad UI redesign pass
+- next action:
+  - `[todo]` wait for manual product acceptance feedback
+  - `[todo]` if acceptance passes, run one last merge-time verification and merge to `main`
+  - `[todo]` if acceptance finds issues, fix only concrete blockers with new focused commits
