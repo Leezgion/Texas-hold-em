@@ -2867,7 +2867,7 @@ This snapshot records the full local verification after the professional cockpit
   - `cd client && pnpm build`: passed; Vite still reports the existing large chunk warning (`assets/index-5d8a2c72.js` `545.74 kB`)
   - `cd server && npm test -- --runInBand`: `130/130`
   - `git diff --check`: passed
-  - `git status --short --branch`: clean worktree on `feat/poker-os-polish`, ahead of origin by `50`
+  - `git status --short --branch`: clean worktree on `feat/poker-os-polish` before recording this snapshot; the exact ahead count is dynamic because the documentation snapshot is committed afterward
 - branch policy:
   - stay on `feat/poker-os-polish`
   - do not merge to `main` or push until phone performance profiling, final visual QA, and product-readiness review are complete
