@@ -162,6 +162,52 @@ export function derivePlayerStateView(player = {}, roomState = 'idle') {
   };
 }
 
+function safeRound(value, digits = 0) {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  const factor = 10 ** digits;
+  return Math.round(value * factor) / factor;
+}
+
+function mapActionModeLabel(mode = 'open', toCall = 0) {
+  if (mode === 'call_only') {
+    return '仅可跟注';
+  }
+
+  return toCall > 0 ? '可加注' : '可过牌';
+}
+
+function mapActionSummaryStreet(phase = null) {
+  return mapPhaseToStageLabel(phase);
+}
+
+function formatSummaryLastAction(lastAction = null) {
+  if (!lastAction?.action) {
+    return null;
+  }
+
+  const totalAmount = Number(lastAction.totalBet ?? lastAction.amount) || 0;
+  const actionAmount = Number(lastAction.amount) || 0;
+
+  switch (lastAction.action) {
+    case 'raise':
+      return `上一动作 加注到 ${totalAmount.toLocaleString()}`;
+    case 'call':
+      return `上一动作 跟注 ${actionAmount.toLocaleString()}`;
+    case 'check':
+      return '上一动作 过牌';
+    case 'fold':
+      return '上一动作 弃牌';
+    case 'all_in':
+    case 'all-in':
+      return `上一动作 All-in ${totalAmount.toLocaleString()}`;
+    default:
+      return null;
+  }
+}
+
 export function deriveRoomOccupancy(players = [], roomState = 'idle') {
   const playerViews = players.map((player) => ({
     player,
@@ -195,6 +241,7 @@ export function deriveProActionSummary({ currentPlayer = null, players = [], gam
   const toCall = Math.max(0, (Number(gameState.currentBet) || 0) - (Number(currentPlayer.currentBet) || 0));
   const minRaise = Number(gameState.minRaise) || 0;
   const pot = Number(gameState.pot) || 0;
+  const bigBlind = Number(gameState.bigBlind) || 0;
 
   const liveOpponents = (Array.isArray(players) ? players : []).filter((player) => {
     if (!player || player.id === currentPlayer.id) {
@@ -207,12 +254,24 @@ export function deriveProActionSummary({ currentPlayer = null, players = [], gam
   const highestLiveOpponentStack = liveOpponents.reduce((maxChips, player) => {
     return Math.max(maxChips, Number(player.chips) || 0);
   }, 0);
+  const effectiveStack = Math.min(Number(currentPlayer.chips) || 0, highestLiveOpponentStack);
+  const priceDenominator = pot + toCall;
+  const effectiveStackBb = bigBlind > 0 ? safeRound(effectiveStack / bigBlind, 1) : null;
+  const potOddsPercent =
+    toCall > 0 && priceDenominator > 0 ? safeRound((toCall / priceDenominator) * 100, 0) : null;
+  const spr = pot > 0 ? safeRound(effectiveStack / pot, 2) : null;
 
   return {
     toCall,
     minRaise,
     pot,
-    effectiveStack: Math.min(Number(currentPlayer.chips) || 0, highestLiveOpponentStack),
+    effectiveStack,
+    effectiveStackBb,
+    potOddsPercent,
+    spr,
+    streetLabel: mapActionSummaryStreet(gameState.phase),
+    lastActionLabel: formatSummaryLastAction(gameState.lastAction),
+    actionModeLabel: mapActionModeLabel(gameState.currentPlayerActionMode, toCall),
   };
 }
 
@@ -222,10 +281,12 @@ export function buildProActionStatRows(summary = null) {
   }
 
   return [
+    { label: 'Price', value: summary.potOddsPercent == null ? '-' : `${summary.potOddsPercent}%` },
     { label: 'To Call', value: (Number(summary.toCall) || 0).toLocaleString() },
-    { label: 'Min Raise', value: (Number(summary.minRaise) || 0).toLocaleString() },
-    { label: 'Pot', value: (Number(summary.pot) || 0).toLocaleString() },
-    { label: 'Eff', value: (Number(summary.effectiveStack) || 0).toLocaleString() },
+    { label: 'SPR', value: summary.spr == null ? '-' : String(summary.spr) },
+    { label: 'Eff BB', value: summary.effectiveStackBb == null ? '-' : `${summary.effectiveStackBb}BB` },
+    { label: 'Street', value: summary.streetLabel || '-' },
+    { label: 'Mode', value: summary.actionModeLabel || '-' },
   ];
 }
 

@@ -835,7 +835,61 @@ test('derives pro-mode action summary from authoritative current-hand numbers', 
     minRaise: 20,
     pot: 30,
     effectiveStack: 980,
+    effectiveStackBb: null,
+    potOddsPercent: 25,
+    spr: 32.67,
+    streetLabel: null,
+    lastActionLabel: null,
+    actionModeLabel: '可加注',
   });
+});
+
+test('derives professional decision metrics from current hand numbers', () => {
+  const summary = deriveProActionSummary({
+    currentPlayer: {
+      id: 'hero',
+      chips: 900,
+      currentBet: 100,
+      folded: false,
+      allIn: false,
+    },
+    players: [
+      { id: 'hero', chips: 900, currentBet: 100, folded: false, allIn: false },
+      { id: 'villain', chips: 1800, currentBet: 300, folded: false, allIn: false },
+    ],
+    gameState: {
+      phase: 'turn',
+      currentBet: 300,
+      minRaise: 400,
+      pot: 1200,
+      bigBlind: 20,
+      currentPlayerActionMode: 'open',
+      lastAction: { playerId: 'villain', action: 'raise', amount: 200, totalBet: 300 },
+    },
+  });
+
+  assert.equal(summary.toCall, 200);
+  assert.equal(summary.minRaise, 400);
+  assert.equal(summary.pot, 1200);
+  assert.equal(summary.effectiveStack, 900);
+  assert.equal(summary.effectiveStackBb, 45);
+  assert.equal(summary.potOddsPercent, 14);
+  assert.equal(summary.spr, 0.75);
+  assert.equal(summary.streetLabel, 'TURN');
+  assert.equal(summary.actionModeLabel, '可加注');
+  assert.equal(summary.lastActionLabel, '上一动作 加注到 300');
+});
+
+test('keeps professional decision metrics safe when pot or blind data is missing', () => {
+  const summary = deriveProActionSummary({
+    currentPlayer: { id: 'hero', chips: 500, currentBet: 0 },
+    players: [{ id: 'hero', chips: 500, currentBet: 0 }],
+    gameState: { currentBet: 0, minRaise: 0, pot: 0, bigBlind: 0 },
+  });
+
+  assert.equal(summary.potOddsPercent, null);
+  assert.equal(summary.spr, null);
+  assert.equal(summary.effectiveStackBb, null);
 });
 
 test('builds compact pro-mode action stat rows for the decision strip', () => {
@@ -847,10 +901,36 @@ test('builds compact pro-mode action stat rows for the decision strip', () => {
       effectiveStack: 980,
     }),
     [
+      { label: 'Price', value: '-' },
       { label: 'To Call', value: '10' },
-      { label: 'Min Raise', value: '20' },
-      { label: 'Pot', value: '30' },
-      { label: 'Eff', value: '980' },
+      { label: 'SPR', value: '-' },
+      { label: 'Eff BB', value: '-' },
+      { label: 'Street', value: '-' },
+      { label: 'Mode', value: '-' },
+    ]
+  );
+});
+
+test('builds compact pro-mode cockpit rows with price and stack pressure', () => {
+  assert.deepEqual(
+    buildProActionStatRows({
+      toCall: 200,
+      minRaise: 400,
+      pot: 1200,
+      effectiveStack: 900,
+      effectiveStackBb: 45,
+      potOddsPercent: 14,
+      spr: 0.75,
+      streetLabel: 'TURN',
+      actionModeLabel: '可加注',
+    }),
+    [
+      { label: 'Price', value: '14%' },
+      { label: 'To Call', value: '200' },
+      { label: 'SPR', value: '0.75' },
+      { label: 'Eff BB', value: '45BB' },
+      { label: 'Street', value: 'TURN' },
+      { label: 'Mode', value: '可加注' },
     ]
   );
 });
