@@ -9,8 +9,10 @@ const modeShellSource = readFileSync(new URL('./ModeShell.jsx', import.meta.url)
 const actionDockSource = readFileSync(new URL('./ActionDock.jsx', import.meta.url), 'utf8');
 const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.meta.url), 'utf8');
 const handHistoryDrawerSource = readFileSync(new URL('./HandHistoryDrawer.jsx', import.meta.url), 'utf8');
+const eventRailSource = readFileSync(new URL('./EventRail.jsx', import.meta.url), 'utf8');
 const intelRailSource = readFileSync(new URL('./IntelRail.jsx', import.meta.url), 'utf8');
 const playerPanelSource = readFileSync(new URL('./PlayerPanel.jsx', import.meta.url), 'utf8');
+const roomPanelSheetSource = readFileSync(new URL('./RoomPanelSheet.jsx', import.meta.url), 'utf8');
 const gameContextSource = readFileSync(new URL('../contexts/GameContext.jsx', import.meta.url), 'utf8');
 const gameRoomSource = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 'utf8');
 const handResultModalSource = readFileSync(new URL('./HandResultModal.jsx', import.meta.url), 'utf8');
@@ -121,6 +123,27 @@ test('embedded hand timeline uses left-right switching instead of a tall vertica
   assert.match(
     cssSource,
     /\.tactical-history-drawer\[data-interaction-model="carousel"\]\s+\.tactical-history-tape\s*\{[\s\S]*display:\s*block;/s
+  );
+});
+
+test('phone-terminal history panel presents a hand replay side drawer', () => {
+  assert.match(
+    gameRoomSource,
+    /const historyPanelPresentation = isPhoneLiveHand \? 'side-replay-drawer' : supportPanelPresentation;/
+  );
+  assert.match(gameRoomSource, /presentation=\{historyPanelPresentation\}/);
+  assert.match(gameRoomSource, /presentation=\{historyPanelPresentation === 'side-replay-drawer' \? 'side-replay-drawer' : 'panel'\}/);
+  assert.match(
+    eventRailSource,
+    /data-event-presentation=\{presentation === 'side-replay-drawer' \? 'hand-replay' : presentation\}/
+  );
+  assert.match(eventRailSource, /const HandReplayPanel = \(/);
+  assert.match(eventRailSource, /event-rail__replay-controls/);
+  assert.match(eventRailSource, /event-rail__action-row/);
+  assert.match(roomPanelSheetSource, /presentation === 'side-replay-drawer' \? 'replay-drawer'/);
+  assert.match(
+    cssSource,
+    /\.room-panel-sheet\[data-room-panel-presentation="side-replay-drawer"\]\s*\{[\s\S]*inset:\s*0 0 0 auto;/s
   );
 });
 

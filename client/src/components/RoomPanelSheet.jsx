@@ -15,7 +15,8 @@ const RoomPanelSheet = ({
   const surfaceRef = useRef(null);
   const closeButtonRef = useRef(null);
   const titleId = useId();
-  const sheetDensity = presentation === 'bottom-sheet' ? 'tight-terminal' : 'panel-surface';
+  const sheetDensity =
+    presentation === 'side-replay-drawer' ? 'replay-drawer' : presentation === 'bottom-sheet' ? 'tight-terminal' : 'panel-surface';
   const { handleKeyDown } = useModalSurface({
     open,
     onClose,

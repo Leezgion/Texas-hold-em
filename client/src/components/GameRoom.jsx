@@ -668,6 +668,7 @@ const GameRoom = () => {
   };
   const closeSupportPanel = () => setActiveSupportPanel(null);
   const isPhoneLiveHand = roomViewportLayout.viewportModel === 'phone-terminal' && gameStarted;
+  const historyPanelPresentation = isPhoneLiveHand ? 'side-replay-drawer' : supportPanelPresentation;
   const roomToolsPanelTitle = isPhoneLiveHand ? '桌面' : supportLabels.room || '房间';
   const roomToolsPanelSubtitle = isPhoneLiveHand ? '离座、补码、成员与牌局入口' : shellView.modeTitle;
   const roomToolPrimaryActions = [
@@ -971,7 +972,7 @@ const GameRoom = () => {
               open={activeSupportPanel === 'history'}
               title={supportLabels.history || 'History'}
               subtitle={`${eventRailView.historyCount} 手牌`}
-              presentation={supportPanelPresentation}
+              presentation={historyPanelPresentation}
               onClose={closeSupportPanel}
             >
               <EventRail
@@ -983,7 +984,7 @@ const GameRoom = () => {
                 currentPlayerId={currentPlayerId}
                 effectiveDisplayMode={effectiveDisplayMode}
                 viewportLayout={roomViewportLayout}
-                presentation="panel"
+                presentation={historyPanelPresentation === 'side-replay-drawer' ? 'side-replay-drawer' : 'panel'}
               />
             </RoomPanelSheet>
 

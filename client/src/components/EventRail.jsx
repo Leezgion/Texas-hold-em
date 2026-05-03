@@ -1,11 +1,149 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 import HandHistoryDrawer from './HandHistoryDrawer';
 import Leaderboard from './Leaderboard';
 import { getDisplayModeTheme } from '../utils/productMode';
+import { sanitizeDisplayName } from '../utils/playerIdentity';
 import { buildTacticalMotionProfile, resolveTacticalMotionViewport } from '../utils/tacticalMotion';
 import { buildHandHistoryView } from '../view-models/handHistoryViewModel';
+
+function formatReplayAction(action = {}, players = []) {
+  const actor = players.find((player) => player?.id === action.playerId) || null;
+  const actorName = sanitizeDisplayName(actor?.nickname || action.playerId, {
+    fallback: '玩家',
+    isHost: Boolean(actor?.isHost),
+  });
+  const amount = Number(action.totalBet ?? action.amount) || 0;
+
+  switch (action.action) {
+    case 'fold':
+      return `${actorName} 弃牌`;
+    case 'check':
+      return `${actorName} 过牌`;
+    case 'call':
+      return `${actorName} 跟注 ${amount.toLocaleString()}`;
+    case 'raise':
+      return `${actorName} 加注到 ${amount.toLocaleString()}`;
+    case 'allin':
+      return `${actorName} All-in ${amount.toLocaleString()}`;
+    case 'small_blind':
+      return `${actorName} 小盲 ${amount.toLocaleString()}`;
+    case 'big_blind':
+      return `${actorName} 大盲 ${amount.toLocaleString()}`;
+    default:
+      return `${actorName} ${action.action || '行动'}${amount ? ` ${amount.toLocaleString()}` : ''}`;
+  }
+}
+
+function buildReplayActionRows(record = {}, summary = null, players = []) {
+  const streetEntries = Object.entries(record.actionsByStreet || {});
+  const actionRows = streetEntries.flatMap(([street, actions]) =>
+    (Array.isArray(actions) ? actions : []).map((action, index) => ({
+      key: `${street}-${index}`,
+      tone: action.action === 'fold' ? 'muted' : action.action === 'allin' || action.action === 'raise' ? 'risk' : 'neutral',
+      street: street.toUpperCase(),
+      text: formatReplayAction(action, players),
+    }))
+  );
+
+  if (actionRows.length > 0) {
+    return actionRows;
+  }
+
+  return [summary?.headlineLine, ...(summary?.scoreboardLines || []), ...(summary?.detailLines || [])]
+    .filter(Boolean)
+    .slice(0, 8)
+    .map((line, index) => ({
+      key: `summary-${index}`,
+      tone: line.includes('+') ? 'win' : line.includes('-') ? 'loss' : 'neutral',
+      street: index === 0 ? '结果' : '明细',
+      text: line,
+    }));
+}
+
+const HandReplayPanel = ({
+  records = [],
+  summaries = [],
+  players = [],
+  motionProfile,
+  lineLimit,
+}) => {
+  const [activeSummaryIndex, setActiveSummaryIndex] = useState(0);
+  const recordsByHand = useMemo(
+    () => new Map(records.map((record) => [record.handNumber, record])),
+    [records]
+  );
+
+  useEffect(() => {
+    setActiveSummaryIndex((currentValue) => {
+      if (summaries.length === 0) {
+        return 0;
+      }
+
+      return Math.min(currentValue, summaries.length - 1);
+    });
+  }, [summaries.length]);
+
+  const activeSummary = summaries[activeSummaryIndex] || null;
+  const activeRecord = activeSummary ? recordsByHand.get(activeSummary.handNumber) || null : null;
+  const replayRows = buildReplayActionRows(activeRecord || {}, activeSummary, players).slice(0, lineLimit);
+  const canMovePrevious = activeSummaryIndex > 0;
+  const canMoveNext = activeSummaryIndex < summaries.length - 1;
+
+  return (
+    <section className="poker-shell-panel tactical-rail__panel event-rail__replay rounded-[1.35rem] p-3">
+      <div className="event-rail__replay-header">
+        <div>
+          <div className="poker-shell-kicker">牌局回放</div>
+          <div className="tactical-rail__title">{activeSummary?.title || '暂无手牌'}</div>
+        </div>
+        <span className="tactical-rail__pill">
+          {summaries.length > 0 ? `${activeSummaryIndex + 1}/${summaries.length}` : '0'}
+        </span>
+      </div>
+
+      <div className="event-rail__replay-controls">
+        <button type="button" disabled={!canMovePrevious} onClick={() => setActiveSummaryIndex((value) => Math.max(0, value - 1))}>
+          上一手
+        </button>
+        <button type="button" disabled={!canMoveNext} onClick={() => setActiveSummaryIndex((value) => Math.min(summaries.length - 1, value + 1))}>
+          下一手
+        </button>
+      </div>
+
+      {activeSummary?.boardLabel && (
+        <div className="event-rail__board-line">
+          <span>公牌</span>
+          <strong>{activeSummary.boardLabel}</strong>
+        </div>
+      )}
+
+      <div className="event-rail__action-list">
+        {replayRows.length === 0 ? (
+          <div className="event-rail__action-row event-rail__action-row--empty">暂无动作记录</div>
+        ) : (
+          replayRows.map((row, index) => (
+            <motion.div
+              key={row.key}
+              className="event-rail__action-row"
+              data-action-tone={row.tone}
+              initial={motionProfile.handTape.initial}
+              animate={motionProfile.handTape.animate}
+              transition={{
+                ...motionProfile.handTape.transition,
+                delay: motionProfile.handTape.staggerChildren * index,
+              }}
+            >
+              <span className="event-rail__action-street">{row.street}</span>
+              <span className="event-rail__action-copy">{row.text}</span>
+            </motion.div>
+          ))
+        )}
+      </div>
+    </section>
+  );
+};
 
 const EventRail = ({
   eventRailView,
@@ -26,11 +164,35 @@ const EventRail = ({
   });
   const roomCopy = theme.room;
   const historyItems = buildHandHistoryView(records).slice(0, roomCopy.historyPreviewCount);
+  const replaySummaries = buildHandHistoryView(records);
   const summaryLineLimit = effectiveDisplayMode === 'study' ? 5 : effectiveDisplayMode === 'club' ? 2 : 3;
   const historyLineLimit = effectiveDisplayMode === 'study' ? 6 : 4;
   const centerPriority = eventRailView.livePotSummary?.centerPriority || 'board-pot-street';
   const ContainerTag = presentation === 'rail' ? 'aside' : 'div';
   const supportLauncherDensity = viewportLayout?.supportLauncherDensity || 'regular';
+
+  if (presentation === 'side-replay-drawer') {
+    return (
+      <ContainerTag
+        className="room-terminal-support-rail tactical-rail tactical-rail--event"
+        data-viewport-model={viewportLayout?.viewportModel}
+        data-support-surface-model={viewportLayout?.supportSurfaceModel}
+        data-support-surface-policy={viewportLayout?.supportSurfacePolicyValue}
+        data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
+        data-surface-variant={presentation}
+        data-event-presentation={presentation === 'side-replay-drawer' ? 'hand-replay' : presentation}
+        data-support-launcher-density={supportLauncherDensity}
+      >
+        <HandReplayPanel
+          records={records}
+          summaries={replaySummaries}
+          players={players}
+          motionProfile={motionProfile}
+          lineLimit={effectiveDisplayMode === 'study' ? 14 : 10}
+        />
+      </ContainerTag>
+    );
+  }
 
   return (
     <ContainerTag
@@ -40,6 +202,7 @@ const EventRail = ({
       data-support-surface-policy={viewportLayout?.supportSurfacePolicyValue}
       data-support-surface-policy-key={viewportLayout?.supportSurfacePolicyKey}
       data-surface-variant={presentation}
+      data-event-presentation={presentation === 'side-replay-drawer' ? 'hand-replay' : presentation}
       data-support-launcher-density={supportLauncherDensity}
     >
       <section className="poker-shell-panel tactical-rail__panel tactical-rail__panel--event rounded-[1.75rem] p-4 sm:p-5">
