@@ -2672,4 +2672,43 @@ This pass made the phone homepage action-first without removing the mode preview
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-e1d8cc10.js` 541.94 kB)
   - `git diff --check`: passed, with Windows LF-to-CRLF working-copy warnings only
 - next queue:
-  - `[todo]` validate the action-first homepage on tablet and desktop widths so the grid-area reordering preserves the intended hero-left / controls-right composition outside phone
+  - `[done]` validate the action-first homepage on tablet and desktop widths so the grid-area reordering preserves the intended hero-left / controls-right composition outside phone
+
+## 2026-05-03 Homepage Gateway Responsive Audit
+
+This pass validated and tightened the homepage gateway outside phone.
+
+- root cause:
+  - the previous phone-first fix only compressed `max-width: 767px`
+  - tablet portrait and tablet landscape inherited the full desktop copy/summary stack, and `1024px` landscape did not get the hero-left / controls-right composition because the two-column breakpoint was still `xl`
+- change:
+  - moved the homepage two-column composition to `min-width: 1024px`
+  - added a `max-width: 1279px` compact gateway policy that hides duplicate mode summary copy and keeps create/join actions short
+  - capped tablet hero title scale so the visual stays bold without swallowing the action area
+- browser evidence:
+  - `.runlogs/2026-05-03-homepage-gateway-responsive-audit.json` (`runId = mopaqu1r`)
+  - screenshots:
+    - `.runlogs/2026-05-03-homepage-gateway-responsive-phone.png`
+    - `.runlogs/2026-05-03-homepage-gateway-responsive-tablet-portrait.png`
+    - `.runlogs/2026-05-03-homepage-gateway-responsive-tablet-landscape.png`
+    - `.runlogs/2026-05-03-homepage-gateway-responsive-desktop.png`
+    - `.runlogs/2026-05-03-homepage-gateway-responsive-ultrawide.png`
+- verified contract:
+  - phone `390x844`: create/join controls still occupy the first `449px`; no horizontal overflow
+  - tablet portrait `768x1024`: scroll height dropped from `3171px` to `1622px`, join button bottom is `459`, summary/copy hidden
+  - tablet landscape `1024x768`: layout areas are `"hero control"`, hero sits left of control, join button bottom is `454`, summary/copy hidden
+  - desktop `1366x900`: layout areas stay `"hero control"`, summary/copy visible, join button bottom is `730`
+  - ultrawide `1728x1000`: layout areas stay `"hero control"`, summary/copy visible, join button bottom is `732`, no horizontal overflow
+- implementation note:
+  - `1024px` is treated as a true two-column terminal, not as a stacked tablet
+  - `max-width: 1279px` remains action-first and compact; `>=1280px` restores the richer desktop control rail
+- final verification:
+  - red test before implementation: `tablet ModeGateway keeps the gateway compact before the desktop breakpoint` failed on missing `1024px` two-column policy and missing `1279px` compact policy
+  - red test before title cap: the tablet title clamp assertion failed on the old `clamp(2.3rem, 7vw, 4rem)` value
+  - `cd client && pnpm exec node --test src/components/modeGatewayMobileContract.test.js`: `3/3`
+  - `node .runlogs/2026-05-03-homepage-gateway-responsive-audit.cjs`: passed across phone, tablet portrait, tablet landscape, desktop, and ultrawide
+  - `cd client && pnpm exec node --test`: `273/273`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-11000895.js` 541.94 kB)
+  - `git diff --check`: passed, with Windows LF-to-CRLF working-copy warnings only
+- next queue:
+  - `[todo]` return to the live room table/action cockpit responsive audit so phone, tablet, desktop, and ultrawide all keep the real table, hand cards, pot, and betting controls in a coherent single decision surface

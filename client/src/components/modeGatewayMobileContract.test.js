@@ -23,7 +23,7 @@ test('ModeGateway exposes semantic action-first hooks for the phone homepage', (
 test('phone ModeGateway promotes create and join before the marketing stage', () => {
   assert.match(
     globalStylesSource,
-    /\.mode-gateway-layout\s*\{\s*@apply grid gap-6 xl:grid-cols-\[minmax\(0,1\.3fr\)_420px\];[\s\S]*grid-template-areas:\s*"control"\s*"hero";/s
+    /\.mode-gateway-layout\s*\{\s*@apply grid gap-6;[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\);[\s\S]*grid-template-areas:\s*"control"\s*"hero";/s
   );
   assert.match(
     globalStylesSource,
@@ -35,7 +35,7 @@ test('phone ModeGateway promotes create and join before the marketing stage', ()
   );
   assert.match(
     globalStylesSource,
-    /@media \(min-width: 1280px\) \{[\s\S]*\.mode-gateway-layout\s*\{[\s\S]*grid-template-areas:\s*"hero control";/s
+    /@media \(min-width: 1024px\) \{[\s\S]*\.mode-gateway-layout\s*\{[\s\S]*grid-template-areas:\s*"hero control";/s
   );
   assert.match(
     globalStylesSource,
@@ -56,5 +56,32 @@ test('phone ModeGateway promotes create and join before the marketing stage', ()
   assert.match(
     globalStylesSource,
     /@media \(max-width: 767px\) \{[\s\S]*\.mode-gateway-control\s+\.mode-primary-button,[\s\S]*\.mode-gateway-control\s+\.mode-secondary-button\s*\{[\s\S]*min-height:\s*3rem;/s
+  );
+});
+
+test('tablet ModeGateway keeps the gateway compact before the desktop breakpoint', () => {
+  assert.match(
+    globalStylesSource,
+    /@media \(min-width: 1024px\) \{[\s\S]*\.mode-gateway-layout\s*\{[\s\S]*grid-template-areas:\s*"hero control";/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 1279px\) \{[\s\S]*\.mode-gateway-control__copy,[\s\S]*\.mode-gateway-side-note\s*\{[\s\S]*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 1279px\) \{[\s\S]*\.mode-gateway-control__block--mode-summary\s*\{[\s\S]*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 1279px\) \{[\s\S]*\.mode-gateway-preview-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 1279px\) \{[\s\S]*\.mode-gateway-title\s*\{[\s\S]*font-size:\s*clamp\(2\.2rem,\s*6vw,\s*3\.25rem\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /@media \(max-width: 767px\) \{[\s\S]*\.mode-gateway-preview-grid\s*\{[\s\S]*grid-template-columns:\s*1fr;/s
   );
 });
