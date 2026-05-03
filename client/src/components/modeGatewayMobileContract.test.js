@@ -11,13 +11,25 @@ test('ModeGateway exposes semantic action-first hooks for the phone homepage', (
   assert.match(modeGatewaySource, /data-phone-priority="primary-actions"/);
   assert.match(modeGatewaySource, /mode-gateway-control__block mode-gateway-control__block--create/);
   assert.match(modeGatewaySource, /mode-gateway-control__block mode-gateway-control__block--join/);
-  assert.match(modeGatewaySource, /mode-gateway-control__block mode-gateway-control__block--mode-summary/);
+  assert.doesNotMatch(modeGatewaySource, /mode-gateway-control__block--mode-summary/);
   assert.match(modeGatewaySource, /mode-gateway-control__copy/);
   assert.ok(
     modeGatewaySource.indexOf('<aside className="mode-gateway-control"') <
       modeGatewaySource.indexOf('<section className="mode-gateway-panel mode-gateway-panel--hero'),
     'primary actions should appear before marketing hero in DOM and focus order'
   );
+});
+
+test('ModeGateway uses one poker-facing table type selector instead of duplicate display-mode panels', () => {
+  assert.match(modeGatewaySource, /mode-gateway-table-type-selector/);
+  assert.match(modeGatewaySource, /选择牌桌/);
+  assert.match(modeGatewaySource, /开职业桌|开私局|开复盘桌/);
+  assert.match(modeGatewaySource, /onCreateRoom\(effectiveDisplayMode\)/);
+  assert.doesNotMatch(modeGatewaySource, /模式速览/);
+  assert.doesNotMatch(modeGatewaySource, /显示模式/);
+  assert.doesNotMatch(modeGatewaySource, /客户端显示模式/);
+  assert.doesNotMatch(modeGatewaySource, /后端真相/);
+  assert.doesNotMatch(modeGatewaySource, /模态框/);
 });
 
 test('phone ModeGateway promotes create and join before the marketing stage', () => {
@@ -51,7 +63,7 @@ test('phone ModeGateway promotes create and join before the marketing stage', ()
   );
   assert.match(
     globalStylesSource,
-    /@media \(max-width: 767px\) \{[\s\S]*\.mode-gateway-control__block--mode-summary\s*\{[\s\S]*display:\s*none;/s
+    /@media \(max-width: 767px\) \{[\s\S]*\.mode-gateway-table-type-selector\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
   );
   assert.match(
     globalStylesSource,
@@ -70,7 +82,7 @@ test('tablet ModeGateway keeps the gateway compact before the desktop breakpoint
   );
   assert.match(
     globalStylesSource,
-    /@media \(max-width: 1279px\) \{[\s\S]*\.mode-gateway-control__block--mode-summary\s*\{[\s\S]*display:\s*none;/s
+    /@media \(max-width: 1279px\) \{[\s\S]*\.mode-gateway-table-type-selector\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
   );
   assert.match(
     globalStylesSource,

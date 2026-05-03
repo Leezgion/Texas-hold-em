@@ -1,21 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useGame } from '../contexts/GameContext';
-import { ROOM_MODE_META, buildModePreviewCards, deriveCreateRoomAdvancedPanelState, getDisplayModeTheme } from '../utils/productMode';
+import { ROOM_MODE_META, deriveCreateRoomAdvancedPanelState, getDisplayModeTheme, normalizeRoomMode } from '../utils/productMode';
 import { deriveRequestErrorFeedback } from '../view-models/gameViewModel';
-import ModePreviewCard from './ModePreviewCard';
 import SliderInput from './SliderInput';
 import Modal from './Modal';
 
 const CreateRoomModal = () => {
-  const { showCreateRoom, setShowCreateRoom, createRoom } = useGame();
+  const { showCreateRoom, setShowCreateRoom, createRoom, pendingCreateRoomMode } = useGame();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const modeCards = buildModePreviewCards();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const wasOpenRef = useRef(showCreateRoom);
 
   const [settings, setSettings] = useState({
-    roomMode: 'pro',
+    roomMode: normalizeRoomMode(pendingCreateRoomMode),
     duration: 60,
     maxPlayers: 6,
     allowStraddle: false,
@@ -23,6 +21,7 @@ const CreateRoomModal = () => {
   });
 
   useEffect(() => {
+    const isOpening = !wasOpenRef.current && showCreateRoom;
     const nextShowAdvanced = deriveCreateRoomAdvancedPanelState({
       wasOpen: wasOpenRef.current,
       isOpen: showCreateRoom,
@@ -34,7 +33,14 @@ const CreateRoomModal = () => {
     if (nextShowAdvanced !== showAdvanced) {
       setShowAdvanced(nextShowAdvanced);
     }
-  }, [showAdvanced, showCreateRoom]);
+
+    if (isOpening) {
+      setSettings((current) => ({
+        ...current,
+        roomMode: normalizeRoomMode(pendingCreateRoomMode),
+      }));
+    }
+  }, [pendingCreateRoomMode, showAdvanced, showCreateRoom]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,7 +75,6 @@ const CreateRoomModal = () => {
   const selectedModeTheme = getDisplayModeTheme(settings.roomMode);
   const createRoomCopy = selectedModeTheme.createRoom;
   const selectedModeMeta = ROOM_MODE_META[settings.roomMode];
-  const selectedHighlights = (selectedModeMeta.highlights || []).slice(0, 2);
   const tableSnapshotLabel = `${settings.maxPlayers}人 · 1000筹码 · 10/20`;
   const ruleSnapshotLabel = settings.allowStraddle ? 'Straddle 开' : 'Straddle 关';
   const allinSnapshotLabel = `All-in ${settings.allinDealCount}次`;
@@ -128,59 +133,50 @@ const CreateRoomModal = () => {
           <section className="create-room-modal__section create-room-modal__section--mode create-room-modal__mode-panel">
             <div className="create-room-modal__section-header">
               <div>
-                <div className="create-room-modal__section-kicker">{createRoomCopy.modeSectionTitle}</div>
+                <div className="create-room-modal__section-kicker">当前桌型</div>
                 <h3 className="create-room-modal__section-title">{selectedModeMeta.title}</h3>
               </div>
               <div className="create-room-modal__section-copy">
-                {selectedModeMeta.gatewayScene} · {selectedModeMeta.gatewayPersona}
+                首页已选择，开房时不再重复选择。
               </div>
             </div>
 
-            <div className="create-room-modal__mode-strip">
-              {modeCards.map((card) => (
-                <ModePreviewCard
-                  key={card.mode}
-                  card={card}
-                  compact
-                  surfaceVariant="create-room-tile"
-                  surfaceDensity={createRoomCopy.densityModel}
-                  tileHeight={createRoomCopy.modeTileHeight}
-                  selected={settings.roomMode === card.mode}
-                  onSelect={() => setSettings({ ...settings, roomMode: card.mode })}
-                />
-              ))}
+            <div className="create-room-modal__selected-room-mode">
+              <div>
+                <span className="create-room-modal__selected-room-mode-label">{selectedModeMeta.label}</span>
+                <strong>{selectedModeMeta.title}</strong>
+                <span>{selectedModeMeta.tagline}</span>
+              </div>
+              <button type="button" onClick={handleClose} disabled={isSubmitting}>
+                更换桌型
+              </button>
             </div>
 
-            <div className="create-room-modal__mode-sidebar">
-              <div className="create-room-modal__quick-summary">
-                <div className="create-room-modal__quick-summary-headline">开桌速览</div>
+            <div className="create-room-modal__quick-summary">
+              <div className="create-room-modal__quick-summary-headline">开桌速览</div>
 
-                <div className="create-room-modal__summary-grid">
-                  <div className="create-room-modal__summary-stat">
-                    <span className="create-room-modal__summary-stat-label">信息重点</span>
-                    <div className="create-room-modal__summary-stat-chips">
-                      {selectedHighlights.map((item) => (
-                        <span key={item} className="mode-preview-card__chip">
-                          {item}
-                        </span>
-                      ))}
-                    </div>
+              <div className="create-room-modal__summary-grid">
+                <div className="create-room-modal__summary-stat">
+                  <span className="create-room-modal__summary-stat-label">桌面参数</span>
+                  <div className="create-room-modal__summary-stat-value create-room-modal__summary-stat-value--stacked">
+                    <span>{settings.duration} 分钟</span>
+                    <span>{tableSnapshotLabel}</span>
                   </div>
+                </div>
 
-                  <div className="create-room-modal__summary-stat">
-                    <span className="create-room-modal__summary-stat-label">桌面参数</span>
-                    <div className="create-room-modal__summary-stat-value create-room-modal__summary-stat-value--stacked">
-                      <span>{settings.duration} 分钟</span>
-                      <span>{tableSnapshotLabel}</span>
-                    </div>
+                <div className="create-room-modal__summary-stat">
+                  <span className="create-room-modal__summary-stat-label">规则状态</span>
+                  <div className="create-room-modal__summary-stat-value create-room-modal__summary-stat-value--stacked">
+                    <span>{ruleSnapshotLabel}</span>
+                    <span>{allinSnapshotLabel}</span>
                   </div>
+                </div>
 
-                  <div className="create-room-modal__summary-stat">
-                    <span className="create-room-modal__summary-stat-label">规则状态</span>
-                    <div className="create-room-modal__summary-stat-value create-room-modal__summary-stat-value--stacked">
-                      <span>{ruleSnapshotLabel}</span>
-                      <span>{allinSnapshotLabel}</span>
-                    </div>
+                <div className="create-room-modal__summary-stat">
+                  <span className="create-room-modal__summary-stat-label">盲注</span>
+                  <div className="create-room-modal__summary-stat-value create-room-modal__summary-stat-value--stacked">
+                    <span>10 / 20</span>
+                    <span>买入 1000</span>
                   </div>
                 </div>
               </div>

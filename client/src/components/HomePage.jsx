@@ -7,7 +7,7 @@ import { useGame } from '../contexts/GameContext';
 
 const HomePage = () => {
   const {
-    setShowCreateRoom,
+    openCreateRoom,
     setShowJoinRoom,
     connected,
     displayModePreference,
@@ -16,8 +16,8 @@ const HomePage = () => {
   } = useGame();
   const [joinRoomId, setJoinRoomId] = useState('');
 
-  const handleCreateRoom = () => {
-    setShowCreateRoom(true);
+  const handleCreateRoom = (roomMode = effectiveDisplayMode) => {
+    openCreateRoom(roomMode);
   };
 
   const handleJoinRoom = () => {

@@ -6,7 +6,7 @@ export const ROOM_MODE_META = Object.freeze({
     tagline: '像高级私局桌控台一样稳。',
     highlights: ['少争议', '房主管理', '清晰结算'],
     gatewayScene: '私局控制桌',
-    gatewayPersona: '线下私局组织者',
+    gatewayPersona: '私局房主',
   },
   pro: {
     label: '职业',
@@ -15,7 +15,7 @@ export const ROOM_MODE_META = Object.freeze({
     tagline: '像线上职业桌一样快。',
     highlights: ['密集信息', '快速操作', '数字优先'],
     gatewayScene: '职业竞技桌',
-    gatewayPersona: '线上职业玩家',
+    gatewayPersona: '职业牌手',
   },
   study: {
     label: '复盘',
@@ -24,7 +24,7 @@ export const ROOM_MODE_META = Object.freeze({
     tagline: '像牌局分析台一样清楚。',
     highlights: ['时间线', '状态解释', '复盘友好'],
     gatewayScene: '训练分析台',
-    gatewayPersona: '复盘与训练者',
+    gatewayPersona: '复盘训练',
   },
 });
 

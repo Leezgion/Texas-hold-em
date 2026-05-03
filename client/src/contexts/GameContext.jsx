@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import deviceIdManager from '../utils/deviceId';
 import io from 'socket.io-client';
 import { derivePlayerStateView } from '../view-models/gameViewModel';
-import { normalizeDisplayModePreference, resolveDisplayMode } from '../utils/productMode';
+import { normalizeDisplayModePreference, normalizeRoomMode, resolveDisplayMode } from '../utils/productMode';
 import { shouldApplyIncomingRoomPayload } from '../utils/roomTransition';
 import { emitWithResponse } from '../utils/socketRequest';
 import { resolveServerOrigin } from '../utils/serverOrigin';
@@ -104,6 +104,7 @@ const useGameStore = create((set, get) => ({
   intentionalJoin: false, // 标记是否是主动加入房间
   displayModePreference: readStoredDisplayModePreference(),
   effectiveDisplayMode: 'pro',
+  pendingCreateRoomMode: 'pro',
 
   // 连接Socket
   connectSocket: () => {
@@ -679,6 +680,13 @@ const useGameStore = create((set, get) => ({
 
   // 模态框控制
   setShowCreateRoom: (show) => set({ showCreateRoom: show }),
+  openCreateRoom: (roomMode = 'pro') =>
+    set({
+      pendingCreateRoomMode: normalizeRoomMode(roomMode),
+      showCreateRoom: true,
+    }),
+  setPendingCreateRoomMode: (roomMode = 'pro') =>
+    set({ pendingCreateRoomMode: normalizeRoomMode(roomMode) }),
   setShowJoinRoom: (show) => set({ showJoinRoom: show }),
   setShowHandResult: (show) =>
     set(show ? { showHandResult: true } : { showHandResult: false, handResult: null }),

@@ -115,13 +115,13 @@ test('builds richer gateway preview metadata for tactical arena mode cards', () 
   const [clubCard, proCard, studyCard] = buildModePreviewCards();
 
   assert.equal(clubCard.gatewayScene, '私局控制桌');
-  assert.equal(clubCard.gatewayPersona, '线下私局组织者');
+  assert.equal(clubCard.gatewayPersona, '私局房主');
 
   assert.equal(proCard.gatewayScene, '职业竞技桌');
-  assert.equal(proCard.gatewayPersona, '线上职业玩家');
+  assert.equal(proCard.gatewayPersona, '职业牌手');
 
   assert.equal(studyCard.gatewayScene, '训练分析台');
-  assert.equal(studyCard.gatewayPersona, '复盘与训练者');
+  assert.equal(studyCard.gatewayPersona, '复盘训练');
 });
 
 test('exposes room-shell choreography tokens for each display mode', () => {

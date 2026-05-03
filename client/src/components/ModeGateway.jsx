@@ -19,13 +19,8 @@ const ModeGateway = ({
     previewCards.find((card) => card.mode === effectiveDisplayMode) ??
     previewCards.find((card) => card.mode === 'pro') ??
     previewCards[0];
-  const densityLabel = effectiveCard.layoutDensity === 'high' ? '高密度' : '均衡';
-  const motionLabel =
-    effectiveCard.motionStyle === 'sharp'
-      ? '干脆'
-      : effectiveCard.motionStyle === 'annotated'
-      ? '注记'
-      : '稳健';
+  const createLabel =
+    effectiveDisplayMode === 'club' ? '开私局' : effectiveDisplayMode === 'study' ? '开复盘桌' : '开职业桌';
 
   return (
     <div className="relative min-h-screen py-2 sm:py-4">
@@ -33,21 +28,21 @@ const ModeGateway = ({
         <div className="mode-gateway-layout">
           <aside className="mode-gateway-control" data-phone-priority="primary-actions">
             <div className="mode-gateway-control__block mode-gateway-control__block--create">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">开设牌桌</div>
-              <h2 className="mt-3 text-3xl font-semibold text-white">创建新房间</h2>
+              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">开桌</div>
+              <h2 className="mt-3 text-3xl font-semibold text-white">{createLabel}</h2>
               <p className="mode-gateway-control__copy mt-3 text-sm leading-6 text-slate-300">
-                创建房间时会继承你在模态框里选择的房间模式。客户端显示模式仍可单独覆盖，用于你自己的阅读习惯。
+                使用当前选择的牌桌类型开房。盲注、买入和人数在下一步确认。
               </p>
               <div className="mode-gateway-side-note mt-5">
-                <span className="mode-gateway-side-note__label">推荐流程</span>
-                <span className="mode-gateway-side-note__value">先选桌型，再进房，再让显示模式跟随或覆盖。</span>
+                <span className="mode-gateway-side-note__label">当前牌桌</span>
+                <span className="mode-gateway-side-note__value">{effectiveCard.title}</span>
               </div>
               <button
-                onClick={onCreateRoom}
+                onClick={() => onCreateRoom(effectiveDisplayMode)}
                 disabled={!connected}
                 className="mode-primary-button mt-6"
               >
-                创建新游戏
+                {createLabel}
               </button>
             </div>
 
@@ -55,7 +50,7 @@ const ModeGateway = ({
               <div className="text-xs uppercase tracking-[0.28em] text-slate-400">加入牌桌</div>
               <h3 className="mt-3 text-2xl font-semibold text-white">输入房间号</h3>
               <p className="mode-gateway-control__copy mt-3 text-sm leading-6 text-slate-300">
-                适合通过房主分享的房间码直接进入。系统会保留当前设备身份，并在入房后自动应用你的显示偏好。
+                输入房主分享的 6 位房间码。进桌后直接入座或观战。
               </p>
               <div className="mt-5 space-y-4">
                 <label className="block" htmlFor="room-id-input">
@@ -80,21 +75,6 @@ const ModeGateway = ({
                 </button>
               </div>
             </div>
-
-            <div className="mode-gateway-control__block mode-gateway-control__block--mode-summary">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">模式速览</div>
-              <div className="mt-4 grid gap-3">
-                {previewCards.map((card) => (
-                  <ModePreviewCard
-                    key={`${card.mode}-compact`}
-                    card={card}
-                    compact
-                    selected={effectiveDisplayMode === card.mode}
-                    onSelect={() => onSetDisplayModePreference(card.mode)}
-                  />
-                ))}
-              </div>
-            </div>
           </aside>
 
           <section className="mode-gateway-panel mode-gateway-panel--hero overflow-hidden">
@@ -103,15 +83,15 @@ const ModeGateway = ({
                 <div className="min-w-0">
                   <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-slate-300">
                     <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.55)]" />
-                    Poker OS Tactical Arena
+                    Poker OS
                   </div>
 
                   <div className="mt-6 max-w-3xl">
                     <h1 className="mode-gateway-title">
-                      为私局、职业对局和训练复盘准备的沉浸式德州扑克桌面。
+                      德州扑克牌桌，先服务当前这手牌。
                     </h1>
                     <p className="mode-gateway-hero__copy mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-                      一套后端真相，三种前端体验。桌面像赛事舞台，操作像职业终端，状态像真实牌桌一样清楚。
+                      开私局、职业桌或复盘桌。桌型只选一次，进桌后专注手牌、底池和行动。
                     </p>
                   </div>
 
@@ -121,19 +101,16 @@ const ModeGateway = ({
                       role="status"
                       aria-live="polite"
                     >
-                      {connected ? '服务器已连接' : '服务器未连接'}
+                      {connected ? '已连接' : '未连接'}
                     </div>
                     <div className="mode-status-pill">
-                      当前偏好：{DISPLAY_MODE_META[displayModePreference].label}
-                    </div>
-                    <div className="mode-status-pill">
-                      当前生效：{DISPLAY_MODE_META[effectiveDisplayMode].label}
+                      牌桌：{DISPLAY_MODE_META[effectiveDisplayMode].label}
                     </div>
                   </div>
                 </div>
 
                 <div className={`mode-gateway-stage ${effectiveCard.shellClassName}`}>
-                  <div className="mode-gateway-stage__eyebrow">当前桌型</div>
+                  <div className="mode-gateway-stage__eyebrow">当前牌桌</div>
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <div>
                       <div className={`mode-preview-card__eyebrow ${effectiveCard.accentClassName}`}>{effectiveCard.label}</div>
@@ -142,43 +119,18 @@ const ModeGateway = ({
                     <span className="mode-preview-card__scene">{effectiveCard.gatewayScene}</span>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-slate-300">{effectiveCard.tagline}</p>
-                  <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div className="mode-gateway-stage__stat">
-                      <span className="mode-gateway-stage__stat-kicker">适合</span>
-                      <span className="mode-gateway-stage__stat-value">{effectiveCard.gatewayPersona}</span>
-                    </div>
-                    <div className="mode-gateway-stage__stat">
-                      <span className="mode-gateway-stage__stat-kicker">信息密度</span>
-                      <span className="mode-gateway-stage__stat-value">{densityLabel}</span>
-                    </div>
-                    <div className="mode-gateway-stage__stat">
-                      <span className="mode-gateway-stage__stat-kicker">动效节奏</span>
-                      <span className="mode-gateway-stage__stat-value">{motionLabel}</span>
-                    </div>
-                  </div>
                 </div>
               </div>
 
               <div className="mt-10">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-xs uppercase tracking-[0.28em] text-slate-400">显示模式</div>
-                    <div className="mt-1 text-sm text-slate-300">选择你想看到的桌面风格。房间规则和状态真相仍然以服务器为准。</div>
+                    <div className="text-xs uppercase tracking-[0.28em] text-slate-400">选择牌桌</div>
+                    <div className="mt-1 text-sm text-slate-300">这会决定下一间房的桌型和默认信息密度。</div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => onSetDisplayModePreference('inherit')}
-                    className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                      displayModePreference === 'inherit'
-                        ? 'border-white/30 bg-white/10 text-white'
-                        : 'border-white/10 bg-black/15 text-slate-300 hover:border-white/20'
-                    }`}
-                  >
-                    跟随房间
-                  </button>
                 </div>
 
-                <div className="mode-gateway-preview-grid">
+                <div className="mode-gateway-table-type-selector">
                   {previewCards.map((card) => (
                     <ModePreviewCard
                       key={card.mode}

@@ -12,11 +12,21 @@ test('CreateRoomModal uses a terminal layout instead of a stacked tall-card form
   assert.match(createRoomModalSource, /contentProps=\{\{[\s\S]*'data-create-room-density': createRoomCopy\.densityModel,[\s\S]*\}\}/s);
   assert.match(createRoomModalSource, /contentProps=\{\{[\s\S]*'data-create-room-tile-height': createRoomCopy\.modeTileHeight,[\s\S]*\}\}/s);
   assert.match(createRoomModalSource, /create-room-modal__layout/);
-  assert.match(createRoomModalSource, /create-room-modal__mode-strip/);
+  assert.doesNotMatch(createRoomModalSource, /create-room-modal__mode-strip/);
+  assert.match(createRoomModalSource, /create-room-modal__selected-room-mode/);
   assert.match(createRoomModalSource, /create-room-modal__main-grid/);
   assert.match(createRoomModalSource, /create-room-modal__settings-panel/);
-  assert.match(createRoomModalSource, /create-room-modal__mode-sidebar/);
-  assert.match(createRoomModalSource, /surfaceVariant=\"create-room-tile\"/);
+  assert.doesNotMatch(createRoomModalSource, /create-room-modal__mode-sidebar/);
+  assert.doesNotMatch(createRoomModalSource, /surfaceVariant=\"create-room-tile\"/);
+});
+
+test('CreateRoomModal inherits the homepage table type instead of forcing a second mode choice', () => {
+  assert.match(createRoomModalSource, /pendingCreateRoomMode/);
+  assert.match(createRoomModalSource, /roomMode:\s*normalizeRoomMode\(pendingCreateRoomMode\)/);
+  assert.match(createRoomModalSource, /setSettings\(\(current\) => \(\{[\s\S]*roomMode:\s*normalizeRoomMode\(pendingCreateRoomMode\)/s);
+  assert.match(createRoomModalSource, /更换桌型/);
+  assert.doesNotMatch(createRoomModalSource, /桌型预设/);
+  assert.doesNotMatch(createRoomModalSource, /modeCards\.map/);
 });
 
 test('CreateRoomModal keeps the quick summary focused on opening parameters instead of repeating the mode identity', () => {
@@ -41,14 +51,10 @@ test('ModePreviewCard exposes a dedicated terminal tile variant for the create-r
 });
 
 test('create-room desktop layout promotes the terminal split before xl breakpoints', () => {
-  assert.match(globalStylesSource, /\.create-room-modal__mode-strip\s*\{\s*@apply grid gap-2\.5 lg:grid-cols-3;/s);
+  assert.match(globalStylesSource, /\.create-room-modal__selected-room-mode\s*\{/);
   assert.match(
     globalStylesSource,
     /\.create-room-modal\[data-create-room-density="compact-terminal"\]\s+\.create-room-modal__section\s*\{\s*@apply rounded-\[1\.3rem\] border border-white\/10 bg-white\/5 p-3 sm:p-3\.5;/s
-  );
-  assert.match(
-    globalStylesSource,
-    /\.create-room-modal__mode-sidebar\s*\{\s*@apply mt-2;/s
   );
   assert.match(
     globalStylesSource,
@@ -105,22 +111,14 @@ test('create-room quick-open desktop contract further compresses tiles, summary,
   );
 });
 
-test('create-room phone contract collapses mode choice into a compact selector instead of tall profile cards', () => {
-  assert.match(
-    globalStylesSource,
-    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__mode-strip\s*\{\s*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);[\s\S]*gap:\s*0\.45rem;/s
-  );
+test('create-room phone contract shows a compact inherited table type instead of mode cards', () => {
   assert.match(
     globalStylesSource,
     /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__mode-panel\s+\.create-room-modal__section-copy\s*\{\s*display:\s*none;/s
   );
   assert.match(
     globalStylesSource,
-    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__mode-strip\s+\.mode-preview-card--terminal-tile\s*\{[\s\S]*min-height:\s*4\.75rem;[\s\S]*padding:\s*0\.55rem;/s
-  );
-  assert.match(
-    globalStylesSource,
-    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__mode-strip\s+\.mode-preview-card__tile-persona,[\s\S]*\.create-room-modal__mode-strip\s+\.mode-preview-card__tile-copy,[\s\S]*\.create-room-modal__mode-strip\s+\.mode-preview-card__tile-chip-row\s*\{\s*display:\s*none;/s
+    /@media \(max-width: 767px\) \{[\s\S]*\.create-room-modal__selected-room-mode\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto;/s
   );
 });
 
