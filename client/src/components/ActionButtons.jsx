@@ -57,7 +57,14 @@ function buildActionCommandClass(tone, extra = '') {
   return ['table-action-command', `table-action-command--${tone}`, extra].filter(Boolean).join(' ');
 }
 
-const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveDisplayMode = 'pro' }) => {
+const ActionButtons = ({
+  player,
+  gameState,
+  currentPlayerId,
+  players,
+  effectiveDisplayMode = 'pro',
+  viewportModel = 'desktop-terminal',
+}) => {
   const { playerAction } = useGame();
   const [showRaiseInput, setShowRaiseInput] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
@@ -65,6 +72,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
   const [pendingRiskAction, setPendingRiskAction] = useState(null);
   const safePlayers = Array.isArray(players) ? players : [];
   const hasResolvedActionState = Boolean(player && gameState);
+  const isPhoneTerminal = viewportModel === 'phone-terminal';
   const resolvedPlayer = player ?? {
     folded: false,
     allIn: false,
@@ -129,6 +137,8 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       })
     : null;
   const proActionStats = buildProActionStatRows(proActionSummary);
+  const visibleProActionStats = isPhoneTerminal ? proActionStats.slice(0, 3) : proActionStats;
+  const showsInlineLastAction = Boolean(proActionSummary?.lastActionLabel) && !isPhoneTerminal;
   const riskActionResetKey = [
     hasResolvedActionState ? 'ready' : 'sync',
     resolvedGameState.handNumber ?? '',
@@ -367,9 +377,12 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       }`}
       data-action-console-state={actionConsoleState}
     >
-      {proActionStats.length > 0 && (
-        <div className="table-action-console__pro-strip" data-pro-strip-density="decision">
-          {proActionStats.map((stat) => (
+      {visibleProActionStats.length > 0 && (
+        <div
+          className="table-action-console__pro-strip"
+          data-pro-strip-density={isPhoneTerminal ? 'phone-decision' : 'decision'}
+        >
+          {visibleProActionStats.map((stat) => (
             <div
               key={stat.label}
               className="table-action-console__pro-metric"
@@ -384,7 +397,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
         </div>
       )}
 
-      {proActionSummary?.lastActionLabel && (
+      {showsInlineLastAction && (
         <div className="table-action-console__last-action">{proActionSummary.lastActionLabel}</div>
       )}
 

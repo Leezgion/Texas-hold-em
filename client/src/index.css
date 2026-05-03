@@ -1359,6 +1359,16 @@
     letter-spacing: 0.12em;
   }
 
+  .room-terminal-dock-panel[data-support-launcher-mode="single-table-menu"] .room-support-launcher {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .room-terminal-dock-panel[data-support-launcher-mode="single-table-menu"] .room-support-launcher__button--menu {
+    min-height: 2.15rem;
+    border-color: rgba(245, 158, 11, 0.26);
+    letter-spacing: 0.18em;
+  }
+
   .room-panel-sheet {
     position: fixed;
     inset: 0;
@@ -1541,6 +1551,21 @@
     gap: 0.75rem;
   }
 
+  .room-tool-panel__section--primary-actions {
+    padding: 0.78rem;
+    border-color: rgba(245, 158, 11, 0.18);
+    background:
+      linear-gradient(180deg, rgba(245, 158, 11, 0.1), rgba(3, 7, 18, 0.3)),
+      radial-gradient(circle at top, rgba(245, 158, 11, 0.12), transparent 13rem);
+  }
+
+  .room-tool-panel__section--support-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    padding: 0.72rem;
+  }
+
   .room-tool-panel__kicker,
   .room-tool-panel__metric-label {
     display: block;
@@ -1571,6 +1596,12 @@
     gap: 0.7rem;
   }
 
+  .room-tool-panel__actions--primary {
+    margin-top: 0.55rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
   .room-tool-panel__button {
     width: 100%;
     border-radius: 1rem;
@@ -1581,6 +1612,30 @@
     font-size: 0.92rem;
     font-weight: 600;
     color: white;
+  }
+
+  .room-tool-panel__actions--primary .room-tool-panel__button {
+    min-height: 2.55rem;
+    padding: 0.58rem 0.7rem;
+    text-align: center;
+  }
+
+  .room-tool-panel__button--compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.45rem;
+    padding: 0.68rem 0.72rem;
+    font-size: 0.78rem;
+  }
+
+  .room-tool-panel__button--compact span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.64rem;
+    color: rgb(148 163 184 / 0.92);
   }
 
   .room-tool-panel__button--success {
@@ -4338,6 +4393,11 @@
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__pro-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.36rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__pro-strip[data-pro-strip-density="phone-decision"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.28rem;
   }
 
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__pro-metric {

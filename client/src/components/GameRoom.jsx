@@ -667,6 +667,55 @@ const GameRoom = () => {
     setActiveSupportPanel((currentValue) => (currentValue === panelId ? null : panelId));
   };
   const closeSupportPanel = () => setActiveSupportPanel(null);
+  const isPhoneLiveHand = roomViewportLayout.viewportModel === 'phone-terminal' && gameStarted;
+  const roomToolsPanelTitle = isPhoneLiveHand ? '桌面' : supportLabels.room || '房间';
+  const roomToolsPanelSubtitle = isPhoneLiveHand ? '离座、补码、成员与牌局入口' : shellView.modeTitle;
+  const roomToolPrimaryActions = [
+    currentPlayerStateView?.canLeaveSeat
+      ? {
+          key: 'leave-seat',
+          label: '离座',
+          tone: 'warning',
+          onClick: () => {
+            closeSupportPanel();
+            handleLeaveSeat();
+          },
+        }
+      : null,
+    currentPlayerStateView?.canRequestRebuy
+      ? {
+          key: 'rebuy',
+          label: '补码',
+          tone: 'success',
+          onClick: () => {
+            closeSupportPanel();
+            setShowRebuy(true);
+          },
+        }
+      : null,
+    {
+      key: 'share',
+      label: '分享',
+      tone: 'default',
+      onClick: () => {
+        closeSupportPanel();
+        setShowShareLink(true);
+      },
+    },
+    {
+      key: 'leave-room',
+      label: '退出',
+      tone: 'danger',
+      onClick: () => {
+        closeSupportPanel();
+        handleExitRoom();
+      },
+    },
+  ].filter(Boolean);
+  const roomToolPanelLinks = [
+    { key: 'players', label: supportLabels.players || '成员', meta: intelRailView.occupancyLabel },
+    { key: 'history', label: supportLabels.history || '牌局', meta: `${eventRailView.historyCount} 手牌` },
+  ];
   const tableSizeClassName =
     tableDiameter === 208
       ? 'w-52 h-52'
@@ -939,18 +988,53 @@ const GameRoom = () => {
 
             <RoomPanelSheet
               open={activeSupportPanel === 'room'}
-              title={supportLabels.room || '房间'}
-              subtitle={shellView.modeTitle}
+              title={roomToolsPanelTitle}
+              subtitle={roomToolsPanelSubtitle}
               presentation={supportPanelPresentation}
               onClose={closeSupportPanel}
             >
               <div className="room-tool-panel">
+                <section className="room-tool-panel__section room-tool-panel__section--primary-actions">
+                  <div className="room-tool-panel__kicker">桌面操作</div>
+                  <div className="room-tool-panel__actions room-tool-panel__actions--primary">
+                    {roomToolPrimaryActions.map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        className={[
+                          'room-tool-panel__button',
+                          item.tone !== 'default' ? `room-tool-panel__button--${item.tone}` : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        onClick={item.onClick}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
                 <section className="room-tool-panel__section">
                   <div className="room-tool-panel__kicker">牌桌状态</div>
                   <div className="room-tool-panel__headline">{shellView.roomStateLabel}</div>
                   <div className="room-tool-panel__copy">
                     {shellView.connectedLabel} · {intelRailView.occupancyLabel} 在桌
                   </div>
+                </section>
+
+                <section className="room-tool-panel__section room-tool-panel__section--support-links">
+                  {roomToolPanelLinks.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className="room-tool-panel__button room-tool-panel__button--compact"
+                      onClick={() => setActiveSupportPanel(item.key)}
+                    >
+                      <span>{item.label}</span>
+                      <span>{item.meta}</span>
+                    </button>
+                  ))}
                 </section>
 
                 <section className="room-tool-panel__section room-tool-panel__section--grid">
@@ -969,56 +1053,6 @@ const GameRoom = () => {
                   <div className="room-tool-panel__metric">
                     <span className="room-tool-panel__metric-label">房间码</span>
                     <span className="room-tool-panel__metric-value">{shellView.roomCode}</span>
-                  </div>
-                </section>
-
-                <section className="room-tool-panel__section">
-                  <div className="room-tool-panel__kicker">房间操作</div>
-                  <div className="room-tool-panel__actions">
-                    <button
-                      type="button"
-                      className="room-tool-panel__button"
-                      onClick={() => {
-                        closeSupportPanel();
-                        setShowShareLink(true);
-                      }}
-                    >
-                      分享房间链接
-                    </button>
-                    {currentPlayerStateView?.canRequestRebuy ? (
-                      <button
-                        type="button"
-                        className="room-tool-panel__button room-tool-panel__button--success"
-                        onClick={() => {
-                          closeSupportPanel();
-                          setShowRebuy(true);
-                        }}
-                      >
-                        补码
-                      </button>
-                    ) : null}
-                    {currentPlayerStateView?.canLeaveSeat ? (
-                      <button
-                        type="button"
-                        className="room-tool-panel__button room-tool-panel__button--warning"
-                        onClick={() => {
-                          closeSupportPanel();
-                          handleLeaveSeat();
-                        }}
-                      >
-                        离座观战
-                      </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      className="room-tool-panel__button room-tool-panel__button--danger"
-                      onClick={() => {
-                        closeSupportPanel();
-                        handleExitRoom();
-                      }}
-                    >
-                      退出房间
-                    </button>
                   </div>
                 </section>
               </div>

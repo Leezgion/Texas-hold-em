@@ -171,7 +171,7 @@ test('ActionDock exposes primary quick actions when header actions collapse into
   assert.match(actionDockSource, /const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout\?\.headerActionModel !== 'toolbar'/);
   assert.match(
     actionDockSource,
-    /const showsInlineQuickActions =\s*showsPrimaryQuickActions && !\(gameStarted && viewportLayout\?\.viewportModel === 'phone-terminal'\);/s
+    /const showsInlineQuickActions =\s*showsPrimaryQuickActions && !isPhoneLiveHand;/s
   );
   assert.match(actionDockSource, /const showsApronRail = showsPrimaryQuickActions \|\| supportsSecondaryPanels;/);
   assert.match(actionDockSource, /const dockLayout = !showsDecisionCenter && showsApronRail \? 'waiting-apron' : showsApronRail \? 'decision-apron' : 'core-only';/);
@@ -184,6 +184,28 @@ test('ActionDock exposes primary quick actions when header actions collapse into
   assert.match(actionDockSource, /onShare/);
   assert.match(actionDockSource, /onLeaveRoom/);
   assert.match(actionDockSource, /快速操作/);
+});
+
+test('phone live hand collapses support launchers into one table menu with leave-seat first-level access', () => {
+  assert.match(actionDockSource, /const isPhoneLiveHand = gameStarted && viewportLayout\?\.viewportModel === 'phone-terminal';/);
+  assert.match(
+    actionDockSource,
+    /const supportPanelItems = isPhoneLiveHand\s*\?\s*\[\{ key: 'room', label: '桌面' \}\]\s*:\s*\[/s
+  );
+  assert.match(actionDockSource, /data-support-launcher-mode=\{isPhoneLiveHand \? 'single-table-menu' : 'multi-panel'\}/);
+  assert.match(actionDockSource, /room-support-launcher__button--menu/);
+  assert.match(gameRoomSource, /const roomToolPrimaryActions = \[/);
+  assert.match(gameRoomSource, /key:\s*'leave-seat'[\s\S]*label:\s*'离座'/s);
+  assert.match(gameRoomSource, /room-tool-panel__section room-tool-panel__section--primary-actions/);
+  assert.ok(
+    gameRoomSource.indexOf('room-tool-panel__section room-tool-panel__section--primary-actions') <
+      gameRoomSource.indexOf('room-tool-panel__kicker">牌桌状态'),
+    'room sheet should show high-frequency actions before status copy'
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-support-launcher-mode="single-table-menu"\]\s+\.room-support-launcher\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\);/s
+  );
 });
 
 test('GameRoom closes support panels when a new hand begins so action is not hidden', () => {
@@ -348,6 +370,26 @@ test('ActionButtons renders professional cockpit metric hooks for price, SPR, an
   assert.match(
     globalStylesSource,
     /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__pro-strip\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
+  );
+});
+
+test('phone live action console keeps only the three most useful decision metrics inline', () => {
+  assert.match(actionDockSource, /viewportModel=\{viewportLayout\?\.viewportModel\}/);
+  assert.match(actionButtonsSource, /viewportModel = 'desktop-terminal'/);
+  assert.match(actionButtonsSource, /const isPhoneTerminal = viewportModel === 'phone-terminal';/);
+  assert.match(
+    actionButtonsSource,
+    /const visibleProActionStats = isPhoneTerminal \? proActionStats\.slice\(0,\s*3\) : proActionStats;/
+  );
+  assert.match(actionButtonsSource, /visibleProActionStats\.map/);
+  assert.match(
+    actionButtonsSource,
+    /const showsInlineLastAction = Boolean\(proActionSummary\?\.lastActionLabel\) && !isPhoneTerminal;/
+  );
+  assert.match(actionButtonsSource, /data-pro-strip-density=\{isPhoneTerminal \? 'phone-decision' : 'decision'\}/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__pro-strip\[data-pro-strip-density="phone-decision"\]\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
   );
 });
 

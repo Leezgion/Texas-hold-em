@@ -53,6 +53,7 @@ const ActionDock = ({
   });
   const handCards = dockView?.handCards || [];
   const isWaitingDockState = !gameStarted;
+  const isPhoneLiveHand = gameStarted && viewportLayout?.viewportModel === 'phone-terminal';
   const showsDecisionCenter = Boolean(
     dockView.startButtonLabel || handCards.length > 0 || gameStarted
   );
@@ -62,7 +63,7 @@ const ActionDock = ({
     viewportLayout.supportSurfacePolicyKey !== 'ultrawide';
   const showsPrimaryQuickActions = supportsSecondaryPanels && viewportLayout?.headerActionModel !== 'toolbar';
   const showsInlineQuickActions =
-    showsPrimaryQuickActions && !(gameStarted && viewportLayout?.viewportModel === 'phone-terminal');
+    showsPrimaryQuickActions && !isPhoneLiveHand;
   const showsApronRail = showsPrimaryQuickActions || supportsSecondaryPanels;
   const dockLayout = !showsDecisionCenter && showsApronRail ? 'waiting-apron' : showsApronRail ? 'decision-apron' : 'core-only';
   const heroPanelLayout = isWaitingDockState ? 'waiting-strip' : 'live-ribbon';
@@ -78,6 +79,13 @@ const ActionDock = ({
     typeof onShare === 'function' ? { key: 'share', label: '分享', tone: 'default', onClick: onShare } : null,
     typeof onLeaveRoom === 'function' ? { key: 'leave-room', label: '退出', tone: 'danger', onClick: onLeaveRoom } : null,
   ].filter(Boolean);
+  const supportPanelItems = isPhoneLiveHand
+    ? [{ key: 'room', label: '桌面' }]
+    : [
+        { key: 'players', label: supportLabels.players || '成员' },
+        { key: 'history', label: supportLabels.history || '牌局' },
+        { key: 'room', label: supportLabels.room || '房间' },
+      ];
 
   return (
     <section
@@ -103,6 +111,7 @@ const ActionDock = ({
       data-dock-layout={dockLayout}
       data-hero-panel-layout={heroPanelLayout}
       data-has-center-stage={showsDecisionCenter ? 'true' : 'false'}
+      data-support-launcher-mode={isPhoneLiveHand ? 'single-table-menu' : 'multi-panel'}
     >
       <div className="tactical-dock__grid">
         <div className="min-w-0 tactical-dock__hero-column">
@@ -217,6 +226,7 @@ const ActionDock = ({
                     currentPlayerId={currentPlayerId}
                     players={players}
                     effectiveDisplayMode={effectiveDisplayMode}
+                    viewportModel={viewportLayout?.viewportModel}
                   />
                 </motion.div>
               )}
@@ -247,17 +257,13 @@ const ActionDock = ({
 
               {supportsSecondaryPanels ? (
                 <div className="room-support-launcher">
-                  {[
-                    { key: 'players', label: supportLabels.players || '成员' },
-                    { key: 'history', label: supportLabels.history || '牌局' },
-                    { key: 'room', label: supportLabels.room || '房间' },
-                  ].map((item) => (
+                  {supportPanelItems.map((item) => (
                     <button
                       key={item.key}
                       type="button"
                       className={`room-support-launcher__button ${
                         activeSupportPanel === item.key ? 'room-support-launcher__button--active' : ''
-                      }`}
+                      } ${isPhoneLiveHand ? 'room-support-launcher__button--menu' : ''}`}
                       onClick={() => onToggleSupportPanel(item.key)}
                     >
                       {item.label}
