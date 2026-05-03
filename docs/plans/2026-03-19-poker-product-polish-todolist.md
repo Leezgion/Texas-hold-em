@@ -2906,5 +2906,40 @@ This pass measured the refined phone cockpit under real browser interaction inst
   - max values: member sheet `141ms`, history sheet `137ms`, compact history sheet `123ms`
   - current root-cause read: first sheet mount plus focus/inert lock and panel content render, not runaway backdrop/animation cost; phone motion rules already disable sheet backdrop filters and key room animations
 - next queue:
-  - `[todo]` run final cross-device visual QA for live, risk-confirmation, raise-drawer, support-sheet, and settlement states
-  - `[todo]` if final QA finds no visual blockers, prepare merge-readiness checklist without merging or pushing
+  - `[done]` run final cross-device visual QA for live, risk-confirmation, raise-drawer, support-sheet, and settlement states
+  - `[todo]` prepare merge-readiness checklist without merging or pushing
+
+## 2026-05-03 Final Cross-Device Visual QA And Seat Clearance
+
+This pass reran the final visual browser QA after phone profiling and fixed the remaining 9-max phone/tablet portrait live-hand seat clearance issue.
+
+- root cause:
+  - the first final visual QA rerun caught `near-hero-right` overlapping the cockpit on phone `390x844` and tablet portrait `768x1024`
+  - profiling had already passed because the issue was visual geometry, not interaction latency or scroll jank
+  - the canonical 9-max anchors and table family were correct; only the visual plaque transform nearest the cockpit needed more vertical clearance
+- change:
+  - nudged `near-hero-right` live plaque upward by `0.5rem` on phone
+  - nudged `near-hero-right` live plaque upward by `1rem` on tablet portrait
+  - kept the shared vertical capsule table, canonical 9-max anchors, and cockpit layout unchanged
+- browser evidence:
+  - failed evidence before fix: `.runlogs/2026-05-03-live-room-cockpit-responsive-audit.json` (`runId = mopgl0ik`)
+  - fixed responsive visual QA: `.runlogs/2026-05-03-live-room-cockpit-responsive-audit.json` (`runId = mopgqixr`)
+  - professional cockpit rerun: `.runlogs/2026-05-03-professional-cockpit-audit.json` (`runId = mopgrbwc`)
+  - settlement/support panel rerun: `.runlogs/2026-05-03-phone-settlement-policy-panels-audit.json` (`runId = mopgrwq0`)
+  - phone smoothness rerun after the visual fix: `.runlogs/2026-05-03-phone-interaction-smoothness-audit.json` (`runId = mopmopgskzh`)
+- verified contract:
+  - responsive cockpit QA passed compact phone, phone, tablet portrait, tablet landscape, desktop, and ultrawide live/raise states
+  - sampled phone and tablet portrait screenshots confirm the right-side 9-max plaque no longer touches the hero/action cockpit
+  - professional cockpit QA still passes live, risk confirmation, cancel, and raise states
+  - phone settlement/support panel QA still passes reveal policy, focus trap, body scroll lock, and support sheet behavior
+  - smoothness rerun still has no hard interaction, layout, scroll, clipping, or console-error failures
+- final verification for this pass:
+  - `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js src/utils/seatRingLayout.test.js src/utils/tableStageLayout.test.js`: `99/99`
+  - `node .runlogs/2026-05-03-live-room-cockpit-responsive-audit.cjs`: passed across all six viewports (`runId = mopgqixr`)
+  - `node .runlogs/2026-05-03-professional-cockpit-audit.cjs`: passed (`runId = mopgrbwc`)
+  - `node .runlogs/2026-05-03-phone-settlement-policy-panels-audit.cjs`: passed (`runId = mopgrwq0`)
+  - `node .runlogs/2026-05-03-phone-interaction-smoothness-audit.cjs`: passed (`runId = mopmopgskzh`)
+  - `git diff --check -- client/src/components/SeatCard.jsx client/src/components/roomTerminalShellContract.test.js`: passed, with Windows LF-to-CRLF working-copy warnings only
+- next queue:
+  - `[todo]` run final full local verification snapshot: full client node tests, client build, server tests, and repository whitespace/status checks
+  - `[todo]` prepare a merge-readiness checklist that lists remaining product risks, but do not merge or push yet
