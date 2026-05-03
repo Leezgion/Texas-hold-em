@@ -413,7 +413,7 @@ test('tablet portrait phone-oval rooms expose compact cockpit state to shell, do
   assert.match(seatCardSource, /'lower-right':\s*'translate\(-50%, calc\(-50% - 3\.6rem\)\)'/);
   assert.match(
     seatCardSource,
-    /'near-hero-right':\s*'translate\(calc\(-50% \+ 0\.35rem\), calc\(-50% - 12\.25rem\)\)'/
+    /'near-hero-right':\s*'translate\(calc\(-50% \+ 0\.35rem\), calc\(-50% - 13\.25rem\)\)'/
   );
 });
 
@@ -641,7 +641,7 @@ test('SeatCard nudges live phone flank plaques away from viewport and dock edges
   );
   assert.match(
     seatCardSource,
-    /'near-hero-right':\s*'translate\(calc\(-50% \+ 0\.45rem\), calc\(-50% - 13\.25rem\)\)'/
+    /'near-hero-right':\s*'translate\(calc\(-50% \+ 0\.45rem\), calc\(-50% - 13\.75rem\)\)'/
   );
   assert.match(
     seatCardSource,

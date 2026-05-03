@@ -8,7 +8,7 @@ const PHONE_LIVE_PLAQUE_TRANSFORMS = Object.freeze({
   'lower-left': 'translate(calc(-50% + 0.45rem), calc(-50% - 8.5rem))',
   'upper-right': 'translate(calc(-50% - 0.45rem), -50%)',
   'lower-right': 'translate(calc(-50% - 0.45rem), calc(-50% - 8.5rem))',
-  'near-hero-right': 'translate(calc(-50% + 0.45rem), calc(-50% - 13.25rem))',
+  'near-hero-right': 'translate(calc(-50% + 0.45rem), calc(-50% - 13.75rem))',
 });
 
 const TABLET_PORTRAIT_LIVE_PLAQUE_TRANSFORMS = Object.freeze({
@@ -17,7 +17,7 @@ const TABLET_PORTRAIT_LIVE_PLAQUE_TRANSFORMS = Object.freeze({
   'top-right': 'translate(-50%, calc(-50% + 5.3rem))',
   'lower-left': 'translate(-50%, calc(-50% - 3.6rem))',
   'lower-right': 'translate(-50%, calc(-50% - 3.6rem))',
-  'near-hero-right': 'translate(calc(-50% + 0.35rem), calc(-50% - 12.25rem))',
+  'near-hero-right': 'translate(calc(-50% + 0.35rem), calc(-50% - 13.25rem))',
 });
 
 const SeatCard = ({
