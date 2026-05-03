@@ -3077,7 +3077,7 @@ Manual acceptance now found a larger phone UX architecture issue: the live-hand 
   - `[done]` convert phone hand history into a replay side drawer with previous/next navigation and per-player action rows
   - `[done]` enlarge regular phone live-hand felt table and soften hero/action chrome into transparent table overlays
   - `[done]` run focused browser regression for phone fullscreen table, compact seats, and replay drawer
-  - `[todo]` run full local verification before any merge-readiness claim
+  - `[done]` run full local verification before any merge-readiness claim
 - design:
   - `docs/plans/2026-05-03-mobile-fullscreen-poker-table-design.md`
 - implementation plan:
@@ -3113,6 +3113,12 @@ Manual acceptance now found a larger phone UX architecture issue: the live-hand 
 - stage 6 evidence:
   - red contract: `phone-terminal live hand gives more screen budget to the felt table than chrome panels` failed before production changes
   - green contract: `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js src/utils/tableStageLayout.test.js src/utils/seatRingLayout.test.js` passed `103/103`
+- final verification:
+  - `cd client && pnpm exec node --test` passed `294/294`
+  - `cd client && pnpm build` passed with the known Vite large chunk warning (`549.95 kB`)
+  - `cd server && npm test -- --runInBand` passed `12/12` suites and `130/130` tests
+  - `git diff --check` passed
+  - automation-owned browser sessions `phone-fullscreen` and `phone-guest` were closed after evidence capture
 - new pitfalls:
   - when loading Vite through `/index.html`, BrowserRouter initially sees `/index.html`; for home-route evidence, run `history.replaceState(null, '', '/')` after load or the app shell can appear visually blank
   - `agent-browser screenshot .runlogs/foo.png` treats `.runlogs/foo.png` as a selector because it starts with `.`, so use `screenshot body .runlogs/foo.png`
