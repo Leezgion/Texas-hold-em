@@ -3845,6 +3845,45 @@
     white-space: nowrap;
   }
 
+  .table-action-console__risk-confirmation {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(7rem, 0.88fr) minmax(6rem, 0.72fr);
+    align-items: stretch;
+    gap: 0.42rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(248, 113, 113, 0.32);
+    background:
+      linear-gradient(180deg, rgba(35, 8, 8, 0.78), rgba(17, 8, 8, 0.7)),
+      radial-gradient(circle at top left, rgba(248, 113, 113, 0.16), transparent 70%);
+    padding: 0.48rem;
+  }
+
+  .table-action-console__risk-copy {
+    min-width: 0;
+    display: grid;
+    align-content: center;
+    gap: 0.12rem;
+    color: rgb(255 238 220 / 0.78);
+    font-size: 0.66rem;
+    line-height: 1.1;
+  }
+
+  .table-action-console__risk-copy span {
+    color: rgb(252 165 165 / 0.86);
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .table-action-console__risk-copy strong {
+    overflow: hidden;
+    color: rgb(255 255 255 / 0.96);
+    font-family: "IBM Plex Mono", "Consolas", monospace;
+    font-size: 0.86rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .table-action-console__stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4305,6 +4344,11 @@
     gap: 0.36rem;
   }
 
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__risk-confirmation {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+  }
+
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-command {
     min-height: 3.25rem;
     align-items: center;
@@ -4444,6 +4488,17 @@
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__command-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.3rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__risk-confirmation {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.28rem;
+    padding: 0.36rem;
+    border-radius: 0.82rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-console__risk-copy {
+    grid-column: 1 / -1;
   }
 
   .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="live"] .table-action-command {

@@ -351,6 +351,14 @@ test('ActionButtons renders professional cockpit metric hooks for price, SPR, an
   );
 });
 
+test('ActionButtons uses inline confirmation for all-in and large commit actions', () => {
+  assert.match(actionButtonsSource, /pendingRiskAction/);
+  assert.match(actionButtonsSource, /data-risk-confirmation/);
+  assert.match(actionButtonsSource, /确认全下/);
+  assert.match(actionButtonsSource, /取消/);
+  assert.match(globalStylesSource, /\.table-action-console__risk-confirmation\s*\{/);
+});
+
 test('ActionDock keeps the live-hand action frame wired to ActionButtons', () => {
   assert.match(
     actionDockSource,
@@ -460,7 +468,7 @@ test('tablet portrait phone-oval live hand uses compact table and decision cockp
 test('ActionButtons fail-closes when player or gameState is temporarily unavailable', () => {
   assert.match(
     actionButtonsSource,
-    /useEffect\(\(\) => \{\s*if \(gameState\) \{\s*setIsSubmitting\(false\);\s*\}\s*\}, \[gameState\]\);/s
+    /useEffect\(\(\) => \{\s*if \(gameState\) \{\s*setIsSubmitting\(false\);\s*setPendingRiskAction\(null\);\s*\}\s*\}, \[gameState\]\);/s
   );
   assert.match(
     actionButtonsSource,

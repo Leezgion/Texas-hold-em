@@ -62,6 +62,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
   const [showRaiseInput, setShowRaiseInput] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingRiskAction, setPendingRiskAction] = useState(null);
   const safePlayers = Array.isArray(players) ? players : [];
   const hasResolvedActionState = Boolean(player && gameState);
   const resolvedPlayer = player ?? {
@@ -166,6 +167,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
   useEffect(() => {
     if (gameState) {
       setIsSubmitting(false);
+      setPendingRiskAction(null);
     }
   }, [gameState]);
 
@@ -186,6 +188,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     if (canAct && !isSubmitting) {
       setIsSubmitting(true);
       setShowRaiseInput(false);
+      setPendingRiskAction(null);
       setSliderValue(canRaise ? resolvedGameState.minRaise || 0 : 0);
 
       try {
@@ -202,24 +205,55 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     }
   };
 
+  const buildRiskAction = (action, amount = 0) => ({
+    action,
+    amount,
+    label: action === 'allin' ? '确认全下' : '确认大额加注',
+    meta:
+      action === 'allin'
+        ? `${resolvedPlayer.chips.toLocaleString()} 筹码`
+        : `总投入 ${(callAmount + amount).toLocaleString()}`,
+  });
+
+  const requestRiskConfirmation = (action, amount = 0) => {
+    setShowRaiseInput(false);
+    setPendingRiskAction(buildRiskAction(action, amount));
+  };
+
+  const isLargeCommit = (amount) => {
+    const totalCommit = callAmount + amount;
+    const availableStack = Number(resolvedPlayer.chips) || 0;
+    return availableStack > 0 && totalCommit / availableStack >= 0.5;
+  };
+
+  const submitRaiseWithRisk = async (amount) => {
+    if (amount === maxRaiseAmount) {
+      requestRiskConfirmation('allin');
+      return;
+    }
+
+    if (isLargeCommit(amount)) {
+      requestRiskConfirmation('raise', amount);
+      return;
+    }
+
+    await handleAction('raise', amount);
+  };
+
   const handleSliderChange = (value) => {
     setSliderValue(value);
   };
 
   const handleQuickRaise = async (amount) => {
     if (amount <= maxRaiseAmount) {
-      await handleAction('raise', amount);
+      await submitRaiseWithRisk(amount);
     }
   };
 
   const handleCustomRaise = async () => {
     const amount = sliderValue;
     if (amount && amount >= resolvedGameState.minRaise && amount <= maxRaiseAmount) {
-      if (amount === maxRaiseAmount) {
-        await handleAction('allin');
-      } else {
-        await handleAction('raise', amount);
-      }
+      await submitRaiseWithRisk(amount);
     }
   };
 
@@ -231,8 +265,15 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
     onCheck: () => handleAction('check'),
     onCall: () => handleAction('call'),
     onRaise: () => setShowRaiseInput(true),
-    onAllIn: () => handleAction('allin'),
-    onCancel: () => setShowRaiseInput(false),
+    onAllIn: () => requestRiskConfirmation('allin'),
+    onCancel: () => {
+      if (pendingRiskAction) {
+        setPendingRiskAction(null);
+        return;
+      }
+
+      setShowRaiseInput(false);
+    },
   });
 
   if (!hasResolvedActionState) {
@@ -390,7 +431,7 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
           {canRaise && (
             <button
               type="button"
-              onClick={() => handleAction('allin')}
+              onClick={() => requestRiskConfirmation('allin')}
               className={buildActionCommandClass('allin')}
               title={`All-in ${resolvedPlayer.chips} (A)`}
               disabled={isSubmitting}
@@ -401,6 +442,36 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
           )}
         </div>
       </div>
+
+      {pendingRiskAction && (
+        <div className="table-action-console__risk-confirmation" data-risk-confirmation="inline">
+          <div className="table-action-console__risk-copy">
+            <span>高风险动作</span>
+            <strong>{pendingRiskAction.meta}</strong>
+          </div>
+          <button
+            type="button"
+            className={buildActionCommandClass(
+              pendingRiskAction.action === 'allin' ? 'allin' : 'confirm',
+              'table-action-command--wide'
+            )}
+            disabled={isSubmitting}
+            onClick={() => handleAction(pendingRiskAction.action, pendingRiskAction.amount)}
+          >
+            <span className="table-action-command__label">{pendingRiskAction.label}</span>
+            <span className="table-action-command__meta">再次确认后提交</span>
+          </button>
+          <button
+            type="button"
+            className={buildActionCommandClass('cancel', 'table-action-command--wide')}
+            disabled={isSubmitting}
+            onClick={() => setPendingRiskAction(null)}
+          >
+            <span className="table-action-command__label">取消</span>
+            <span className="table-action-command__meta">返回动作区</span>
+          </button>
+        </div>
+      )}
 
       {showRaiseInput && canRaise && (
         <div className="table-action-console__raise-surface">
