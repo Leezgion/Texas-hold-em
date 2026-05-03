@@ -4,6 +4,7 @@ import SeatCard from './SeatCard';
 
 const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContract = null, hideHeroSeat = false }) => {
   const tableProfile = geometryContract?.tableSurfaceLayout?.profile || seats[0]?.position?.profile || 'desktop-oval';
+  const viewportModel = geometryContract?.viewportLayout?.viewportModel || null;
   const hidesPhoneLiveOpenSeats = gameStarted && tableProfile === 'phone-oval';
   const visibleSeats = seats.filter((seat) => {
     if (seat.seatAvailability === 'closed') {
@@ -21,6 +22,7 @@ const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContr
     <div
       className="arena-seat-ring absolute inset-0 z-20"
       data-table-profile={tableProfile}
+      data-viewport-model={viewportModel}
       data-seat-visual-role="embedded-plaque"
     >
       {visibleSeats.map((seat) => (
@@ -31,6 +33,7 @@ const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContr
           roomState={roomState}
           gameState={gameState}
           gameStarted={gameStarted}
+          viewportModel={viewportModel}
         />
       ))}
     </div>

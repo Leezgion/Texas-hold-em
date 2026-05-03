@@ -347,7 +347,96 @@ test('ActionDock keeps the live-hand action frame wired to ActionButtons', () =>
   );
   assert.match(
     actionDockSource,
-    /const handCardSize = viewportLayout\?\.viewportModel === 'phone-terminal' \? 'small' : 'large';/
+    /const handCardSize = usesCompactTableProfile \|\| viewportLayout\?\.viewportModel === 'phone-terminal' \|\| viewportLayout\?\.viewportModel === 'tablet-terminal' \? 'small' : 'large';/
+  );
+});
+
+test('tablet portrait phone-oval rooms expose compact cockpit state to shell, dock, and seat plaques', () => {
+  assert.match(gameRoomSource, /data-table-profile=\{roomGeometryContract\.tableSurfaceLayout\.profile\}/);
+  assert.match(gameRoomSource, /<ActionDock[\s\S]*tableProfile=\{roomGeometryContract\.tableSurfaceLayout\.profile\}/s);
+  assert.match(actionDockSource, /tableProfile = 'desktop-oval'/);
+  assert.match(actionDockSource, /const usesCompactTableProfile = tableProfile === 'phone-oval';/);
+  assert.match(
+    actionDockSource,
+    /const handCardSize = usesCompactTableProfile \|\| viewportLayout\?\.viewportModel === 'phone-terminal' \|\| viewportLayout\?\.viewportModel === 'tablet-terminal' \? 'small' : 'large';/
+  );
+  assert.match(actionDockSource, /data-table-profile=\{tableProfile\}/);
+  assert.match(seatRingSource, /const viewportModel = geometryContract\?\.viewportLayout\?\.viewportModel \|\| null;/);
+  assert.match(seatRingSource, /viewportModel=\{viewportModel\}/);
+  assert.match(seatCardSource, /viewportModel = null/);
+  assert.match(seatCardSource, /const isPhoneViewport = viewportModel === 'phone-terminal';/);
+  assert.match(
+    seatCardSource,
+    /const isTabletPortraitPhoneOval = viewportModel === 'tablet-terminal' && resolvedTableProfile === 'phone-oval';/
+  );
+  assert.match(seatCardSource, /TABLET_PORTRAIT_LIVE_PLAQUE_TRANSFORMS/);
+  assert.match(seatCardSource, /'top-left':\s*'translate\(-50%, calc\(-50% \+ 5\.3rem\)\)'/);
+  assert.match(seatCardSource, /top:\s*'translate\(-50%, calc\(-50% \+ 5\.3rem\)\)'/);
+  assert.match(seatCardSource, /'top-right':\s*'translate\(-50%, calc\(-50% \+ 5\.3rem\)\)'/);
+});
+
+test('tablet landscape desktop-oval live hand uses a horizontal compact cockpit instead of stacking over the table', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="desktop-oval"\]\[data-dock-state="live"\]\s+\.tactical-dock__grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(10\.5rem,\s*0\.82fr\)\s+minmax\(20rem,\s*1\.08fr\)\s+minmax\(11rem,\s*0\.58fr\);[\s\S]*align-items:\s*end;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="desktop-oval"\]\[data-dock-state="live"\]\s+\.tactical-dock__hero-meta-strip,\s*\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="desktop-oval"\]\[data-dock-state="live"\]\s+\.tactical-dock__turn-chip,\s*\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="desktop-oval"\]\[data-dock-state="live"\]\s+\.tactical-dock__quick-actions-block\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="desktop-oval"\]\[data-dock-state="live"\]\s+\.table-action-console__main\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0,\s*1fr\);[\s\S]*gap:\s*0\.34rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="desktop-oval"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open \.table-action-console__raise-surface\s*\{[\s\S]*position:\s*fixed;[\s\S]*bottom:\s*0\.35rem;[\s\S]*max-height:\s*min\(7\.25rem,\s*calc\(100dvh - 40rem\)\);[\s\S]*overflow-y:\s*auto;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="desktop-oval"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open \.table-action-console__raise-kicker\s*\{\s*display:\s*none;/s
+  );
+});
+
+test('horizontal capsule live hand keeps the pot as a compact pill above the board', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-table-profile="desktop-oval"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-surface\[data-table-profile="desktop-oval"\]\s+\.table-stage-center-shell\[data-center-shell-density="compact"\]\s+\.table-stage-pot-capsule\s*\{[\s\S]*display:\s*inline-flex;[\s\S]*width:\s*fit-content;[\s\S]*max-width:\s*min\(12rem,\s*calc\(100% - 8rem\)\);[\s\S]*padding:\s*0\.28rem 0\.7rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-table-profile="desktop-oval"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-surface\[data-table-profile="desktop-oval"\]\s+\.table-stage-pot-capsule__amount\s*\{[\s\S]*margin-top:\s*0;[\s\S]*font-size:\s*0\.95rem;[\s\S]*line-height:\s*1;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-table-profile="desktop-oval"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-surface\[data-table-profile="desktop-oval"\]\s+\.table-stage-pot-capsule__rail\s*\{\s*display:\s*none;/s
+  );
+});
+
+test('tablet portrait phone-oval live hand uses compact table and decision cockpit styling', () => {
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="tablet-terminal"\]\[data-table-profile="phone-oval"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-pot-capsule\s*\{[\s\S]*display:\s*inline-flex;[\s\S]*width:\s*fit-content;[\s\S]*max-width:\s*min\(10rem,\s*calc\(100% - 5rem\)\);[\s\S]*padding:\s*0\.2rem 0\.56rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="tablet-terminal"\]\[data-table-profile="phone-oval"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-beacon\s*\{[\s\S]*top:\s*clamp\(25rem,\s*50dvh,\s*30rem\);[\s\S]*width:\s*fit-content;[\s\S]*padding:\s*0\.26rem 0\.6rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="tablet-terminal"\]\[data-table-profile="phone-oval"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque\s*\{[\s\S]*width:\s*clamp\(4\.4rem,\s*10vw,\s*5rem\);[\s\S]*min-height:\s*3\.4rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="phone-oval"\]\[data-dock-state="live"\]\s+\.tactical-dock__decision-cockpit\s*\{[\s\S]*width:\s*min\(100%,\s*24rem\);[\s\S]*margin-inline:\s*auto;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="phone-oval"\]\[data-dock-state="live"\]\s+\.table-action-console__command-row\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="tablet-terminal"\]\[data-table-profile="phone-oval"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open \.table-action-console__raise-surface\s*\{[\s\S]*bottom:\s*0\.35rem;[\s\S]*max-height:\s*min\(11\.75rem,\s*calc\(100dvh - 36rem\)\);[\s\S]*overflow-y:\s*auto;/s
   );
 });
 
@@ -514,7 +603,7 @@ test('SeatCard nudges live phone flank plaques away from viewport and dock edges
   );
   assert.match(
     seatCardSource,
-    /const livePhonePlaqueTransform =\s*gameStarted && resolvedTableProfile === 'phone-oval'\s*\? PHONE_LIVE_PLAQUE_TRANSFORMS\[anchorRole\]\s*\|\|\s*'translate\(-50%, -50%\)'\s*:\s*'translate\(-50%, -50%\)';/s
+    /const livePhonePlaqueTransform =[\s\S]*gameStarted && resolvedTableProfile === 'phone-oval'[\s\S]*\? isPhoneViewport[\s\S]*\? PHONE_LIVE_PLAQUE_TRANSFORMS\[anchorRole\]\s*\|\|\s*'translate\(-50%, -50%\)'/s
   );
   assert.match(seatCardSource, /transform:\s*livePhonePlaqueTransform,/);
 });

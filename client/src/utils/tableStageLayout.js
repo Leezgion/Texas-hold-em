@@ -24,7 +24,9 @@ function resolveTableProfile({ viewportWidth = 0, viewportHeight = 0, tableProfi
     return tableProfile;
   }
 
-  return viewportWidth < 768 ? 'phone-oval' : 'desktop-oval';
+  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1024 && viewportHeight > viewportWidth;
+
+  return viewportWidth < 768 || isTabletPortrait ? 'phone-oval' : 'desktop-oval';
 }
 
 export function resolveTableSurfaceLayout({

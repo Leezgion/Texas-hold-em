@@ -237,6 +237,32 @@ test('builds one shared desktop-oval runtime geometry contract for short-height 
   assert.equal(heroGuide.cy, chrome.centerY + canonical[0].y);
 });
 
+test('uses the vertical capsule table contract for tablet portrait rooms', () => {
+  const portrait = resolveRoomGeometryContract({
+    viewportWidth: 768,
+    viewportHeight: 1024,
+    roomShellLayout: 'stacked',
+    tableDiameter: 320,
+    playerCount: 9,
+  });
+  const landscape = resolveRoomGeometryContract({
+    viewportWidth: 1024,
+    viewportHeight: 768,
+    roomShellLayout: 'stacked',
+    tableDiameter: 320,
+    playerCount: 9,
+  });
+
+  assert.equal(portrait.viewportLayout.viewportModel, 'tablet-terminal');
+  assert.equal(portrait.tableSurfaceLayout.profile, 'phone-oval');
+  assert.equal(portrait.tableSurfaceLayout.shellOrientation, 'vertical-capsule');
+  assert.equal(portrait.communityCardLayout.tableProfile, 'phone-oval');
+  assert.equal(portrait.seatRingLayout.profile, 'phone-oval');
+  assert.equal(portrait.canonicalSlots[0].anchorZone, 'dock-edge');
+  assert.equal(landscape.tableSurfaceLayout.profile, 'desktop-oval');
+  assert.equal(landscape.tableSurfaceLayout.shellOrientation, 'horizontal-capsule');
+});
+
 test('exposes canonical anchor slots on the runtime geometry contract for supported room sizes', () => {
   const contract = resolveRoomGeometryContract({
     viewportWidth: 1280,

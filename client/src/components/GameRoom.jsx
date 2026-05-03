@@ -704,6 +704,7 @@ const GameRoom = () => {
       data-viewport-model={roomViewportLayout.viewportModel}
       data-height-class={roomViewportLayout.heightClass}
       data-stage-density={roomViewportLayout.stageDensity}
+      data-table-profile={roomGeometryContract.tableSurfaceLayout.profile}
       data-page-scroll={roomViewportLayout.pageScroll}
       data-hero-dock-placement={roomViewportLayout.heroDockPlacement}
       data-support-surface-model={roomViewportLayout.supportSurfaceModel}
@@ -884,6 +885,7 @@ const GameRoom = () => {
               effectiveDisplayMode={effectiveDisplayMode}
               roomState={activeRoomState}
               viewportLayout={roomViewportLayout}
+              tableProfile={roomGeometryContract.tableSurfaceLayout.profile}
               shellView={shellView}
               activeSupportPanel={activeSupportPanel}
               onToggleSupportPanel={toggleSupportPanel}

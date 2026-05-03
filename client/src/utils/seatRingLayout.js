@@ -21,12 +21,14 @@ function roundPosition(position = {}) {
   };
 }
 
-function resolveSeatRingProfile({ viewportWidth = 0, profile = null } = {}) {
+function resolveSeatRingProfile({ viewportWidth = 0, viewportHeight = 0, profile = null } = {}) {
   if (profile === 'desktop-oval' || profile === 'phone-oval') {
     return profile;
   }
 
-  return viewportWidth < 768 ? 'phone-oval' : 'desktop-oval';
+  const isTabletPortrait = viewportWidth >= 768 && viewportWidth < 1024 && viewportHeight > viewportWidth;
+
+  return viewportWidth < 768 || isTabletPortrait ? 'phone-oval' : 'desktop-oval';
 }
 
 function resolveTableFootprint({ tableDiameter = 0, profile = 'desktop-oval' } = {}) {
@@ -185,11 +187,12 @@ export function resolveTableDiameter({ viewportWidth = 0, roomShellLayout = 'sta
 
 export function getSeatRingLayoutProfile({
   viewportWidth = 0,
+  viewportHeight = 0,
   roomShellLayout = 'stacked',
   tableDiameter,
   profile = null,
 } = {}) {
-  const resolvedProfile = resolveSeatRingProfile({ viewportWidth, profile });
+  const resolvedProfile = resolveSeatRingProfile({ viewportWidth, viewportHeight, profile });
   const resolvedTableDiameter = clampNumber(
     tableDiameter,
     resolveTableDiameter({ viewportWidth, roomShellLayout })
@@ -212,11 +215,11 @@ export function getSeatRingLayoutProfile({
       cardWidth: usesWidePhonePlaques ? 84 : 64,
       cardHeight: usesWidePhonePlaques ? 116 : 104,
       horizontalGap: usesWidePhonePlaques ? 9 : 7,
-      verticalGap: usesWidePhonePlaques ? 16 : 14,
+      verticalGap: usesWidePhonePlaques ? 22 : 14,
       anchorCardWidth: usesWidePhonePlaques ? 94 : 70,
       anchorCardHeight: usesWidePhonePlaques ? 138 : 128,
       anchorHorizontalGap: usesWidePhonePlaques ? 10 : 8,
-      anchorVerticalGap: usesWidePhonePlaques ? 20 : 18,
+      anchorVerticalGap: usesWidePhonePlaques ? 28 : 18,
     };
   }
 
@@ -246,12 +249,14 @@ export function getSeatRingLayoutProfile({
 export function buildSeatRingPositions({
   playerCount = 0,
   viewportWidth = 0,
+  viewportHeight = 0,
   roomShellLayout = 'stacked',
   tableDiameter,
   profile = null,
 } = {}) {
   const layoutProfile = getSeatRingLayoutProfile({
     viewportWidth,
+    viewportHeight,
     roomShellLayout,
     tableDiameter,
     profile,

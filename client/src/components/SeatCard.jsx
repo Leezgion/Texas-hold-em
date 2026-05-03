@@ -11,12 +11,20 @@ const PHONE_LIVE_PLAQUE_TRANSFORMS = Object.freeze({
   'near-hero-right': 'translate(calc(-50% + 0.45rem), calc(-50% - 13.25rem))',
 });
 
+const TABLET_PORTRAIT_LIVE_PLAQUE_TRANSFORMS = Object.freeze({
+  'top-left': 'translate(-50%, calc(-50% + 5.3rem))',
+  top: 'translate(-50%, calc(-50% + 5.3rem))',
+  'top-right': 'translate(-50%, calc(-50% + 5.3rem))',
+  'near-hero-right': 'translate(calc(-50% + 0.35rem), calc(-50% - 8.25rem))',
+});
+
 const SeatCard = ({
   seat,
   tableProfile = null,
   roomState,
   gameState,
   gameStarted,
+  viewportModel = null,
 }) => {
   const resolvedTableProfile = tableProfile || seat.position?.profile || 'desktop-oval';
   const anchorZone = seat.anchorZone || seat.position?.anchorZone || 'table-flank';
@@ -26,9 +34,15 @@ const SeatCard = ({
   const visualRole = seat.visualRole || 'embedded-plaque';
   const plaqueDensityModel = seat.plaqueDensityModel || 'broadcast-compact';
   const plaqueMaterialModel = seat.plaqueMaterialModel || 'embedded-rail-display';
+  const isPhoneViewport = viewportModel === 'phone-terminal';
+  const isTabletPortraitPhoneOval = viewportModel === 'tablet-terminal' && resolvedTableProfile === 'phone-oval';
   const livePhonePlaqueTransform =
     gameStarted && resolvedTableProfile === 'phone-oval'
-      ? PHONE_LIVE_PLAQUE_TRANSFORMS[anchorRole] || 'translate(-50%, -50%)'
+      ? isPhoneViewport
+        ? PHONE_LIVE_PLAQUE_TRANSFORMS[anchorRole] || 'translate(-50%, -50%)'
+        : isTabletPortraitPhoneOval
+        ? TABLET_PORTRAIT_LIVE_PLAQUE_TRANSFORMS[anchorRole] || 'translate(-50%, -50%)'
+        : 'translate(-50%, -50%)'
       : 'translate(-50%, -50%)';
 
   if (!seat.occupied) {

@@ -2711,4 +2711,40 @@ This pass validated and tightened the homepage gateway outside phone.
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-11000895.js` 541.94 kB)
   - `git diff --check`: passed, with Windows LF-to-CRLF working-copy warnings only
 - next queue:
-  - `[todo]` return to the live room table/action cockpit responsive audit so phone, tablet, desktop, and ultrawide all keep the real table, hand cards, pot, and betting controls in a coherent single decision surface
+  - `[done]` return to the live room table/action cockpit responsive audit so phone, tablet, desktop, and ultrawide all keep the real table, hand cards, pot, and betting controls in a coherent single decision surface
+
+## 2026-05-03 Live Room Table/Action Cockpit Responsive Audit
+
+This pass made the live-hand table and betting cockpit keep one coherent decision surface across phone, tablet, desktop, and ultrawide.
+
+- root cause:
+  - tablet portrait inherited desktop `desktop-oval` geometry, so seats and cockpit did not follow the vertical capsule table language
+  - tablet landscape stacked the live hero panel, hand cards, action console, and support launcher vertically, covering most of the horizontal capsule table
+  - horizontal capsule pot chrome was a large `300x71` block and overlapped the community-card board focus
+  - the raise drawer was allowed to open across hand cards on tablet portrait and tablet landscape
+  - the browser audit phone header threshold was `36px`, while the stable product header is `37px`
+- change:
+  - tablet portrait now resolves to the same `phone-oval` vertical capsule table contract as phone, while tablet landscape remains `desktop-oval`
+  - tablet portrait plaques use a tablet-specific live transform so top seats stay below the header and near-hero seats avoid the dock
+  - tablet landscape gets a three-column compact cockpit: hero metrics, hand/action center, and support launcher
+  - tablet raise drawers are bounded inside the action zone and scroll internally instead of covering hole cards
+  - horizontal capsule live-hand pot chrome is reduced to a compact pill and hides the duplicate pot rail
+- browser evidence:
+  - `.runlogs/2026-05-03-live-room-cockpit-responsive-audit.json` (`runId = mopcwv3t`)
+  - screenshots include phone, compact phone, tablet portrait, tablet landscape, desktop, and ultrawide live/raise states under `.runlogs/2026-05-03-live-room-cockpit-*.png`
+- verified contract:
+  - compact phone `375x667`: no document scroll, no clipped seats, no table/action collisions, header `37px` accepted by audit
+  - phone `390x844`: no document scroll, no clipped seats, no table/action collisions
+  - tablet portrait `768x1024`: `tableProfile = phone-oval`, hand cards bottom `716`, raise drawer top `739`
+  - tablet landscape `1024x768`: dock height reduced to `199px`, hand cards bottom `605`, raise drawer top `616`
+  - desktop `1366x900` and ultrawide `1728x1000`: horizontal pot pill reduced to `68x26`, no pot/board overlap
+- final verification:
+  - red tests before implementation covered tablet portrait profile selection, tablet portrait cockpit styling, tablet landscape compact cockpit, tablet landscape raise drawer bounds, and horizontal pot pill compaction
+  - `node .runlogs/2026-05-03-live-room-cockpit-responsive-audit.cjs`: passed across all six viewports (`runId = mopcwv3t`)
+  - `cd client && pnpm exec node --test src/utils/tableStageLayout.test.js src/utils/seatRingLayout.test.js src/components/roomTerminalShellContract.test.js`: `96/96`
+  - `cd client && pnpm exec node --test`: `279/279`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-5de715b1.js` 542.84 kB)
+  - `cd server && npm test -- --runInBand`: `130/130`
+  - `git diff --check`: passed, with Windows LF-to-CRLF working-copy warnings only
+- next queue:
+  - `[todo]` continue gameplay/player-count validation now that the responsive table/action UI is stable: verify 2-max through 9-max live seating, action availability, settlement, support panels, and reveal modes under the refreshed cockpit

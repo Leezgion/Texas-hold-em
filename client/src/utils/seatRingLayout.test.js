@@ -246,6 +246,29 @@ test('phone portrait profile uses a vertical oval and keeps hero tied to the doc
   assert.equal(layout.overlaps.tableBody, 0);
 });
 
+test('tablet portrait rooms use the vertical capsule seat ring instead of desktop flank anchors', () => {
+  const layout = buildSeatRingPositions({
+    playerCount: 9,
+    viewportWidth: 768,
+    viewportHeight: 1024,
+    roomShellLayout: 'stacked',
+    tableDiameter: 320,
+  });
+  const profile = getSeatRingLayoutProfile({
+    viewportWidth: 768,
+    viewportHeight: 1024,
+    roomShellLayout: 'stacked',
+    tableDiameter: 320,
+  });
+
+  assert.equal(profile.profile, 'phone-oval');
+  assert.equal(layout.profile, 'phone-oval');
+  assert.equal(layout.heroAnchor.zone, 'dock-edge');
+  assert.equal(layout[0].anchorZone, 'dock-edge');
+  assert.equal(layout.overlaps.stageBand, 0);
+  assert.equal(layout.overlaps.tableBody, 0);
+});
+
 test('phone portrait profile keeps short-handed hero seats anchored to the dock edge', () => {
   const layout = buildSeatRingPositions({
     playerCount: 4,

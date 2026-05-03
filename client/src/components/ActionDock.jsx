@@ -19,6 +19,7 @@ const ActionDock = ({
   effectiveDisplayMode,
   roomState,
   viewportLayout,
+  tableProfile = 'desktop-oval',
   shellView,
   canLeaveSeat = false,
   canRequestRebuy = false,
@@ -65,7 +66,8 @@ const ActionDock = ({
   const showsApronRail = showsPrimaryQuickActions || supportsSecondaryPanels;
   const dockLayout = !showsDecisionCenter && showsApronRail ? 'waiting-apron' : showsApronRail ? 'decision-apron' : 'core-only';
   const heroPanelLayout = isWaitingDockState ? 'waiting-strip' : 'live-ribbon';
-  const handCardSize = viewportLayout?.viewportModel === 'phone-terminal' ? 'small' : 'large';
+  const usesCompactTableProfile = tableProfile === 'phone-oval';
+  const handCardSize = usesCompactTableProfile || viewportLayout?.viewportModel === 'phone-terminal' || viewportLayout?.viewportModel === 'tablet-terminal' ? 'small' : 'large';
   const quickActions = [
     canRequestRebuy && typeof onOpenRebuy === 'function'
       ? { key: 'rebuy', label: '补码', tone: 'success', onClick: onOpenRebuy }
@@ -83,6 +85,7 @@ const ActionDock = ({
       data-apron-material-model="black-gold-table-rail"
       data-apron-coupling="table-rail"
       data-viewport-model={viewportLayout?.viewportModel}
+      data-table-profile={tableProfile}
       data-height-class={viewportLayout?.heightClass}
       data-stage-density={viewportLayout?.stageDensity}
       data-support-surface-model={viewportLayout?.supportSurfaceModel}
