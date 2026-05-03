@@ -140,6 +140,7 @@ const GameRoom = () => {
     : 'room-shell-grid room-shell-grid--terminal-stack';
   const theme = getDisplayModeTheme(effectiveDisplayMode);
   const supportLabels = theme.sheetLabels || {};
+  const isPhoneLiveHand = roomViewportLayout.viewportModel === 'phone-terminal' && gameStarted;
 
   useEffect(() => {
     const verifyRoom = async () => {
@@ -647,10 +648,11 @@ const GameRoom = () => {
     return `座位 ${seatIndex + 1}`;
   };
 
-  const tableDiameter = resolveTableDiameter({
+  const baseTableDiameter = resolveTableDiameter({
     viewportWidth: windowSize.width,
     roomShellLayout: stageShellLayout,
   });
+  const tableDiameter = isPhoneLiveHand && windowSize.width < 480 ? 256 : baseTableDiameter;
   const roomGeometryContract = resolveRoomGeometryContract({
     viewportLayout: roomViewportLayout,
     viewportWidth: windowSize.width,
@@ -667,7 +669,6 @@ const GameRoom = () => {
     setActiveSupportPanel((currentValue) => (currentValue === panelId ? null : panelId));
   };
   const closeSupportPanel = () => setActiveSupportPanel(null);
-  const isPhoneLiveHand = roomViewportLayout.viewportModel === 'phone-terminal' && gameStarted;
   const historyPanelPresentation = isPhoneLiveHand ? 'side-replay-drawer' : supportPanelPresentation;
   const roomToolsPanelTitle = isPhoneLiveHand ? '桌面' : supportLabels.room || '房间';
   const roomToolsPanelSubtitle = isPhoneLiveHand ? '离座、补码、成员与牌局入口' : shellView.modeTitle;

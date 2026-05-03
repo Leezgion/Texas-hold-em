@@ -673,6 +673,22 @@ test('phone-terminal live hand uses a fullscreen felt table shell instead of sta
   );
 });
 
+test('phone-terminal live hand gives more screen budget to the felt table than chrome panels', () => {
+  assert.match(gameRoomSource, /const baseTableDiameter = resolveTableDiameter\(/);
+  assert.match(
+    gameRoomSource,
+    /const tableDiameter = isPhoneLiveHand && windowSize\.width < 480\s*\?\s*256\s*:\s*baseTableDiameter;/
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-table-shell\[data-table-profile="phone-oval"\]\s*\{[\s\S]*max-width:\s*min\(92vw,\s*19rem\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\[data-phone-action-presentation="floating-table-controls"\]\s+\.tactical-dock__hero-panel\s*\{[\s\S]*background:\s*linear-gradient\(180deg,\s*rgba\(3,\s*8,\s*14,\s*0\.52\),\s*rgba\(3,\s*7,\s*12,\s*0\.38\)\)/s
+  );
+});
+
 test('short-height phone live hand tightens the single-screen stage budget to prevent compact overflow', () => {
   assert.match(
     globalStylesSource,

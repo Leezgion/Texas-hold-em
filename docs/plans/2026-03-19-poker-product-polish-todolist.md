@@ -3075,7 +3075,8 @@ Manual acceptance now found a larger phone UX architecture issue: the live-hand 
   - `[done]` remove internal scrolling from the raise sizing surface
   - `[done]` convert phone opponent seats into compact poker-app action/stack/bet badges
   - `[done]` convert phone hand history into a replay side drawer with previous/next navigation and per-player action rows
-  - `[todo]` run focused browser regression for phone fullscreen table, raise overlay, compact seats, and replay drawer
+  - `[done]` enlarge regular phone live-hand felt table and soften hero/action chrome into transparent table overlays
+  - `[done]` run focused browser regression for phone fullscreen table, compact seats, and replay drawer
   - `[todo]` run full local verification before any merge-readiness claim
 - design:
   - `docs/plans/2026-05-03-mobile-fullscreen-poker-table-design.md`
@@ -3101,3 +3102,18 @@ Manual acceptance now found a larger phone UX architecture issue: the live-hand 
 - stage 4 evidence:
   - red contract: `phone-terminal history panel presents a hand replay side drawer` failed before production changes
   - green contract: `cd client && pnpm exec node --test src/components/interactionSurfaceContract.test.js src/view-models/handHistoryViewModel.test.js` passed `37/37`
+- stage 5/6 focused browser evidence:
+  - services: `5173/index.html`, `5173/api/debug/devices`, and `3101/api/debug/devices` returned healthy responses; `5173/` still returned `404`
+  - browser room: `E1HO5X`, two isolated `agent-browser` sessions, phone viewport `390x844`
+  - live hand after expansion: `data-room-play-state=live-hand`, `data-phone-live-table-shell=fullscreen-felt`, `tableProfile=phone-oval`
+  - page stayed single-screen: `document.scrollingElement.scrollHeight/clientHeight = 844/844`, `scrollWidth/clientWidth = 390/390`
+  - felt table grew from the earlier browser rect around `212 x 304` to `261 x 374`
+  - replay drawer evidence: `data-room-panel-presentation=side-replay-drawer`, `data-event-presentation=hand-replay`, controls `上一手 / 下一手`, action row `PREFLOP 玩家 弃牌`
+  - screenshots captured in `.runlogs/phone-fullscreen-live-host-expanded.png` and `.runlogs/phone-fullscreen-replay-drawer.png` as local evidence only; do not stage `.runlogs`
+- stage 6 evidence:
+  - red contract: `phone-terminal live hand gives more screen budget to the felt table than chrome panels` failed before production changes
+  - green contract: `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js src/utils/tableStageLayout.test.js src/utils/seatRingLayout.test.js` passed `103/103`
+- new pitfalls:
+  - when loading Vite through `/index.html`, BrowserRouter initially sees `/index.html`; for home-route evidence, run `history.replaceState(null, '', '/')` after load or the app shell can appear visually blank
+  - `agent-browser screenshot .runlogs/foo.png` treats `.runlogs/foo.png` as a selector because it starts with `.`, so use `screenshot body .runlogs/foo.png`
+  - quote URLs containing `&` in PowerShell; otherwise `&transport=polling` is parsed as a command/background separator
