@@ -2857,3 +2857,22 @@ This pass tightened the live decision cockpit for serious player use and verifie
 - next queue:
   - `[todo]` profile real phone interaction smoothness around live hand, raise drawer, risk confirmation, support sheets, settlement, and multi-hand transitions
   - `[todo]` run final visual QA on the refined table/cockpit before considering merge readiness
+
+## 2026-05-03 Post-Cockpit Full Verification Snapshot
+
+This snapshot records the full local verification after the professional cockpit metrics, inline risk confirmation, browser audit, and documentation updates.
+
+- full verification:
+  - `cd client && pnpm exec node --test`: `285/285`
+  - `cd client && pnpm build`: passed; Vite still reports the existing large chunk warning (`assets/index-5d8a2c72.js` `545.74 kB`)
+  - `cd server && npm test -- --runInBand`: `130/130`
+  - `git diff --check`: passed
+  - `git status --short --branch`: clean worktree on `feat/poker-os-polish`, ahead of origin by `50`
+- branch policy:
+  - stay on `feat/poker-os-polish`
+  - do not merge to `main` or push until phone performance profiling, final visual QA, and product-readiness review are complete
+- next queue:
+  - `[todo]` run real-browser phone interaction smoothness profiling for live hand, raise drawer, risk confirmation, support sheets, settlement, and multi-hand transitions
+  - `[todo]` reduce CSS/animation/paint cost if traces show jank
+  - `[todo]` run final cross-device visual QA screenshots after any performance changes
+  - `[todo]` prepare a merge-readiness checklist only after the above tasks are done
