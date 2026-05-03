@@ -5723,6 +5723,113 @@
     @apply p-3;
   }
 
+  .join-room-modal {
+    background:
+      linear-gradient(180deg, rgba(8, 15, 28, 0.98), rgba(3, 7, 18, 0.98)),
+      radial-gradient(circle at 84% 0%, rgba(245, 158, 11, 0.2), transparent 12rem),
+      radial-gradient(circle at 12% 18%, rgba(16, 185, 129, 0.14), transparent 14rem);
+    max-height: min(calc(100vh - 1rem), 34rem);
+  }
+
+  .join-room-modal__header {
+    @apply px-4 py-3 sm:px-5;
+  }
+
+  .join-room-modal__header h2 {
+    @apply text-lg font-black tracking-[0.08em] text-amber-200 sm:text-xl;
+  }
+
+  .join-room-modal__body {
+    @apply px-4 py-3 sm:px-5 sm:py-4;
+  }
+
+  .join-room-modal__form {
+    @apply grid gap-3;
+  }
+
+  .join-room-modal__notice {
+    @apply rounded-[1rem] border border-amber-300/25 bg-amber-300/10 px-3 py-2 text-center text-xs font-semibold text-amber-100;
+  }
+
+  .join-room-modal__hero {
+    @apply rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-3.5;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .join-room-modal__kicker {
+    @apply text-[0.62rem] font-black uppercase tracking-[0.32em] text-emerald-200/75;
+  }
+
+  .join-room-modal__headline {
+    @apply mt-2 text-xl font-black leading-tight text-white;
+  }
+
+  .join-room-modal__copy {
+    @apply mt-2 text-[12px] leading-5 text-slate-300;
+  }
+
+  .join-room-modal__code-panel {
+    @apply grid gap-1 rounded-[1.2rem] border border-amber-300/25 bg-black/30 p-3.5 text-center;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 16px 36px rgba(0, 0, 0, 0.22);
+  }
+
+  .join-room-modal__code-label,
+  .join-room-modal__code-status {
+    @apply text-[0.62rem] font-black uppercase tracking-[0.28em] text-slate-400;
+  }
+
+  .join-room-modal__code-value {
+    @apply text-3xl font-black tracking-[0.3em] text-amber-100;
+    font-family: "IBM Plex Mono", "Consolas", monospace;
+    text-shadow: 0 0 28px rgba(251, 191, 36, 0.28);
+  }
+
+  .join-room-modal__code-status {
+    @apply text-emerald-200/80;
+  }
+
+  .join-room-modal__signal-panel {
+    @apply rounded-[1.15rem] border border-white/10 bg-slate-950/55 p-2.5;
+  }
+
+  .join-room-modal__signal-heading {
+    @apply px-1 pb-2 text-[0.62rem] font-black uppercase tracking-[0.26em] text-slate-400;
+  }
+
+  .join-room-modal__signal-grid {
+    @apply grid grid-cols-3 gap-1.5;
+  }
+
+  .join-room-modal__signal {
+    @apply rounded-[0.85rem] border border-white/10 bg-white/[0.04] px-2 py-2;
+  }
+
+  .join-room-modal__signal-label {
+    @apply block text-[0.64rem] font-semibold text-slate-300;
+  }
+
+  .join-room-modal__signal-value {
+    @apply mt-1 block text-[0.72rem] font-black text-white;
+  }
+
+  .join-room-modal__submit {
+    @apply inline-flex min-h-[3.2rem] w-full items-center justify-center rounded-[1.15rem] px-4 text-base font-black text-slate-950 transition disabled:cursor-wait disabled:opacity-85;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    box-shadow: 0 18px 38px rgba(245, 158, 11, 0.26);
+  }
+
+  .join-room-modal__submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 22px 42px rgba(245, 158, 11, 0.32);
+  }
+
+  .join-room-modal__submit[data-join-request-state="pending"] {
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.92), rgba(245, 158, 11, 0.9));
+    color: #03120e;
+  }
+
   .room-access-state {
     min-height: 100dvh;
     @apply grid place-items-center overflow-hidden bg-slate-950 px-4 py-6 text-white;
@@ -5961,6 +6068,79 @@
     .modal-content[data-modal-phone-surface="full-screen-sheet"] .modal-content__header,
     .modal-content[data-modal-phone-surface="full-screen-sheet"] .modal-content__footer {
       backdrop-filter: none;
+    }
+
+    .join-room-modal {
+      max-height: min(calc(100dvh - 1rem), 31rem);
+      border-radius: 1.35rem;
+    }
+
+    .join-room-modal__header {
+      @apply px-3.5 py-2.5;
+    }
+
+    .join-room-modal__body {
+      @apply px-3.5 py-3;
+    }
+
+    .join-room-modal__form {
+      gap: 0.65rem;
+    }
+
+    .join-room-modal__hero {
+      padding: 0.72rem;
+      border-radius: 1rem;
+    }
+
+    .join-room-modal__headline {
+      font-size: 1.05rem;
+      line-height: 1.25rem;
+    }
+
+    .join-room-modal__copy {
+      margin-top: 0.45rem;
+      font-size: 0.72rem;
+      line-height: 1.05rem;
+    }
+
+    .join-room-modal__code-panel {
+      padding: 0.72rem;
+      border-radius: 1rem;
+    }
+
+    .join-room-modal__code-value {
+      font-size: 1.75rem;
+      line-height: 2rem;
+      letter-spacing: 0.24em;
+    }
+
+    .join-room-modal__signal-panel {
+      padding: 0.55rem;
+      border-radius: 0.95rem;
+    }
+
+    .join-room-modal__signal-grid {
+      gap: 0.35rem;
+    }
+
+    .join-room-modal__signal {
+      padding: 0.45rem;
+      border-radius: 0.68rem;
+    }
+
+    .join-room-modal__signal-label {
+      font-size: 0.56rem;
+      line-height: 0.75rem;
+    }
+
+    .join-room-modal__signal-value {
+      font-size: 0.64rem;
+      line-height: 0.84rem;
+    }
+
+    .join-room-modal__submit {
+      min-height: 2.85rem;
+      border-radius: 1rem;
     }
 
     .create-room-modal__body {

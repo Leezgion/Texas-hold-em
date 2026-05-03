@@ -2602,4 +2602,39 @@ This pass verified that failed room joins recover cleanly without stale navigati
   - `cd client && pnpm exec node --test`: `267/267`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-5e0bc205.js` 540.78 kB)
 - next queue:
-  - `[todo]` polish the join-room modal visual density and retry state so the failure path matches the current Poker OS terminal style instead of the legacy gray form
+  - `[done]` polish the join-room modal visual density and retry state so the failure path matches the current Poker OS terminal style instead of the legacy gray form
+
+## 2026-05-03 Join-Room Modal Terminal Polish
+
+This pass replaced the legacy join-room gray form with a compact Poker OS terminal surface.
+
+- root cause:
+  - `JoinRoomModal` still used `form-label`, `form-button`, `bg-gray-*`, and a long bullet instruction list
+  - failed joins were functionally recoverable, but the visual language did not match the rest of the product and wasted phone viewport height
+- change:
+  - added a dedicated `join-room-modal` surface with compact header/body chrome
+  - promoted the room code into a high-contrast terminal code panel
+  - replaced the long instruction list with three concise strategy chips: `空位入座`, `满员观战`, `网络稳定`
+  - kept the retry behavior unchanged: failed joins remain in the modal and the submit button returns to `加入房间`
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-join-room-modal-polish-audit.json` (`runId = mop9vnzd`)
+  - invalid room `ZZZZZZ`
+  - screenshots:
+    - `.runlogs/2026-05-03-phone-join-room-modal-polish-before-submit.png`
+    - `.runlogs/2026-05-03-phone-join-room-modal-polish-after-failure.png`
+- verified contract:
+  - phone modal height stayed at `456px`
+  - `data-join-room-density = compact-terminal`
+  - no old `游戏说明`, `form-button`, `form-label`, or `bg-gray-*` markup remains in the dialog
+  - failure state shows the recovery toast, keeps the dialog open, keeps body scroll locked, and leaves `rootInert = true` while the modal is active
+- implementation note:
+  - the first browser script failed because it opened `/index.html` without rewriting history to `/`; `BrowserRouter` has no `/index.html` route, so the homepage input never rendered
+  - pending-state copy is too fast to reliably catch on immediate server failures, so the browser audit checks the stable requirement: final retry state is ready and not stuck
+- final verification:
+  - red tests before implementation: `joinRoomModalContract.test.js` failed on missing terminal structure, old long copy, and missing CSS
+  - `cd client && pnpm exec node --test src/components/joinRoomModalContract.test.js`: `3/3`
+  - `cd client && pnpm exec node --test src/components/interactionSurfaceContract.test.js src/components/dialogSemanticsContract.test.js`: `33/33`
+  - `cd client && pnpm exec node --test`: `270/270`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-b3cadfab.js` 541.72 kB)
+- next queue:
+  - `[todo]` polish the phone homepage gateway density so create/join entry points are reachable faster and the product does not require scrolling through the full mode marketing stack before joining a room

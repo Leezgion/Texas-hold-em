@@ -7,6 +7,13 @@ import Modal from './Modal';
 const JoinRoomModal = ({ roomId }) => {
   const { showJoinRoom, setShowJoinRoom, joinRoom } = useGame();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const normalizedRoomId = roomId?.trim().toUpperCase() || '------';
+  const requestState = isSubmitting ? 'pending' : 'ready';
+  const signalItems = [
+    { label: '空位入座', value: '自动坐下' },
+    { label: '满员观战', value: '保留视角' },
+    { label: '网络稳定', value: '保持在线' },
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,37 +45,60 @@ const JoinRoomModal = ({ roomId }) => {
       show={showJoinRoom}
       onClose={handleClose}
       title="加入游戏房间"
+      padding=""
+      maxWidth="max-w-md"
+      scrollbarStyle="themed"
+      className="join-room-modal"
+      bodyClassName="join-room-modal__body"
+      headerClassName="join-room-modal__header"
+      contentProps={{
+        'data-join-room-density': 'compact-terminal',
+        'data-join-request-state': requestState,
+      }}
       closeOnOverlayClick={!isSubmitting}
     >
       <form
         onSubmit={handleSubmit}
-        className="space-y-6"
+        className="join-room-modal__form"
       >
-        {/* 房间ID */}
-        <div>
-          <label className="form-label">房间ID</label>
-          <div className="bg-gray-700 px-4 py-3 rounded-lg border border-gray-600">
-            <span className="text-2xl font-mono text-poker-gold">{roomId}</span>
+        {isSubmitting && (
+          <div className="join-room-modal__notice" role="status">
+            正在请求牌桌席位...
           </div>
-        </div>
+        )}
 
-          {/* 游戏说明 */}
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <h4 className="font-semibold text-poker-gold mb-2">游戏说明</h4>
-            <ul className="text-sm text-gray-300 space-y-1">
-              <li>• 自动使用设备ID作为玩家标识</li>
-              <li>• 有空座位时自动入座参与游戏</li>
-              <li>• 座位已满时进入观战模式</li>
-              <li>• 游戏进行中入座将等待下一轮</li>
-              <li>• 支持换座和补码功能</li>
-              <li>• 请保持网络连接稳定</li>
-            </ul>
+        <section className="join-room-modal__hero">
+          <div>
+            <div className="join-room-modal__kicker">ROOM LINK</div>
+            <p className="join-room-modal__headline">确认加入这张牌桌</p>
           </div>
+          <p className="join-room-modal__copy">
+            使用当前设备身份进入。若房间已结束，请让房主重新分享最新房间号。
+          </p>
+        </section>
 
-        {/* 提交按钮 */}
+        <section className="join-room-modal__code-panel" aria-label="房间ID">
+          <span className="join-room-modal__code-label">房间 ID</span>
+          <span className="join-room-modal__code-value">{normalizedRoomId}</span>
+          <span className="join-room-modal__code-status">等待确认</span>
+        </section>
+
+        <section className="join-room-modal__signal-panel" aria-label="席位策略">
+          <div className="join-room-modal__signal-heading">席位策略</div>
+          <div className="join-room-modal__signal-grid">
+            {signalItems.map((item) => (
+              <div className="join-room-modal__signal" key={item.label}>
+                <span className="join-room-modal__signal-label">{item.label}</span>
+                <span className="join-room-modal__signal-value">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <button
           type="submit"
-          className="form-button text-lg py-3"
+          className="join-room-modal__submit"
+          data-join-request-state={requestState}
           disabled={isSubmitting}
         >
           {isSubmitting ? '加入中...' : '加入房间'}
@@ -76,4 +106,6 @@ const JoinRoomModal = ({ roomId }) => {
       </form>
     </Modal>
   );
-};export default JoinRoomModal;
+};
+
+export default JoinRoomModal;
