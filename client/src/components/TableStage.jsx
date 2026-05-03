@@ -71,12 +71,14 @@ const TableStage = ({
   const centerSurfaceModel = tableSurfaceLayout.centerSurfaceModel || 'broadcast-clean-center';
   const centerPriority = tablePotSummary.centerPriority || 'board-pot-street';
   const centerShellDensity = 'compact';
+  const isPhoneLiveStage = viewportLayout?.viewportModel === 'phone-terminal';
 
   return (
     <section
       className="table-stage-panel poker-shell-panel poker-shell-panel--accent relative rounded-[2rem] px-4 py-5 sm:px-6"
       data-stage-header-density={isCompactStageHeader ? 'compact' : 'regular'}
       data-viewport-model={viewportLayout?.viewportModel}
+      data-phone-live-stage={isPhoneLiveStage ? 'fullscreen-felt' : 'standard'}
     >
       {showsStagePanelHeader ? (
         <div className="table-stage-panel__header mb-4 flex flex-wrap items-center justify-between gap-3">

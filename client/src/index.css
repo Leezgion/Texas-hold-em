@@ -2620,6 +2620,32 @@
     gap: 0.45rem;
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"][data-phone-live-table-shell="fullscreen-felt"] {
+    height: 100dvh;
+    min-height: 100dvh;
+    padding: 0.25rem;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 34%, rgba(31, 185, 128, 0.16), transparent 21rem),
+      radial-gradient(circle at 50% 72%, rgba(12, 78, 48, 0.68), transparent 28rem),
+      linear-gradient(180deg, #081019 0%, #0b1510 46%, #120a08 100%);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"][data-phone-live-table-shell="fullscreen-felt"] .room-terminal-frame {
+    max-width: 100%;
+    min-height: calc(100dvh - 0.5rem);
+    max-height: calc(100dvh - 0.5rem);
+    gap: 0.18rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"][data-phone-live-table-shell="fullscreen-felt"] .room-terminal-main {
+    padding-bottom: 0;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"][data-phone-live-table-shell="fullscreen-felt"] .room-terminal-main--table-apron::after {
+    opacity: 0;
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-header-stack {
     gap: 0.16rem;
   }
@@ -2666,6 +2692,14 @@
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-panel {
     padding: 0.55rem;
     border-radius: 1.35rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-panel[data-phone-live-stage="fullscreen-felt"] {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    overflow: visible;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .table-stage-surface {

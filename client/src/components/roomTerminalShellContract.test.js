@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const gameRoomSource = readFileSync(new URL('./GameRoom.jsx', import.meta.url), 'utf8');
 const tableHeaderSource = readFileSync(new URL('./TableHeader.jsx', import.meta.url), 'utf8');
+const tableStageSource = readFileSync(new URL('./TableStage.jsx', import.meta.url), 'utf8');
 const actionDockSource = readFileSync(new URL('./ActionDock.jsx', import.meta.url), 'utf8');
 const actionButtonsSource = readFileSync(new URL('./ActionButtons.jsx', import.meta.url), 'utf8');
 const seatRingSource = readFileSync(new URL('./SeatRing.jsx', import.meta.url), 'utf8');
@@ -650,6 +651,25 @@ test('short-height phone live hand switches to a micro table-and-dock contract',
   assert.match(
     globalStylesSource,
     /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-height-class="short-height"\]\[data-dock-state="live"\]\s+\.table-action-console--raise-open\s+\.table-action-console__raise-surface\s*\{[\s\S]*top:\s*auto;[\s\S]*max-height:\s*clamp\(7\.5rem,\s*calc\(100dvh - 31\.5rem\),\s*9\.5rem\);/s
+  );
+});
+
+test('phone-terminal live hand uses a fullscreen felt table shell instead of stacked panels', () => {
+  assert.match(
+    gameRoomSource,
+    /data-phone-live-table-shell=\{isPhoneLiveHand \? 'fullscreen-felt' : 'standard'\}/
+  );
+  assert.match(
+    tableStageSource,
+    /data-phone-live-stage=\{isPhoneLiveStage \? 'fullscreen-felt' : 'standard'\}/
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\[data-phone-live-table-shell="fullscreen-felt"\]\s*\{[\s\S]*height:\s*100dvh;[\s\S]*overflow:\s*hidden;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.table-stage-panel\[data-phone-live-stage="fullscreen-felt"\]\s*\{[\s\S]*background:\s*transparent;[\s\S]*box-shadow:\s*none;/s
   );
 });
 

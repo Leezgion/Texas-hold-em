@@ -3070,7 +3070,7 @@ Manual acceptance now found a larger phone UX architecture issue: the live-hand 
 
 - status:
   - `[in_progress]` replace phone live-hand presentation with a fullscreen felt-table cockpit
-  - `[todo]` lock the fullscreen shell with failing contract tests before production code
+  - `[done]` lock the fullscreen shell with failing contract tests before production code
   - `[todo]` float hero cards and actions on the table plane
   - `[todo]` remove internal scrolling from the raise sizing surface
   - `[todo]` convert phone opponent seats into compact poker-app action/stack/bet badges
@@ -3087,3 +3087,6 @@ Manual acceptance now found a larger phone UX architecture issue: the live-hand 
   - phone live hand must use one screen as the primary decision surface
   - the table, seats, board, pot, hero cards, and hero actions must feel like one table layer
   - support information must be drawer-based and temporary, not a persistent competing panel
+- stage 1 evidence:
+  - red contract: `phone-terminal live hand uses a fullscreen felt table shell instead of stacked panels` failed before production changes
+  - green contract: `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js` passed `46/46`
