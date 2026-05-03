@@ -2823,6 +2823,37 @@ This pass reran the deeper gameplay and lifecycle browser suite after the refres
   - `cd server && npm test -- --runInBand`: `130/130`
   - `git diff --check`: passed, with Windows LF-to-CRLF working-copy warnings only
 - next queue:
-  - `[todo]` start the professional-player cockpit refinement pass: audit whether live decisions expose position, stack, pot, amount-to-call, min-raise, street, last action, reveal state, and replay context with enough density and without unnecessary copy
-  - `[todo]` run a misclick-prevention review for fold/call/raise/all-in, including confirm surfaces, disabled states, pending states, timer pressure, and phone thumb reach
+  - `[done]` professional-player cockpit refinement pass now exposes compact decision metrics for price, to-call, SPR, effective stack, street, and action mode
+  - `[done]` misclick-prevention review now adds inline confirmation for all-in and large-commit raise actions
   - `[todo]` profile phone interaction smoothness around live hand, raise drawer, support sheets, settlement, and multi-hand transitions; reduce CSS/animation cost if real-browser traces show jank
+  - `[todo]` run final visual QA on the refined cockpit after performance profiling, with screenshots for phone, tablet portrait, tablet landscape, desktop, and ultrawide
+
+## 2026-05-03 Professional Cockpit Metrics And Risk Confirmation
+
+This pass tightened the live decision cockpit for serious player use and verified the high-risk action surface in real browsers.
+
+- result:
+  - the action cockpit now exposes compact pro metrics for `Price`, `To Call`, `SPR`, `Eff BB`, `Street`, and `Mode`
+  - all-in and large-commit raises require an inline confirmation inside the same table/action cockpit instead of firing immediately
+  - timer-only `gameState` refreshes no longer clear the pending high-risk confirmation
+- root cause fixed:
+  - `ActionButtons` previously cleared `pendingRiskAction` whenever the entire `gameState` object changed
+  - `timeRemaining` updates every second, so the inline all-in confirmation could disappear before the user confirmed or canceled
+  - the fix splits submit unlock from confirmation reset and uses a stable `riskActionResetKey` that excludes `timeRemaining`
+- browser evidence:
+  - `.runlogs/2026-05-03-professional-cockpit-audit.json` (`runId = mopf3185`)
+  - covered compact phone `375x667`, phone `390x844`, tablet portrait `768x1024`, tablet landscape `1024x768`, and desktop `1366x900`
+- verified contract:
+  - every viewport kept `single-screen` with no document scroll
+  - every viewport rendered all six pro metrics
+  - first all-in click opened `data-risk-confirmation = inline`
+  - cancel cleared the confirmation without changing the hand state
+  - raise drawer stayed bounded without board/cards/action collisions
+  - all `liveIssues`, `riskIssues`, `cancelIssues`, and `raiseIssues` were `0`
+- final verification for this pass:
+  - red test before implementation: `ActionButtons keeps high-risk confirmation stable across timer-only gameState refreshes` failed on missing `riskActionResetKey`
+  - `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js src/view-models/gameViewModel.test.js`: `92/92`
+  - `node .runlogs/2026-05-03-professional-cockpit-audit.cjs`: passed across all five viewports (`runId = mopf3185`)
+- next queue:
+  - `[todo]` profile real phone interaction smoothness around live hand, raise drawer, risk confirmation, support sheets, settlement, and multi-hand transitions
+  - `[todo]` run final visual QA on the refined table/cockpit before considering merge readiness
