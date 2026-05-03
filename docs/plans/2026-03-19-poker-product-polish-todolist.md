@@ -2783,4 +2783,46 @@ This pass validated the refreshed cockpit against player counts and core gamepla
   - `node .runlogs/2026-05-02-phone-action-execution-audit.cjs`: passed phone and compact-phone action flow (`runId = mopd20gg`)
   - `node .runlogs/2026-05-03-phone-settlement-policy-panels-audit.cjs`: passed settlement/reveal/support panels (`runId = mopd21lo`)
 - next queue:
-  - `[todo]` run and repair the deeper edge-case gameplay browser suite: side pots, non-full all-in call-only state, disconnect check/fold, invalid actions, duplicate action guard, rebuy recovery, multi-hand continuity, stale room/device ownership, and post-hand history panels
+  - `[done]` run and repair the deeper edge-case gameplay browser suite: side pots, non-full all-in call-only state, disconnect check/fold, invalid actions, duplicate action guard, rebuy recovery, multi-hand continuity, stale room/device ownership, and post-hand history panels
+
+## 2026-05-03 Deep Edge-Case Gameplay Browser Suite
+
+This pass reran the deeper gameplay and lifecycle browser suite after the refreshed cockpit and player-count matrix were stable.
+
+- result:
+  - no product code changes were required in this pass; the existing gameplay, recovery, replay, and phone cockpit behavior satisfied the deep browser contracts
+  - all scripts were run serially against the already-running local `5173 / 3001` services to avoid cross-room socket noise
+- browser evidence:
+  - `.runlogs/2026-05-02-phone-side-pot-allin-audit.json` (`runId = mopdq4ur`)
+  - `.runlogs/2026-05-03-nonfull-allin-callonly-audit.json` (`runId = mopdq8by`)
+  - `.runlogs/2026-05-03-phone-disconnect-check-audit.json` (`runId = mopdqfle`)
+  - `.runlogs/2026-05-03-phone-disconnect-fold-audit.json` (`runId = mopdqt0n`)
+  - `.runlogs/2026-05-03-phone-invalid-action-recovery-audit.json` (`runId = mopdr59y`)
+  - `.runlogs/2026-05-03-phone-playeraction-duplicate-guard-audit.json` (`runId = mopdrf5w`)
+  - `.runlogs/2026-05-03-phone-rebuy-recovery-audit.json` (`runId = moot152q`)
+  - `.runlogs/2026-05-03-phone-multihand-continuity-audit.json` (`runId = mopdrl6j`)
+  - `.runlogs/2026-05-03-phone-post-settlement-history-audit.json` (`runId = mopdrxqx`)
+  - `.runlogs/2026-05-03-phone-multi-reveal-history-audit.json` (`runId = mopds3vr`)
+  - `.runlogs/2026-05-03-phone-multisidepot-history-audit.json` (`runId = mopds7hd`)
+  - `.runlogs/2026-05-03-same-device-room-switch-audit.json` (`runId = mopdsb03`)
+  - `.runlogs/2026-05-03-stale-same-device-ownership-audit.json` (`runId = mopdsfnj`)
+  - `.runlogs/2026-05-03-phone-stale-room-access-audit.json` (`runId = mopdskjt`)
+  - `.runlogs/2026-05-03-phone-post-closed-room-continuation-audit.json` (`runId = mopdsotc`)
+- verified contract:
+  - side-pot settlement renders main and side pots in the phone settlement surface without table/board/dock collisions
+  - non-full all-in returns action as call-only, hides raise/all-in controls, and preserves post-hand history
+  - disconnect check and disconnect fold paths show the correct forced-action feedback and leave no stale action controls
+  - invalid action and duplicate action submissions recover with product-facing feedback instead of raw socket errors
+  - rebuy recovery, multi-hand continuity, and post-settlement history remain single-screen on phone
+  - mixed reveal and multi-side-pot history details remain accessible in support panels
+  - same-device room switches, stale device ownership, stale room access, and post-closed-room continuation do not carry old room state, blocked dialogs, or inert leaks
+- final verification:
+  - serial browser suite: all 15 scripts exited `0`
+  - `cd client && pnpm exec node --test`: `279/279`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-5f7ffa11.js` 542.94 kB)
+  - `cd server && npm test -- --runInBand`: `130/130`
+  - `git diff --check`: passed, with Windows LF-to-CRLF working-copy warnings only
+- next queue:
+  - `[todo]` start the professional-player cockpit refinement pass: audit whether live decisions expose position, stack, pot, amount-to-call, min-raise, street, last action, reveal state, and replay context with enough density and without unnecessary copy
+  - `[todo]` run a misclick-prevention review for fold/call/raise/all-in, including confirm surfaces, disabled states, pending states, timer pressure, and phone thumb reach
+  - `[todo]` profile phone interaction smoothness around live hand, raise drawer, support sheets, settlement, and multi-hand transitions; reduce CSS/animation cost if real-browser traces show jank
