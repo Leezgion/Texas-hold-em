@@ -2730,7 +2730,7 @@ This pass made the live-hand table and betting cockpit keep one coherent decisio
   - tablet raise drawers are bounded inside the action zone and scroll internally instead of covering hole cards
   - horizontal capsule live-hand pot chrome is reduced to a compact pill and hides the duplicate pot rail
 - browser evidence:
-  - `.runlogs/2026-05-03-live-room-cockpit-responsive-audit.json` (`runId = mopcwv3t`)
+  - `.runlogs/2026-05-03-live-room-cockpit-responsive-audit.json` (`runId = mopdg5pe`)
   - screenshots include phone, compact phone, tablet portrait, tablet landscape, desktop, and ultrawide live/raise states under `.runlogs/2026-05-03-live-room-cockpit-*.png`
 - verified contract:
   - compact phone `375x667`: no document scroll, no clipped seats, no table/action collisions, header `37px` accepted by audit
@@ -2740,11 +2740,47 @@ This pass made the live-hand table and betting cockpit keep one coherent decisio
   - desktop `1366x900` and ultrawide `1728x1000`: horizontal pot pill reduced to `68x26`, no pot/board overlap
 - final verification:
   - red tests before implementation covered tablet portrait profile selection, tablet portrait cockpit styling, tablet landscape compact cockpit, tablet landscape raise drawer bounds, and horizontal pot pill compaction
-  - `node .runlogs/2026-05-03-live-room-cockpit-responsive-audit.cjs`: passed across all six viewports (`runId = mopcwv3t`)
+  - `node .runlogs/2026-05-03-live-room-cockpit-responsive-audit.cjs`: passed across all six viewports (`runId = mopdg5pe`)
   - `cd client && pnpm exec node --test src/utils/tableStageLayout.test.js src/utils/seatRingLayout.test.js src/components/roomTerminalShellContract.test.js`: `96/96`
   - `cd client && pnpm exec node --test`: `279/279`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-5de715b1.js` 542.84 kB)
   - `cd server && npm test -- --runInBand`: `130/130`
   - `git diff --check`: passed, with Windows LF-to-CRLF working-copy warnings only
 - next queue:
-  - `[todo]` continue gameplay/player-count validation now that the responsive table/action UI is stable: verify 2-max through 9-max live seating, action availability, settlement, support panels, and reveal modes under the refreshed cockpit
+  - `[done]` continue gameplay/player-count validation now that the responsive table/action UI is stable: verify 2-max through 9-max live seating, action availability, settlement, support panels, and reveal modes under the refreshed cockpit
+
+## 2026-05-03 Player Count / Core Gameplay Cockpit Matrix
+
+This pass validated the refreshed cockpit against player counts and core gameplay flows.
+
+- root cause:
+  - the earlier responsive audit checked `seatDock` only for true phone viewports, so tablet portrait `phone-oval` could still hide the `near-hero-right` seat under the cockpit
+  - a new 2-9 player matrix initially surfaced a false positive for `dockTable`, but screenshot review showed the real risk was seat-vs-dock, not dock-vs-table
+- change:
+  - tablet portrait lower flanks move up together, and `near-hero-right` now sits below them but above the cockpit
+  - the temporary browser matrix checks `phone-oval` seat-vs-dock collisions instead of treating table/dock visual coupling as a failure
+  - the live-room browser audit now also fails tablet portrait `phone-oval` seat/dock overlap
+- browser evidence:
+  - `.runlogs/2026-05-03-player-count-cockpit-matrix-audit.json` (`runId = mopdeo62`)
+  - `.runlogs/2026-05-03-live-room-cockpit-responsive-audit.json` (`runId = mopdg5pe`)
+  - `.runlogs/2026-05-02-browser-gameplay-edge-smoke.json` (`runId = mopd2dc4` from device prefixes)
+  - `.runlogs/2026-05-02-phone-action-execution-audit.json` (`runId = mopd20gg`)
+  - `.runlogs/2026-05-03-phone-settlement-policy-panels-audit.json` (`runId = mopd21lo`)
+- verified contract:
+  - 2-max through 9-max passed on phone `390x844`, tablet portrait `768x1024`, and desktop `1366x900`
+  - every matrix case kept `single-screen`, two hero hole cards, decision controls, expected table profile, expected shell orientation, no clipped seats/buttons, and chip conservation
+  - tablet portrait 9-max now exposes seat 2 and seat 3 fully above the cockpit instead of letting seat 3 disappear behind the hero/action panel
+  - 2-max settlement preserves chip conservation and spectator state
+  - 9-max first-action raise drawer stays usable on phone
+  - phone action execution covers raise open/cancel/confirm, watch state after acting, next-player decision, call to flop, and check-spot controls
+  - settlement policy panels cover `showdown_only` and `free_reveal_after_hand`, reveal actions, support panel focus trap, body-scroll lock, room panel, member panel, and hand-history panel
+- final verification:
+  - red test before implementation: `roomTerminalShellContract.test.js` failed on the missing tablet lower/near-hero transforms
+  - `cd client && pnpm exec node --test src/components/roomTerminalShellContract.test.js`: `40/40`
+  - `node .runlogs/2026-05-03-player-count-cockpit-matrix-audit.cjs`: passed all 24 viewport/player-count cases (`runId = mopdeo62`)
+  - `node .runlogs/2026-05-03-live-room-cockpit-responsive-audit.cjs`: passed all six live/raise responsive cases (`runId = mopdg5pe`)
+  - `node .runlogs/2026-05-02-browser-gameplay-edge-smoke.cjs`: passed 2-max settlement and 9-max raise-open smoke
+  - `node .runlogs/2026-05-02-phone-action-execution-audit.cjs`: passed phone and compact-phone action flow (`runId = mopd20gg`)
+  - `node .runlogs/2026-05-03-phone-settlement-policy-panels-audit.cjs`: passed settlement/reveal/support panels (`runId = mopd21lo`)
+- next queue:
+  - `[todo]` run and repair the deeper edge-case gameplay browser suite: side pots, non-full all-in call-only state, disconnect check/fold, invalid actions, duplicate action guard, rebuy recovery, multi-hand continuity, stale room/device ownership, and post-hand history panels

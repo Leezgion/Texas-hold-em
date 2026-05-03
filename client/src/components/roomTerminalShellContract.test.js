@@ -373,6 +373,12 @@ test('tablet portrait phone-oval rooms expose compact cockpit state to shell, do
   assert.match(seatCardSource, /'top-left':\s*'translate\(-50%, calc\(-50% \+ 5\.3rem\)\)'/);
   assert.match(seatCardSource, /top:\s*'translate\(-50%, calc\(-50% \+ 5\.3rem\)\)'/);
   assert.match(seatCardSource, /'top-right':\s*'translate\(-50%, calc\(-50% \+ 5\.3rem\)\)'/);
+  assert.match(seatCardSource, /'lower-left':\s*'translate\(-50%, calc\(-50% - 3\.6rem\)\)'/);
+  assert.match(seatCardSource, /'lower-right':\s*'translate\(-50%, calc\(-50% - 3\.6rem\)\)'/);
+  assert.match(
+    seatCardSource,
+    /'near-hero-right':\s*'translate\(calc\(-50% \+ 0\.35rem\), calc\(-50% - 12\.25rem\)\)'/
+  );
 });
 
 test('tablet landscape desktop-oval live hand uses a horizontal compact cockpit instead of stacking over the table', () => {

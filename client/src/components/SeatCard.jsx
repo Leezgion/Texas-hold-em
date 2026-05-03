@@ -15,7 +15,9 @@ const TABLET_PORTRAIT_LIVE_PLAQUE_TRANSFORMS = Object.freeze({
   'top-left': 'translate(-50%, calc(-50% + 5.3rem))',
   top: 'translate(-50%, calc(-50% + 5.3rem))',
   'top-right': 'translate(-50%, calc(-50% + 5.3rem))',
-  'near-hero-right': 'translate(calc(-50% + 0.35rem), calc(-50% - 8.25rem))',
+  'lower-left': 'translate(-50%, calc(-50% - 3.6rem))',
+  'lower-right': 'translate(-50%, calc(-50% - 3.6rem))',
+  'near-hero-right': 'translate(calc(-50% + 0.35rem), calc(-50% - 12.25rem))',
 });
 
 const SeatCard = ({
