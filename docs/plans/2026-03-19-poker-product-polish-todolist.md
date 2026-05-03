@@ -2964,7 +2964,42 @@ This snapshot records the full local verification after the final visual QA seat
   - do not merge to `main`
   - do not push until the merge-readiness checklist is reviewed and explicitly approved
 - merge-readiness queue:
-  - `[todo]` final product-readiness review: confirm the current scope is acceptable for `club / pro / study` mode positioning without adding deployment tasks
-  - `[todo]` final risk register: list known non-blockers such as the existing Vite chunk-size warning and support-sheet first-open Long Task warnings
-  - `[todo]` final operator handoff: summarize required local commands, service-health checks, browser QA scripts, and the “do not stage .runlogs” rule
+  - `[done]` final product-readiness review: confirm the current scope is acceptable for `club / pro / study` mode positioning without adding deployment tasks
+  - `[done]` final risk register: list known non-blockers such as the existing Vite chunk-size warning and support-sheet first-open Long Task warnings
+  - `[done]` final operator handoff: summarize required local commands, service-health checks, browser QA scripts, and the “do not stage .runlogs” rule
   - `[todo]` only after approval: merge the product branch to `main` and push
+
+## 2026-05-03 Merge-Readiness Checklist Draft
+
+This checklist prepares the branch for review without merging or pushing.
+
+- branch state:
+  - active branch: `feat/poker-os-polish`
+  - intended base branch: `main`
+  - merge-base checked with `git merge-base HEAD main`
+  - current policy: keep the feature branch as-is until explicit approval
+- evidence satisfied:
+  - gameplay and edge-case browser suites are documented as passing
+  - final responsive visual QA is documented as passing after the seat-clearance fix
+  - final phone smoothness profiling is documented as passing with warnings only
+  - full local client tests, server tests, build, whitespace, and clean status were verified before this checklist was recorded
+- product-readiness scope:
+  - `club`: private-game flow, room/member panels, rebuy, settlement, reveal, and hand history are covered
+  - `pro`: single-screen cockpit, compact metrics, high-risk confirmation, phone/tablet/desktop table/action co-visibility, and 9-max density are covered
+  - `study`: hand-history panels, reveal summaries, side-pot details, and post-settlement review surfaces are covered
+  - deployment, hosted persistence, payment, account/auth, and production monitoring remain intentionally out of scope for this non-launch phase
+- known non-blockers to carry:
+  - Vite still reports the existing large chunk warning around `545.74 kB`; this is not a functional blocker but should become a later code-splitting task
+  - support sheet first-open still shows moderate Long Task warnings under `3x` CPU throttle; no hard interaction or layout failures were found
+  - `.runlogs` scripts and generated screenshots/json are evidence artifacts only and must not be staged
+  - local browser QA depends on healthy local services; verify ports and HTTP before every new browser pass
+- operator handoff:
+  - health check client with `http://127.0.0.1:5173/index.html`
+  - health check backend according to the active script target, usually `3001` for manual `pnpm dev` or `3101` for the dedicated regression pair
+  - run browser QA serially for stateful room/device scenarios
+  - close only automation-owned browser sessions; do not close user-owned manual browser windows by guess
+- final integration options:
+  - current selected option: keep `feat/poker-os-polish` as-is
+  - do not merge locally yet
+  - do not push or create a PR yet
+  - do not discard the branch
