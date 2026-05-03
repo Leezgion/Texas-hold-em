@@ -5,7 +5,6 @@ import SliderInput from './SliderInput';
 import { useGame } from '../contexts/GameContext';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { buildQuickRaiseSizes } from '../utils/betSizing';
-import { getDisplayModeTheme } from '../utils/productMode';
 import {
   buildProActionStatRows,
   deriveProActionSummary,
@@ -19,6 +18,11 @@ function translateActionStatLabel(label, effectiveDisplayMode) {
       'Min Raise': '最小加',
       Pot: '底池',
       Eff: '后手',
+      Price: '赔率',
+      SPR: 'SPR',
+      'Eff BB': '后手BB',
+      Street: '街道',
+      Mode: '动作',
     }[label] || label;
   }
 
@@ -28,6 +32,11 @@ function translateActionStatLabel(label, effectiveDisplayMode) {
       'Min Raise': '最小加注',
       Pot: '底池',
       Eff: '有效后手',
+      Price: '底池赔率',
+      SPR: 'SPR',
+      'Eff BB': '有效BB',
+      Street: '街道',
+      Mode: '动作',
     }[label] || label;
   }
 
@@ -36,6 +45,11 @@ function translateActionStatLabel(label, effectiveDisplayMode) {
     'Min Raise': '最小加',
     Pot: '底池',
     Eff: '后手',
+    Price: '赔率',
+    SPR: 'SPR',
+    'Eff BB': '后手BB',
+    Street: '街道',
+    Mode: '动作',
   }[label] || label;
 }
 
@@ -80,7 +94,6 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
   const isCallOnlyAction = resolvedGameState.currentPlayerActionMode === 'call_only';
   const canRaise = showsDecisionConsole && !isCallOnlyAction && maxRaiseAmount >= resolvedGameState.minRaise;
   const bigBlind = resolvedGameState.bigBlind || resolvedGameState.minRaise || 20;
-  const theme = getDisplayModeTheme(effectiveDisplayMode);
   const actionConsoleState = !hasResolvedActionState ? 'sync' : showsDecisionConsole ? 'decision' : 'watch';
   const lastAction = resolvedGameState.lastAction || null;
   const isOwnTimeoutFold =
@@ -294,20 +307,24 @@ const ActionButtons = ({ player, gameState, currentPlayerId, players, effectiveD
       data-action-console-state={actionConsoleState}
     >
       {proActionStats.length > 0 && (
-        <div
-          className={`table-action-console__stats table-action-console__stats--${
-            theme.room.actionStatStyle || 'grid'
-          }`}
-        >
+        <div className="table-action-console__pro-strip" data-pro-strip-density="decision">
           {proActionStats.map((stat) => (
-            <div key={stat.label} className="table-action-console__stat">
-              <span className="table-action-console__stat-label">
+            <div
+              key={stat.label}
+              className="table-action-console__pro-metric"
+              data-pro-metric-label={stat.label}
+            >
+              <span className="table-action-console__pro-metric-label">
                 {translateActionStatLabel(stat.label, effectiveDisplayMode)}
               </span>
-              <span className="table-action-console__stat-value">{stat.value}</span>
+              <span className="table-action-console__pro-metric-value">{stat.value}</span>
             </div>
           ))}
         </div>
+      )}
+
+      {proActionSummary?.lastActionLabel && (
+        <div className="table-action-console__last-action">{proActionSummary.lastActionLabel}</div>
       )}
 
       {isSubmitting && <div className="table-action-console__notice">动作已发送，等待牌局确认</div>}

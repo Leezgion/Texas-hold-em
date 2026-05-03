@@ -340,6 +340,17 @@ test('ActionButtons hides raise controls when server marks the current player as
   assert.match(actionButtonsSource, /const canRaise = showsDecisionConsole && !isCallOnlyAction/);
 });
 
+test('ActionButtons renders professional cockpit metric hooks for price, SPR, and stack pressure', () => {
+  assert.match(actionButtonsSource, /table-action-console__pro-strip/);
+  assert.match(actionButtonsSource, /data-pro-metric-label=\{stat\.label\}/);
+  assert.match(actionButtonsSource, /table-action-console__last-action/);
+  assert.match(globalStylesSource, /\.table-action-console__pro-strip\s*\{/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__pro-strip\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
+  );
+});
+
 test('ActionDock keeps the live-hand action frame wired to ActionButtons', () => {
   assert.match(
     actionDockSource,
@@ -464,7 +475,7 @@ test('phone-terminal live hand collapses the dock stack back toward the table', 
   );
   assert.match(
     globalStylesSource,
-    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__stats\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\);/s
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="live"\]\s+\.table-action-console__pro-strip\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s
   );
   assert.match(
     globalStylesSource,
