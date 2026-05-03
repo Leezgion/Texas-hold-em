@@ -3063,3 +3063,27 @@ Manual acceptance found concrete UX blockers in the gateway, create-room flow, p
   - `[todo]` repeat focused manual visual acceptance on the latest branch state
   - `[todo]` if the timeline sheet still feels hard to access during fast live hands, create a new focused task around panel persistence vs action safety
   - `[todo]` if acceptance passes, run full local verification again before considering merge to `main`
+
+## 2026-05-03 Mobile Fullscreen Poker Table Refactor
+
+Manual acceptance now found a larger phone UX architecture issue: the live-hand view still feels like stacked web panels instead of a fullscreen poker table.
+
+- status:
+  - `[in_progress]` replace phone live-hand presentation with a fullscreen felt-table cockpit
+  - `[todo]` lock the fullscreen shell with failing contract tests before production code
+  - `[todo]` float hero cards and actions on the table plane
+  - `[todo]` remove internal scrolling from the raise sizing surface
+  - `[todo]` convert phone opponent seats into compact poker-app action/stack/bet badges
+  - `[todo]` convert phone hand history into a replay side drawer with previous/next navigation and per-player action rows
+- design:
+  - `docs/plans/2026-05-03-mobile-fullscreen-poker-table-design.md`
+- implementation plan:
+  - `docs/plans/2026-05-03-mobile-fullscreen-poker-table.md`
+- branch policy:
+  - stay on `feat/poker-os-polish`
+  - do not merge to `main`
+  - do not push
+- new product bar:
+  - phone live hand must use one screen as the primary decision surface
+  - the table, seats, board, pot, hero cards, and hero actions must feel like one table layer
+  - support information must be drawer-based and temporary, not a persistent competing panel
