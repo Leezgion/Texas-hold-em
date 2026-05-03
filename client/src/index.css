@@ -276,8 +276,16 @@
     @apply rounded-[2rem];
   }
 
+  .mode-gateway-layout {
+    @apply grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_420px];
+    grid-template-areas:
+      "control"
+      "hero";
+  }
+
   .mode-gateway-panel--hero {
     position: relative;
+    grid-area: hero;
   }
 
   .mode-gateway-panel--hero::before {
@@ -568,6 +576,7 @@
 
   .mode-gateway-control {
     @apply flex flex-col gap-4;
+    grid-area: control;
   }
 
   .mode-gateway-control__block {
@@ -633,19 +642,103 @@
     box-shadow: 0 0 0 4px var(--mode-shell-accent-ring);
   }
 
+  @media (min-width: 1280px) {
+    .mode-gateway-layout {
+      grid-template-areas: "hero control";
+    }
+  }
+
   @media (max-width: 767px) {
+    .mode-gateway-shell {
+      gap: 0.85rem;
+      min-height: auto;
+    }
+
+    .mode-gateway-layout {
+      gap: 0.85rem;
+    }
+
+    .mode-gateway-control {
+      gap: 0.75rem;
+    }
+
+    .mode-gateway-control__block {
+      padding: 0.9rem;
+      border-radius: 1.15rem;
+    }
+
+    .mode-gateway-control__block h2,
+    .mode-gateway-control__block h3 {
+      margin-top: 0.45rem;
+      font-size: 1.35rem;
+      line-height: 1.6rem;
+    }
+
+    .mode-gateway-control__copy,
+    .mode-gateway-side-note {
+      display: none;
+    }
+
+    .mode-gateway-control__block--mode-summary {
+      display: none;
+    }
+
+    .mode-gateway-control__block--create .mode-primary-button {
+      margin-top: 0.8rem;
+    }
+
+    .mode-gateway-control__block--join > div:last-child {
+      margin-top: 0.75rem;
+      gap: 0.65rem;
+    }
+
+    .mode-gateway-control .mode-primary-button,
+    .mode-gateway-control .mode-secondary-button {
+      min-height: 3rem;
+      padding: 0.72rem 0.9rem;
+      border-radius: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .mode-room-input {
+      padding: 0.78rem 0.9rem;
+      border-radius: 1rem;
+      font-size: 1rem;
+      letter-spacing: 0.26em;
+    }
+
+    .mode-gateway-panel {
+      border-radius: 1.35rem;
+    }
+
+    .mode-gateway-panel__inner {
+      padding: 1rem;
+    }
+
     .mode-gateway-hero {
       grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
     .mode-gateway-title {
       max-width: none;
       line-height: 1.02;
+      font-size: clamp(2rem, 11vw, 3rem);
+    }
+
+    .mode-gateway-hero__copy {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      line-height: 1.55rem;
     }
 
     .mode-gateway-stage {
       padding: 1rem;
       min-height: auto;
+    }
+
+    .mode-gateway-panel__inner > .mt-10 {
+      margin-top: 1rem;
     }
 
     .mode-gateway-preview-grid {

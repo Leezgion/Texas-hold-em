@@ -2637,4 +2637,39 @@ This pass replaced the legacy join-room gray form with a compact Poker OS termin
   - `cd client && pnpm exec node --test`: `270/270`
   - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-b3cadfab.js` 541.72 kB)
 - next queue:
-  - `[todo]` polish the phone homepage gateway density so create/join entry points are reachable faster and the product does not require scrolling through the full mode marketing stack before joining a room
+  - `[done]` polish the phone homepage gateway density so create/join entry points are reachable faster and the product does not require scrolling through the full mode marketing stack before joining a room
+
+## 2026-05-03 Phone Homepage Gateway Density
+
+This pass made the phone homepage action-first without removing the mode preview system.
+
+- root cause:
+  - the phone homepage rendered the full hero, current-mode stage, and mode cards before create/join controls
+  - users had to scroll through the marketing stack before joining a shared room, which conflicts with the product's table-first workflow
+- change:
+  - `ModeGateway` now places the create/join control region before the marketing hero in DOM and focus order
+  - CSS grid areas keep the desktop visual composition as hero-left / controls-right
+  - phone CSS compresses create/join cards, hides the duplicate mode-summary rail, hides long explanatory copy, and keeps the room input/button in the first viewport
+- browser evidence:
+  - `.runlogs/2026-05-03-phone-homepage-gateway-density-audit.json` (`runId = mopabrii`)
+  - screenshot: `.runlogs/2026-05-03-phone-homepage-gateway-density.png`
+- verified contract:
+  - create block: `top = 18`, `bottom = 185`
+  - join block: `top = 197`, `bottom = 449`
+  - room input: `top = 321`, `bottom = 370`
+  - join button: `top = 386`, `bottom = 434`
+  - hero panel starts after the action region at `top = 463`
+  - `modeSummaryDisplay = none`, create/join long copy hidden, side note hidden
+  - create button opens `创建游戏房间`; join button opens `JoinRoomModal` with the typed room code and modal inert state
+- implementation note:
+  - the first version used CSS `order: -1`; that made the visual order action-first but left DOM/focus order behind the marketing hero
+  - the final version uses DOM action-first plus grid areas so phone visual order and focus order match
+- final verification:
+  - red tests before implementation: `modeGatewayMobileContract.test.js` failed on missing action-first hooks, mobile CSS, and DOM order
+  - `cd client && pnpm exec node --test src/components/modeGatewayMobileContract.test.js`: `2/2`
+  - `cd client && pnpm exec node --test src/components/modeGatewayMobileContract.test.js src/components/createRoomSurfaceContract.test.js src/components/joinRoomModalContract.test.js src/components/interactionSurfaceContract.test.js`: `40/40`
+  - `cd client && pnpm exec node --test`: `272/272`
+  - `cd client && pnpm build`: passed, with the existing large chunk warning (`assets/index-e1d8cc10.js` 541.94 kB)
+  - `git diff --check`: passed, with Windows LF-to-CRLF working-copy warnings only
+- next queue:
+  - `[todo]` validate the action-first homepage on tablet and desktop widths so the grid-area reordering preserves the intended hero-left / controls-right composition outside phone

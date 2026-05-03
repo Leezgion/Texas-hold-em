@@ -29,8 +29,74 @@ const ModeGateway = ({
 
   return (
     <div className="relative min-h-screen py-2 sm:py-4">
-      <div className="mx-auto flex min-h-[calc(100vh-1rem)] w-full max-w-[1720px] flex-col gap-6">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_420px]">
+      <div className="mode-gateway-shell mx-auto flex min-h-[calc(100vh-1rem)] w-full max-w-[1720px] flex-col gap-6">
+        <div className="mode-gateway-layout">
+          <aside className="mode-gateway-control" data-phone-priority="primary-actions">
+            <div className="mode-gateway-control__block mode-gateway-control__block--create">
+              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">开设牌桌</div>
+              <h2 className="mt-3 text-3xl font-semibold text-white">创建新房间</h2>
+              <p className="mode-gateway-control__copy mt-3 text-sm leading-6 text-slate-300">
+                创建房间时会继承你在模态框里选择的房间模式。客户端显示模式仍可单独覆盖，用于你自己的阅读习惯。
+              </p>
+              <div className="mode-gateway-side-note mt-5">
+                <span className="mode-gateway-side-note__label">推荐流程</span>
+                <span className="mode-gateway-side-note__value">先选桌型，再进房，再让显示模式跟随或覆盖。</span>
+              </div>
+              <button
+                onClick={onCreateRoom}
+                disabled={!connected}
+                className="mode-primary-button mt-6"
+              >
+                创建新游戏
+              </button>
+            </div>
+
+            <div className="mode-gateway-control__block mode-gateway-control__block--join">
+              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">加入牌桌</div>
+              <h3 className="mt-3 text-2xl font-semibold text-white">输入房间号</h3>
+              <p className="mode-gateway-control__copy mt-3 text-sm leading-6 text-slate-300">
+                适合通过房主分享的房间码直接进入。系统会保留当前设备身份，并在入房后自动应用你的显示偏好。
+              </p>
+              <div className="mt-5 space-y-4">
+                <label className="block" htmlFor="room-id-input">
+                  <span className="mb-2 block text-sm text-slate-300">房间 ID</span>
+                  <input
+                    id="room-id-input"
+                    type="text"
+                    placeholder="输入 6 位房间 ID"
+                    value={joinRoomId}
+                    onChange={(event) => onJoinRoomIdChange(event.target.value.toUpperCase())}
+                    onKeyPress={onJoinRoomKeyPress}
+                    className="mode-room-input"
+                    maxLength={6}
+                  />
+                </label>
+                <button
+                  onClick={onJoinRoom}
+                  disabled={!connected || !joinRoomId.trim()}
+                  className="mode-secondary-button"
+                >
+                  加入游戏
+                </button>
+              </div>
+            </div>
+
+            <div className="mode-gateway-control__block mode-gateway-control__block--mode-summary">
+              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">模式速览</div>
+              <div className="mt-4 grid gap-3">
+                {previewCards.map((card) => (
+                  <ModePreviewCard
+                    key={`${card.mode}-compact`}
+                    card={card}
+                    compact
+                    selected={effectiveDisplayMode === card.mode}
+                    onSelect={() => onSetDisplayModePreference(card.mode)}
+                  />
+                ))}
+              </div>
+            </div>
+          </aside>
+
           <section className="mode-gateway-panel mode-gateway-panel--hero overflow-hidden">
             <div className="mode-gateway-panel__inner">
               <div className="mode-gateway-hero">
@@ -44,7 +110,7 @@ const ModeGateway = ({
                     <h1 className="mode-gateway-title">
                       为私局、职业对局和训练复盘准备的沉浸式德州扑克桌面。
                     </h1>
-                    <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+                    <p className="mode-gateway-hero__copy mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
                       一套后端真相，三种前端体验。桌面像赛事舞台，操作像职业终端，状态像真实牌桌一样清楚。
                     </p>
                   </div>
@@ -127,71 +193,6 @@ const ModeGateway = ({
             </div>
           </section>
 
-          <aside className="mode-gateway-control">
-            <div className="mode-gateway-control__block">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">开设牌桌</div>
-              <h2 className="mt-3 text-3xl font-semibold text-white">创建新房间</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                创建房间时会继承你在模态框里选择的房间模式。客户端显示模式仍可单独覆盖，用于你自己的阅读习惯。
-              </p>
-              <div className="mode-gateway-side-note mt-5">
-                <span className="mode-gateway-side-note__label">推荐流程</span>
-                <span className="mode-gateway-side-note__value">先选桌型，再进房，再让显示模式跟随或覆盖。</span>
-              </div>
-              <button
-                onClick={onCreateRoom}
-                disabled={!connected}
-                className="mode-primary-button mt-6"
-              >
-                创建新游戏
-              </button>
-            </div>
-
-            <div className="mode-gateway-control__block">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">加入牌桌</div>
-              <h3 className="mt-3 text-2xl font-semibold text-white">输入房间号</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                适合通过房主分享的房间码直接进入。系统会保留当前设备身份，并在入房后自动应用你的显示偏好。
-              </p>
-              <div className="mt-5 space-y-4">
-                <label className="block" htmlFor="room-id-input">
-                  <span className="mb-2 block text-sm text-slate-300">房间 ID</span>
-                  <input
-                    id="room-id-input"
-                    type="text"
-                    placeholder="输入 6 位房间 ID"
-                    value={joinRoomId}
-                    onChange={(event) => onJoinRoomIdChange(event.target.value.toUpperCase())}
-                    onKeyPress={onJoinRoomKeyPress}
-                    className="mode-room-input"
-                    maxLength={6}
-                  />
-                </label>
-                <button
-                  onClick={onJoinRoom}
-                  disabled={!connected || !joinRoomId.trim()}
-                  className="mode-secondary-button"
-                >
-                  加入游戏
-                </button>
-              </div>
-            </div>
-
-            <div className="mode-gateway-control__block">
-              <div className="text-xs uppercase tracking-[0.28em] text-slate-400">模式速览</div>
-              <div className="mt-4 grid gap-3">
-                {previewCards.map((card) => (
-                  <ModePreviewCard
-                    key={`${card.mode}-compact`}
-                    card={card}
-                    compact
-                    selected={effectiveDisplayMode === card.mode}
-                    onSelect={() => onSetDisplayModePreference(card.mode)}
-                  />
-                ))}
-              </div>
-            </div>
-          </aside>
         </div>
       </div>
     </div>
