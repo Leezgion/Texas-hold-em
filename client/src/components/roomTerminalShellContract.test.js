@@ -714,8 +714,19 @@ test('SeatCard nudges live phone flank plaques away from viewport and dock edges
 
 test('phone-terminal live hand compacts opponent plaques to table badges', () => {
   assert.match(
+    seatCardSource,
+    /data-phone-seat-presentation=\{usesPhoneSeatPresentation \? 'poker-app-badge' : 'plaque'\}/
+  );
+  assert.match(seatCardSource, /arena-seat-plaque__phone-action-tag/);
+  assert.match(seatCardSource, /arena-seat-plaque__phone-bet-chip/);
+  assert.match(seatCardSource, /arena-seat-plaque__phone-avatar/);
+  assert.match(
     globalStylesSource,
     /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque\s*\{[\s\S]*width:\s*clamp\(4\.1rem,\s*18vw,\s*4\.75rem\);[\s\S]*min-height:\s*3\.65rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="live-hand"\]\s+\.arena-seat-plaque\[data-phone-seat-presentation="poker-app-badge"\]\s*\{[\s\S]*background:\s*transparent;/s
   );
   assert.match(
     globalStylesSource,

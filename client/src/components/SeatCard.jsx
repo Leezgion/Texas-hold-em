@@ -79,6 +79,15 @@ const SeatCard = ({
   const currentBet = Number(player.currentBet) || 0;
   const hasNet = typeof seat.netLabel === 'string' && seat.netLabel !== '0';
   const seatToneClassName = `arena-seat-plaque--${seat.seatTone || 'occupied-live'}`;
+  const usesPhoneSeatPresentation = isPhoneViewport && gameStarted && resolvedTableProfile === 'phone-oval';
+  const phoneActionLabel = player.folded
+    ? '弃牌'
+    : player.allIn
+    ? '全下'
+    : seat.isCurrentTurn
+    ? '行动'
+    : seat.statusLabel || '在局';
+  const phoneAvatarLabel = displayName.trim().slice(0, 1).toUpperCase() || 'P';
 
   return (
     <div
@@ -115,7 +124,24 @@ const SeatCard = ({
         data-plaque-density-model={plaqueDensityModel}
         data-plaque-material-model={plaqueMaterialModel}
         data-is-current-player={seat.isCurrentPlayer ? 'true' : 'false'}
+        data-phone-seat-presentation={usesPhoneSeatPresentation ? 'poker-app-badge' : 'plaque'}
       >
+        {usesPhoneSeatPresentation && (
+          <>
+            <span className="arena-seat-plaque__phone-action-tag">{phoneActionLabel}</span>
+            <div className="arena-seat-plaque__phone-avatar" aria-hidden="true">
+              {phoneAvatarLabel}
+            </div>
+            <div className="arena-seat-plaque__phone-name" title={displayName}>
+              {displayName}
+            </div>
+            <div className="arena-seat-plaque__phone-stack">{seat.chipsLabel || '0'}</div>
+            {currentBet > 0 && (
+              <span className="arena-seat-plaque__phone-bet-chip">下注 {currentBet.toLocaleString()}</span>
+            )}
+          </>
+        )}
+
         <div className="arena-seat-plaque__header">
           <div className="min-w-0">
             <div className="arena-seat-plaque__meta-row">

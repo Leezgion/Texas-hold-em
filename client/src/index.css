@@ -2810,6 +2810,131 @@
     border-radius: 0.78rem;
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] {
+    display: grid;
+    width: clamp(3.85rem, 17vw, 4.65rem);
+    min-height: 4.55rem;
+    place-items: center;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] .arena-seat-plaque__header,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] .arena-seat-plaque__stack-row,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] .arena-seat-plaque__status-row {
+    display: none;
+  }
+
+  .arena-seat-plaque__phone-action-tag,
+  .arena-seat-plaque__phone-bet-chip,
+  .arena-seat-plaque__phone-stack {
+    display: none;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] .arena-seat-plaque__phone-action-tag {
+    display: inline-flex;
+    position: absolute;
+    top: -0.58rem;
+    left: 50%;
+    z-index: 3;
+    max-width: 4.8rem;
+    transform: translateX(-50%);
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(96, 165, 250, 0.46);
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.94), rgba(29, 78, 216, 0.86));
+    padding: 0.12rem 0.4rem;
+    color: white;
+    font-size: 0.56rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 6px 14px rgba(3, 7, 18, 0.28);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"].arena-seat-plaque--occupied-folded .arena-seat-plaque__phone-action-tag,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"].arena-seat-plaque--folded .arena-seat-plaque__phone-action-tag {
+    border-color: rgba(148, 163, 184, 0.34);
+    background: linear-gradient(180deg, rgba(51, 65, 85, 0.9), rgba(15, 23, 42, 0.82));
+    color: rgba(226, 232, 240, 0.88);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"].arena-seat-plaque--occupied-allin .arena-seat-plaque__phone-action-tag,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"].arena-seat-plaque--hero-allin .arena-seat-plaque__phone-action-tag {
+    border-color: rgba(248, 113, 113, 0.48);
+    background: linear-gradient(180deg, rgba(220, 38, 38, 0.94), rgba(127, 29, 29, 0.86));
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] .arena-seat-plaque__phone-avatar {
+    display: grid;
+    width: 2.8rem;
+    height: 2.8rem;
+    place-items: center;
+    border-radius: 999px;
+    border: 2px solid rgba(247, 229, 173, 0.58);
+    background:
+      radial-gradient(circle at 32% 22%, rgba(255, 255, 255, 0.28), transparent 34%),
+      linear-gradient(135deg, rgba(14, 165, 233, 0.92), rgba(88, 28, 135, 0.88));
+    color: white;
+    font-size: 1rem;
+    font-weight: 800;
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.34),
+      0 0 0 1px rgba(3, 7, 18, 0.5);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] .arena-seat-plaque__phone-name {
+    max-width: 4.8rem;
+    margin-top: 0.16rem;
+    overflow: hidden;
+    color: rgba(241, 245, 249, 0.94);
+    font-size: 0.58rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] .arena-seat-plaque__phone-stack {
+    display: inline-flex;
+    min-width: 2.9rem;
+    justify-content: center;
+    margin-top: 0.12rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(2, 8, 10, 0.72);
+    padding: 0.1rem 0.4rem;
+    color: rgba(255, 255, 255, 0.96);
+    font-size: 0.66rem;
+    font-weight: 800;
+    line-height: 1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque[data-phone-seat-presentation="poker-app-badge"] .arena-seat-plaque__phone-bet-chip {
+    display: inline-flex;
+    position: absolute;
+    right: -0.5rem;
+    bottom: 0.95rem;
+    z-index: 3;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(45, 212, 191, 0.46);
+    background: linear-gradient(180deg, rgba(13, 148, 136, 0.94), rgba(15, 118, 110, 0.86));
+    padding: 0.12rem 0.34rem;
+    color: white;
+    font-size: 0.52rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 6px 14px rgba(3, 7, 18, 0.3);
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .arena-seat-plaque__header {
     gap: 0.24rem;
     align-items: flex-start;
