@@ -72,14 +72,13 @@ npm install
 ### 2. 启动项目
 
 ```bash
-# 启动服务器（在server目录下）
-cd server
-npm run dev
-
-# 启动客户端（在client目录下，新开一个终端）
-cd client
-npm run dev
+# 在仓库根目录同时启动服务器和客户端
+pnpm dev
 ```
+
+`pnpm dev` 会同时运行 `server` 和 `client` 的 `dev` 脚本，并在终端里用 `[server]` / `[client]` 前缀区分日志。按 `Ctrl+C` 会同时关闭两个子进程。
+
+如果需要单独调试某一侧，也可以继续分别进入 `server` 或 `client` 目录运行各自的 `dev` 脚本。
 
 ### 2.1 真实浏览器回归入口
 
@@ -116,9 +115,8 @@ npm run dev
 # 局域网多设备访问
 ./start-lan.ps1
 
-# 或者手动启动
-cd server && npm run dev  # 开发模式，支持自动重启
-cd client && npm run dev  # 热重载模式
+# 常规本地开发
+pnpm dev
 ```
 
 ## ⌨️ 键盘快捷键
