@@ -6,8 +6,10 @@
   "type": "module",
   "packageManager": "pnpm@10.17.1",
   "scripts": {
-    "dev": "node scripts/dev-all.mjs",
-    "test:dev-command": "node --test scripts/dev-all.contract.test.mjs"
+    "dev": "npm run dev:node",
+    "dev:node": "node scripts/dev-all.mjs",
+    "test:dev-command": "npm run test:dev-command:node",
+    "test:dev-command:node": "node --test scripts/dev-all.contract.test.mjs"
   },
   "engines": {
     "node": ">=20"

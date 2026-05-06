@@ -14,18 +14,31 @@ test('root package exposes a single command for starting client and server dev p
 
   const rootPackage = readJson(rootPackageUrl);
   assert.equal(rootPackage.private, true);
-  assert.equal(rootPackage.scripts.dev, 'node scripts/dev-all.mjs');
-  assert.equal(rootPackage.scripts['test:dev-command'], 'node --test scripts/dev-all.contract.test.mjs');
+  assert.equal(rootPackage.scripts.dev, 'npm run dev:node');
+  assert.equal(rootPackage.scripts['dev:node'], 'node scripts/dev-all.mjs');
+  assert.equal(rootPackage.scripts['test:dev-command'], 'npm run test:dev-command:node');
+  assert.equal(rootPackage.scripts['test:dev-command:node'], 'node --test scripts/dev-all.contract.test.mjs');
 });
 
-test('dev-all script starts both child package dev scripts and handles terminal shutdown', () => {
+test('dev-all script starts both child package dev scripts and handles terminal shutdown', async () => {
   assert.equal(existsSync(devScriptUrl), true, 'scripts/dev-all.mjs should exist');
 
+  const devAll = await import('./dev-all.mjs');
   const source = readFileSync(devScriptUrl, 'utf8');
-  assert.match(source, /export const DEV_TARGETS = Object\.freeze\(\[/);
-  assert.match(source, /name:\s*'server'[\s\S]*cwd:\s*'server'/);
-  assert.match(source, /name:\s*'client'[\s\S]*cwd:\s*'client'/);
-  assert.match(source, /spawn\(packageManager,\s*\['--dir',\s*target\.cwd,\s*'dev'\]/);
+  assert.deepEqual(devAll.DEV_TARGETS, [
+    { name: 'server', cwd: 'server' },
+    { name: 'client', cwd: 'client' },
+  ]);
+  assert.equal(devAll.resolveScriptRunner('win32'), 'cmd.exe');
+  assert.deepEqual(devAll.buildDevCommand({ cwd: 'server' }, 'win32'), [
+    '/d',
+    '/s',
+    '/c',
+    'pnpm --dir server dev',
+  ]);
+  assert.equal(devAll.resolveScriptRunner('linux'), 'pnpm');
+  assert.deepEqual(devAll.buildDevCommand({ cwd: 'client' }, 'linux'), ['--dir', 'client', 'dev']);
+  assert.match(source, /spawn\(scriptRunner,\s*buildDevCommand\(target/);
   assert.match(source, /process\.once\('SIGINT'/);
   assert.match(source, /process\.once\('SIGTERM'/);
 });

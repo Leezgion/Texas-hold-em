@@ -78,6 +78,8 @@ pnpm dev
 
 `pnpm dev` 会同时运行 `server` 和 `client` 的 `dev` 脚本，并在终端里用 `[server]` / `[client]` 前缀区分日志。按 `Ctrl+C` 会同时关闭两个子进程。
 
+Windows/Volta 环境下，根目录 `pnpm dev` 会先转交给 `npm run dev:node` 再启动 Node 脚本，避免 pnpm 生命周期里偶发找不到 `node`。
+
 如果需要单独调试某一侧，也可以继续分别进入 `server` 或 `client` 目录运行各自的 `dev` 脚本。
 
 ### 2.1 真实浏览器回归入口

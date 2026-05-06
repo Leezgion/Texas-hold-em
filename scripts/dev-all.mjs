@@ -16,10 +16,17 @@ export const DEV_TARGETS = Object.freeze([
 ]);
 
 const repoRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const isWindows = process.platform === 'win32';
 
-export function resolvePackageManager(platform = process.platform) {
-  return platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+export function resolveScriptRunner(platform = process.platform) {
+  return platform === 'win32' ? 'cmd.exe' : 'pnpm';
+}
+
+export function buildDevCommand(target, platform = process.platform) {
+  if (platform === 'win32') {
+    return ['/d', '/s', '/c', `pnpm --dir ${target.cwd} dev`];
+  }
+
+  return ['--dir', target.cwd, 'dev'];
 }
 
 function prefixStream(stream, targetName, output) {
@@ -33,13 +40,14 @@ function prefixStream(stream, targetName, output) {
 }
 
 export function startDevProcess(target, options = {}) {
-  const packageManager = options.packageManager || resolvePackageManager();
+  const platform = options.platform || process.platform;
+  const scriptRunner = options.scriptRunner || resolveScriptRunner(platform);
   const rootDir = options.rootDir || repoRoot;
-  const child = spawn(packageManager, ['--dir', target.cwd, 'dev'], {
+  const child = spawn(scriptRunner, buildDevCommand(target, platform), {
     cwd: rootDir,
     env: process.env,
     stdio: ['inherit', 'pipe', 'pipe'],
-    windowsHide: isWindows,
+    windowsHide: platform === 'win32',
   });
 
   prefixStream(child.stdout, target.name, process.stdout);
