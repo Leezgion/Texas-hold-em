@@ -2636,6 +2636,84 @@
     min-height: var(--room-terminal-stage-budget, 180px);
   }
 
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] {
+    height: 100dvh;
+    min-height: 100dvh;
+    padding: 0.25rem;
+    overflow: hidden;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .room-terminal-frame {
+    max-width: 100%;
+    min-height: calc(100dvh - 0.5rem);
+    max-height: calc(100dvh - 0.5rem);
+    gap: 0.24rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .room-terminal-header-stack {
+    gap: 0.16rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .room-terminal-header__spine {
+    gap: 0.32rem;
+    padding: 0.28rem 0.42rem;
+    border-radius: 0.78rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .room-terminal-header__track {
+    gap: 0.22rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .room-terminal-header__badge {
+    padding: 0.22rem 0.38rem;
+    font-size: 0.64rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .table-stage-panel {
+    padding: 0.5rem;
+    border-radius: 1.25rem;
+    overflow: visible;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .table-stage-surface {
+    min-height: min(34rem, calc(100dvh - 8.5rem));
+    padding: 0.48rem 0.35rem;
+    border-radius: 1.18rem;
+    overflow: visible;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .table-stage-core {
+    min-height: min(32rem, calc(100dvh - 9rem));
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .table-stage-table-shell[data-table-profile="phone-oval"] {
+    max-width: min(92vw, 19rem);
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .table-stage-chrome__seat-node--occupied,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .table-stage-chrome__seat-node--open,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .table-stage-chrome__seat-node--closed,
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .table-stage-chrome__marker {
+    display: none;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .arena-seat-plaque--empty {
+    width: 3.8rem;
+    min-height: 3.8rem;
+    padding: 0.28rem;
+    border-radius: 1rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .arena-seat-plaque__empty-trigger--compact {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.92rem;
+  }
+
+  .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="waiting"] .arena-seat-plaque__empty-copy {
+    display: none;
+  }
+
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-room-play-state="live-hand"] .room-terminal-frame {
     gap: 0.45rem;
   }
@@ -4929,6 +5007,84 @@
     min-height: 2.2rem;
     padding: 0.34rem 0.42rem;
     border-radius: 0.8rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] {
+    padding: 0.42rem 0.48rem 0.5rem;
+    border-radius: 0.95rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__grid {
+    gap: 0.34rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__hero-panel {
+    margin-top: 0;
+    padding: 0.44rem 0.5rem;
+    border-radius: 0.9rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__hero-header {
+    gap: 0.34rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__hero-name {
+    font-size: 0.88rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__chip {
+    padding: 0.2rem 0.46rem;
+    font-size: 0.62rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__waiting-strip {
+    margin-top: 0.34rem;
+    gap: 0.24rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__waiting-metric {
+    padding: 0.26rem 0.38rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__waiting-metric-label {
+    font-size: 0.48rem;
+    letter-spacing: 0.12em;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__waiting-metric-value {
+    margin-top: 0.1rem;
+    font-size: 0.72rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__quick-actions-block {
+    margin-top: 0.28rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__quick-actions-block .poker-shell-kicker {
+    display: none;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__quick-actions {
+    margin-top: 0;
+    gap: 0.26rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .tactical-dock__quick-action {
+    min-height: 2.2rem;
+    padding: 0.34rem 0.28rem;
+    border-radius: 0.72rem;
+    font-size: 0.68rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .room-support-launcher {
+    margin-top: 0.1rem;
+    gap: 0.28rem;
+  }
+
+  .room-terminal-dock-panel[data-viewport-model="phone-terminal"][data-dock-state="waiting"] .room-support-launcher__button {
+    min-height: 2rem;
+    padding: 0.32rem 0.42rem;
+    border-radius: 0.76rem;
   }
 
   .room-terminal-shell[data-viewport-model="phone-terminal"][data-height-class="short-height"] {

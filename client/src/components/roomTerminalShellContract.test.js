@@ -189,11 +189,12 @@ test('ActionDock exposes primary quick actions when header actions collapse into
 
 test('phone live hand collapses support launchers into one table menu with leave-seat first-level access', () => {
   assert.match(actionDockSource, /const isPhoneLiveHand = gameStarted && viewportLayout\?\.viewportModel === 'phone-terminal';/);
+  assert.match(actionDockSource, /const isPhoneTableMenu = viewportLayout\?\.viewportModel === 'phone-terminal';/);
   assert.match(
     actionDockSource,
-    /const supportPanelItems = isPhoneLiveHand\s*\?\s*\[\{ key: 'room', label: '桌面' \}\]\s*:\s*\[/s
+    /const supportPanelItems = isPhoneTableMenu\s*\?\s*\[\{ key: 'room', label: '桌面' \}\]\s*:\s*\[/s
   );
-  assert.match(actionDockSource, /data-support-launcher-mode=\{isPhoneLiveHand \? 'single-table-menu' : 'multi-panel'\}/);
+  assert.match(actionDockSource, /data-support-launcher-mode=\{isPhoneTableMenu \? 'single-table-menu' : 'multi-panel'\}/);
   assert.match(actionDockSource, /room-support-launcher__button--menu/);
   assert.match(gameRoomSource, /const roomToolPrimaryActions = \[/);
   assert.match(gameRoomSource, /key:\s*'leave-seat'[\s\S]*label:\s*'离座'/s);
@@ -206,6 +207,40 @@ test('phone live hand collapses support launchers into one table menu with leave
   assert.match(
     globalStylesSource,
     /\.room-terminal-dock-panel\[data-support-launcher-mode="single-table-menu"\]\s+\.room-support-launcher\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\);/s
+  );
+});
+
+test('phone waiting room uses the same single-screen table cockpit instead of stacked chrome panels', () => {
+  assert.match(gameRoomSource, /const isPhoneTerminal = roomViewportLayout\.viewportModel === 'phone-terminal';/);
+  assert.match(
+    gameRoomSource,
+    /const tableDiameter = isPhoneTerminal && windowSize\.width < 480\s*\?\s*256\s*:\s*baseTableDiameter;/
+  );
+  assert.match(actionDockSource, /const isPhoneTableMenu = viewportLayout\?\.viewportModel === 'phone-terminal';/);
+  assert.match(
+    actionDockSource,
+    /const supportPanelItems = isPhoneTableMenu\s*\?\s*\[\{ key: 'room', label: '桌面' \}\]\s*:\s*\[/s
+  );
+  assert.match(actionDockSource, /data-support-launcher-mode=\{isPhoneTableMenu \? 'single-table-menu' : 'multi-panel'\}/);
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="waiting"\]\s+\.table-stage-surface\s*\{[\s\S]*min-height:\s*min\(34rem,\s*calc\(100dvh - 8\.5rem\)\);[\s\S]*overflow:\s*visible;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="waiting"\]\s+\.table-stage-table-shell\[data-table-profile="phone-oval"\]\s*\{[\s\S]*max-width:\s*min\(92vw,\s*19rem\);/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="waiting"\]\s*\{[\s\S]*padding:\s*0\.42rem 0\.48rem 0\.5rem;[\s\S]*border-radius:\s*0\.95rem;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-dock-panel\[data-viewport-model="phone-terminal"\]\[data-dock-state="waiting"\]\s+\.tactical-dock__quick-actions-block \.poker-shell-kicker\s*\{\s*display:\s*none;/s
+  );
+  assert.match(
+    globalStylesSource,
+    /\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="waiting"\]\s+\.table-stage-chrome__seat-node--occupied,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="waiting"\]\s+\.table-stage-chrome__seat-node--open,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="waiting"\]\s+\.table-stage-chrome__seat-node--closed,\s*\.room-terminal-shell\[data-viewport-model="phone-terminal"\]\[data-room-play-state="waiting"\]\s+\.table-stage-chrome__marker\s*\{\s*display:\s*none;/s
   );
 });
 
@@ -677,7 +712,7 @@ test('phone-terminal live hand gives more screen budget to the felt table than c
   assert.match(gameRoomSource, /const baseTableDiameter = resolveTableDiameter\(/);
   assert.match(
     gameRoomSource,
-    /const tableDiameter = isPhoneLiveHand && windowSize\.width < 480\s*\?\s*256\s*:\s*baseTableDiameter;/
+    /const tableDiameter = isPhoneTerminal && windowSize\.width < 480\s*\?\s*256\s*:\s*baseTableDiameter;/
   );
   assert.match(
     globalStylesSource,
@@ -703,11 +738,15 @@ test('short-height phone live hand tightens the single-screen stage budget to pr
 test('SeatRing suppresses empty phone seats during live hands so action space stays readable', () => {
   assert.match(
     seatRingSource,
-    /const hidesPhoneLiveOpenSeats = gameStarted && tableProfile === 'phone-oval';/
+    /const hasPhoneHeroSeat = tableProfile === 'phone-oval' && seats\.some\(\(seat\) => seat\.occupied && seat\.isCurrentPlayer\);/
   );
   assert.match(
     seatRingSource,
-    /if \(hidesPhoneLiveOpenSeats && !seat\.occupied\) \{\s*return false;\s*\}/s
+    /const hidesPhoneOpenSeats = tableProfile === 'phone-oval' && \(gameStarted \|\| hasPhoneHeroSeat\);/
+  );
+  assert.match(
+    seatRingSource,
+    /if \(hidesPhoneOpenSeats && !seat\.occupied\) \{\s*return false;\s*\}/s
   );
 });
 

@@ -5,13 +5,14 @@ import SeatCard from './SeatCard';
 const SeatRing = ({ seats = [], roomState, gameState, gameStarted, geometryContract = null, hideHeroSeat = false }) => {
   const tableProfile = geometryContract?.tableSurfaceLayout?.profile || seats[0]?.position?.profile || 'desktop-oval';
   const viewportModel = geometryContract?.viewportLayout?.viewportModel || null;
-  const hidesPhoneLiveOpenSeats = gameStarted && tableProfile === 'phone-oval';
+  const hasPhoneHeroSeat = tableProfile === 'phone-oval' && seats.some((seat) => seat.occupied && seat.isCurrentPlayer);
+  const hidesPhoneOpenSeats = tableProfile === 'phone-oval' && (gameStarted || hasPhoneHeroSeat);
   const visibleSeats = seats.filter((seat) => {
     if (seat.seatAvailability === 'closed') {
       return false;
     }
 
-    if (hidesPhoneLiveOpenSeats && !seat.occupied) {
+    if (hidesPhoneOpenSeats && !seat.occupied) {
       return false;
     }
 

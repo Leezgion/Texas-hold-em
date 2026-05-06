@@ -54,6 +54,7 @@ const ActionDock = ({
   const handCards = dockView?.handCards || [];
   const isWaitingDockState = !gameStarted;
   const isPhoneLiveHand = gameStarted && viewportLayout?.viewportModel === 'phone-terminal';
+  const isPhoneTableMenu = viewportLayout?.viewportModel === 'phone-terminal';
   const showsDecisionCenter = Boolean(
     dockView.startButtonLabel || handCards.length > 0 || gameStarted
   );
@@ -79,7 +80,7 @@ const ActionDock = ({
     typeof onShare === 'function' ? { key: 'share', label: '分享', tone: 'default', onClick: onShare } : null,
     typeof onLeaveRoom === 'function' ? { key: 'leave-room', label: '退出', tone: 'danger', onClick: onLeaveRoom } : null,
   ].filter(Boolean);
-  const supportPanelItems = isPhoneLiveHand
+  const supportPanelItems = isPhoneTableMenu
     ? [{ key: 'room', label: '桌面' }]
     : [
         { key: 'players', label: supportLabels.players || '成员' },
@@ -111,7 +112,7 @@ const ActionDock = ({
       data-dock-layout={dockLayout}
       data-hero-panel-layout={heroPanelLayout}
       data-has-center-stage={showsDecisionCenter ? 'true' : 'false'}
-      data-support-launcher-mode={isPhoneLiveHand ? 'single-table-menu' : 'multi-panel'}
+      data-support-launcher-mode={isPhoneTableMenu ? 'single-table-menu' : 'multi-panel'}
       data-phone-action-presentation={isPhoneLiveHand ? 'floating-table-controls' : 'dock-panel'}
     >
       <div className="tactical-dock__grid">
@@ -264,7 +265,7 @@ const ActionDock = ({
                       type="button"
                       className={`room-support-launcher__button ${
                         activeSupportPanel === item.key ? 'room-support-launcher__button--active' : ''
-                      } ${isPhoneLiveHand ? 'room-support-launcher__button--menu' : ''}`}
+                      } ${isPhoneTableMenu ? 'room-support-launcher__button--menu' : ''}`}
                       onClick={() => onToggleSupportPanel(item.key)}
                     >
                       {item.label}
